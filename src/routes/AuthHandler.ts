@@ -31,7 +31,7 @@ AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async
 
     const hashPassword = await hash(req.body.password, 10);
 
-    const newUser: User = { user_id: generateSnowflake(), email: req.body.email, username: req.body.username, password: hashPassword,  permissions: 0};
+    const newUser: User = { id: generateSnowflake(), email: req.body.email, username: req.body.username, password: hashPassword,  permissions: 0};
 
     await DataBase.insertInto("users", newUser);
     
@@ -48,7 +48,7 @@ AuthHandler.post("/login", useValidation(loginSchema, { body: true }), async (re
     
     if(!validPassword) return res.status(400).send("Invalid username or password!");
 
-    const token = sign({_id: user.user_id}, Globals.tokenSecret);
+    const token = sign({_id: user.id}, Globals.tokenSecret);
 
     res.status(200).send(token);
 });
@@ -64,7 +64,7 @@ AuthHandler.get("/info/:id", useAuth, async (req: AuthentificatedRequest, res) =
     const user = req.user;
     if(!(user.permissions & 1)) return res.status(403).send("Access denied!");
 
-    const searchUser = await DataBase.selectOneFrom("users", "*", { user_id: req.params.id });
+    const searchUser = await DataBase.selectOneFrom("users", "*", { id: req.params.id });
 
     if(!searchUser) return res.status(404).send("User not found!");
 

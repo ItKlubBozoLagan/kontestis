@@ -2,16 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3de6cc68-d1b5-4aa6-bd6c-2cd47154e5cf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/routes/ContestHandler.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/AllowedUser.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/data/Database.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/data/Database.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/ClusterSubmission.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/ClusterSubmission.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/Contest.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Contest.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/Submission.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Submission.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/TestcaseSubmission.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/TestcaseSubmission.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/User.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/User.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/AuthHandler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/AuthHandler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/ContestHandler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/ContestHandler.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +46,7 @@
       <updated>1671125897326</updated>
       <workItem from="1671125898467" duration="4059000" />
       <workItem from="1671370312814" duration="3117000" />
-      <workItem from="1671742778000" duration="1347000" />
+      <workItem from="1671742778000" duration="3773000" />
     </task>
     <servers />
   </component>
