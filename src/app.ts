@@ -18,9 +18,10 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => res.send({ status: 200 }));
 
 
-DataBase.awaitConnection().then(() => {
+DataBase.awaitConnection().then(async () => {
     Logger.info("Successfully connected to database!");
-    initDatabase();
+    await initDatabase();
+    Logger.info("Initialized database!");
 });
 
 

@@ -8,7 +8,8 @@ export type ClusterSubmission = {
     cluster_id: Snowflake,
 
     verdict: Verdict,
-
     awardedScore: number,
 
+    time_used_millis: number,
+    memory_used_megabytes: number,
 }

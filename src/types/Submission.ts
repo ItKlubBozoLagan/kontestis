@@ -10,7 +10,12 @@ export type Submission = {
     problem_id: Snowflake,
     lang: EvaluationLang,
     code: string,
+
     verdict?: Verdict,
-    awardedScore?: number
+    awardedScore?: number,
+
+    time_used_millis?: number,
+    memory_used_megabytes?: number,
+
     completed: boolean,
 }
