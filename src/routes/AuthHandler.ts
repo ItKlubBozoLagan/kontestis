@@ -6,7 +6,7 @@ import { sign } from "jsonwebtoken";
 import { DataBase } from "../data/Database";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
-import { AuthentificatedRequest, useAuth } from "../middlewares/useAuth";
+import { AuthenticatedRequest, useAuth } from "../middlewares/useAuth";
 import { useValidation } from "../middlewares/useValidation";
 import { User } from "../types/User";
 
@@ -53,11 +53,11 @@ AuthHandler.post("/login", useValidation(loginSchema, { body: true }), async (re
     res.status(200).send(token);
 });
 
-AuthHandler.get("/info", useAuth, async (req: AuthentificatedRequest, res) => {  
+AuthHandler.get("/info", useAuth, async (req: AuthenticatedRequest, res) => {
     return res.status(200).json(req.user);
 });
 
-AuthHandler.get("/info/:id", useAuth, async (req: AuthentificatedRequest, res) => {
+AuthHandler.get("/info/:id", useAuth, async (req: AuthenticatedRequest, res) => {
 
     if(!req.user) return res.status(403).send("Access denied!");
 

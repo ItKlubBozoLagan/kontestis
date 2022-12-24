@@ -1,14 +1,20 @@
 import {Snowflake} from "../lib/snowflake";
 
-export type Verdict = "AC" | "WA" | "TLE" | "MLE" | "RTE" | "CE";
+export type Verdict =
+    | "accepted"
+    | "wrong_answer"
+    | "time_limit_exceeded"
+    | "memory_limit_exceeded"
+    | "runtime_error"
+    | "compile_error";
 
-export type EvaluationLang = "C" | "CPP" | "PY";
+export type EvaluationLanguage = "c" | "cpp" | "python";
 
 export type Submission = {
     id: Snowflake,
     user_id: Snowflake,
     problem_id: Snowflake,
-    lang: EvaluationLang,
+    language: EvaluationLanguage,
     code: string,
 
     verdict?: Verdict,

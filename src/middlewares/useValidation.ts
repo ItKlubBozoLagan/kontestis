@@ -1,11 +1,14 @@
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Query, RequestHandler } from "express-serve-static-core";
+import {Request} from "express";
 
 type SchemaOpts = {
     body?: boolean,
     query?: boolean
 };
+
+export type ValidatedBody<S extends TSchema> = Request<any, any, Static<S>, any>;
 
 type SchemaRequestHandler<S extends SchemaOpts, O> =
     RequestHandler<

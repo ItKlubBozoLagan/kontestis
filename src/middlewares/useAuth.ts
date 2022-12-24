@@ -13,7 +13,7 @@ const jwtSchema = Type.Object({
 
 const compiledSchema = TypeCompiler.Compile(jwtSchema);
 
-export type AuthentificatedRequest = Request & {
+export type AuthenticatedRequest = Request & {
     user?: User;
 }
 
@@ -29,25 +29,31 @@ const validateJwt = async (token?: string): Promise<User | null> => {
         return null;
     }
     
-    const user = await DataBase.selectOneFrom("users", "*", {user_id: jwt._id});
+    const user = await DataBase.selectOneFrom("users", "*", {id: jwt._id});
 
     return user ?? null;
 };
 
-export const useAuth = async (req: AuthentificatedRequest, res: Response, next: NextFunction) => {
-    
-    const auth = req.header("authorization");
+const getAuth = (optional: boolean) => {
+    return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
 
-    if(!(auth && auth.startsWith("Bearer "))) {
-        return res.status(403).send("Access denied");
+        const auth = req.header("authorization");
+
+        if(!(auth && auth.startsWith("Bearer "))) {
+            return optional ? next() : res.status(403).send("Access denied");
+        }
+
+        const token = auth.slice("Bearer ".length);
+        const validated = await validateJwt(token);
+        if(!validated) {
+            return optional ? next() : res.status(403).send("Access denied");
+        }
+
+        req.user = validated;
+        next();
     }
+}
 
-    const token = auth.slice("Bearer ".length);
-    const validated = await validateJwt(token);
-    if(!validated) {
-        return res.status(403).send("Access denied");
-    }
 
-    req.user = validated;
-    next();
-};
+export const useAuth = getAuth(false);
+export const useOptionalAuth = getAuth(true);

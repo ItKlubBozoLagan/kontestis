@@ -7,5 +7,4 @@ export type Problem = {
     description: string,
     time_limit_millis: number,
     memory_limit_megabytes: number
-
 }

@@ -1,6 +1,6 @@
 import {Router} from "express";
 import {Type} from "@sinclair/typebox";
-import {AuthentificatedRequest, useAuth} from "../middlewares/useAuth";
+import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/useAuth";
 import {useValidation} from "../middlewares/useValidation";
 import {generateSnowflake} from "../lib/snowflake";
 import {DataBase} from "../data/Database";
@@ -15,7 +15,7 @@ const contestSchema = Type.Object({
     public: Type.Boolean()
 });
 
-ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: AuthentificatedRequest, res) => {
+ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: AuthenticatedRequest, res) => {
 
     if(!req.user) return res.status(403).send("Access denied!");
 
@@ -38,16 +38,27 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
 
 });
 
+ContestHandler.get("/:id", useOptionalAuth, async (req: AuthenticatedRequest , res) => {
 
+    let contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id, public: true });
 
-ContestHandler.get("/:id", async (req , res) => {
+    if(contest) return res.status(200).json(contest);
 
-    const contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id });
+    if(!req.user) return res.status(404).send("Contest not found!");
+
+    const user = req.user;
+
+    if(user.permissions & 1) {
+        contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id });
+    } else {
+        contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id, admin_id: user.id });
+    }
 
     if(!contest) return res.status(404).send("Contest not found!");
 
     return res.status(200).json(contest);
 });
+
 
 
 export default ContestHandler;
