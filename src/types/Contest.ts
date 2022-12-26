@@ -7,5 +7,4 @@ export type Contest = {
     start_time: Date,
     duration_seconds: number,
     public: boolean,
-    allowed_id?: Snowflake
 }

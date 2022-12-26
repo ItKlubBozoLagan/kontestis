@@ -1,10 +1,9 @@
-import {raw, Router} from "express";
+import {Router} from "express";
 import {Type} from "@sinclair/typebox";
 import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/useAuth";
 import {useValidation, ValidatedBody} from "../middlewares/useValidation";
 import {DataBase} from "../data/Database";
 import {generateSnowflake} from "../lib/snowflake";
-import {bold} from "chalk";
 
 
 const ProblemHandler = Router();
@@ -51,9 +50,40 @@ const getSchema = Type.Object({
 
 ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true }), async (req: AuthenticatedRequest & ValidatedBody<typeof getSchema>, res) => {
 
-    const id = req.query.contest_id;
-
     const contest = await DataBase.selectOneFrom("contests", "*", { id: req.query.contest_id });
+
+    if(!contest) return res.status(404).send("Not found!");
+    if(!contest.public && !req.user) res.status(404).send("Not found!");
+
+    const problems = await DataBase.selectFrom("problems", "*", { contest_id: contest.id });
+    if(contest.public) return res.status(200).json(problems);
+
+    const user = req.user;
+    if((user!.permissions & 1) > 0 || user!.id === contest.admin_id) return res.status(200).json(problems);
+
+    return res.status(404).send("Not found!");
+});
+
+ProblemHandler.get("/:id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
+
+    const problem = await DataBase.selectOneFrom("problems", "*", { id: req.params.id });
+
+    if(!problem) return res.status(404).send("Not found!");
+
+    const contest = await DataBase.selectOneFrom("contests", "*", { id: problem.contest_id });
+    if(!contest) return res.status(500).send("Internal error!");
+    if(contest.public) return res.status(200).json(problem);
+
+    if(!req.user) return res.status(404).send("Not found!");
+
+    const user = req.user;
+    if(user.permissions & 1 || user.id == contest.admin_id) return res.status(200).json(problem);
+
+    const allowedUser = await DataBase.selectOneFrom("allowed_users", "*", { user_id: user.id, contest_id: contest.id });
+
+    if(!allowedUser) return res.status(404).send("Not found!");
+
+    return res.status(200).json(problem);
 });
 
 

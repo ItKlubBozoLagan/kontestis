@@ -29,7 +29,6 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
         start_time: date,
         duration_seconds: req.body.duration_seconds,
         public: req.body.public,
-        allowed_id: req.body.public ?? generateSnowflake()
     }
 
     await DataBase.insertInto("contests", contest);
@@ -40,25 +39,19 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
 
 ContestHandler.get("/:id", useOptionalAuth, async (req: AuthenticatedRequest , res) => {
 
-    let contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id, public: true });
+    let contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id });
+    if(!contest) return res.status(404).send("Not found!");
 
-    if(contest) return res.status(200).json(contest);
-
-    if(!req.user) return res.status(404).send("Contest not found!");
+    if(contest.public) return res.status(200).json(contest);
+    if(!req.user) return res.status(404).send("Not found!");
 
     const user = req.user;
+    if((user.permissions & 1) || user.id == contest.admin_id) return res.status(200).json(contest);
 
-    if(user.permissions & 1) {
-        contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id });
-    } else {
-        contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.id, admin_id: user.id });
-    }
-
-    if(!contest) return res.status(404).send("Contest not found!");
+    const allowedUser = await DataBase.selectOneFrom("allowed_users", "*", { user_id: user.id, contest_id: contest.id });
+    if(!allowedUser) return res.status(404).send("Not found!");
 
     return res.status(200).json(contest);
 });
-
-
 
 export default ContestHandler;

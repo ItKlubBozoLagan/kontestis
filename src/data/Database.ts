@@ -45,10 +45,10 @@ export const initDatabase = async () => {
 
     await DataBase.createTable("allowed_users", true, {
         user_id: { type: "bigint" },
-        allowed_id: { type: "bigint" }
+        contest_id: { type: "bigint" }
     }, "user_id");
 
-    await DataBase.createIndex("allowed_users", "allowed_users_by_allowed_id", "allowed_id");
+    await DataBase.createIndex("allowed_users", "allowed_users_by_allowed_id", "contest_id");
 
     await DataBase.createTable("contests", true, {
         id: { type: "bigint" },
@@ -57,7 +57,6 @@ export const initDatabase = async () => {
         start_time: { type: "timestamp" },
         duration_seconds: { type: "int" },
         public: { type: "boolean" },
-        allowed_id: { type: "bigint" }
     }, "id")
 
     await DataBase.createIndex("contests", "contests_by_admin_id", "admin_id");
@@ -103,7 +102,7 @@ export const initDatabase = async () => {
         id: { type: "bigint" },
         user_id: { type: "bigint" },
         problem_id: { type: "bigint" },
-        lang: { type: "text" },
+        language: { type: "text" },
         code: { type: "text" },
         verdict: { type: "text" },
         awardedScore: { type: "int" },
