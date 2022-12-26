@@ -4,14 +4,23 @@ import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/use
 import {useValidation, ValidatedBody} from "../middlewares/useValidation";
 import {DataBase} from "../data/Database";
 import {generateSnowflake} from "../lib/snowflake";
+import {Problem} from "../types/Problem";
+import {isAllowedToModifyContest, isAllowedToViewContest, isAllowedToViewProblem} from "../utils/utills";
 
 
 const ProblemHandler = Router();
+
+enum EvaluationSchema {
+    plain = "plain",
+    script = "script",
+    interactive = "interactive"
+}
 
 const problemSchema = Type.Object({
     contest_id: Type.Number(),
     title: Type.String(),
     description: Type.String(),
+    evaluation_variant: Type.Enum(EvaluationSchema),
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10000 }),
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 1024 })
 });
@@ -20,20 +29,17 @@ ProblemHandler.post("/", useAuth, useValidation(problemSchema), async (req: Auth
 
     if(!req.user) return res.status(403).send("Access denied!");
 
-    const user = req.user;
+    if(!(await isAllowedToModifyContest(req.user.id, req.body.contest_id))) return res.status(403).send("Access denied!");
 
-    const contest = await DataBase.selectOneFrom("contests", "*", { id: req.body.contest_id });
+    if(req.body.evaluation_variant != "plain" && !req.body.evaluation_script) return res.status(400).send("Bad request!");
 
-    if(!contest) return res.status(404).send("Not found!")
-
-    if(contest.admin_id != user.id && !(user.permissions & 1))
-        return res.status(403).send("Access denied!")
-
-    const problem = {
+    const problem: Problem = {
         id: generateSnowflake(),
         contest_id: req.body.contest_id,
         title: req.body.title,
         description: req.body.description,
+        evaluation_variant: req.body.evaluation_variant,
+        evaluation_script: req.body.evaluation_script,
         time_limit_millis: req.body.time_limit_millis,
         memory_limit_megabytes: req.body.memory_limit_megabytes
     }
@@ -50,38 +56,21 @@ const getSchema = Type.Object({
 
 ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true }), async (req: AuthenticatedRequest & ValidatedBody<typeof getSchema>, res) => {
 
-    const contest = await DataBase.selectOneFrom("contests", "*", { id: req.query.contest_id });
+    const problems = await DataBase.selectFrom("problems", "*", { contest_id: req.query.contest_id });
 
-    if(!contest) return res.status(404).send("Not found!");
-    if(!contest.public && !req.user) res.status(404).send("Not found!");
+    if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, req.query.contest_id))) return res.status(404).send("Not found");
 
-    const problems = await DataBase.selectFrom("problems", "*", { contest_id: contest.id });
-    if(contest.public) return res.status(200).json(problems);
-
-    const user = req.user;
-    if((user!.permissions & 1) > 0 || user!.id === contest.admin_id) return res.status(200).json(problems);
-
-    return res.status(404).send("Not found!");
+    return res.status(200).json(problems);
 });
 
 ProblemHandler.get("/:id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
     const problem = await DataBase.selectOneFrom("problems", "*", { id: req.params.id });
-
     if(!problem) return res.status(404).send("Not found!");
 
-    const contest = await DataBase.selectOneFrom("contests", "*", { id: problem.contest_id });
-    if(!contest) return res.status(500).send("Internal error!");
-    if(contest.public) return res.status(200).json(problem);
+    if(!(await isAllowedToViewProblem(req.user ? req.user.id : undefined, problem.id))) return res.status(404).send("Not found!");
 
-    if(!req.user) return res.status(404).send("Not found!");
-
-    const user = req.user;
-    if(user.permissions & 1 || user.id == contest.admin_id) return res.status(200).json(problem);
-
-    const allowedUser = await DataBase.selectOneFrom("allowed_users", "*", { user_id: user.id, contest_id: contest.id });
-
-    if(!allowedUser) return res.status(404).send("Not found!");
+    if(!req.user || !(await isAllowedToModifyContest(req.user.id, problem.contest_id))) delete problem.evaluation_script;
 
     return res.status(200).json(problem);
 });

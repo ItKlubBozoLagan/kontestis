@@ -6,7 +6,6 @@ import {Contest} from "../types/Contest";
 import {Problem} from "../types/Problem";
 import {Cluster} from "../types/Cluster";
 import {Testcase} from "../types/Testcase";
-import {EvaluationSchema} from "../types/EvaluationSchema";
 import {AllowedUser} from "../types/AllowedUser";
 import {Submission} from "../types/Submission";
 import {ClusterSubmission} from "../types/ClusterSubmission";
@@ -19,7 +18,6 @@ export const DataBase = new ScylloClient<{
     problems: Problem;
     clusters: Cluster;
     testcases: Testcase,
-    evaluation_schemas: EvaluationSchema,
     submissions: Submission,
     cluster_submissions: ClusterSubmission,
     testcase_submissions: TestcaseSubmission
@@ -67,6 +65,8 @@ export const initDatabase = async () => {
         contest_id: { type: "bigint" },
         title: { type: "text" },
         description: { type: "text" },
+        evaluation_variant: { type: "text" },
+        evaluation_script: { type: "text" },
         time_limit_millis: { type: "int" },
         memory_limit_megabytes: { type: "int" }
     }, "id");
@@ -87,16 +87,6 @@ export const initDatabase = async () => {
     }, "id");
 
     await DataBase.createIndex("testcases", "testcases_by_cluster_id", "cluster_id");
-
-    await DataBase.createTable("evaluation_schemas", true, {
-        id: { type: "bigint" },
-        problem_id: { type: "bigint" },
-        variant: { type: "text" },
-        script: { type: "text" }
-    }, "id");
-
-    await DataBase.createIndex("evaluation_schemas", "evaluation_schemas_by_problem_id", "problem_id");
-
 
     await DataBase.createTable("submissions", true, {
         id: { type: "bigint" },
