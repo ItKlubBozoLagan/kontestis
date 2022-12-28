@@ -2,6 +2,24 @@ import {Snowflake} from "../lib/snowflake";
 import {DataBase} from "../data/Database";
 
 
+export const isAllowedToViewSubmission = async (userId: Snowflake | undefined, submissionId: Snowflake) => {
+
+    const submission = await DataBase.selectOneFrom("submissions", ["problem_id", "user_id"], { id: submissionId });
+    if(!submission) return false;
+
+    const problem = await DataBase.selectOneFrom("problems", ["contest_id"], { id: submission.problem_id });
+    if(!problem) return false;
+
+    const contest = await DataBase.selectOneFrom("contests", ["id", "start_time", "duration_seconds"], { id: problem.contest_id });
+    if(!contest) return false;
+
+    if(!(await isAllowedToViewContest( userId ?? undefined, contest.id))) return false;
+    if(contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now()) return true;
+    if(!userId) return false;
+
+    return await isAllowedToModifyContest(userId, contest.id) || userId === submission.user_id;
+}
+
 export const isAllowedToViewProblem = async (userId: Snowflake | undefined, problemId: Snowflake) => {
 
     const problem = await DataBase.selectOneFrom("problems", "*", { id: problemId });

@@ -2,7 +2,12 @@ import {Router} from "express";
 import {Type} from "@sinclair/typebox";
 import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/useAuth";
 import {useValidation, ValidatedBody} from "../middlewares/useValidation";
-import {isAllowedToModifyContest, isAllowedToViewContest, isAllowedToViewProblem} from "../utils/utills";
+import {
+    isAllowedToModifyContest,
+    isAllowedToViewContest,
+    isAllowedToViewProblem,
+    isAllowedToViewSubmission
+} from "../utils/utills";
 import {Submission} from "../types/Submission";
 import {generateSnowflake} from "../lib/snowflake";
 import {DataBase} from "../data/Database";
@@ -67,22 +72,33 @@ SubmissionHandler.get("/:problem_id", useOptionalAuth, async (req: Authenticated
 
 });
 
+SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
+
+    const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
+    if(!submission) return res.status(404).send("Not found!");
+    if(!(await isAllowedToViewSubmission(req.user ? req.user.id : undefined, submission.id))) return res.status(404).send("Not found!");
+
+    return res.status(200).json(submission);
+});
+
 SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
     const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
     if(!submission) return res.status(404).send("Not found!");
+    if(!(await isAllowedToViewSubmission(req.user ? req.user.id : undefined, submission.id))) return res.status(404).send("Not found!");
 
-    const problem = await DataBase.selectOneFrom("problems", "*", { id: submission.problem_id });
-    if(!problem) return res.status(500).send("Internal error!");
+    const clusters = await DataBase.selectFrom("cluster_submissions", "*", { submission_id: submission.id });
+    return res.status(200).json(clusters);
+});
 
-    const contest = await DataBase.selectOneFrom("contests", "*", { id: problem.contest_id });
-    if(!contest) return res.status(500).send("Internal error!");
+SubmissionHandler.get("/testcase/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
-    if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, contest.id))) return res.status(404).send("Not found!");
+    const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
+    if(!submission) return res.status(404).send("Not found!");
+    if(!(await isAllowedToViewSubmission(req.user ? req.user.id : undefined, submission.id))) return res.status(404).send("Not found!");
 
-    
-
-
+    const testcases = await DataBase.selectFrom("testcase_submissions", "*", { submission_id: submission.id });
+    return res.status(200).json(testcases);
 });
 
 SubmissionHandler.get("")
