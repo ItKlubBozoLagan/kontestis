@@ -101,4 +101,4 @@ SubmissionHandler.get("/testcase/:submission_id", useOptionalAuth, async (req: A
     return res.status(200).json(testcases);
 });
 
-SubmissionHandler.get("")
+export default SubmissionHandler;

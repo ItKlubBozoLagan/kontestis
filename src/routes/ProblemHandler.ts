@@ -52,6 +52,32 @@ ProblemHandler.post("/", useAuth, useValidation(problemSchema), async (req: Auth
 
 });
 
+ProblemHandler.delete("/:problem_id", useAuth, async (req: AuthenticatedRequest, res) => {
+    if(!req.user) return res.status(403).send("Access denied!");
+    const problem = await DataBase.selectOneFrom("problems", "*", { id: req.params.problem_id });
+    if(!problem) return res.status(404).send("Not found!");
+    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+
+    await DataBase.deleteFrom("problems", "*", { id: problem.id });
+
+    const clusters = await DataBase.selectFrom("clusters", "*", { problem_id: problem.id });
+    await DataBase.deleteFrom("clusters", "*", { problem_id: problem.id });
+
+    for (const c of clusters) {
+        await DataBase.deleteFrom("testcases", "*", { cluster_id: c.id });
+    }
+
+    const submissions = await DataBase.selectFrom("submissions", "*", { problem_id: problem.id });
+    await DataBase.deleteFrom("submissions", "*", { problem_id: problem.id });
+    for(const s of submissions) {
+        await DataBase.deleteFrom("cluster_submissions", "*", { submission_id: s.id });
+        await DataBase.deleteFrom("testcase_submissions", "*", { submission_id: s.id });
+    }
+
+
+    return res.status(200).json(problem);
+});
+
 const clusterSchema = Type.Object({
     awarded_score: Type.Number({minimum: 1, maximum: 1000})
 });
@@ -72,6 +98,27 @@ ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema
     }
 
     await DataBase.insertInto("clusters", cluster);
+
+    return res.status(200).json(cluster);
+});
+
+ProblemHandler.delete("/cluster/:cluster_id", useAuth, async (req: AuthenticatedRequest, res) => {
+
+    if(!req.user) return res.status(403).send("Access denied!");
+    const cluster = await DataBase.selectOneFrom("clusters", "*", { id: req.params.cluster_id });
+    if(!cluster) return res.status(404).send("Not found!");
+    const problem = await DataBase.selectOneFrom("problems", "*", { id: cluster.problem_id });
+    if(!problem) return res.status(500).send("Internal error!");
+    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+
+    await DataBase.deleteFrom("clusters", "*", { id: cluster.id });
+    const testcases = await DataBase.selectFrom("testcases", "*", { cluster_id: cluster.id });
+    await DataBase.deleteFrom("testcases", "*", { cluster_id: cluster.id });
+    await DataBase.deleteFrom("cluster_submissions", "*", { cluster_id: cluster.id });
+
+    for(const testcase of testcases) {
+        await DataBase.deleteFrom("testcase_submissions", "*", { testcase_id: testcase.id });
+    }
 
     return res.status(200).json(cluster);
 });
@@ -105,6 +152,27 @@ ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSche
     return res.status(200).json(testcase);
 
 });
+
+ProblemHandler.delete("/testcase/:testcase_id", useAuth, async (req: AuthenticatedRequest, res) => {
+
+    if(!req.user) return res.status(403).send("Access denied!");
+
+    const testcase = await DataBase.selectOneFrom("testcases", "*", { id: req.params.testcase_id });
+    if(!testcase) return res.status(404).send("Not found!");
+
+    const cluster = await DataBase.selectOneFrom("clusters", "*", { id: testcase.cluster_id });
+    if(!cluster) return res.status(500).send("Internal error!");
+
+    const problem = await DataBase.selectOneFrom("problems", "*", { id: cluster.problem_id });
+    if(!problem) return res.status(500).send("Internal error!");
+
+    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+
+    await DataBase.deleteFrom("testcases", "*", { id: testcase.id });
+    await DataBase.deleteFrom("testcase_submissions", "*", { testcase_id: testcase.id });
+
+    return res.status(200).json(testcase);
+})
 
 const getSchema = Type.Object({
     contest_id: Type.String()
