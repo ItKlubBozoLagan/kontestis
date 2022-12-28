@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { compare, hash } from "bcrypt";
-import { Router } from "express";
+import {Request, Router} from "express";
 import { sign } from "jsonwebtoken";
 
 import { DataBase } from "../data/Database";
@@ -23,8 +23,7 @@ const loginSchema = Type.Object({
     password: Type.String()
 });
 
-AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async (req, res) => {
-    
+AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async (req: Request, res) => {
     const user = await DataBase.selectOneFrom("users", "*", {email: req.body.email});
 
     if(user) return res.status(400).send("User already exists!");

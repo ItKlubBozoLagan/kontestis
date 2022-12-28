@@ -42,6 +42,7 @@ export const initDatabase = async () => {
     await DataBase.createIndex("users", "users_by_email", "email");
 
     await DataBase.createTable("allowed_users", true, {
+        id: { type: "bigint" },
         user_id: { type: "bigint" },
         contest_id: { type: "bigint" }
     }, "user_id");
