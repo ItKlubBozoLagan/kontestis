@@ -47,27 +47,3 @@ export const transformToBinary = async (code: Buffer): Promise<CompileResult> =>
         })
     })
 }
-
-/*
-
-const code = `
-#include<bits/stdc++.h>
-
-int main(int argc, char** argv) {
-    printf("argc: %d | argv0: %s\\n", argc, argv[0]);
-    return 0;
-}
-`;
-
-(async () => {
-    const compiled = await transformToBinary(Buffer.from(code, "utf-8"));
-    console.log("result", compiled);
-
-    if (compiled.success) {
-        await writeFile("/tmp/testedCompile", compiled.binary);
-        await chmod("/tmp/testedCompile", 0o111)
-    } else {
-        console.log(compiled.stdErr.toString("utf-8"));
-    }
-})()
- */

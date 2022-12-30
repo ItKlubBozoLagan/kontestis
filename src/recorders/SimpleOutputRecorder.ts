@@ -13,8 +13,6 @@ export type OutputRecord = {
 
 export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, input: Buffer) => {
 
-  //  console.log("Recording output: !")
-
     process.stdin.write(input);
     process.stdin.end();
 
@@ -23,7 +21,6 @@ export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, inpu
        const stdOut: Buffer[] = [];
 
        process.stderr.on("data", data => {
-           //console.log("Data: " + data);
            if(Buffer.isBuffer(data))
                stdErr.push(data);
            if(typeof data === "string")
@@ -31,7 +28,6 @@ export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, inpu
        });
 
        process.stdout.on("data", data => {
-        //   console.log("Out: " + data);
            if(Buffer.isBuffer(data))
                stdOut.push(data);
            if(typeof data === "string")
@@ -39,7 +35,6 @@ export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, inpu
        });
 
        process.on("close", (code) => {
-       //    console.log("Closed: " + code);
           if(code && code !== 0)
               return resolve({
                   success: false,

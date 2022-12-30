@@ -1,6 +1,6 @@
 import {CheckerFunction} from "../evaluators/SimpleCheckerEvaluator";
 import { Buffer } from "buffer";
-import {randomBytes, randomInt} from "crypto";
+import {randomInt} from "crypto";
 import {recordSimpleOutput} from "../recorders/SimpleOutputRecorder";
 import {runPython} from "../runners/PythonRunner";
 import {runBinary} from "../runners/BinaryRunner";

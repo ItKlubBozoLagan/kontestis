@@ -39,13 +39,9 @@ const plainTextEvaluator = "c2lkID0gaW50KGlucHV0KCkpCnRlc3RfaW4sIHRlc3Rfb3V0LCB1
 app.use(json());
 
 app.post("/", async (req, res) => {
-
-   // console.log(req.body);
-
     if(!typeCheck.Check(req.body)) return res.status(400).send("Bad request!");
 
     const submission: Static<typeof schema> & { evaluator?: string } = req.body;
-
     if(submission.language === Language.cpp) {
         const compileResult = await transformToBinary(Buffer.from(submission.code, 'base64'));
         if(!compileResult.success) return res.status(200).send("Compilation error!");
