@@ -11,6 +11,6 @@ export const runBinary = async (binary: Buffer) => {
     await chmod(`/tmp/${fName}`, 0o111)
     return spawn(`/tmp/${fName}`, {
         shell: true,
-        timeout: 5000
+        timeout: 10000
     });
 }

@@ -1,4 +1,4 @@
-import {json, Request, Response} from "express";
+import {json} from "express";
 import {Static, Type} from "@sinclair/typebox";
 import {TypeCompiler} from "@sinclair/typebox/compiler";
 
@@ -9,6 +9,7 @@ import {runBinary} from "./runners/BinaryRunner";
 import {getSimplePythonCheckerFunction} from "./checkers/SimpleChecker";
 import {transformToBinary} from "./transformers/CPPCompiledTransformer";
 import {runPython} from "./runners/PythonRunner";
+import {recordOutputWithMemory} from "./recorders/RecordOutputWithMemory";
 
 const app = Express();
 
@@ -30,8 +31,6 @@ const schema = Type.Object({
     }))
 });
 
-
-
 const typeCheck = TypeCompiler.Compile(schema);
 
 const plainTextEvaluator = "c2lkID0gaW50KGlucHV0KCkpCnRlc3RfaW4sIHRlc3Rfb3V0LCB1c2VyX291dCA9IGlucHV0KCkuc3BsaXQoZiI9PXtzaWR9PT0iKQpwcmludCgiQUMiIGlmIHRlc3Rfb3V0LnN0cmlwKCkgPT0gdXNlcl9vdXQuc3RyaXAoKSBlbHNlICJXQSIpCg==";
@@ -46,8 +45,8 @@ app.post("/", async (req, res) => {
         const compileResult = await transformToBinary(Buffer.from(submission.code, 'base64'));
         if(!compileResult.success) return res.status(200).send("Compilation error!");
         return res.status(200).json(
-            await evaluateSimpleChecker(async (b) => recordSimpleOutput(
-                    await runBinary(compileResult.binary), b
+            await evaluateSimpleChecker(async (b) => recordOutputWithMemory(
+                    await runBinary(compileResult.binary), b, recordSimpleOutput
                 ), submission.testcases, getSimplePythonCheckerFunction(Buffer.from(submission.evaluator ?? plainTextEvaluator, 'base64'))
                 , submission.time_limit)
         );
@@ -55,8 +54,8 @@ app.post("/", async (req, res) => {
 
     if(submission.language === Language.python) {
         return res.status(200).json(
-            await evaluateSimpleChecker(async (b) => recordSimpleOutput(
-                    await runPython(Buffer.from(submission.code, 'base64')), b
+            await evaluateSimpleChecker(async (b) => recordOutputWithMemory(
+                    await runPython(Buffer.from(submission.code, 'base64')), b, recordSimpleOutput
                 ), submission.testcases, getSimplePythonCheckerFunction(Buffer.from(submission.evaluator ?? plainTextEvaluator, 'base64'))
                 , submission.time_limit)
         );

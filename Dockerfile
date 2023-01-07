@@ -3,13 +3,10 @@ FROM node:16
 WORKDIR /usr/src/app
 
 RUN apt install gcc
-RUN apt install python
+RUN apt install python3
 
 
-COPY tsconfig.json .
-COPY package.json .
-COPY src .
+COPY . .
 
 RUN yarn install
-
 CMD ["yarn", "start"]

@@ -10,8 +10,9 @@ export type OutputRecord = {
     stdErr: Buffer
 };
 
+export type OutputRecorderFunction = (process: ChildProcessWithoutNullStreams, input: Buffer) => Promise<OutputRecord>
 
-export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, input: Buffer) => {
+export const recordSimpleOutput: OutputRecorderFunction = (process: ChildProcessWithoutNullStreams, input: Buffer) => {
 
     process.stdin.write(input);
     process.stdin.end();
@@ -19,6 +20,18 @@ export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, inpu
     return new Promise<OutputRecord>((resolve) => {
        const stdErr: Buffer[] = [];
        const stdOut: Buffer[] = [];
+       let closed = false;
+
+       // Will force terminate the program after we are sure that the time limit has passed.
+       setTimeout(() => {
+           if(closed) return;
+           closed = true;
+           process.kill();
+           resolve({
+               success: true,
+               output: Buffer.concat(stdOut)
+           });
+       }, 6000);
 
        process.stderr.on("data", data => {
            if(Buffer.isBuffer(data))
@@ -35,16 +48,18 @@ export const recordSimpleOutput = (process: ChildProcessWithoutNullStreams, inpu
        });
 
        process.on("close", (code) => {
-          if(code && code !== 0)
+           if(closed) return;
+           closed = true;
+           if(code && code !== 0)
               return resolve({
                   success: false,
                   exitCode: code,
                   stdErr: Buffer.concat(stdErr)
               });
-          resolve({
+           resolve({
               success: true,
               output: Buffer.concat(stdOut)
-          });
+           });
        });
     });
 };

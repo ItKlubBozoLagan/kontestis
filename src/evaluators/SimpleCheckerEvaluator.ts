@@ -2,12 +2,14 @@ import {Testcase} from "../types/Testcase";
 import {Buffer} from "buffer";
 import {OutputRecord} from "../recorders/SimpleOutputRecorder";
 import {timeFunction} from "../recorders/TimeRecorder";
+import {MemoryRecord} from "../recorders/RecordOutputWithMemory";
 
 export type EvaluationResult = {
     testCaseId: number
 } & ({
-    verdict: "accepted" | "wrong_answer" | "time_limit_exceeded";
+    verdict: "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded";
     time: number
+    memory: number
 } | {
     verdict: "runtime_error",
     exitCode: number
@@ -19,7 +21,7 @@ export type EvaluationResult = {
     time: number
 });
 
-export type RunnerFunction = (testcaseInput: Buffer) => Promise<OutputRecord>;
+export type RunnerFunction = (testcaseInput: Buffer) => Promise<OutputRecord & MemoryRecord>;
 export type CheckerFunction = (testcaseInput: Buffer, testcaseOutput: Buffer, runnerOutput: Buffer) => Promise<OutputRecord>;
 
 export const evaluateSimpleChecker = async (runnerFunction: RunnerFunction, testcases: Testcase[], checkerFunction: CheckerFunction, timeLimit: number) => {
@@ -35,7 +37,7 @@ export const evaluateSimpleChecker = async (runnerFunction: RunnerFunction, test
         }
 
         if(result.timeMillis >= timeLimit) {
-            evaluated.push({ testCaseId: testcase.id, verdict: "time_limit_exceeded", time: result.timeMillis });
+            evaluated.push({ testCaseId: testcase.id, verdict: "time_limit_exceeded", time: result.timeMillis, memory: result.memory_usage_bytes });
             continue;
         }
 
@@ -51,18 +53,17 @@ export const evaluateSimpleChecker = async (runnerFunction: RunnerFunction, test
         const checkerResult = checkerRecord.output.toString('utf-8').trim().toLowerCase();
 
         if(checkerResult === "ac" || checkerResult == "accepted") {
-            evaluated.push({ testCaseId: testcase.id, verdict: "accepted", time: result.timeMillis });
+            evaluated.push({ testCaseId: testcase.id, verdict: "accepted", time: result.timeMillis, memory: result.memory_usage_bytes });
             continue;
         }
 
 
         if(checkerResult === "wa" || checkerResult == "wrong_answer") {
-            evaluated.push({ testCaseId: testcase.id, verdict: "wrong_answer", time: result.timeMillis });
+            evaluated.push({ testCaseId: testcase.id, verdict: "wrong_answer", time: result.timeMillis, memory: result.memory_usage_bytes });
             continue;
         }
 
         evaluated.push({ testCaseId: testcase.id, verdict: "custom", extraInfo: checkerResult, time: result.timeMillis });
-
     }
 
     return evaluated;

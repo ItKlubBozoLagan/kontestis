@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { randomBytes } from "crypto";
-import {chmod, readFile, writeFile} from "fs/promises";
+import {readFile} from "fs/promises";
 
 type CompileResult = {
     success: true,
