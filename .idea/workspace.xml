@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3de6cc68-d1b5-4aa6-bd6c-2cd47154e5cf" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/evaluators/SimpleCheckerEvaluator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/evaluators/SimpleCheckerEvaluator.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/recorders/MemoryRecorder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/recorders/MemoryRecorder.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/recorders/RecordOutputWithMemory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/recorders/RecordOutputWithMemory.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/recorders/TimeRecorder.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/recorders/TimeRecorder.ts" afterDir="false" />
     </list>
     <list id="181350d8-12ca-47e2-b3d0-f617cc3fe84d" name="Changes by antony" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -81,7 +74,7 @@
       <workItem from="1672391178423" duration="11673000" />
       <workItem from="1673004104066" duration="124000" />
       <workItem from="1673112951154" duration="14456000" />
-      <workItem from="1673217018184" duration="3105000" />
+      <workItem from="1673217018184" duration="3148000" />
     </task>
     <servers />
   </component>
