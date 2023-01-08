@@ -29,21 +29,23 @@ export const evaluateSimpleChecker = async (runnerFunction: RunnerFunction, test
     const evaluated: EvaluationResult[] = [];
 
     for(const testcase of testcases) {
-        const result = await timeFunction(async () => await runnerFunction(Buffer.from(testcase.in, 'utf-8')));
+        const { timeMillis, value: result } = await timeFunction(async () => await runnerFunction(Buffer.from(testcase.in, 'utf-8')));
 
         if(!result.success) {
             evaluated.push({ testCaseId: testcase.id, verdict: "runtime_error", exitCode: result.exitCode });
             continue;
         }
 
-        if(result.timeMillis >= timeLimit) {
-            evaluated.push({ testCaseId: testcase.id, verdict: "time_limit_exceeded", time: result.timeMillis, memory: result.memory_usage_bytes });
+        if(timeMillis >= timeLimit) {
+            evaluated.push({ testCaseId: testcase.id, verdict: "time_limit_exceeded", time: timeMillis, memory: result.memory_usage_bytes });
             continue;
         }
 
-        const checkerRecord = await checkerFunction(Buffer.from(testcase.in, 'utf-8'),
+        const checkerRecord = await checkerFunction(
+            Buffer.from(testcase.in, 'utf-8'),
             Buffer.from(testcase.out, 'utf-8'),
-            result.output);
+            result.output
+        );
 
         if(!checkerRecord.success) {
             evaluated.push({ testCaseId: testcase.id, verdict: "evaluation_error" });
@@ -53,17 +55,17 @@ export const evaluateSimpleChecker = async (runnerFunction: RunnerFunction, test
         const checkerResult = checkerRecord.output.toString('utf-8').trim().toLowerCase();
 
         if(checkerResult === "ac" || checkerResult == "accepted") {
-            evaluated.push({ testCaseId: testcase.id, verdict: "accepted", time: result.timeMillis, memory: result.memory_usage_bytes });
+            evaluated.push({ testCaseId: testcase.id, verdict: "accepted", time: timeMillis, memory: result.memory_usage_bytes });
             continue;
         }
 
 
         if(checkerResult === "wa" || checkerResult == "wrong_answer") {
-            evaluated.push({ testCaseId: testcase.id, verdict: "wrong_answer", time: result.timeMillis, memory: result.memory_usage_bytes });
+            evaluated.push({ testCaseId: testcase.id, verdict: "wrong_answer", time: timeMillis, memory: result.memory_usage_bytes });
             continue;
         }
 
-        evaluated.push({ testCaseId: testcase.id, verdict: "custom", extraInfo: checkerResult, time: result.timeMillis });
+        evaluated.push({ testCaseId: testcase.id, verdict: "custom", extraInfo: checkerResult, time: timeMillis });
     }
 
     return evaluated;

@@ -1,12 +1,14 @@
-FROM node:16
+FROM node:16-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-RUN apt install gcc
-RUN apt install python3
+RUN apk add python3 gcc
 
-
-COPY . .
+COPY package.json .
+COPY tsconfig.json .
 
 RUN yarn install
+
+COPY src ./src
+
 CMD ["yarn", "start"]

@@ -1,13 +1,17 @@
-export type TimedRecord = {
-    timeMillis: number
+import { performance } from "perf_hooks";
+
+export type TimedRecord<T> = {
+    timeMillis: number,
+    value: T
 };
 
-export const timeFunction = async <T>(f: () => Promise<T>): Promise<T & TimedRecord> => {
-    const startTime = Date.now();
+export const timeFunction = async <T>(f: () => Promise<T>): Promise<TimedRecord<T>> => {
+    const startTime = performance.now();
     const c: T = await f();
-    const time = {
-        timeMillis: Date.now() - startTime
+
+    return {
+        timeMillis: performance.now() - startTime,
+        value: c
     };
-    return {...c, ...time};
 }
 

@@ -1,28 +1,29 @@
 import pidusage from "pidusage";
 
-const recordMemoryPeriodically = (saveFunction: (value: number) => void, closeCheckFunction: () => boolean, processId: number) => {
-    setTimeout(async () => {
-        if(closeCheckFunction()) return;
+const recordMemoryPeriodically = (processId: number, saveFunction: (value: number) => void) => {
+    const intervalId = setInterval(async () => {
         try {
-            const usage = await pidusage(processId);
-            saveFunction(usage.memory / 10000000);
-        } catch (e) {
-        }
-        recordMemoryPeriodically(saveFunction, closeCheckFunction, processId);
+            const { memory } = await pidusage(processId);
+            saveFunction(memory / 1000**2);
+        } catch {}
     }, 1);
+
+    return () => clearInterval(intervalId)
 }
 
-export const recordMemory: (pid: number) => () => number = (processId: number) => {
+export const recordMemory: (pid: number) => () => number =
+    (processId: number) => {
+        let maxMemory = 0;
 
-    let maxMemory = 0;
-    let completed = false;
+        const stop = recordMemoryPeriodically(
+            processId,
+            (v) => {
+                maxMemory = Math.max(maxMemory, v)
+            }
+        );
 
-    recordMemoryPeriodically((v) => {
-        maxMemory = Math.max(maxMemory, v)
-    }, () => completed, processId);
-
-    return () => {
-        completed = true;
-        return maxMemory;
+        return () => {
+            stop();
+            return maxMemory;
+        }
     }
-}
