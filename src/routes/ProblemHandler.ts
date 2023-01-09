@@ -52,7 +52,7 @@ const problemSchema = Type.Object({
  *
  * @apiBody {String} title Title of the problem.
  * @apiBody {String} description Description of the problem.
- * @apiBody {String} evaluation_variant {string="plain","script","interactive"} Evaluation variant.
+ * @apiBody {String="plain","script","interactive"} evaluation_variant Evaluation variant.
  * @apiBody {String} [evaluation_script] If the variant is not plain a script needs to be provided.
  * @apiBody {Number} time_limit_millis Time limit in milliseconds.
  * @apiBody {Number} memory_limit_megabytes The memory limit in megabytes.
@@ -92,6 +92,20 @@ ProblemHandler.post("/", useAuth, useValidation(problemSchema), async (req: Auth
 
 });
 
+/**
+ * @api {delete} /api/problem/:problem_id DeleteProblem
+ * @apiName DeleteProblem
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} problem_id Id of the problem that will be deleted
+ *
+ * @apiSuccess {Object} problem Deleted problem.
+ *
+ * @apiUse ExampleProblem
+ */
+
 ProblemHandler.delete("/:problem_id", useAuth, async (req: AuthenticatedRequest, res) => {
     if(!req.user) return res.status(403).send("Access denied!");
     const problem = await DataBase.selectOneFrom("problems", "*", { id: req.params.problem_id });
@@ -122,6 +136,21 @@ const clusterSchema = Type.Object({
     awarded_score: Type.Number({minimum: 1, maximum: 1000})
 });
 
+/**
+ * @api {post} /api/problem/cluster/:problem_id CreateCluster
+ * @apiName CreateCluster
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} problem_id Id of the problem.
+ *
+ * @apiBody {Number} awarded_score The awared scrore for massing the cluster.
+ *
+ * @apiSuccess {Object} cluster Create cluster.
+ *
+ */
+
 ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof clusterSchema>, res) => {
 
     if(!req.user) return res.status(403).send("Access denied!");
@@ -141,6 +170,20 @@ ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema
 
     return res.status(200).json(cluster);
 });
+
+
+/**
+ * @api {delete} /api/problem/cluster/:cluster_id DeleteCluster
+ * @apiName DeleteCluster
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} cluster_id Id of the cluster that will be deleted
+ *
+ * @apiSuccess {Object} cluster Deleted cluster.
+ *
+ */
 
 ProblemHandler.delete("/cluster/:cluster_id", useAuth, async (req: AuthenticatedRequest, res) => {
 
@@ -168,6 +211,22 @@ const testcaseSchema = Type.Object({
     correctOutput: Type.String({default: ""})
 });
 
+/**
+ * @api {post} /api/problem/testcase/:cluster_id CreateTestcase
+ * @apiName CreateTestcase
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} cluster_id Id of the cluster.
+ *
+ * @apiBody {String} input Testcase input.
+ * @apiBody {String} correctOutput Testcase correct output, empty string if not needed.
+ *
+ * @apiSuccess {Object} testcase Created testcase.
+ *
+ */
+
 ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof testcaseSchema>, res) => {
 
     if(!req.user) return res.status(403).send("Access denied!");
@@ -192,6 +251,21 @@ ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSche
     return res.status(200).json(testcase);
 
 });
+
+
+/**
+ * @api {delete} /api/problem/testcase/:testcase_id DeleteTestcase
+ * @apiName DeleteTestcase
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} testcase_id Id of the testcase.
+ *
+ *
+ * @apiSuccess {Object} testcase Deleted testcase.
+ *
+ */
 
 ProblemHandler.delete("/testcase/:testcase_id", useAuth, async (req: AuthenticatedRequest, res) => {
 
@@ -218,6 +292,21 @@ const getSchema = Type.Object({
     contest_id: Type.String()
 })
 
+
+/**
+ * @api {get} /api/problem GetProblems
+ * @apiName GetProblems
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiQuery {String} contest_id If of the contest to view problems.
+ *
+ * @apiSuccess {Object} problems Contest problems.
+ *
+ * @apiUse ExampleProblem
+ */
+
 ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true }), async (req: AuthenticatedRequest & ValidatedBody<typeof getSchema>, res) => {
 
     const problems = await DataBase.selectFrom("problems", "*", { contest_id: req.query.contest_id });
@@ -226,6 +315,21 @@ ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true 
 
     return res.status(200).json(problems);
 });
+
+/**
+ * @api {get} /api/problem/:problem_id GetProblem
+ * @apiName GetProblem
+ * @apiGroup Problem
+ *
+ * @apiParam {String} problem_id Id of the problem.
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiSuccess {Object} problem Selected problem.
+ *
+ * @apiUse ExampleProblem
+ *
+ */
 
 ProblemHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
@@ -239,6 +343,19 @@ ProblemHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedReq
     return res.status(200).json(problem);
 });
 
+/**
+ * @api {get} /api/cluster/:problem_id GetClusters
+ * @apiName GetClusters
+ * @apiGroup Problem
+ *
+ * @apiParam {String} problem_id Id of the problem.
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiSuccess {Object} clusters Problem clusters.
+ *
+ */
+
 ProblemHandler.get("/cluster/:problem_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
     const problem = await DataBase.selectOneFrom("problems", "*", { id: req.params.problem_id });
@@ -248,6 +365,19 @@ ProblemHandler.get("/cluster/:problem_id", useOptionalAuth, async (req: Authenti
     const clusters = await DataBase.selectFrom("clusters", "*", { problem_id: problem.id });
     return res.status(200).json(clusters);
 });
+
+/**
+ * @api {get} /api/testcase/:cluster_id GetTestcases
+ * @apiName GetTestcases
+ * @apiGroup Problem
+ *
+ * @apiParam {String} cluster_id Id of the cluster.
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiSuccess {Object} testcases Cluster testcases.
+ *
+ */
 
 ProblemHandler.get("/testcase/:cluster_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
