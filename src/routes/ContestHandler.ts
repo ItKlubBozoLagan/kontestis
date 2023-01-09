@@ -6,6 +6,7 @@ import {generateSnowflake} from "../lib/snowflake";
 import {DataBase} from "../data/Database";
 import {isAllowedToModifyContest, isAllowedToViewContest} from "../utils/utills";
 import {AllowedUser} from "../types/AllowedUser";
+import {Contest} from "../types/Contest";
 
 
 const ContestHandler = Router();
@@ -25,8 +26,9 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
     const date = new Date(req.body.start_time);
     if(!date || date < new Date()) return res.status(400).send("Invalid date!");
 
-    const contest = {
+    const contest: Contest = {
         id: generateSnowflake(),
+        name: req.body.name,
         admin_id: user.id,
         start_time: date,
         duration_seconds: req.body.duration_seconds,
