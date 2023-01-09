@@ -26,6 +26,22 @@ const submissionSchema = Type.Object({
     code: Type.String({ maxLength: 64000 })
 });
 
+/**
+ * @api {post} /api/submission/:problem_id CreateSubmission
+ * @apiName CreateSubmission
+ * @apiGroup Submission
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} problem_id Id of the problem.
+ *
+ * @apiBody {String="c","cpp","python"} Programing language.
+ * @apiBody {String} code Base64 encoded code.
+ *
+ * @apiSuccess {Object} submission Created submission.
+ *
+ */
+
 SubmissionHandler.post("/:problem_id", useAuth, useValidation(submissionSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof submissionSchema>, res) => {
 
     if(!req.user) return res.status(403).send("Access denied!");
@@ -47,6 +63,18 @@ SubmissionHandler.post("/:problem_id", useAuth, useValidation(submissionSchema),
 
     return res.status(200).json(submission);
 });
+
+/**
+ * @api {get} /api/submission/:problem_id GetSubmissions
+ * @apiName GetSubmissions
+ * @apiGroup Submission
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} problem_id Id of the problem.
+ *
+ * @apiSuccess {Object} submissions List of all problem submissions the user has access to!
+ */
 
 SubmissionHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
@@ -72,6 +100,18 @@ SubmissionHandler.get("/:problem_id", useOptionalAuth, async (req: Authenticated
 
 });
 
+/**
+ * @api {get} /api/submission/submission/:submission_id GetSubmission
+ * @apiName GetSubmission
+ * @apiGroup Submission
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} submission_id Id of the submission.
+ *
+ * @apiSuccess {Object} submission Selected submission.
+ */
+
 SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
     const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
@@ -80,6 +120,19 @@ SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req:
 
     return res.status(200).json(submission);
 });
+
+
+/**
+ * @api {get} /api/submission/cluster/:submission_id GetSubmission
+ * @apiName GetSubmission
+ * @apiGroup Submission
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} submission_id Id of the submission.
+ *
+ * @apiSuccess {Object} clusters Submission cluster results.
+ */
 
 SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
@@ -90,6 +143,19 @@ SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: Au
     const clusters = await DataBase.selectFrom("cluster_submissions", "*", { submission_id: submission.id });
     return res.status(200).json(clusters);
 });
+
+/**
+ * @api {get} /api/testcase/cluster/:submission_id GetSubmission
+ * @apiName GetSubmission
+ * @apiGroup Submission
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiParam {String} submission_id Id of the submission.
+ *
+ * @apiSuccess {Object} testcases Submission testcases.
+ */
+
 
 SubmissionHandler.get("/testcase/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
