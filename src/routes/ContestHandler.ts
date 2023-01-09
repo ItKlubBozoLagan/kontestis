@@ -8,6 +8,20 @@ import {isAllowedToModifyContest, isAllowedToViewContest} from "../utils/utills"
 import {AllowedUser} from "../types/AllowedUser";
 import {Contest} from "../types/Contest";
 
+/**
+ * @apiDefine ExampleContest
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "id": "135343706118033408",
+ *         "admin_id": "135335143509331968",
+ *         "duration_seconds": 3600,
+ *         "name": "example-contest",
+ *         "public": false,
+ *         "start_time": "2023-01-09T14:09:43.889Z"
+ *     }
+ */
 
 const ContestHandler = Router();
 
@@ -17,6 +31,28 @@ const contestSchema = Type.Object({
     duration_seconds: Type.Number({ minimum: 10 * 60, maximum: 7 * 24 * 60 * 60 }),
     public: Type.Boolean()
 });
+
+/**
+ * @api {post} /api/contest CreateContest
+ * @apiName CreateContest
+ * @apiGroup Contest
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiBody {String} name Name of the contest.
+ * @apiBody {Number} start_time UTC Time stamp.
+ * @apiBody {Number} duration_seconds Contest duration in seconds.
+ * @apiBody {Boolean} public Controls is the contest open to everyone.
+ *
+ * @apiSuccess {Object} contest Created contest.
+ *
+ * @apiUse ExampleContest
+ *
+ * @apiError InvalidData The start date is not valid or has already past.
+ *
+ * @apiErrorExample Error-Response:
+ *     400 Bad request
+ */
 
 ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: AuthenticatedRequest, res) => {
 
@@ -40,6 +76,19 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
     return res.status(200).json(contest);
 });
 
+/**
+ * @api {get} /api/contest GetContests
+ * @apiName GetContests
+ * @apiGroup Contest
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiSuccess {Object} contests List of all available contests, includes private contests only if authorisation is provided.
+ *
+ * @apiUse ExampleContest
+ *
+ */
+
 ContestHandler.get("/", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
     return res.status(200).json((await DataBase.selectFrom("contests", "*"))
         .filter(c => isAllowedToViewContest(req.user ? req.user.id : undefined, c.id)));
@@ -48,6 +97,27 @@ ContestHandler.get("/", useOptionalAuth, async (req: AuthenticatedRequest, res) 
 const allowUserSchema = Type.Object({
    user_id: Type.Number()
 });
+
+/**
+ * @api {post} /api/contest/allow/:contest_id AllowUser
+ * @apiName AllowUser
+ * @apiGroup Contest
+ *
+ * @apiUse RequiredAuth
+ * @apiParam {String} contest_id Id of the contest.
+ *
+ * @apiBody {String} user_id Id of the user that should be allowed, requires modify permissions.
+ *
+ * @apiSuccess {Object} entry The created allow entry!.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      "id": "135493206069481472",
+ *      "user_id": "135335143509331968",
+ *      "contest_id": "135493060095119360"
+ *     }
+ */
 
 ContestHandler.post("/allow/:contest_id", useAuth, useValidation(allowUserSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof allowUserSchema>, res) => {
 
@@ -77,6 +147,27 @@ ContestHandler.post("/allow/:contest_id", useAuth, useValidation(allowUserSchema
     return res.status(200).json(allowedUser);
 });
 
+
+/**
+ * @api {get} /api/contest/allow/:contest_id GetAllowUser
+ * @apiName GetAllowUser
+ * @apiGroup Contest
+ *
+ * @apiUse RequiredAuth
+ * @apiParam {String} contest_id Id of the contest.
+ *
+ *
+ * @apiSuccess {Object} entrys All allowed user entries for the contest, requires modify permission.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *      "id": "135493206069481472",
+ *      "user_id": "135335143509331968",
+ *      "contest_id": "135493060095119360"
+ *     }
+ */
+
 ContestHandler.get("/allow/:contest_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
     let contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.contest_id });
     if(!contest) return res.status(404).send("Not found!");
@@ -86,6 +177,21 @@ ContestHandler.get("/allow/:contest_id", useOptionalAuth, async (req: Authentica
     const allowedUsers = await DataBase.selectFrom("allowed_users", ["user_id"], { contest_id: contest.id });
     return res.status(200).json(allowedUsers);
 });
+
+/**
+ * @api {get} /api/contest/:contest_id GetContest
+ * @apiName GetContest
+ * @apiGroup Contest
+ *
+ * @apiParam {String} contest_id Id of the contest.
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiSuccess {Object} contests Return the contest information, must have view permissions.
+ *
+ * @apiUse ExampleContest
+ *
+ */
 
 ContestHandler.get("/:contest_id", useOptionalAuth, async (req: AuthenticatedRequest , res) => {
 

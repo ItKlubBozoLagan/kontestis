@@ -12,6 +12,22 @@ import {Testcase} from "../types/Testcase";
 
 const ProblemHandler = Router();
 
+/**
+ * @apiDefine ExampleProblem
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "id": "135343706118033408",
+ *         "contest_id": "135335143509331968",
+ *         "description": "Example!",
+ *         "title": "Example Problem",
+ *         "evaluation_variant": "plain",
+ *         "time_limit_millies": 1000,
+ *         "memory_limit_megabytes": 512
+ *     }
+ */
+
 enum EvaluationSchema {
     plain = "plain",
     script = "script",
@@ -26,6 +42,30 @@ const problemSchema = Type.Object({
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10000 }),
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 1024 })
 });
+
+/**
+ * @api {post} /api/problem CreateProblem
+ * @apiName CreateProblem
+ * @apiGroup Problem
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiBody {String} title Title of the problem.
+ * @apiBody {String} description Description of the problem.
+ * @apiBody {String} evaluation_variant {string="plain","script","interactive"} Evaluation variant.
+ * @apiBody {String} [evaluation_script] If the variant is not plain a script needs to be provided.
+ * @apiBody {Number} time_limit_millis Time limit in milliseconds.
+ * @apiBody {Number} memory_limit_megabytes The memory limit in megabytes.
+ *
+ * @apiSuccess {Object} problem Created problem.
+ *
+ * @apiUse ExampleProblem
+ *
+ * @apiError MissingScript If the evaluation script is needed but its missing.
+ *
+ * @apiErrorExample Error-Response:
+ *     400 Bad request
+ */
 
 ProblemHandler.post("/", useAuth, useValidation(problemSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof problemSchema>, res) => {
 
