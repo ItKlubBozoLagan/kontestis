@@ -35,7 +35,7 @@ const submissionSchema = Type.Object({
  *
  * @apiParam {String} problem_id Id of the problem.
  *
- * @apiBody {String="c","cpp","python"} Programing language.
+ * @apiBody {String="c","cpp","python"} language Programing language.
  * @apiBody {String} code Base64 encoded code.
  *
  * @apiSuccess {Object} submission Created submission.
