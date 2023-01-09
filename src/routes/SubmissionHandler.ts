@@ -123,8 +123,8 @@ SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req:
 
 
 /**
- * @api {get} /api/submission/cluster/:submission_id GetSubmission
- * @apiName GetSubmission
+ * @api {get} /api/submission/cluster/:submission_id GetSubmissionClusters
+ * @apiName GetSubmissionClusters
  * @apiGroup Submission
  *
  * @apiUse RequiredAuth
@@ -145,8 +145,8 @@ SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: Au
 });
 
 /**
- * @api {get} /api/testcase/cluster/:submission_id GetSubmission
- * @apiName GetSubmission
+ * @api {get} /api/testcase/cluster/:submission_id GetSubmissionTestcases
+ * @apiName GetSubmissionTestcases
  * @apiGroup Submission
  *
  * @apiUse RequiredAuth
