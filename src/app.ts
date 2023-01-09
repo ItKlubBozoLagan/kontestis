@@ -3,12 +3,21 @@ import Express, { json } from "express";
 
 import { DataBase, initDatabase } from "./data/Database";
 import { Logger } from "./lib/logger";
+import AuthHandler from "./routes/AuthHandler";
+import ContestHandler from "./routes/ContestHandler";
+import ProblemHandler from "./routes/ProblemHandler";
+import SubmissionHandler from "./routes/SubmissionHandler";
 
 dotenvConfig();
 
 const app = Express();
 
 app.use(json());
+
+app.use("/api/auth", AuthHandler);
+app.use("/api/contest", ContestHandler);
+app.use("/api/problem", ProblemHandler);
+app.use("/api/submission", SubmissionHandler);
 
 app.use((req, res, next) => {
     Logger.info(req.method + " ON " + req.url);

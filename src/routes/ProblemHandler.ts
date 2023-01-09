@@ -227,3 +227,5 @@ ProblemHandler.get("/testcase/:cluster_id", useOptionalAuth, async (req: Authent
 
     return res.status(404).send("Not found!");
 });
+
+export default ProblemHandler;

@@ -2,6 +2,8 @@ import {Snowflake} from "../lib/snowflake";
 import {DataBase} from "../data/Database";
 
 
+// TODO: Remove all this, do middlewares
+
 export const isAllowedToViewSubmission = async (userId: Snowflake | undefined, submissionId: Snowflake) => {
 
     const submission = await DataBase.selectOneFrom("submissions", ["problem_id", "user_id"], { id: submissionId });
