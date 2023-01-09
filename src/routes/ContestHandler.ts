@@ -36,7 +36,11 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
     await DataBase.insertInto("contests", contest);
 
     return res.status(200).json(contest);
+});
 
+ContestHandler.get("/", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
+    return res.status(200).json((await DataBase.selectFrom("contests", "*"))
+        .filter(c => isAllowedToViewContest(req.user ? req.user.id : undefined, c.id)));
 });
 
 const allowUserSchema = Type.Object({

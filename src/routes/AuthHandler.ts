@@ -30,8 +30,7 @@ AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async
 
     const hashPassword = await hash(req.body.password, 10);
 
-    const newUser: User = { id: generateSnowflake(), email: req.body.email, username: req.body.username, password: hashPassword,  permissions: 0};
-
+    const newUser = { id: generateSnowflake(), email: req.body.email, username: req.body.username, password: hashPassword,  permissions: 0 };
     await DataBase.insertInto("users", newUser);
     
     return res.status(200).send(newUser);
