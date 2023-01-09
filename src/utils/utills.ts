@@ -42,7 +42,7 @@ export const isAllowedToModifyContest = async (userId: Snowflake | undefined, co
     if(!contest) return false;
     if(!userId) return false;
 
-    if(contest.admin_id == userId) return true;
+    if(contest.admin_id.toString() === userId.toString()) return true;
 
     const user = await DataBase.selectOneFrom("users", "*", { id: userId });
     if(!user) return false;
