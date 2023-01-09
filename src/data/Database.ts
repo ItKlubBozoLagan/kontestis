@@ -72,6 +72,8 @@ export const initDatabase = async () => {
         memory_limit_megabytes: { type: "int" }
     }, "id");
 
+    await DataBase.createIndex("problems", "problems_by_contest_id", "contest_id");
+
     await DataBase.createTable("clusters", true, {
         id: { type: "bigint" },
         problem_id: { type: "bigint" },
