@@ -1,6 +1,9 @@
 import { config as dotenvConfig } from "dotenv";
 import Express, { json } from "express";
 
+// We must load .env first so the database has correct details.
+dotenvConfig();
+
 import { DataBase, initDatabase } from "./data/Database";
 import { Logger } from "./lib/logger";
 import AuthHandler from "./routes/AuthHandler";
@@ -8,7 +11,6 @@ import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
 
-dotenvConfig();
 
 const app = Express();
 
