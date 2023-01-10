@@ -28,6 +28,18 @@ const ProblemHandler = Router();
  *     }
  */
 
+/**
+ * @apiDefine ExampleCluster
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "id": "135343706118033408",
+ *         "problem_id": "135335143509331968",
+ *         "awarded_score": 20
+ *     }
+ */
+
 enum EvaluationSchema {
     plain = "plain",
     script = "script",
@@ -149,6 +161,8 @@ const clusterSchema = Type.Object({
  *
  * @apiSuccess {Object} cluster Create cluster.
  *
+ * @apiUse ExampleCluster
+ *
  */
 
 ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof clusterSchema>, res) => {
@@ -182,6 +196,8 @@ ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema
  * @apiParam {String} cluster_id Id of the cluster that will be deleted
  *
  * @apiSuccess {Object} cluster Deleted cluster.
+ *
+ * @apiUse ExampleCluster
  *
  */
 
@@ -353,6 +369,8 @@ ProblemHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedReq
  * @apiUse RequiredAuth
  *
  * @apiSuccess {Object} clusters Problem clusters.
+ *
+ * @apiUse ExampleCluster
  *
  */
 
