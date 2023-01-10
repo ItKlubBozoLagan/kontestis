@@ -21,6 +21,72 @@ enum EvaluationLanguage {
     py = "python"
 }
 
+/**
+ * @apiDefine ExampleSubmissionPending
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "id": "135343706118033408",
+ *         "user_id": 135335143509331968,
+ *         "problem_id": "135335143509331968",
+ *         "language": "cpp",
+ *         "code": "RXhhbXBsZSB0ZXh0IQ==",
+ *         "completed": false
+ *     }
+ */
+
+/**
+ * @apiDefine ExampleSubmission
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "id": "135343706118033408",
+ *         "user_id": 135335143509331968,
+ *         "problem_id": "135335143509331968",
+ *         "language": "cpp",
+ *         "code": "RXhhbXBsZSB0ZXh0IQ==",
+ *         "completed": true,
+ *         "verdict": "accepted",
+ *         "awardedScore": 110,
+ *         "time_used_millis": 523,
+ *         "memory_used_megabytes": 2.54
+ *     }
+ */
+
+/**
+ * @apiDefine ExampleSubmissionCluster
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [{
+ *         "id": "135343706118033408",
+ *         "submission_id": 135335143509331968,
+ *         "cluster_id": "135335143509331968",
+ *         "verdict": "accepted",
+ *         "awardedScore": 50,
+ *         "time_used_millis": 234,
+ *         "memory_used_megabytes": 1.94
+ *     }]
+ */
+
+/**
+ * @apiDefine ExampleSubmissionTestcase
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [{
+ *         "id": "135343706118033408",
+ *         "submission_id": 135335143509331968,
+ *         "testcase_id": "135335143509331968",
+ *         "verdict": "accepted",
+ *         "awardedScore": 50,
+ *         "time_used_millis": 123,
+ *         "memory_used_megabytes": 1.54
+ *     }]
+ */
+
 const submissionSchema = Type.Object({
     language: Type.Enum(EvaluationLanguage),
     code: Type.String({ maxLength: 64000 })
@@ -39,6 +105,8 @@ const submissionSchema = Type.Object({
  * @apiBody {String} code Base64 encoded code.
  *
  * @apiSuccess {Object} submission Created submission.
+ *
+ * @apiUse ExampleSubmissionPending
  *
  */
 
@@ -72,6 +140,8 @@ SubmissionHandler.post("/:problem_id", useAuth, useValidation(submissionSchema),
  * @apiUse RequiredAuth
  *
  * @apiParam {String} problem_id Id of the problem.
+ *
+ * @apiUse ExampleSubmission
  *
  * @apiSuccess {Object} submissions List of all problem submissions the user has access to!
  */
@@ -109,6 +179,8 @@ SubmissionHandler.get("/:problem_id", useOptionalAuth, async (req: Authenticated
  *
  * @apiParam {String} submission_id Id of the submission.
  *
+ * @apiUse ExampleSubmission
+ *
  * @apiSuccess {Object} submission Selected submission.
  */
 
@@ -132,6 +204,8 @@ SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req:
  * @apiParam {String} submission_id Id of the submission.
  *
  * @apiSuccess {Object} clusters Submission cluster results.
+ *
+ * @apiUse ExampleSubmissionCluster
  */
 
 SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
@@ -154,6 +228,8 @@ SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: Au
  * @apiParam {String} submission_id Id of the submission.
  *
  * @apiSuccess {Object} testcases Submission testcases.
+ *
+ * @apiUse ExampleSubmissionTestcase
  */
 
 
