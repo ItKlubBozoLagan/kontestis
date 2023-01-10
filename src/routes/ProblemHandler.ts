@@ -40,6 +40,19 @@ const ProblemHandler = Router();
  *     }
  */
 
+/**
+ * @apiDefine ExampleTestcase
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *         "id": "135343706118033408",
+ *         "cluster_id": "135335143509331968",
+ *         "input": "10 2",
+ *         "correctOutput": "20"
+ *     }
+ */
+
 enum EvaluationSchema {
     plain = "plain",
     script = "script",
@@ -241,6 +254,8 @@ const testcaseSchema = Type.Object({
  *
  * @apiSuccess {Object} testcase Created testcase.
  *
+ * @apiUse ExampleTestcase
+ *
  */
 
 ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof testcaseSchema>, res) => {
@@ -280,6 +295,8 @@ ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSche
  *
  *
  * @apiSuccess {Object} testcase Deleted testcase.
+ *
+ * @apiUse ExampleTestcase
  *
  */
 
@@ -394,6 +411,8 @@ ProblemHandler.get("/cluster/:problem_id", useOptionalAuth, async (req: Authenti
  * @apiUse RequiredAuth
  *
  * @apiSuccess {Object} testcases Cluster testcases.
+ *
+ * @apiUse ExampleTestcase
  *
  */
 
