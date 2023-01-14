@@ -1,0 +1,49 @@
+.logo-container{
+    background-color: rgb(209, 225, 232);    
+}
+
+.menu-container{
+    margin: 20px;
+    margin-top: 50px;
+    padding: 20px;
+    display: flex;
+    
+    justify-content: center;
+    flex-direction: row;
+    border: 2px solid black;
+    border-radius: 100px;
+}
+a{
+    text-decoration: none;
+    color: black;
+}
+.single-menu-item{
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 200%;
+    color: black;
+    border: none;
+    border-radius: 50px; 
+}
+
+.single-menu-item:hover{
+    background-color: rgb(134, 146, 156);
+    transition: 1s;
+}
+
+.form-container{
+    height: auto;
+    width: 30vw;
+    background-color: darkslateblue;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-items: left;
+    border: 3px solid rgb(72, 83, 231);
+}
+
+.login-item{
+    padding: 10px;
+
+}
