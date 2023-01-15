@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import '../components/styles.css';
 import Header from "../components/Header";
+import Menu from '../components/Menu';
 
 
 
 function Dashboard() {
-    const [User, setUser] = useState("-1")
+    const [user, setUser] = useState("")
     return (
         <div className="header">
             <Header/>
+            <Menu/>
+            {
+                user !== "" &&
+                <a href="/Link"></a>
+            }
         </div>
     );
   }

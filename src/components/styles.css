@@ -2,6 +2,11 @@
     background-color: rgb(209, 225, 232);    
 }
 
+.logo{
+    height: 100%;
+    width: auto;
+}
+
 .menu-container{
     margin: 20px;
     margin-top: 50px;
@@ -45,5 +50,6 @@ a{
 
 .login-item{
     padding: 10px;
+    width: 80%;
 
 }

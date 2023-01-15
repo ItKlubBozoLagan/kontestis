@@ -1,8 +1,6 @@
 import axios from "axios";
 
-
-
-
 export default axios.create({
-    baseURL: 'http'
+    baseURL: 'https://kontestis.ac/api'
 });
+

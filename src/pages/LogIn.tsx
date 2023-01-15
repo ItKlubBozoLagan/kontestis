@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Header from '../components/Header';
 
-const logIn = () => {
+
+
+const Login = () => {
     const userRef = useRef<HTMLInputElement>(null);
     const errRef = useRef<HTMLInputElement>(null);
 
@@ -57,4 +59,4 @@ const logIn = () => {
     )
 }
 
-export default logIn
+export default Login
