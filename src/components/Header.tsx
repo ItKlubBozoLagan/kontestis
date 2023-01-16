@@ -1,6 +1,5 @@
 import React from 'react'
-import Menu from './Menu';
-import logo from '../resources/evaluatorLogo.png'
+import logo from '/evaluatorLogo.png'
 import "./styles.css";
 
 const Header: React.FC = () => {

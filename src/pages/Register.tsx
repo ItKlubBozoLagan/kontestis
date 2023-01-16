@@ -3,7 +3,6 @@ import Header from '../components/Header';
 
 const Register = () => {
     const userRef = useRef<HTMLInputElement>(null);
-    const errRef = useRef<HTMLInputElement>(null);
 
     const [email, setEmail] = useState<string>('');
     const [username, setUsername] = useState<string>('')

@@ -5,7 +5,6 @@ import Header from '../components/Header';
 
 const Login = () => {
     const userRef = useRef<HTMLInputElement>(null);
-    const errRef = useRef<HTMLInputElement>(null);
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
