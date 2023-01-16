@@ -1,17 +1,16 @@
 import { FC } from "react";
-import "./styles.css";
 
 type Props = {
     item: string,
 }
 
-const singleMenuItem: FC<Props> = ({item}) => {
+const MenuEntry: FC<Props> = ({item}) => {
     const link: string = "./"+item;
     return (
-        <div className='single-menu-item'>
+        <div tw={"no-underline font-bold text-black hover:(text-gray-600 underline) transition-all"}>
             <a href={link}>{item}</a>
         </div>
     )
 }
 
-export default singleMenuItem
+export default MenuEntry

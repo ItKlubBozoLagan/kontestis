@@ -1,12 +1,11 @@
 import logo from '/evaluatorLogo.png'
-import "./styles.css";
 import { FC } from 'react';
 
 const Header: FC = () => {
     return (
         <div>
-            <div className="logo-container">
-                <img src={logo} alt="logo" className='logo' />
+            <div tw={"bg-slate-200 flex justify-center items-center"}>
+                <img src={logo} alt="logo" />
             </div>
         </div>
     )

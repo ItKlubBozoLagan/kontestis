@@ -28,25 +28,25 @@ const Login: FC = () => {
     return (
         <div>
             <Header/>
-            <div className='form-container'>
-                <form className='login-form'>
-                    <label htmlFor="email" className='login-item'>Email:</label>
-                    <input type="text" ref={userRef} id='email' className='login-item' autoComplete='off' value={email} required
+            <div>
+                <form tw={"flex flex-col gap-2 w-[256px]"}>
+                    <label htmlFor="email">Email:</label>
+                    <input type="text" ref={userRef} id='email' autoComplete='off' value={email} required
                         onChange={(e) => {
                             e.preventDefault();
                             setEmail(e.target.value);
                         }}
                     />
 
-                    <label htmlFor="password" className='login-item'>Password:</label>
-                    <input type='password' id='password' className='login-item' value={password} required
+                    <label htmlFor="password">Password:</label>
+                    <input type='password' id='password' value={password} required
                         onChange={(e) => {
                             e.preventDefault();
                             setPassword(e.target.value);
                         }}
                     />
 
-                    <button className='login-item' onClick={(e) => handleSubmit(e)}>Log In</button>
+                    <button onClick={(e) => handleSubmit(e)}>Log In</button>
 
                 </form>
                 {
