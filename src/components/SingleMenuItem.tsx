@@ -1,11 +1,11 @@
-import React from 'react'
+import { FC } from "react";
 import "./styles.css";
 
-interface props{
+type Props = {
     item: string,
 }
 
-const singleMenuItem = ({item}: props) => {
+const singleMenuItem: FC<Props> = ({item}) => {
     const link: string = "./"+item;
     return (
         <div className='single-menu-item'>

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { FC, useEffect, useRef, useState } from 'react'
 import Header from '../components/Header';
 
-const Register = () => {
+const Register: FC = () => {
     const userRef = useRef<HTMLInputElement>(null);
 
     const [email, setEmail] = useState<string>('');
@@ -20,7 +20,7 @@ const Register = () => {
     }, [email, password])
     
 
-    function handleSubmit(e:React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    function handleSubmit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         e.preventDefault();
         throw new Error('Function not implemented.');        
     }

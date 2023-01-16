@@ -1,14 +1,14 @@
-import React from 'react';
-import './App.css';
-import Header from "./components/Header";
+import "./globals.scss";
+import "twin.macro";
+
 import Dashboard from './pages/Dashboard';
 
-function App() {
+const App = () => {
     return (
-        <div className="App">
+        <div>
             <Dashboard/>
         </div>
     );
-  }
-  
-  export default App;
+}
+
+export default App;

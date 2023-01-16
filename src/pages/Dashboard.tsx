@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../components/styles.css';
 import Header from "../components/Header";
 import Menu from '../components/Menu';
+import { FC } from 'react';
 
-
-
-function Dashboard() {
+const Dashboard: FC = () => {
     const [user, setUser] = useState("")
     return (
         <div className="header">
@@ -17,6 +16,6 @@ function Dashboard() {
             }
         </div>
     );
-  }
-  
-  export default Dashboard;
+}
+
+export default Dashboard;

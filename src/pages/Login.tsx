@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { FC } from 'react';
 import Header from '../components/Header';
 
-
-
-const Login = () => {
+const Login: FC = () => {
     const userRef = useRef<HTMLInputElement>(null);
 
     const [email, setEmail] = useState<string>('');
@@ -15,15 +14,15 @@ const Login = () => {
             userRef.current.focus();
         }
     }, [])
-    
+
     useEffect(() => {
         setErr('');
     }, [email, password])
-    
 
-    function handleSubmit(e:React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+
+    function handleSubmit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         e.preventDefault();
-        throw new Error('Function not implemented.');        
+        throw new Error('Function not implemented.');
     }
 
     return (
