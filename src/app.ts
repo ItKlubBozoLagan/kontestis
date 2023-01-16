@@ -11,10 +11,12 @@ import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
 
+import cors from 'cors';
 
 const app = Express();
 
 app.use(json());
+app.use(cors());
 
 app.use("/api/auth", AuthHandler);
 app.use("/api/contest", ContestHandler);

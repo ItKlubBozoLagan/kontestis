@@ -12,7 +12,7 @@
     "@lvksh/logger": "^1.6.3",
     "@sinclair/typebox": "^0.24.34",
     "@types/apidoc": "^0.50.0",
-    "@types/cors": "^2.8.12",
+    "@types/cors": "^2.8.13",
     "@types/express": "^4.17.13",
     "@types/express-serve-static-core": "^4.17.30",
     "@types/jsonwebtoken": "^8.5.9",
