@@ -1,0 +1,41 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2021
+    },
+    "extends": [
+        "plugin:react/recommended",
+        "plugin:v3xlabs/recommended"
+    ],
+    "ignorePatterns": [
+        "!**/*"
+    ],
+    "plugins": [
+        "react",
+        "v3xlabs"
+    ],
+    "env": {
+        "node": true,
+        "browser": true
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "globals": {
+        "JSX": "readonly"
+    },
+    "rules": {
+        "react/react-in-jsx-scope": "off",
+        "unicorn/no-nested-ternary": "off",
+        "unused-imports/no-unused-vars": "warn",
+        "quotes": ["error", "double"],
+        "prettier/prettier": [
+            "error",
+            {
+                "singleQuote": false
+            }
+        ]
+    }
+}
