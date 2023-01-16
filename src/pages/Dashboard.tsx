@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import Header from "../components/Header";
-import Menu from '../components/Menu';
+import NavBar from '../components/NavBar';
 import { FC } from 'react';
 import Register from "./Register";
+import {Contests} from "./Contests";
+
 
 const Dashboard: FC = () => {
     const [user, setUser] = useState("")
     return (
-        <div className="header">
-            <Header />
-            <Menu />
-            <Register />
+        <div tw={"w-full flex flex-col items-center mt-[-0.8rem]"}>
+            <NavBar/>
             {
-                user !== "" &&
-                    <a href="/link"></a>
+                <div tw={"flex flex-col w-[800px] items-center justify-start gap-y-5"}>
+                    <Contests/>
+                    <Header />
+                    <Register />
+                </div>
             }
         </div>
     );

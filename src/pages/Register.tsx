@@ -27,7 +27,6 @@ const Register: FC = () => {
     return (
         <div>
             <div>
-                <Header/>
                 <div>
                     <form tw={"flex flex-col gap-2 w-[256px]"}>
                         <label htmlFor="username">Username:</label>

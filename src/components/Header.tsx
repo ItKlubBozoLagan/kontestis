@@ -3,10 +3,8 @@ import { FC } from 'react';
 
 const Header: FC = () => {
     return (
-        <div>
-            <div tw={"bg-slate-200 flex justify-center items-center"}>
-                <img src={logo} alt="logo" />
-            </div>
+        <div tw={"w-full flex justify-center items-center"}>
+            <img src={logo} alt="logo" />
         </div>
     )
 }
