@@ -3,6 +3,7 @@ import styled from "styled-components";
 import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/axios";
+import PageTitle from "../../components/PageTitle";
 import { ContestListItem } from "./ContestListItem";
 
 export type Snowflake = bigint;
@@ -68,16 +69,7 @@ export const Contests: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col"}>
-            <div tw={"w-full flex flex-col py-10 text-neutral-700"}>
-                <div tw={"text-4xl"}>Contests: </div>
-                <div
-                    tw={
-                        "w-full h-2 border-solid border-2 border-t-0 border-r-0 border-l-0 border-neutral-500"
-                    }
-                >
-                    {" "}
-                </div>
-            </div>
+            <PageTitle>Contests:</PageTitle>
             <table
                 tw={
                     "table-fixed bg-neutral-100 border-collapse border-solid border-neutral-200 border-2 text-left"
