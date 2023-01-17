@@ -16,7 +16,7 @@ jobs:
           node-version: '18.13.0'
           registry-url: 'https://registry.npmjs.org'
       - name: Install packages
-      - run: pnpm install
+        run: pnpm install
       - name: Build
         run: pnpm build
       - name: Edgeserver Upload
