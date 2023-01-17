@@ -1,4 +1,4 @@
-name: Deploy to Edgeserver
+name: Lint
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: "🚚 Deploy"
+    name: "✨ Lint"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -34,13 +34,6 @@ jobs:
       - name: Install packages
         run: pnpm install
 
-      - name: Build
-        run: pnpm build
+      - name: Lint
+        run: pnpm lint
 
-      - name: Edgeserver Upload
-        uses: v3xlabs/edgeserver-upload@master
-        with:
-          app_id: "138206523384926208"
-          server: https://api.edgeserver.io
-          token: ${{ secrets.EDGESERVER_TOKEN }}
-          directory: dist
