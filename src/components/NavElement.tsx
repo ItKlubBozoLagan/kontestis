@@ -21,7 +21,7 @@ type Props = {
 const NavElement: FC<Props> = ({ item }) => {
     const link = "./" + item.href;
     return (
-        <div tw={"flex justify-start gap-1 items-center no-underline font-bold text-neutral-500 hover:(text-neutral-700 cursor-pointer) transition-all"}>
+        <div tw={"flex justify-start gap-1 items-center no-underline font-bold text-neutral-500 hover:(text-sky-800 cursor-pointer) transition-all"}>
             {icons[item.icon]}
             <div>{item.display}</div>
         </div>
