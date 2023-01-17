@@ -1,6 +1,6 @@
 import {FC, useEffect, useState} from "react";
-import {http, wrapAxios} from "../api/axios";
-import {ContestItem, SingleContest} from "../components/SingleContest";
+import {http, wrapAxios} from "../../api/axios";
+import {ContestItem, ContestListItem} from "./ContestListItem";
 import styled from "styled-components";
 import tw from "twin.macro";
 
@@ -57,7 +57,7 @@ export const Contests: FC = () => {
                 <TableHeadItem>Starts</TableHeadItem>
                 <TableHeadItem>Duration</TableHeadItem>
             </tr>
-            {contests.map(c => <SingleContest contest={c} key={c.id + ""}/>)}
+            {contests.map(c => <ContestListItem contest={c} key={c.id + ""}/>)}
 
         </table>
     </div>

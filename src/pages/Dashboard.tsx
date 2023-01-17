@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import NavBar from '../components/NavBar';
 import { FC } from 'react';
 import Register from "./Register";
-import {Contests} from "./Contests";
+import {Contests} from "./contests/Contests";
 
 
 const Dashboard: FC = () => {
