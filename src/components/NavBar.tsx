@@ -33,7 +33,8 @@ const NavBar: FC = () => {
     return (
         <div css={[
             tw`w-full p-4 pl-6 flex justify-start items-center gap-7 text-base`,
-            tw`bg-slate-100`
+            tw`bg-slate-100`,
+            tw`border-solid border-2 border-neutral-300`
         ]}>
             <FiMap tw={"text-slate-600"}/>
             {items.map((item) => (<NavElement item={item}/>))}
