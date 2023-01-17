@@ -31,6 +31,8 @@
         "unicorn/no-nested-ternary": "off",
         "unused-imports/no-unused-vars": "warn",
         "quotes": ["error", "double"],
+        "react/no-unknown-property": "off",
+        "sonarjs/no-nested-template-literals": "off",
         "prettier/prettier": [
             "error",
             {

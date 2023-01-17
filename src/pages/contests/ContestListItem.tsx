@@ -1,12 +1,14 @@
-import {Contest} from "./Contests";
-import {FC, useEffect, useState} from "react";
+import { FC, useEffect, useState } from "react";
+import { FiList } from "react-icons/all";
 import styled from "styled-components";
 import tw from "twin.macro";
-import {parseTime} from "../../utils/utils";
 
-type Props = {
-    contest: Contest
-}
+import { parseTime } from "../../utils/utils";
+import { Contest } from "./Contests";
+
+type Properties = {
+    contest: Contest;
+};
 
 const ContestRow = styled.tr`
     border-bottom: 1px solid;
@@ -14,23 +16,30 @@ const ContestRow = styled.tr`
 `;
 
 export const ContestItem = styled.td`
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  padding-left: 1rem;
-  ${tw`text-sm font-mono text-neutral-700`}
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
+    ${tw`text-sm font-mono text-neutral-700`}
 `;
 
-export const ContestListItem: FC<Props> = ({ contest }) => {
-
+export const ContestListItem: FC<Properties> = ({ contest }) => {
     const [time, setTime] = useState(Date.now());
-    const [state, setState] = useState<"pending" | "started" | "finished">("pending");
+    const [state, setState] = useState<"pending" | "started" | "finished">(
+        "pending"
+    );
 
     useEffect(() => {
         const interval = setInterval(() => setTime(Date.now()), 1000);
 
-        if(Date.now() < contest.start_time.getTime()) setState("pending");
-        if(Date.now() > contest.start_time.getTime()) setState("started");
-        if(Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000) setState("finished");
+        if (Date.now() < contest.start_time.getTime()) setState("pending");
+
+        if (Date.now() > contest.start_time.getTime()) setState("started");
+
+        if (
+            Date.now() >
+            contest.start_time.getTime() + contest.duration_seconds * 1000
+        )
+            setState("finished");
 
         return () => {
             clearInterval(interval);
@@ -39,18 +48,30 @@ export const ContestListItem: FC<Props> = ({ contest }) => {
 
     return (
         <ContestRow>
-            <ContestItem tw={"hover:(text-sky-800 cursor-pointer)"}>{contest.name}</ContestItem>
+            <ContestItem tw={"hover:(text-sky-800 cursor-pointer)"}>
+                <div tw={"flex items-center gap-2"}>
+                    <FiList tw={"text-xl"} /> {contest.name}
+                </div>
+            </ContestItem>
             <ContestItem>{contest.start_time.toLocaleString()}</ContestItem>
             <ContestItem>
-                {state == "pending" ?
+                {state == "pending" ? (
                     parseTime(contest.start_time.getTime() - time)
-                        :
-                    state == "started" ?
-                        <div tw={"text-green-700"}>Started</div>
-                        :
-                        <div tw={"text-red-600"}>Finished</div>}
+                ) : state == "started" ? (
+                    <div tw={"text-green-700"}>Started</div>
+                ) : (
+                    <div tw={"text-red-600"}>Finished</div>
+                )}
             </ContestItem>
-            <ContestItem>{parseTime(contest.duration_seconds * 1000)}</ContestItem>
+            <ContestItem>
+                {state == "started"
+                    ? parseTime(
+                          contest.start_time.getTime() +
+                              contest.duration_seconds * 1000 -
+                              time
+                      )
+                    : parseTime(contest.duration_seconds * 1000)}
+            </ContestItem>
         </ContestRow>
     );
-}
+};
