@@ -15,6 +15,8 @@ jobs:
         with:
           node-version: '18.13.0'
           registry-url: 'https://registry.npmjs.org'
+      - name: Install pnpm
+        run: npm install --global pnpm
       - name: Install packages
         run: pnpm install
       - name: Build
