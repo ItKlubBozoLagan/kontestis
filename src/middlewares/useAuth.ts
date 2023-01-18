@@ -37,11 +37,11 @@ const validateJwt = async (token?: string): Promise<User | null> => {
 
 const getAuth = (optional: boolean) => {
     return async (
-        request: AuthenticatedRequest,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ) => {
-        const auth = request.header("authorization");
+        const auth = req.header("authorization");
 
         if (!(auth && auth.startsWith("Bearer "))) {
             return optional ? next() : res.status(403).send("Access denied");
@@ -54,7 +54,7 @@ const getAuth = (optional: boolean) => {
             return optional ? next() : res.status(403).send("Access denied");
         }
 
-        request.user = validated;
+        req.user = validated;
         next();
     };
 };

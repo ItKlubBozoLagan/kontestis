@@ -71,19 +71,19 @@ const loginSchema = Type.Object({
 AuthHandler.post(
     "/register",
     useValidation(registerSchema, { body: true }),
-    async (request: Request, res) => {
+    async (req: Request, res) => {
         const user = await Database.selectOneFrom("users", "*", {
-            email: request.body.email,
+            email: req.body.email,
         });
 
         if (user) return res.status(400);
 
-        const hashPassword = await hash(request.body.password, 10);
+        const hashPassword = await hash(req.body.password, 10);
 
         const newUser = {
             id: generateSnowflake(),
-            email: request.body.email,
-            username: request.body.username,
+            email: req.body.email,
+            username: req.body.username,
             password: hashPassword,
             permissions: 0,
         };
@@ -118,17 +118,14 @@ AuthHandler.post(
 AuthHandler.post(
     "/login",
     useValidation(loginSchema, { body: true }),
-    async (request, res) => {
+    async (req, res) => {
         const user = await Database.selectOneFrom("users", "*", {
-            email: request.body.email,
+            email: req.body.email,
         });
 
         if (!user) return res.status(400);
 
-        const validPassword = await compare(
-            request.body.password,
-            user.password
-        );
+        const validPassword = await compare(req.body.password, user.password);
 
         if (!validPassword) return res.status(400);
 

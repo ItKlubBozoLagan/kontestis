@@ -23,12 +23,12 @@ app.use("/api/contest", ContestHandler);
 app.use("/api/problem", ProblemHandler);
 app.use("/api/submission", SubmissionHandler);
 
-app.use((request, res, next) => {
-    Logger.info(request.method + " ON " + request.url);
+app.use((req, res, next) => {
+    Logger.info(req.method + " ON " + req.url);
     next();
 });
 
-app.get("/", (request, res) => res.send({ status: 200 }));
+app.get("/", (req, res) => res.send({ status: 200 }));
 
 Database.awaitConnection().then(async () => {
     Logger.info("Successfully connected to database!");

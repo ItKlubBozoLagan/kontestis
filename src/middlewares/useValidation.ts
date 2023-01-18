@@ -32,15 +32,13 @@ export const useValidation = <
     const options: SchemaOptions = options_ ?? { body: true };
     const check = TypeCompiler.Compile(schema);
 
-    return (request, res, next) => {
+    return (req, res, next) => {
         if (
             Object.entries(options)
                 .filter(([, v]) => v)
-                .some(
-                    ([key]) => !check.Check(request[key as keyof SchemaOptions])
-                )
+                .some(([key]) => !check.Check(req[key as keyof SchemaOptions]))
         )
-            return res.status(400).send("Bad request");
+            return res.status(400);
 
         next();
     };

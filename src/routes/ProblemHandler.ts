@@ -105,34 +105,29 @@ ProblemHandler.post(
     useAuth,
     useValidation(problemSchema),
     async (
-        request: AuthenticatedRequest & ValidatedBody<typeof problemSchema>,
+        req: AuthenticatedRequest & ValidatedBody<typeof problemSchema>,
         res
     ) => {
-        if (!request.user) return res.status(403);
+        if (!req.user) return res.status(403);
 
-        if (
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                request.body.contest_id
-            ))
-        )
+        if (!(await isAllowedToModifyContest(req.user.id, req.body.contest_id)))
             return res.status(403);
 
         if (
-            request.body.evaluation_variant != "plain" &&
-            !request.body.evaluation_script
+            req.body.evaluation_variant != "plain" &&
+            !req.body.evaluation_script
         )
             return res.status(400);
 
         const problem: Problem = {
             id: generateSnowflake(),
-            contest_id: request.body.contest_id,
-            title: request.body.title,
-            description: request.body.description,
-            evaluation_variant: request.body.evaluation_variant,
-            evaluation_script: request.body.evaluation_script,
-            time_limit_millis: request.body.time_limit_millis,
-            memory_limit_megabytes: request.body.memory_limit_megabytes,
+            contest_id: req.body.contest_id,
+            title: req.body.title,
+            description: req.body.description,
+            evaluation_variant: req.body.evaluation_variant,
+            evaluation_script: req.body.evaluation_script,
+            time_limit_millis: req.body.time_limit_millis,
+            memory_limit_megabytes: req.body.memory_limit_megabytes,
         };
 
         await Database.insertInto("problems", problem);
@@ -158,21 +153,16 @@ ProblemHandler.post(
 ProblemHandler.delete(
     "/:problem_id",
     useAuth,
-    async (request: AuthenticatedRequest, res) => {
-        if (!request.user) return res.status(403);
+    async (req: AuthenticatedRequest, res) => {
+        if (!req.user) return res.status(403);
 
         const problem = await Database.selectOneFrom("problems", "*", {
-            id: request.params.problem_id,
+            id: req.params.problem_id,
         });
 
         if (!problem) return res.status(404);
 
-        if (
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                problem.contest_id
-            ))
-        )
+        if (!(await isAllowedToModifyContest(req.user.id, problem.contest_id)))
             return res.status(403);
 
         await Database.deleteFrom("problems", "*", { id: problem.id });
@@ -234,29 +224,24 @@ ProblemHandler.post(
     useAuth,
     useValidation(clusterSchema),
     async (
-        request: AuthenticatedRequest & ValidatedBody<typeof clusterSchema>,
+        req: AuthenticatedRequest & ValidatedBody<typeof clusterSchema>,
         res
     ) => {
-        if (!request.user) return res.status(403);
+        if (!req.user) return res.status(403);
 
         const problem = await Database.selectOneFrom("problems", "*", {
-            id: request.params.problem_id,
+            id: req.params.problem_id,
         });
 
         if (!problem) return res.status(404);
 
-        if (
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                problem.contest_id
-            ))
-        )
+        if (!(await isAllowedToModifyContest(req.user.id, problem.contest_id)))
             return res.status(403);
 
         const cluster: Cluster = {
             id: generateSnowflake(),
             problem_id: problem.id,
-            awarded_score: request.body.awarded_score,
+            awarded_score: req.body.awarded_score,
         };
 
         await Database.insertInto("clusters", cluster);
@@ -283,11 +268,11 @@ ProblemHandler.post(
 ProblemHandler.delete(
     "/cluster/:cluster_id",
     useAuth,
-    async (request: AuthenticatedRequest, res) => {
-        if (!request.user) return res.status(403);
+    async (req: AuthenticatedRequest, res) => {
+        if (!req.user) return res.status(403);
 
         const cluster = await Database.selectOneFrom("clusters", "*", {
-            id: request.params.cluster_id,
+            id: req.params.cluster_id,
         });
 
         if (!cluster) return res.status(404);
@@ -298,12 +283,7 @@ ProblemHandler.delete(
 
         if (!problem) return res.status(500);
 
-        if (
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                problem.contest_id
-            ))
-        )
+        if (!(await isAllowedToModifyContest(req.user.id, problem.contest_id)))
             return res.status(403);
 
         await Database.deleteFrom("clusters", "*", { id: cluster.id });
@@ -354,13 +334,13 @@ ProblemHandler.post(
     useAuth,
     useValidation(testcaseSchema),
     async (
-        request: AuthenticatedRequest & ValidatedBody<typeof testcaseSchema>,
+        req: AuthenticatedRequest & ValidatedBody<typeof testcaseSchema>,
         res
     ) => {
-        if (!request.user) return res.status(403);
+        if (!req.user) return res.status(403);
 
         const cluster = await Database.selectOneFrom("clusters", "*", {
-            id: request.params.cluster_id,
+            id: req.params.cluster_id,
         });
 
         if (!cluster) return res.status(404);
@@ -371,19 +351,14 @@ ProblemHandler.post(
 
         if (!problem) return res.status(500);
 
-        if (
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                problem.contest_id
-            ))
-        )
+        if (!(await isAllowedToModifyContest(req.user.id, problem.contest_id)))
             return res.status(403);
 
         const testcase: Testcase = {
             id: generateSnowflake(),
             cluster_id: cluster.id,
-            input: request.body.input,
-            correctOutput: request.body.correctOutput,
+            input: req.body.input,
+            correctOutput: req.body.correctOutput,
         };
 
         await Database.insertInto("testcases", testcase);
@@ -411,11 +386,11 @@ ProblemHandler.post(
 ProblemHandler.delete(
     "/testcase/:testcase_id",
     useAuth,
-    async (request: AuthenticatedRequest, res) => {
-        if (!request.user) return res.status(403);
+    async (req: AuthenticatedRequest, res) => {
+        if (!req.user) return res.status(403);
 
         const testcase = await Database.selectOneFrom("testcases", "*", {
-            id: request.params.testcase_id,
+            id: req.params.testcase_id,
         });
 
         if (!testcase) return res.status(404);
@@ -432,12 +407,7 @@ ProblemHandler.delete(
 
         if (!problem) return res.status(500);
 
-        if (
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                problem.contest_id
-            ))
-        )
+        if (!(await isAllowedToModifyContest(req.user.id, problem.contest_id)))
             return res.status(403);
 
         await Database.deleteFrom("testcases", "*", { id: testcase.id });
@@ -524,27 +494,24 @@ ProblemHandler.get(
 ProblemHandler.get(
     "/:problem_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const problem = await Database.selectOneFrom("problems", "*", {
-            id: request.params.problem_id,
+            id: req.params.problem_id,
         });
 
         if (!problem) return res.status(404);
 
         if (
             !(await isAllowedToViewProblem(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 problem.id
             ))
         )
             return res.status(404);
 
         if (
-            !request.user ||
-            !(await isAllowedToModifyContest(
-                request.user.id,
-                problem.contest_id
-            ))
+            !req.user ||
+            !(await isAllowedToModifyContest(req.user.id, problem.contest_id))
         )
             delete problem.evaluation_script;
 
@@ -570,16 +537,16 @@ ProblemHandler.get(
 ProblemHandler.get(
     "/cluster/:problem_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const problem = await Database.selectOneFrom("problems", "*", {
-            id: request.params.problem_id,
+            id: req.params.problem_id,
         });
 
         if (!problem) return res.status(404);
 
         if (
             !(await isAllowedToViewProblem(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 problem.id
             ))
         )
@@ -611,9 +578,9 @@ ProblemHandler.get(
 ProblemHandler.get(
     "/testcase/:cluster_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const cluster = await Database.selectOneFrom("clusters", "*", {
-            id: request.params.cluster_id,
+            id: req.params.cluster_id,
         });
 
         if (!cluster) return res.status(404);
@@ -626,7 +593,7 @@ ProblemHandler.get(
 
         if (
             !(await isAllowedToViewProblem(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 problem.id
             ))
         )
@@ -650,7 +617,7 @@ ProblemHandler.get(
 
         if (
             await isAllowedToModifyContest(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 contest.id
             )
         )

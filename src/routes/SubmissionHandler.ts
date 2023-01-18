@@ -161,11 +161,11 @@ SubmissionHandler.post(
 SubmissionHandler.get(
     "/:problem_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const problem = await Database.selectOneFrom(
             "problems",
             ["contest_id"],
-            { id: request.params.problem_id }
+            { id: req.params.problem_id }
         );
 
         if (!problem) return res.status(404);
@@ -178,7 +178,7 @@ SubmissionHandler.get(
 
         if (
             !(await isAllowedToViewContest(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 contest.id
             ))
         )
@@ -187,24 +187,24 @@ SubmissionHandler.get(
         const submissions = await Database.selectFrom(
             "submissions",
             "*",
-            request.query.user_id
+            req.query.user_id
                 ? {
-                      problem_id: request.params.problem_id,
-                      user_id: request.params.user_id,
+                      problem_id: req.params.problem_id,
+                      user_id: req.params.user_id,
                   }
-                : { problem_id: request.params.problem_id }
+                : { problem_id: req.params.problem_id }
         );
 
         if (
-            request.query.user_id ||
+            req.query.user_id ||
             contest.start_time.getTime() + contest.duration_seconds * 1000 <
                 Date.now()
         )
             return res.status(200).json(submissions);
 
-        if (!request.user) return res.status(404);
+        if (!req.user) return res.status(404);
 
-        const { user } = request;
+        const { user } = req;
 
         if (await isAllowedToModifyContest(user.id, contest.id))
             return res.status(200).json(submissions);
@@ -232,16 +232,16 @@ SubmissionHandler.get(
 SubmissionHandler.get(
     "/submission/:submission_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const submission = await Database.selectOneFrom("submissions", "*", {
-            id: request.params.submission_id,
+            id: req.params.submission_id,
         });
 
         if (!submission) return res.status(404);
 
         if (
             !(await isAllowedToViewSubmission(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 submission.id
             ))
         )
@@ -268,16 +268,16 @@ SubmissionHandler.get(
 SubmissionHandler.get(
     "/cluster/:submission_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const submission = await Database.selectOneFrom("submissions", "*", {
-            id: request.params.submission_id,
+            id: req.params.submission_id,
         });
 
         if (!submission) return res.status(404);
 
         if (
             !(await isAllowedToViewSubmission(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 submission.id
             ))
         )
@@ -308,16 +308,16 @@ SubmissionHandler.get(
 SubmissionHandler.get(
     "/testcase/:submission_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const submission = await Database.selectOneFrom("submissions", "*", {
-            id: request.params.submission_id,
+            id: req.params.submission_id,
         });
 
         if (!submission) return res.status(404);
 
         if (
             !(await isAllowedToViewSubmission(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 submission.id
             ))
         )

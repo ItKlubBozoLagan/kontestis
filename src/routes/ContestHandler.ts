@@ -69,22 +69,22 @@ ContestHandler.post(
     "/",
     useAuth,
     useValidation(contestSchema),
-    async (request: AuthenticatedRequest, res) => {
-        if (!request.user) return res.status(403);
+    async (req: AuthenticatedRequest, res) => {
+        if (!req.user) return res.status(403);
 
-        const { user } = request;
-        const date = new Date(request.body.start_time);
+        const { user } = req;
+        const date = new Date(req.body.start_time);
 
         if (!date || date < new Date())
             return res.status(400).send("Invalid date!");
 
         const contest: Contest = {
             id: generateSnowflake(),
-            name: request.body.name,
+            name: req.body.name,
             admin_id: user.id,
             start_time: date,
-            duration_seconds: request.body.duration_seconds,
-            public: request.body.public,
+            duration_seconds: req.body.duration_seconds,
+            public: req.body.public,
         };
 
         await Database.insertInto("contests", contest);
@@ -109,13 +109,10 @@ ContestHandler.post(
 ContestHandler.get(
     "/",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const contests = (await Database.selectFrom("contests", "*")).filter(
             (c) =>
-                isAllowedToViewContest(
-                    request.user ? request.user.id : undefined,
-                    c.id
-                )
+                isAllowedToViewContest(req.user ? req.user.id : undefined, c.id)
         );
 
         return res.status(200).json(contests);
@@ -152,22 +149,22 @@ ContestHandler.post(
     useAuth,
     useValidation(allowUserSchema),
     async (
-        request: AuthenticatedRequest & ValidatedBody<typeof allowUserSchema>,
+        req: AuthenticatedRequest & ValidatedBody<typeof allowUserSchema>,
         res
     ) => {
-        if (!request.user) return res.status(403);
+        if (!req.user) return res.status(403);
 
         const contest = await Database.selectOneFrom("contests", "*", {
-            id: request.params.contest_id,
+            id: req.params.contest_id,
         });
 
         if (!contest) return res.status(404);
 
-        if (!(await isAllowedToModifyContest(request.user.id, contest.id)))
+        if (!(await isAllowedToModifyContest(req.user.id, contest.id)))
             return res.status(403);
 
         const user = await Database.selectOneFrom("users", "*", {
-            id: request.body.user_id,
+            id: req.body.user_id,
         });
 
         if (!user) return res.status(404);
@@ -217,16 +214,16 @@ ContestHandler.post(
 ContestHandler.get(
     "/allow/:contest_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const contest = await Database.selectOneFrom("contests", "*", {
-            id: request.params.contest_id,
+            id: req.params.contest_id,
         });
 
         if (!contest) return res.status(404);
 
         if (
             !(await isAllowedToViewContest(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 contest.id
             ))
         )
@@ -262,16 +259,16 @@ ContestHandler.get(
 ContestHandler.get(
     "/:contest_id",
     useOptionalAuth,
-    async (request: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res) => {
         const contest = await Database.selectOneFrom("contests", "*", {
-            id: request.params.contest_id,
+            id: req.params.contest_id,
         });
 
         if (!contest) return res.status(404);
 
         if (
             !(await isAllowedToViewContest(
-                request.user ? request.user.id : undefined,
+                req.user ? req.user.id : undefined,
                 contest.id
             ))
         )
