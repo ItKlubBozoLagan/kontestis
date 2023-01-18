@@ -10,7 +10,7 @@ export const Root: FC = () => {
             {
                 <div
                     tw={
-                        "flex flex-col w-[800px] items-center justify-start gap-y-5"
+                        "flex flex-col w-1/2 max-w-[800px] items-center justify-start gap-y-5"
                     }
                 >
                     <Outlet />
