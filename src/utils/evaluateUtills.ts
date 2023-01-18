@@ -1,8 +1,8 @@
 import {Submission} from "../types/Submission";
-import {DataBase} from "../data/Database";
 import {Testcase} from "../types/Testcase";
 import {Snowflake} from "../lib/snowflake";
 import {httpEvaluator} from "../api/axios";
+import {Database} from "../database/Database";
 
 
 type EvaluatorTestCase = {
@@ -20,13 +20,13 @@ type EvaluatorData = {
 
 export const runEvaluation = async (submission: Submission) => {
 
-    const clusterIds = await DataBase.selectFrom("clusters", ["id"], { problem_id: submission.problem_id });
+    const clusterIds = await Database.selectFrom("clusters", ["id"], { problem_id: submission.problem_id });
 
-    const problem = await DataBase.selectOneFrom("problems", ["time_limit_millis"], { id: submission.problem_id });
+    const problem = await Database.selectOneFrom("problems", ["time_limit_millis"], { id: submission.problem_id });
 
     let testCases: Testcase[] = [];
     for(const id of clusterIds) {
-        const clusterTestcases = await DataBase.selectFrom("testcases", "*", { cluster_id: id.id });
+        const clusterTestcases = await Database.selectFrom("testcases", "*", { cluster_id: id.id });
         testCases = [...testCases, ...clusterTestcases];
     }
 
@@ -45,5 +45,5 @@ export const runEvaluation = async (submission: Submission) => {
         time_limit: problem ? problem.time_limit_millis : 1000
     }
 
-    httpEvaluator.post("/", { ...evaluatorData });
+    httpEvaluator.post("/", { ...evaluatorData }).then((data) => console.log(data));
 };
