@@ -6,4 +6,4 @@ export type User = {
     password: string;
     email: string;
     permissions: number;
-}
+};

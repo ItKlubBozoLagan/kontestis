@@ -1,9 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="3de6cc68-d1b5-4aa6-bd6c-2cd47154e5cf" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.eslintrc.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.prettierrc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/evaluateUtills.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/evaluateUtills.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-lock.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/database/Database.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/database/Database.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/globals.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/globals.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/logger.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/logger.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/snowflake.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/snowflake.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/middlewares/useAuth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middlewares/useAuth.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/middlewares/useValidation.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middlewares/useValidation.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/AuthHandler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/AuthHandler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/ContestHandler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/ContestHandler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/ProblemHandler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/ProblemHandler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/SubmissionHandler.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/SubmissionHandler.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/AllowedUser.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/AllowedUser.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/Cluster.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Cluster.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/ClusterSubmission.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/ClusterSubmission.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/Contest.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Contest.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/Problem.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Problem.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/Submission.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Submission.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/Testcase.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/Testcase.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/TestcaseSubmission.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/TestcaseSubmission.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/User.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/User.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/utills.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/utills.ts" afterDir="false" />
     </list>
     <list id="181350d8-12ca-47e2-b3d0-f617cc3fe84d" name="Changes by antony" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,21 +49,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/visen/Documents/Code/JS/evaluator-backend&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/home/visen/Documents/Code/JS/evaluator-backend/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "last_opened_file_path": "/home/visen/Documents/Code/JS/evaluator-backend",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "yarn",
+    "ts.external.directory.path": "/home/antony/Desktop/Coding/Js/evaluator-backend/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/routes" />

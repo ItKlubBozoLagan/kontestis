@@ -4,14 +4,14 @@ import Express, { json } from "express";
 // We must load .env first so the database has correct details.
 dotenvConfig();
 
+import cors from "cors";
+
 import { Database, initDatabase } from "./database/Database";
 import { Logger } from "./lib/logger";
 import AuthHandler from "./routes/AuthHandler";
 import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
-
-import cors from 'cors';
 
 const app = Express();
 
@@ -23,13 +23,12 @@ app.use("/api/contest", ContestHandler);
 app.use("/api/problem", ProblemHandler);
 app.use("/api/submission", SubmissionHandler);
 
-app.use((req, res, next) => {
-    Logger.info(req.method + " ON " + req.url);
+app.use((request, res, next) => {
+    Logger.info(request.method + " ON " + request.url);
     next();
 });
 
-app.get("/", (req, res) => res.send({ status: 200 }));
-
+app.get("/", (request, res) => res.send({ status: 200 }));
 
 Database.awaitConnection().then(async () => {
     Logger.info("Successfully connected to database!");
@@ -37,6 +36,6 @@ Database.awaitConnection().then(async () => {
     Logger.info("Initialized database!");
 });
 
-
 const _PORT = process.env.PORT || 8080;
+
 app.listen(_PORT, () => Logger.info("Listening on " + _PORT));

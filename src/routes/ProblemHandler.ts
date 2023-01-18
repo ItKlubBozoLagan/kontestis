@@ -1,14 +1,22 @@
-import {raw, Router} from "express";
-import {Type} from "@sinclair/typebox";
-import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/useAuth";
-import {useValidation, ValidatedBody} from "../middlewares/useValidation";
-import {Database} from "../database/Database";
-import {generateSnowflake} from "../lib/snowflake";
-import {Problem} from "../types/Problem";
-import {isAllowedToModifyContest, isAllowedToViewContest, isAllowedToViewProblem} from "../utils/utills";
-import {Cluster} from "../types/Cluster";
-import {Testcase} from "../types/Testcase";
+import { Type } from "@sinclair/typebox";
+import { Router } from "express";
 
+import { Database } from "../database/Database";
+import { generateSnowflake } from "../lib/snowflake";
+import {
+    AuthenticatedRequest,
+    useAuth,
+    useOptionalAuth,
+} from "../middlewares/useAuth";
+import { useValidation, ValidatedBody } from "../middlewares/useValidation";
+import { Cluster } from "../types/Cluster";
+import { Problem } from "../types/Problem";
+import { Testcase } from "../types/Testcase";
+import {
+    isAllowedToModifyContest,
+    isAllowedToViewContest,
+    isAllowedToViewProblem,
+} from "../utils/utills";
 
 const ProblemHandler = Router();
 
@@ -56,7 +64,7 @@ const ProblemHandler = Router();
 enum EvaluationSchema {
     plain = "plain",
     script = "script",
-    interactive = "interactive"
+    interactive = "interactive",
 }
 
 const problemSchema = Type.Object({
@@ -64,8 +72,8 @@ const problemSchema = Type.Object({
     title: Type.String(),
     description: Type.String(),
     evaluation_variant: Type.Enum(EvaluationSchema),
-    time_limit_millis: Type.Number({ minimum: 50, maximum: 10000 }),
-    memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 1024 })
+    time_limit_millis: Type.Number({ minimum: 50, maximum: 10_000 }),
+    memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 1024 }),
 });
 
 /**
@@ -92,30 +100,46 @@ const problemSchema = Type.Object({
  *     400 Bad request
  */
 
-ProblemHandler.post("/", useAuth, useValidation(problemSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof problemSchema>, res) => {
+ProblemHandler.post(
+    "/",
+    useAuth,
+    useValidation(problemSchema),
+    async (
+        request: AuthenticatedRequest & ValidatedBody<typeof problemSchema>,
+        res
+    ) => {
+        if (!request.user) return res.status(403);
 
-    if(!req.user) return res.status(403).send("Access denied!");
+        if (
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                request.body.contest_id
+            ))
+        )
+            return res.status(403);
 
-    if(!(await isAllowedToModifyContest(req.user.id, req.body.contest_id))) return res.status(403).send("Access denied!");
+        if (
+            request.body.evaluation_variant != "plain" &&
+            !request.body.evaluation_script
+        )
+            return res.status(400);
 
-    if(req.body.evaluation_variant != "plain" && !req.body.evaluation_script) return res.status(400).send("Bad request!");
+        const problem: Problem = {
+            id: generateSnowflake(),
+            contest_id: request.body.contest_id,
+            title: request.body.title,
+            description: request.body.description,
+            evaluation_variant: request.body.evaluation_variant,
+            evaluation_script: request.body.evaluation_script,
+            time_limit_millis: request.body.time_limit_millis,
+            memory_limit_megabytes: request.body.memory_limit_megabytes,
+        };
 
-    const problem: Problem = {
-        id: generateSnowflake(),
-        contest_id: req.body.contest_id,
-        title: req.body.title,
-        description: req.body.description,
-        evaluation_variant: req.body.evaluation_variant,
-        evaluation_script: req.body.evaluation_script,
-        time_limit_millis: req.body.time_limit_millis,
-        memory_limit_megabytes: req.body.memory_limit_megabytes
+        await Database.insertInto("problems", problem);
+
+        return res.status(200).json(problem);
     }
-
-    await Database.insertInto("problems", problem);
-
-    return res.status(200).json(problem);
-
-});
+);
 
 /**
  * @api {delete} /api/problem/:problem_id DeleteProblem
@@ -131,34 +155,61 @@ ProblemHandler.post("/", useAuth, useValidation(problemSchema), async (req: Auth
  * @apiUse ExampleProblem
  */
 
-ProblemHandler.delete("/:problem_id", useAuth, async (req: AuthenticatedRequest, res) => {
-    if(!req.user) return res.status(403).send("Access denied!");
-    const problem = await Database.selectOneFrom("problems", "*", { id: req.params.problem_id });
-    if(!problem) return res.status(404).send("Not found!");
-    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+ProblemHandler.delete(
+    "/:problem_id",
+    useAuth,
+    async (request: AuthenticatedRequest, res) => {
+        if (!request.user) return res.status(403);
 
-    await Database.deleteFrom("problems", "*", { id: problem.id });
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: request.params.problem_id,
+        });
 
-    const clusters = await Database.selectFrom("clusters", "*", { problem_id: problem.id });
-    await Database.deleteFrom("clusters", "*", { problem_id: problem.id });
+        if (!problem) return res.status(404);
 
-    for (const c of clusters) {
-        await Database.deleteFrom("testcases", "*", { cluster_id: c.id });
+        if (
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                problem.contest_id
+            ))
+        )
+            return res.status(403);
+
+        await Database.deleteFrom("problems", "*", { id: problem.id });
+
+        const clusters = await Database.selectFrom("clusters", "*", {
+            problem_id: problem.id,
+        });
+
+        await Database.deleteFrom("clusters", "*", { problem_id: problem.id });
+
+        for (const c of clusters) {
+            await Database.deleteFrom("testcases", "*", { cluster_id: c.id });
+        }
+
+        const submissions = await Database.selectFrom("submissions", "*", {
+            problem_id: problem.id,
+        });
+
+        await Database.deleteFrom("submissions", "*", {
+            problem_id: problem.id,
+        });
+
+        for (const s of submissions) {
+            await Database.deleteFrom("cluster_submissions", "*", {
+                submission_id: s.id,
+            });
+            await Database.deleteFrom("testcase_submissions", "*", {
+                submission_id: s.id,
+            });
+        }
+
+        return res.status(200).json(problem);
     }
-
-    const submissions = await Database.selectFrom("submissions", "*", { problem_id: problem.id });
-    await Database.deleteFrom("submissions", "*", { problem_id: problem.id });
-    for(const s of submissions) {
-        await Database.deleteFrom("cluster_submissions", "*", { submission_id: s.id });
-        await Database.deleteFrom("testcase_submissions", "*", { submission_id: s.id });
-    }
-
-
-    return res.status(200).json(problem);
-});
+);
 
 const clusterSchema = Type.Object({
-    awarded_score: Type.Number({minimum: 1, maximum: 1000})
+    awarded_score: Type.Number({ minimum: 1, maximum: 1000 }),
 });
 
 /**
@@ -178,26 +229,41 @@ const clusterSchema = Type.Object({
  *
  */
 
-ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof clusterSchema>, res) => {
+ProblemHandler.post(
+    "/cluster/:problem_id",
+    useAuth,
+    useValidation(clusterSchema),
+    async (
+        request: AuthenticatedRequest & ValidatedBody<typeof clusterSchema>,
+        res
+    ) => {
+        if (!request.user) return res.status(403);
 
-    if(!req.user) return res.status(403).send("Access denied!");
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: request.params.problem_id,
+        });
 
-    const problem = await Database.selectOneFrom("problems", "*", { id: req.params.problem_id });
-    if(!problem) return res.status(404).send("Not found!");
+        if (!problem) return res.status(404);
 
-    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+        if (
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                problem.contest_id
+            ))
+        )
+            return res.status(403);
 
-    const cluster: Cluster = {
-        id: generateSnowflake(),
-        problem_id: problem.id,
-        awarded_score: req.body.awarded_score
+        const cluster: Cluster = {
+            id: generateSnowflake(),
+            problem_id: problem.id,
+            awarded_score: request.body.awarded_score,
+        };
+
+        await Database.insertInto("clusters", cluster);
+
+        return res.status(200).json(cluster);
     }
-
-    await Database.insertInto("clusters", cluster);
-
-    return res.status(200).json(cluster);
-});
-
+);
 
 /**
  * @api {delete} /api/problem/cluster/:cluster_id DeleteCluster
@@ -214,30 +280,55 @@ ProblemHandler.post("/cluster/:problem_id", useAuth, useValidation(clusterSchema
  *
  */
 
-ProblemHandler.delete("/cluster/:cluster_id", useAuth, async (req: AuthenticatedRequest, res) => {
+ProblemHandler.delete(
+    "/cluster/:cluster_id",
+    useAuth,
+    async (request: AuthenticatedRequest, res) => {
+        if (!request.user) return res.status(403);
 
-    if(!req.user) return res.status(403).send("Access denied!");
-    const cluster = await Database.selectOneFrom("clusters", "*", { id: req.params.cluster_id });
-    if(!cluster) return res.status(404).send("Not found!");
-    const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
-    if(!problem) return res.status(500).send("Internal error!");
-    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+        const cluster = await Database.selectOneFrom("clusters", "*", {
+            id: request.params.cluster_id,
+        });
 
-    await Database.deleteFrom("clusters", "*", { id: cluster.id });
-    const testcases = await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
-    await Database.deleteFrom("testcases", "*", { cluster_id: cluster.id });
-    await Database.deleteFrom("cluster_submissions", "*", { cluster_id: cluster.id });
+        if (!cluster) return res.status(404);
 
-    for(const testcase of testcases) {
-        await Database.deleteFrom("testcase_submissions", "*", { testcase_id: testcase.id });
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: cluster.problem_id,
+        });
+
+        if (!problem) return res.status(500);
+
+        if (
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                problem.contest_id
+            ))
+        )
+            return res.status(403);
+
+        await Database.deleteFrom("clusters", "*", { id: cluster.id });
+        const testcases = await Database.selectFrom("testcases", "*", {
+            cluster_id: cluster.id,
+        });
+
+        await Database.deleteFrom("testcases", "*", { cluster_id: cluster.id });
+        await Database.deleteFrom("cluster_submissions", "*", {
+            cluster_id: cluster.id,
+        });
+
+        for (const testcase of testcases) {
+            await Database.deleteFrom("testcase_submissions", "*", {
+                testcase_id: testcase.id,
+            });
+        }
+
+        return res.status(200).json(cluster);
     }
-
-    return res.status(200).json(cluster);
-});
+);
 
 const testcaseSchema = Type.Object({
     input: Type.String(),
-    correctOutput: Type.String({default: ""})
+    correctOutput: Type.String({ default: "" }),
 });
 
 /**
@@ -258,31 +349,48 @@ const testcaseSchema = Type.Object({
  *
  */
 
-ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSchema), async (req: AuthenticatedRequest & ValidatedBody<typeof testcaseSchema>, res) => {
+ProblemHandler.post(
+    "/testcase/:cluster_id",
+    useAuth,
+    useValidation(testcaseSchema),
+    async (
+        request: AuthenticatedRequest & ValidatedBody<typeof testcaseSchema>,
+        res
+    ) => {
+        if (!request.user) return res.status(403);
 
-    if(!req.user) return res.status(403).send("Access denied!");
+        const cluster = await Database.selectOneFrom("clusters", "*", {
+            id: request.params.cluster_id,
+        });
 
-    const cluster = await Database.selectOneFrom("clusters", "*", { id: req.params.cluster_id });
-    if(!cluster) return res.status(404).send("Not found!");
+        if (!cluster) return res.status(404);
 
-    const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
-    if(!problem) return res.status(500).send("Internal error!");
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: cluster.problem_id,
+        });
 
-    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+        if (!problem) return res.status(500);
 
-    const testcase: Testcase = {
-        id: generateSnowflake(),
-        cluster_id: cluster.id,
-        input: req.body.input,
-        correctOutput: req.body.correctOutput
-    };
+        if (
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                problem.contest_id
+            ))
+        )
+            return res.status(403);
 
-    await Database.insertInto("testcases", testcase);
+        const testcase: Testcase = {
+            id: generateSnowflake(),
+            cluster_id: cluster.id,
+            input: request.body.input,
+            correctOutput: request.body.correctOutput,
+        };
 
-    return res.status(200).json(testcase);
+        await Database.insertInto("testcases", testcase);
 
-});
-
+        return res.status(200).json(testcase);
+    }
+);
 
 /**
  * @api {delete} /api/problem/testcase/:testcase_id DeleteTestcase
@@ -300,31 +408,50 @@ ProblemHandler.post("/testcase/:cluster_id", useAuth, useValidation(testcaseSche
  *
  */
 
-ProblemHandler.delete("/testcase/:testcase_id", useAuth, async (req: AuthenticatedRequest, res) => {
+ProblemHandler.delete(
+    "/testcase/:testcase_id",
+    useAuth,
+    async (request: AuthenticatedRequest, res) => {
+        if (!request.user) return res.status(403);
 
-    if(!req.user) return res.status(403).send("Access denied!");
+        const testcase = await Database.selectOneFrom("testcases", "*", {
+            id: request.params.testcase_id,
+        });
 
-    const testcase = await Database.selectOneFrom("testcases", "*", { id: req.params.testcase_id });
-    if(!testcase) return res.status(404).send("Not found!");
+        if (!testcase) return res.status(404);
 
-    const cluster = await Database.selectOneFrom("clusters", "*", { id: testcase.cluster_id });
-    if(!cluster) return res.status(500).send("Internal error!");
+        const cluster = await Database.selectOneFrom("clusters", "*", {
+            id: testcase.cluster_id,
+        });
 
-    const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
-    if(!problem) return res.status(500).send("Internal error!");
+        if (!cluster) return res.status(500);
 
-    if(!(await isAllowedToModifyContest(req.user.id, problem.contest_id))) return res.status(403).send("Access denied!");
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: cluster.problem_id,
+        });
 
-    await Database.deleteFrom("testcases", "*", { id: testcase.id });
-    await Database.deleteFrom("testcase_submissions", "*", { testcase_id: testcase.id });
+        if (!problem) return res.status(500);
 
-    return res.status(200).json(testcase);
-})
+        if (
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                problem.contest_id
+            ))
+        )
+            return res.status(403);
+
+        await Database.deleteFrom("testcases", "*", { id: testcase.id });
+        await Database.deleteFrom("testcase_submissions", "*", {
+            testcase_id: testcase.id,
+        });
+
+        return res.status(200).json(testcase);
+    }
+);
 
 const getSchema = Type.Object({
-    contest_id: Type.String()
-})
-
+    contest_id: Type.String(),
+});
 
 /**
  * @api {get} /api/problem GetProblems
@@ -340,16 +467,44 @@ const getSchema = Type.Object({
  * @apiUse ExampleProblem
  */
 
-ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true }), async (req: AuthenticatedRequest & ValidatedBody<typeof getSchema>, res) => {
+ProblemHandler.get(
+    "/",
+    useOptionalAuth,
+    useValidation(getSchema, { query: true }),
+    async (
+        req: AuthenticatedRequest & ValidatedBody<typeof getSchema>,
+        res
+    ) => {
+        const problems = await Database.selectFrom("problems", "*", {
+            contest_id: req.query.contest_id,
+        });
 
-    const problems = await Database.selectFrom("problems", "*", { contest_id: req.query.contest_id });
+        if (
+            !(await isAllowedToViewContest(
+                req.user ? req.user.id : undefined,
+                req.query.contest_id
+            ))
+        )
+            return res.status(404);
 
-    if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, req.query.contest_id))) return res.status(404).send("Not found");
+        if (
+            !(await isAllowedToViewContest(
+                req.user ? req.user.id : undefined,
+                req.query.contest_id
+            ))
+        )
+            return res.status(404).send("Not found");
 
-    return res.status(200).json(problems.filter(async (p) => {
-        return await isAllowedToViewProblem(req.user ? req.user.id : undefined, p.id);
-    }));
-});
+        return res.status(200).json(
+            problems.filter(async (p) => {
+                return await isAllowedToViewProblem(
+                    req.user ? req.user.id : undefined,
+                    p.id
+                );
+            })
+        );
+    }
+);
 
 /**
  * @api {get} /api/problem/:problem_id GetProblem
@@ -366,17 +521,36 @@ ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true 
  *
  */
 
-ProblemHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
+ProblemHandler.get(
+    "/:problem_id",
+    useOptionalAuth,
+    async (request: AuthenticatedRequest, res) => {
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: request.params.problem_id,
+        });
 
-    const problem = await Database.selectOneFrom("problems", "*", { id: req.params.problem_id });
-    if(!problem) return res.status(404).send("Not found!");
+        if (!problem) return res.status(404);
 
-    if(!(await isAllowedToViewProblem(req.user ? req.user.id : undefined, problem.id))) return res.status(404).send("Not found!");
+        if (
+            !(await isAllowedToViewProblem(
+                request.user ? request.user.id : undefined,
+                problem.id
+            ))
+        )
+            return res.status(404);
 
-    if(!req.user || !(await isAllowedToModifyContest(req.user.id, problem.contest_id))) delete problem.evaluation_script;
+        if (
+            !request.user ||
+            !(await isAllowedToModifyContest(
+                request.user.id,
+                problem.contest_id
+            ))
+        )
+            delete problem.evaluation_script;
 
-    return res.status(200).json(problem);
-});
+        return res.status(200).json(problem);
+    }
+);
 
 /**
  * @api {get} /api/cluster/:problem_id GetClusters
@@ -393,15 +567,31 @@ ProblemHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedReq
  *
  */
 
-ProblemHandler.get("/cluster/:problem_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
+ProblemHandler.get(
+    "/cluster/:problem_id",
+    useOptionalAuth,
+    async (request: AuthenticatedRequest, res) => {
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: request.params.problem_id,
+        });
 
-    const problem = await Database.selectOneFrom("problems", "*", { id: req.params.problem_id });
-    if(!problem) return res.status(404).send("Not found!");
+        if (!problem) return res.status(404);
 
-    if(!(await isAllowedToViewProblem(req.user ? req.user.id : undefined, problem.id))) return res.status(404).send("Not found!");
-    const clusters = await Database.selectFrom("clusters", "*", { problem_id: problem.id });
-    return res.status(200).json(clusters);
-});
+        if (
+            !(await isAllowedToViewProblem(
+                request.user ? request.user.id : undefined,
+                problem.id
+            ))
+        )
+            return res.status(404);
+
+        const clusters = await Database.selectFrom("clusters", "*", {
+            problem_id: problem.id,
+        });
+
+        return res.status(200).json(clusters);
+    }
+);
 
 /**
  * @api {get} /api/testcase/:cluster_id GetTestcases
@@ -418,23 +608,56 @@ ProblemHandler.get("/cluster/:problem_id", useOptionalAuth, async (req: Authenti
  *
  */
 
-ProblemHandler.get("/testcase/:cluster_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
+ProblemHandler.get(
+    "/testcase/:cluster_id",
+    useOptionalAuth,
+    async (request: AuthenticatedRequest, res) => {
+        const cluster = await Database.selectOneFrom("clusters", "*", {
+            id: request.params.cluster_id,
+        });
 
-    const cluster = await Database.selectOneFrom("clusters", "*", { id: req.params.cluster_id });
-    if(!cluster) return res.status(404).send("Not found!");
-    const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
-    if(!problem) return res.status(500).send("Internal error!");
-    if(!(await isAllowedToViewProblem(req.user ? req.user.id : undefined, problem.id))) return res.status(404).send("Not found!");
-    const contest = await Database.selectOneFrom("contests", "*", { id: problem.contest_id });
-    if(!contest) return res.status(500).send("Internal error!");
+        if (!cluster) return res.status(404);
 
-    const testcases = await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
+        const problem = await Database.selectOneFrom("problems", "*", {
+            id: cluster.problem_id,
+        });
 
+        if (!problem) return res.status(500);
 
-    if(contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now()) return res.status(200).json(testcases);
-    if(await isAllowedToModifyContest(req.user ? req.user.id : undefined, contest.id)) return res.status(200).json(testcases);
+        if (
+            !(await isAllowedToViewProblem(
+                request.user ? request.user.id : undefined,
+                problem.id
+            ))
+        )
+            return res.status(404);
 
-    return res.status(404).send("Not found!");
-});
+        const contest = await Database.selectOneFrom("contests", "*", {
+            id: problem.contest_id,
+        });
+
+        if (!contest) return res.status(500);
+
+        const testcases = await Database.selectFrom("testcases", "*", {
+            cluster_id: cluster.id,
+        });
+
+        if (
+            contest.start_time.getTime() + contest.duration_seconds * 1000 <
+            Date.now()
+        )
+            return res.status(200).json(testcases);
+
+        if (
+            await isAllowedToModifyContest(
+                request.user ? request.user.id : undefined,
+                contest.id
+            )
+        )
+            return res.status(200).json(testcases);
+
+        return res.status(404);
+    }
+);
 
 export default ProblemHandler;

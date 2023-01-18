@@ -1,4 +1,4 @@
-import {Snowflake} from "../lib/snowflake";
+import { Snowflake } from "../lib/snowflake";
 
 export type Verdict =
     | "accepted"
@@ -11,17 +11,17 @@ export type Verdict =
 export type EvaluationLanguage = "c" | "cpp" | "python";
 
 export type Submission = {
-    id: Snowflake,
-    user_id: Snowflake,
-    problem_id: Snowflake,
-    language: EvaluationLanguage,
-    code: string,
+    id: Snowflake;
+    user_id: Snowflake;
+    problem_id: Snowflake;
+    language: EvaluationLanguage;
+    code: string;
 
-    verdict?: Verdict,
-    awardedScore?: number,
+    verdict?: Verdict;
+    awardedScore?: number;
 
-    time_used_millis?: number,
-    memory_used_megabytes?: number,
+    time_used_millis?: number;
+    memory_used_megabytes?: number;
 
-    completed: boolean,
-}
+    completed: boolean;
+};

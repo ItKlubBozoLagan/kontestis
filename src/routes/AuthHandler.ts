@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { compare, hash } from "bcrypt";
-import {Request, Router} from "express";
+import { Request, Router } from "express";
 import { sign } from "jsonwebtoken";
 
 import { Database } from "../database/Database";
@@ -8,7 +8,6 @@ import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { AuthenticatedRequest, useAuth } from "../middlewares/useAuth";
 import { useValidation } from "../middlewares/useValidation";
-import { User } from "../types/User";
 
 const AuthHandler = Router();
 
@@ -24,7 +23,6 @@ const AuthHandler = Router();
  *     403 Access Denied.
  */
 
-
 /**
  * @apiDefine ExampleUser
  *
@@ -39,16 +37,15 @@ const AuthHandler = Router();
  *      }
  */
 
-
 const registerSchema = Type.Object({
     email: Type.String({ minLength: 5, maxLength: 50 }),
     username: Type.String({ minLength: 5, maxLength: 50 }),
-    password: Type.String({ minLength: 5, maxLength: 50 })
+    password: Type.String({ minLength: 5, maxLength: 50 }),
 });
 
 const loginSchema = Type.Object({
     email: Type.String(),
-    password: Type.String()
+    password: Type.String(),
 });
 
 /**
@@ -71,19 +68,31 @@ const loginSchema = Type.Object({
  *     400 Bad request
  */
 
+AuthHandler.post(
+    "/register",
+    useValidation(registerSchema, { body: true }),
+    async (request: Request, res) => {
+        const user = await Database.selectOneFrom("users", "*", {
+            email: request.body.email,
+        });
 
-AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async (req: Request, res) => {
-    const user = await Database.selectOneFrom("users", "*", {email: req.body.email});
+        if (user) return res.status(400);
 
-    if(user) return res.status(400).send("User already exists!");
+        const hashPassword = await hash(request.body.password, 10);
 
-    const hashPassword = await hash(req.body.password, 10);
+        const newUser = {
+            id: generateSnowflake(),
+            email: request.body.email,
+            username: request.body.username,
+            password: hashPassword,
+            permissions: 0,
+        };
 
-    const newUser = { id: generateSnowflake(), email: req.body.email, username: req.body.username, password: hashPassword,  permissions: 0 };
-    await Database.insertInto("users", newUser);
+        await Database.insertInto("users", newUser);
 
-    return res.status(200).send(newUser);
-});
+        return res.status(200).json(newUser);
+    }
+);
 
 /**
  * @api {post} /api/auth/login LoginUser
@@ -106,20 +115,28 @@ AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async
  *     400 Bad request
  */
 
-AuthHandler.post("/login", useValidation(loginSchema, { body: true }), async (req, res) => {
+AuthHandler.post(
+    "/login",
+    useValidation(loginSchema, { body: true }),
+    async (request, res) => {
+        const user = await Database.selectOneFrom("users", "*", {
+            email: request.body.email,
+        });
 
-    const user = await Database.selectOneFrom("users", "*", { email: req.body.email });
+        if (!user) return res.status(400);
 
-    if(!user) return res.status(400).send("Invalid username or password!");
+        const validPassword = await compare(
+            request.body.password,
+            user.password
+        );
 
-    const validPassword = await compare(req.body.password, user.password);
+        if (!validPassword) return res.status(400);
 
-    if(!validPassword) return res.status(400).send("Invalid username or password!");
+        const token = sign({ _id: user.id }, Globals.tokenSecret);
 
-    const token = sign({_id: user.id}, Globals.tokenSecret);
-
-    res.status(200).send(token);
-});
+        res.status(200).send(token);
+    }
+);
 
 /**
  * @api {get} /api/auth/info UserInfo
@@ -153,19 +170,24 @@ AuthHandler.get("/info", useAuth, async (req: AuthenticatedRequest, res) => {
  *
  */
 
-AuthHandler.get("/info/:id", useAuth, async (req: AuthenticatedRequest, res) => {
+AuthHandler.get(
+    "/info/:id",
+    useAuth,
+    async (req: AuthenticatedRequest, res) => {
+        if (!req.user) return res.status(403);
 
-    if(!req.user) return res.status(403).send("Access denied!");
+        const { user } = req;
 
-    const user = req.user;
-    if(!(user.permissions & 1)) return res.status(403).send("Access denied!");
+        if (!(user.permissions & 1)) return res.status(403);
 
-    const searchUser = await Database.selectOneFrom("users", "*", { id: req.params.id });
+        const searchUser = await Database.selectOneFrom("users", "*", {
+            id: req.params.id,
+        });
 
-    if(!searchUser) return res.status(404).send("User not found!");
+        if (!searchUser) return res.status(404);
 
-    return res.status(200).json(searchUser);
-
-});
+        return res.status(200).json(searchUser);
+    }
+);
 
 export default AuthHandler;

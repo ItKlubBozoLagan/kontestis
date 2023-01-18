@@ -1,65 +1,116 @@
-import {Snowflake} from "../lib/snowflake";
-import {Database} from "../database/Database";
-
+import { Database } from "../database/Database";
+import { Snowflake } from "../lib/snowflake";
 
 // TODO: Remove all this, do middlewares
 
-export const isAllowedToViewSubmission = async (userId: Snowflake | undefined, submissionId: Snowflake) => {
+export const isAllowedToViewSubmission = async (
+    userId: Snowflake | undefined,
+    submissionId: Snowflake
+) => {
+    const submission = await Database.selectOneFrom(
+        "submissions",
+        ["problem_id", "user_id"],
+        { id: submissionId }
+    );
 
-    const submission = await Database.selectOneFrom("submissions", ["problem_id", "user_id"], { id: submissionId });
-    if(!submission) return false;
+    if (!submission) return false;
 
-    const problem = await Database.selectOneFrom("problems", ["contest_id"], { id: submission.problem_id });
-    if(!problem) return false;
+    const problem = await Database.selectOneFrom("problems", ["contest_id"], {
+        id: submission.problem_id,
+    });
 
-    const contest = await Database.selectOneFrom("contests", ["id", "start_time", "duration_seconds"], { id: problem.contest_id });
-    if(!contest) return false;
+    if (!problem) return false;
 
-    if(!(await isAllowedToViewContest( userId ?? undefined, contest.id))) return false;
-    if(contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now()) return true;
-    if(!userId) return false;
+    const contest = await Database.selectOneFrom(
+        "contests",
+        ["id", "start_time", "duration_seconds"],
+        { id: problem.contest_id }
+    );
 
-    return await isAllowedToModifyContest(userId, contest.id) || userId === submission.user_id;
-}
+    if (!contest) return false;
 
-export const isAllowedToViewProblem = async (userId: Snowflake | undefined, problemId: Snowflake) => {
+    if (!(await isAllowedToViewContest(userId ?? undefined, contest.id)))
+        return false;
 
-    const problem = await Database.selectOneFrom("problems", "*", { id: problemId });
-    if(!problem) return false;
+    if (
+        contest.start_time.getTime() + contest.duration_seconds * 1000 <
+        Date.now()
+    )
+        return true;
 
-    const contest = await Database.selectOneFrom("contests", "*", { id: problem.contest_id });
-    if(!contest) return false;
+    if (!userId) return false;
 
-    if(await isAllowedToModifyContest(userId, contest.id)) return true;
-    if(!(await isAllowedToViewContest(userId, contest.id))) return false;
+    return (
+        (await isAllowedToModifyContest(userId, contest.id)) ||
+        userId === submission.user_id
+    );
+};
 
-    //return contest.start_time.getTime() >= Date.now();
-    return true;
-}
+export const isAllowedToViewProblem = async (
+    userId: Snowflake | undefined,
+    problemId: Snowflake
+) => {
+    const problem = await Database.selectOneFrom("problems", "*", {
+        id: problemId,
+    });
 
-export const isAllowedToModifyContest = async (userId: Snowflake | undefined, contestId: Snowflake) => {
+    if (!problem) return false;
 
-    const contest = await Database.selectOneFrom("contests", "*", { id: contestId });
-    if(!contest) return false;
-    if(!userId) return false;
+    const contest = await Database.selectOneFrom("contests", "*", {
+        id: problem.contest_id,
+    });
 
-    if(contest.admin_id.toString() === userId.toString()) return true;
+    if (!contest) return false;
+
+    if (await isAllowedToModifyContest(userId, contest.id)) return true;
+
+    if (!(await isAllowedToViewContest(userId, contest.id))) return false;
+
+    return contest.start_time.getTime() >= Date.now();
+    // return true;
+};
+
+export const isAllowedToModifyContest = async (
+    userId: Snowflake | undefined,
+    contestId: Snowflake
+) => {
+    const contest = await Database.selectOneFrom("contests", "*", {
+        id: contestId,
+    });
+
+    if (!contest) return false;
+
+    if (!userId) return false;
+
+    if (contest.admin_id.toString() === userId.toString()) return true;
 
     const user = await Database.selectOneFrom("users", "*", { id: userId });
-    if(!user) return false;
+
+    if (!user) return false;
+
     return !!(user.permissions & 1);
 };
 
-export const isAllowedToViewContest = async (userId: Snowflake | undefined, contestId: Snowflake) => {
+export const isAllowedToViewContest = async (
+    userId: Snowflake | undefined,
+    contestId: Snowflake
+) => {
+    const contest = await Database.selectOneFrom("contests", "*", {
+        id: contestId,
+    });
 
-    const contest = await Database.selectOneFrom("contests", "*", { id: contestId });
-    if(!contest) return false;
-    if(contest.public) return true;
+    if (!contest) return false;
 
-    if(await isAllowedToModifyContest(userId, contestId)) return true;
+    if (contest.public) return true;
 
-    if(!userId) return false;
+    if (await isAllowedToModifyContest(userId, contestId)) return true;
 
-    const allowedUser = Database.selectOneFrom("allowed_users", "*", {user_id: userId, contest_id: contestId });
+    if (!userId) return false;
+
+    const allowedUser = Database.selectOneFrom("allowed_users", "*", {
+        user_id: userId,
+        contest_id: contestId,
+    });
+
     return !!allowedUser;
 };

@@ -1,7 +1,7 @@
-import {Snowflake} from "../lib/snowflake";
+import { Snowflake } from "../lib/snowflake";
 
 export type Cluster = {
-    id: Snowflake,
-    problem_id: Snowflake,
-    awarded_score: number
-}
+    id: Snowflake;
+    problem_id: Snowflake;
+    awarded_score: number;
+};
