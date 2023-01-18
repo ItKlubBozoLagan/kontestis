@@ -5,7 +5,7 @@ import NavBar from "../components/NavBar";
 
 export const Root: FC = () => {
     return (
-        <div tw={"w-full flex flex-col items-center mt-[-0.8rem]"}>
+        <div tw={"w-full flex flex-col items-center"}>
             <NavBar />
             {
                 <div

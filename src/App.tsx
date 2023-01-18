@@ -4,7 +4,7 @@ import "./globals.scss";
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Register from "./pages/account/Register";
+import AuthUser from "./pages/account/AuthUser";
 import { Contests } from "./pages/contests/Contests";
 import Dashboard from "./pages/Dashboard";
 import { Problem } from "./pages/problems/Problem";
@@ -26,7 +26,11 @@ const router = createBrowserRouter([
             },
             {
                 path: "/register",
-                element: <Register />,
+                element: <AuthUser register={true} />,
+            },
+            {
+                path: "/login",
+                element: <AuthUser register={false} />,
             },
             {
                 path: "/problems",
