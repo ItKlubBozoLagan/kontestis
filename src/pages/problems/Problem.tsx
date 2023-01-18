@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { http, wrapAxios } from "../../api/axios";
+import { SimpleButton } from "../../components/SimpleButton";
 import { TitledSection } from "../../components/TitledSection";
 import { ProblemType } from "../../types/ProblemType";
 
@@ -40,13 +41,7 @@ export const Problem: FC = () => {
                 <TitledSection title={"Submit"}>
                     <div>Submit code:</div>
                     <textarea tw={"w-4/5"} />
-                    <button
-                        tw={
-                            "w-1/4 bg-red-300 text-neutral-800 border-neutral-500 font-mono border-[1px] hover:(bg-red-400 text-neutral-900) rounded-md py-1.5"
-                        }
-                    >
-                        Submit
-                    </button>
+                    <SimpleButton>Submit</SimpleButton>
                     <div>Language: CPP</div>
                 </TitledSection>
             </div>

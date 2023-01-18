@@ -21,7 +21,7 @@ export const TitledSection: FC<Properties> = ({ title, children }) => {
             </div>
             <div
                 tw={
-                    "w-full flex flex-col justify-start gap-2 text-neutral-600 text-sm p-2"
+                    "w-full flex flex-col justify-start gap-2 text-neutral-600 text-sm p-2 box-border"
                 }
             >
                 {children}
