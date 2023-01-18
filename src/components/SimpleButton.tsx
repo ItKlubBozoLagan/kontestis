@@ -11,7 +11,7 @@ export const SimpleButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
     return (
         <button
             tw={
-                "w-1/4 bg-red-300 text-neutral-800 border-neutral-500 font-mono border-[1px] hover:(bg-red-400 text-neutral-900) rounded-md py-1.5"
+                "w-auto bg-red-300 text-neutral-800 border-neutral-500 font-mono border-[1px] hover:(bg-red-400 text-neutral-900) rounded-md py-1.5"
             }
             {...properties}
         >

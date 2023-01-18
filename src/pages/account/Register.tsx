@@ -25,7 +25,7 @@ const Register: FC = () => {
     }, [email, username, password]);
 
     return (
-        <div tw={"w-full max-w-[500px] py-20"}>
+        <div tw={"w-full md:max-w-[500px] sm:max-w-[200px] py-20"}>
             <TitledSection title={"Register"}>
                 <div>Status: {error}</div>
                 <form
@@ -44,7 +44,9 @@ const Register: FC = () => {
                             })
                         )
                             .then((user) => setError(user.id + ""))
-                            .catch((error) => setError(error.toLocaleString()));
+                            .catch((error) =>
+                                setError(error.response.data.toLocaleString())
+                            );
                     }}
                 >
                     <TitledInput

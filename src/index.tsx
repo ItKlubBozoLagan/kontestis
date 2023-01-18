@@ -1,49 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Register from "./pages/account/Register";
-import { Contests } from "./pages/contests/Contests";
-import Dashboard from "./pages/Dashboard";
-import { Problem } from "./pages/problems/Problem";
-import Problems from "./pages/problems/Problems";
-import { Root } from "./pages/Root";
+import App from "./App";
 
 const root = ReactDOM.createRoot(
     document.querySelector("#root") as HTMLElement
 );
 
-const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <Root />,
-        children: [
-            {
-                path: "/",
-                element: <Dashboard />,
-            },
-            {
-                path: "/problem/:problem_id",
-                element: <Problem />,
-            },
-            {
-                path: "/register",
-                element: <Register />,
-            },
-            {
-                path: "/problems",
-                element: <Problems />,
-            },
-            {
-                path: "/contests",
-                element: <Contests />,
-            },
-        ],
-    },
-]);
-
 root.render(
     <React.StrictMode>
-        <RouterProvider router={router} />
+        <App />
     </React.StrictMode>
 );
