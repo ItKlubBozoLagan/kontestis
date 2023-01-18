@@ -41,9 +41,9 @@ const AuthHandler = Router();
 
 
 const registerSchema = Type.Object({
-    email: Type.String(),
-    username: Type.String(),
-    password: Type.String()
+    email: Type.String({ minLength: 5, maxLength: 50 }),
+    username: Type.String({ minLength: 5, maxLength: 50 }),
+    password: Type.String({ minLength: 5, maxLength: 50 })
 });
 
 const loginSchema = Type.Object({
@@ -75,7 +75,7 @@ const loginSchema = Type.Object({
 AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async (req: Request, res) => {
     const user = await Database.selectOneFrom("users", "*", {email: req.body.email});
 
-    if(user) return res.status(400).send("Bad request!");
+    if(user) return res.status(400).send("User already exists!");
 
     const hashPassword = await hash(req.body.password, 10);
 

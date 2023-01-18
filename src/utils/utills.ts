@@ -33,7 +33,8 @@ export const isAllowedToViewProblem = async (userId: Snowflake | undefined, prob
     if(await isAllowedToModifyContest(userId, contest.id)) return true;
     if(!(await isAllowedToViewContest(userId, contest.id))) return false;
 
-    return contest.start_time.getTime() >= Date.now();
+    //return contest.start_time.getTime() >= Date.now();
+    return true;
 }
 
 export const isAllowedToModifyContest = async (userId: Snowflake | undefined, contestId: Snowflake) => {

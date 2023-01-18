@@ -346,7 +346,9 @@ ProblemHandler.get("/", useOptionalAuth, useValidation(getSchema, { query: true 
 
     if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, req.query.contest_id))) return res.status(404).send("Not found");
 
-    return res.status(200).json(problems);
+    return res.status(200).json(problems.filter(async (p) => {
+        return await isAllowedToViewProblem(req.user ? req.user.id : undefined, p.id);
+    }));
 });
 
 /**

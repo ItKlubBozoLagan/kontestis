@@ -1,4 +1,4 @@
-import {Router} from "express";
+import {raw, Router} from "express";
 import {Type} from "@sinclair/typebox";
 import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/useAuth";
 import {useValidation, ValidatedBody} from "../middlewares/useValidation";
@@ -11,6 +11,7 @@ import {
 import {Submission} from "../types/Submission";
 import {generateSnowflake} from "../lib/snowflake";
 import {Database} from "../database/Database";
+
 
 
 const SubmissionHandler = Router();
@@ -126,8 +127,6 @@ SubmissionHandler.post("/:problem_id", useAuth, useValidation(submissionSchema),
     }
 
     await Database.insertInto("submissions", submission);
-
-    // TODO: Start evaluation process.
 
     return res.status(200).json(submission);
 });
