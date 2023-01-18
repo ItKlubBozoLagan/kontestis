@@ -10,7 +10,7 @@ import {
 } from "../utils/utills";
 import {Submission} from "../types/Submission";
 import {generateSnowflake} from "../lib/snowflake";
-import {DataBase} from "../data/Database";
+import {Database} from "../database/Database";
 
 
 const SubmissionHandler = Router();
@@ -125,7 +125,7 @@ SubmissionHandler.post("/:problem_id", useAuth, useValidation(submissionSchema),
         completed: false
     }
 
-    await DataBase.insertInto("submissions", submission);
+    await Database.insertInto("submissions", submission);
 
     // TODO: Start evaluation process.
 
@@ -148,14 +148,14 @@ SubmissionHandler.post("/:problem_id", useAuth, useValidation(submissionSchema),
 
 SubmissionHandler.get("/:problem_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
-    const problem = await DataBase.selectOneFrom("problems", ["contest_id"], { id: req.params.problem_id });
+    const problem = await Database.selectOneFrom("problems", ["contest_id"], { id: req.params.problem_id });
     if(!problem) return res.status(404).send("Not found!");
 
-    const contest = await DataBase.selectOneFrom("contests", "*", { id: problem.contest_id });
+    const contest = await Database.selectOneFrom("contests", "*", { id: problem.contest_id });
     if(!contest) return res.status(500).send("Internal error!");
     if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, contest.id))) return res.status(404).send("Not found!");
 
-    const submissions = await DataBase.selectFrom("submissions", "*",
+    const submissions = await Database.selectFrom("submissions", "*",
         req.query.user_id ? { problem_id: req.params.problem_id, user_id: req.params.user_id }
             : { problem_id: req.params.problem_id });
 
@@ -186,7 +186,7 @@ SubmissionHandler.get("/:problem_id", useOptionalAuth, async (req: Authenticated
 
 SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
-    const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
+    const submission = await Database.selectOneFrom("submissions", "*", { id: req.params.submission_id });
     if(!submission) return res.status(404).send("Not found!");
     if(!(await isAllowedToViewSubmission(req.user ? req.user.id : undefined, submission.id))) return res.status(404).send("Not found!");
 
@@ -210,11 +210,11 @@ SubmissionHandler.get("/submission/:submission_id", useOptionalAuth, async (req:
 
 SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
-    const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
+    const submission = await Database.selectOneFrom("submissions", "*", { id: req.params.submission_id });
     if(!submission) return res.status(404).send("Not found!");
     if(!(await isAllowedToViewSubmission(req.user ? req.user.id : undefined, submission.id))) return res.status(404).send("Not found!");
 
-    const clusters = await DataBase.selectFrom("cluster_submissions", "*", { submission_id: submission.id });
+    const clusters = await Database.selectFrom("cluster_submissions", "*", { submission_id: submission.id });
     return res.status(200).json(clusters);
 });
 
@@ -235,11 +235,11 @@ SubmissionHandler.get("/cluster/:submission_id", useOptionalAuth, async (req: Au
 
 SubmissionHandler.get("/testcase/:submission_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
 
-    const submission = await DataBase.selectOneFrom("submissions", "*", { id: req.params.submission_id });
+    const submission = await Database.selectOneFrom("submissions", "*", { id: req.params.submission_id });
     if(!submission) return res.status(404).send("Not found!");
     if(!(await isAllowedToViewSubmission(req.user ? req.user.id : undefined, submission.id))) return res.status(404).send("Not found!");
 
-    const testcases = await DataBase.selectFrom("testcase_submissions", "*", { submission_id: submission.id });
+    const testcases = await Database.selectFrom("testcase_submissions", "*", { submission_id: submission.id });
     return res.status(200).json(testcases);
 });
 

@@ -3,7 +3,7 @@ import {Type} from "@sinclair/typebox";
 import {AuthenticatedRequest, useAuth, useOptionalAuth} from "../middlewares/useAuth";
 import {useValidation, ValidatedBody} from "../middlewares/useValidation";
 import {generateSnowflake} from "../lib/snowflake";
-import {DataBase} from "../data/Database";
+import {Database} from "../database/Database";
 import {isAllowedToModifyContest, isAllowedToViewContest} from "../utils/utills";
 import {AllowedUser} from "../types/AllowedUser";
 import {Contest} from "../types/Contest";
@@ -71,7 +71,7 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
         public: req.body.public,
     }
 
-    await DataBase.insertInto("contests", contest);
+    await Database.insertInto("contests", contest);
 
     return res.status(200).json(contest);
 });
@@ -90,7 +90,7 @@ ContestHandler.post("/", useAuth, useValidation(contestSchema), async (req: Auth
  */
 
 ContestHandler.get("/", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
-    return res.status(200).json((await DataBase.selectFrom("contests", "*"))
+    return res.status(200).json((await Database.selectFrom("contests", "*"))
         .filter(c => isAllowedToViewContest(req.user ? req.user.id : undefined, c.id)));
 });
 
@@ -123,17 +123,17 @@ ContestHandler.post("/allow/:contest_id", useAuth, useValidation(allowUserSchema
 
     if (!req.user) return res.status(403).send("Access denied!");
 
-    const contest = await DataBase.selectOneFrom("contests", "*", {id: req.params.contest_id});
+    const contest = await Database.selectOneFrom("contests", "*", {id: req.params.contest_id});
     if (!contest) return res.status(404).send("Not found!");
 
     if (!(await isAllowedToModifyContest(req.user.id, contest.id))) return res.status(403).send("Access denied!");
 
-    const user = await DataBase.selectOneFrom("users", "*", {id: req.body.user_id});
+    const user = await Database.selectOneFrom("users", "*", {id: req.body.user_id});
     if (!user) return res.status(404).send("Not found!");
 
     if(contest.public) return res.status(409).send("Conflict!");
 
-    if(await DataBase.selectOneFrom("allowed_users", "*", { user_id: user.id, contest_id: contest.id }))
+    if(await Database.selectOneFrom("allowed_users", "*", { user_id: user.id, contest_id: contest.id }))
         return res.status(409).send("Conflict!");
 
     const allowedUser: AllowedUser = {
@@ -142,7 +142,7 @@ ContestHandler.post("/allow/:contest_id", useAuth, useValidation(allowUserSchema
         contest_id: contest.id
     };
 
-    await DataBase.insertInto("allowed_users", allowedUser);
+    await Database.insertInto("allowed_users", allowedUser);
 
     return res.status(200).json(allowedUser);
 });
@@ -169,12 +169,12 @@ ContestHandler.post("/allow/:contest_id", useAuth, useValidation(allowUserSchema
  */
 
 ContestHandler.get("/allow/:contest_id", useOptionalAuth, async (req: AuthenticatedRequest, res) => {
-    let contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.contest_id });
+    let contest = await Database.selectOneFrom("contests", "*", { id: req.params.contest_id });
     if(!contest) return res.status(404).send("Not found!");
     if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, contest.id))) return res.status(404).send("Not found!");
     if(contest.public) return res.status(409).send("Conflict!");
 
-    const allowedUsers = await DataBase.selectFrom("allowed_users", ["user_id"], { contest_id: contest.id });
+    const allowedUsers = await Database.selectFrom("allowed_users", ["user_id"], { contest_id: contest.id });
     return res.status(200).json(allowedUsers);
 });
 
@@ -195,7 +195,7 @@ ContestHandler.get("/allow/:contest_id", useOptionalAuth, async (req: Authentica
 
 ContestHandler.get("/:contest_id", useOptionalAuth, async (req: AuthenticatedRequest , res) => {
 
-    let contest = await DataBase.selectOneFrom("contests", "*", { id: req.params.contest_id });
+    let contest = await Database.selectOneFrom("contests", "*", { id: req.params.contest_id });
     if(!contest) return res.status(404).send("Not found!");
     if(!(await isAllowedToViewContest(req.user ? req.user.id : undefined, contest.id))) return res.status(404).send("Not found!");
     return res.status(200).json(contest);

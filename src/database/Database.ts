@@ -11,7 +11,7 @@ import {Submission} from "../types/Submission";
 import {ClusterSubmission} from "../types/ClusterSubmission";
 import {TestcaseSubmission} from "../types/TestcaseSubmission";
 
-export const DataBase = new ScylloClient<{
+export const Database = new ScylloClient<{
     users: User;
     contests: Contest;
     allowed_users: AllowedUser,
@@ -24,14 +24,15 @@ export const DataBase = new ScylloClient<{
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
-        keyspace: Globals.dbKeySpace,
-        localDataCenter: Globals.dbDatacenter, 
+        keyspace: "system",
+        localDataCenter: Globals.dbDatacenter,
     },
 });
 
 export const initDatabase = async () => {
+    await Database.useKeyspace(Globals.dbKeyspace, true);
 
-    await DataBase.createTable("users", true, {
+    await Database.createTable("users", true, {
         id: { type: "bigint" },
         username: { type: "text" },
         password: { type: "text "},
@@ -39,17 +40,17 @@ export const initDatabase = async () => {
         permissions: { type: "bigint" },
     }, "id");
 
-    await DataBase.createIndex("users", "users_by_email", "email");
+    await Database.createIndex("users", "users_by_email", "email");
 
-    await DataBase.createTable("allowed_users", true, {
+    await Database.createTable("allowed_users", true, {
         id: { type: "bigint" },
         user_id: { type: "bigint" },
         contest_id: { type: "bigint" }
     }, "user_id");
 
-    await DataBase.createIndex("allowed_users", "allowed_users_by_allowed_id", "contest_id");
+    await Database.createIndex("allowed_users", "allowed_users_by_allowed_id", "contest_id");
 
-    await DataBase.createTable("contests", true, {
+    await Database.createTable("contests", true, {
         id: { type: "bigint" },
         admin_id: { type: "bigint" },
         name: { type: "text" },
@@ -58,10 +59,10 @@ export const initDatabase = async () => {
         public: { type: "boolean" },
     }, "id")
 
-    await DataBase.createIndex("contests", "contests_by_admin_id", "admin_id");
-    await DataBase.createIndex("contests", "contests_by_name", "name");
+    await Database.createIndex("contests", "contests_by_admin_id", "admin_id");
+    await Database.createIndex("contests", "contests_by_name", "name");
 
-    await DataBase.createTable("problems", true, {
+    await Database.createTable("problems", true, {
         id: { type: "bigint" },
         contest_id: { type: "bigint" },
         title: { type: "text" },
@@ -72,26 +73,26 @@ export const initDatabase = async () => {
         memory_limit_megabytes: { type: "int" }
     }, "id");
 
-    await DataBase.createIndex("problems", "problems_by_contest_id", "contest_id");
+    await Database.createIndex("problems", "problems_by_contest_id", "contest_id");
 
-    await DataBase.createTable("clusters", true, {
+    await Database.createTable("clusters", true, {
         id: { type: "bigint" },
         problem_id: { type: "bigint" },
         awarded_score: { type: "int" }
     }, "id");
 
-    await DataBase.createIndex("clusters", "clusters_by_problem_id", "problem_id");
+    await Database.createIndex("clusters", "clusters_by_problem_id", "problem_id");
 
-    await DataBase.createTable("testcases", true,{
+    await Database.createTable("testcases", true,{
         id: { type: "bigint" },
         cluster_id: { type: "bigint" },
         input: { type: "text" },
         correctOutput: { type: "text" }
     }, "id");
 
-    await DataBase.createIndex("testcases", "testcases_by_cluster_id", "cluster_id");
+    await Database.createIndex("testcases", "testcases_by_cluster_id", "cluster_id");
 
-    await DataBase.createTable("submissions", true, {
+    await Database.createTable("submissions", true, {
         id: { type: "bigint" },
         user_id: { type: "bigint" },
         problem_id: { type: "bigint" },
@@ -104,11 +105,11 @@ export const initDatabase = async () => {
         completed: { type: "tinyint" }
     }, "id");
 
-    await DataBase.createIndex("submissions", "submissions_by_user_id", "user_id");
-    await DataBase.createIndex("submissions", "submissions_by_problem_id", "problem_id");
+    await Database.createIndex("submissions", "submissions_by_user_id", "user_id");
+    await Database.createIndex("submissions", "submissions_by_problem_id", "problem_id");
 
 
-    await DataBase.createTable("cluster_submissions", true, {
+    await Database.createTable("cluster_submissions", true, {
         id: { type: "bigint" },
         submission_id: { type: "bigint" },
         cluster_id: { type: "bigint" },
@@ -118,10 +119,10 @@ export const initDatabase = async () => {
         memory_used_megabytes: { type: "int" },
     }, "id");
 
-    await DataBase.createIndex("cluster_submissions", "cluster_submissions_by_submission_id", "submission_id");
-    await DataBase.createIndex("cluster_submissions", "cluster_submissions_by_cluster_id", "cluster_id");
+    await Database.createIndex("cluster_submissions", "cluster_submissions_by_submission_id", "submission_id");
+    await Database.createIndex("cluster_submissions", "cluster_submissions_by_cluster_id", "cluster_id");
 
-    await DataBase.createTable("testcase_submissions", true, {
+    await Database.createTable("testcase_submissions", true, {
         id: { type: "bigint" },
         testcase_id: { type: "bigint" },
         submission_id: { type: "bigint" },
@@ -131,8 +132,8 @@ export const initDatabase = async () => {
         memory_used_megabytes: { type: "int" }
     }, "id");
 
-    await DataBase.createIndex("testcase_submissions", "testcase_submissions_by_testcase_id", "testcase_id");
-    await DataBase.createIndex("testcase_submissions", "testcase_submissions_by_submission_id", "submission_id");
+    await Database.createIndex("testcase_submissions", "testcase_submissions_by_testcase_id", "testcase_id");
+    await Database.createIndex("testcase_submissions", "testcase_submissions_by_submission_id", "submission_id");
 
 };
 

@@ -3,7 +3,7 @@ import { compare, hash } from "bcrypt";
 import {Request, Router} from "express";
 import { sign } from "jsonwebtoken";
 
-import { DataBase } from "../data/Database";
+import { Database } from "../database/Database";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { AuthenticatedRequest, useAuth } from "../middlewares/useAuth";
@@ -73,15 +73,15 @@ const loginSchema = Type.Object({
 
 
 AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async (req: Request, res) => {
-    const user = await DataBase.selectOneFrom("users", "*", {email: req.body.email});
+    const user = await Database.selectOneFrom("users", "*", {email: req.body.email});
 
     if(user) return res.status(400).send("Bad request!");
 
     const hashPassword = await hash(req.body.password, 10);
 
     const newUser = { id: generateSnowflake(), email: req.body.email, username: req.body.username, password: hashPassword,  permissions: 0 };
-    await DataBase.insertInto("users", newUser);
-    
+    await Database.insertInto("users", newUser);
+
     return res.status(200).send(newUser);
 });
 
@@ -108,12 +108,12 @@ AuthHandler.post("/register", useValidation(registerSchema, {body: true}), async
 
 AuthHandler.post("/login", useValidation(loginSchema, { body: true }), async (req, res) => {
 
-    const user = await DataBase.selectOneFrom("users", "*", { email: req.body.email });
+    const user = await Database.selectOneFrom("users", "*", { email: req.body.email });
 
     if(!user) return res.status(400).send("Invalid username or password!");
-    
+
     const validPassword = await compare(req.body.password, user.password);
-    
+
     if(!validPassword) return res.status(400).send("Invalid username or password!");
 
     const token = sign({_id: user.id}, Globals.tokenSecret);
@@ -160,7 +160,7 @@ AuthHandler.get("/info/:id", useAuth, async (req: AuthenticatedRequest, res) => 
     const user = req.user;
     if(!(user.permissions & 1)) return res.status(403).send("Access denied!");
 
-    const searchUser = await DataBase.selectOneFrom("users", "*", { id: req.params.id });
+    const searchUser = await Database.selectOneFrom("users", "*", { id: req.params.id });
 
     if(!searchUser) return res.status(404).send("User not found!");
 

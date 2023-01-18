@@ -4,7 +4,7 @@ import Express, { json } from "express";
 // We must load .env first so the database has correct details.
 dotenvConfig();
 
-import { DataBase, initDatabase } from "./data/Database";
+import { Database, initDatabase } from "./database/Database";
 import { Logger } from "./lib/logger";
 import AuthHandler from "./routes/AuthHandler";
 import ContestHandler from "./routes/ContestHandler";
@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => res.send({ status: 200 }));
 
 
-DataBase.awaitConnection().then(async () => {
+Database.awaitConnection().then(async () => {
     Logger.info("Successfully connected to database!");
     await initDatabase();
     Logger.info("Initialized database!");

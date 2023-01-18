@@ -3,7 +3,7 @@ import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { NextFunction, Request, Response } from "express";
 import { JwtPayload, verify } from "jsonwebtoken";
 
-import { DataBase } from "../data/Database";
+import { Database } from "../database/Database";
 import { Globals } from "../globals";
 import { User } from "../types/User";
 
@@ -28,8 +28,8 @@ const validateJwt = async (token?: string): Promise<User | null> => {
     if(!compiledSchema.Check(jwt)) {
         return null;
     }
-    
-    const user = await DataBase.selectOneFrom("users", "*", {id: jwt._id});
+
+    const user = await Database.selectOneFrom("users", "*", {id: jwt._id});
 
     return user ?? null;
 };
