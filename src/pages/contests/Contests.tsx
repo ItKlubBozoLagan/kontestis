@@ -4,18 +4,10 @@ import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/axios";
 import PageTitle from "../../components/PageTitle";
+import { ContestType } from "../../types/ContestType";
 import { ContestListItem } from "./ContestListItem";
 
 export type Snowflake = bigint;
-
-export type Contest = {
-    id: Snowflake;
-    admin_id: Snowflake;
-    name: string;
-    start_time: Date;
-    duration_seconds: number;
-    public: boolean;
-};
 
 export const TableHeadItem = styled.td`
     padding-top: 0.5rem;
@@ -25,10 +17,10 @@ export const TableHeadItem = styled.td`
 `;
 
 export const Contests: FC = () => {
-    const [contests, setContests] = useState<Contest[]>([]);
+    const [contests, setContests] = useState<ContestType[]>([]);
 
     useEffect(() => {
-        wrapAxios<Contest[]>(http.get("/contest"))
+        wrapAxios<ContestType[]>(http.get("/contest"))
             .then((c) => {
                 setContests(
                     c

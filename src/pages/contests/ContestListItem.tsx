@@ -3,11 +3,11 @@ import { FiList } from "react-icons/all";
 import styled from "styled-components";
 import tw from "twin.macro";
 
+import { ContestType } from "../../types/ContestType";
 import { parseTime } from "../../utils/utils";
-import { Contest } from "./Contests";
 
 type Properties = {
-    contest: Contest;
+    contest: ContestType;
 };
 
 const ContestRow = styled.tr`

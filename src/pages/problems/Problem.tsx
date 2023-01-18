@@ -1,24 +1,17 @@
 import { FC, useEffect, useState } from "react";
+import { useParams } from "react-router";
 
 import { http, wrapAxios } from "../../api/axios";
 import { TitledSection } from "../../components/TitledSection";
-import { Snowflake } from "../contests/Contests";
+import { ProblemType } from "../../types/ProblemType";
 
 type Properties = {
-    problem_id: Snowflake;
+    problem_id: string;
 };
 
-type ProblemType = {
-    id: Snowflake;
-    contest_id: Snowflake;
-    title: string;
-    description: string;
+export const Problem: FC = () => {
+    const { problem_id } = useParams<Properties>();
 
-    time_limit_millis: number;
-    memory_limit_megabytes: number;
-};
-
-export const Problem: FC<Properties> = ({ problem_id }) => {
     const [problem, setProblem] = useState<ProblemType>({
         id: BigInt(0),
         contest_id: BigInt(0),
@@ -46,7 +39,14 @@ export const Problem: FC<Properties> = ({ problem_id }) => {
                 </TitledSection>
                 <TitledSection title={"Submit"}>
                     <div>Submit code:</div>
-                    <input tw={"w-1/2"} />
+                    <textarea tw={"w-4/5"} />
+                    <button
+                        tw={
+                            "w-1/4 bg-red-300 text-neutral-800 border-neutral-500 font-mono border-[1px] hover:(bg-red-400 text-neutral-900) rounded-md py-1.5"
+                        }
+                    >
+                        Submit
+                    </button>
                     <div>Language: CPP</div>
                 </TitledSection>
             </div>

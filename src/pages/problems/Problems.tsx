@@ -4,24 +4,10 @@ import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/axios";
 import PageTitle from "../../components/PageTitle";
+import { ProblemType } from "../../types/ProblemType";
 import { ProblemListItem } from "./ProblemListItem";
 
 export type Snowflake = bigint;
-
-type EvaluationVariant = "plain" | "script" | "interactive";
-
-type Problem = {
-    id: Snowflake;
-    contest_id: Snowflake;
-    title: string;
-    description: string;
-
-    evaluation_variant: EvaluationVariant;
-    evaluation_script?: string;
-
-    time_limit_millis: number;
-    memory_limit_megabytes: number;
-};
 
 export type Contest = {
     id: Snowflake;
@@ -37,12 +23,12 @@ const TableHead = styled.th`
 `;
 
 const Problems: FC = () => {
-    const [problems, setProblems] = useState<Problem[]>([]);
+    const [problems, setProblems] = useState<ProblemType[]>([]);
 
     useEffect(() => {
         wrapAxios<Contest[]>(http.get("/contest")).then((c) => {
             c.map((contestIndex) =>
-                wrapAxios<Problem[]>(
+                wrapAxios<ProblemType[]>(
                     http.get("/problem", {
                         params: { contest_id: contestIndex.id },
                     })
