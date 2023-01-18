@@ -10,8 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import { Problem } from "./pages/problems/Problem";
 import Problems from "./pages/problems/Problems";
 import { Root } from "./pages/Root";
+import { useAuthStore } from "./state/auth";
 
-const router = createBrowserRouter([
+const dashboardRouter = createBrowserRouter([
     {
         path: "/",
         element: <Root />,
@@ -25,14 +26,6 @@ const router = createBrowserRouter([
                 element: <Problem />,
             },
             {
-                path: "/register",
-                element: <AuthUser register={true} />,
-            },
-            {
-                path: "/login",
-                element: <AuthUser register={false} />,
-            },
-            {
                 path: "/problems",
                 element: <Problems />,
             },
@@ -44,8 +37,31 @@ const router = createBrowserRouter([
     },
 ]);
 
+const loginRouter = createBrowserRouter([
+    {
+        path: "/",
+        element: <Root />,
+        children: [
+            {
+                path: "/register",
+                element: <AuthUser register={true} />,
+            },
+            {
+                path: "/*",
+                element: <AuthUser register={false} />,
+            },
+            {
+                path: "/",
+                element: <AuthUser register={false} />,
+            },
+        ],
+    },
+]);
+
 const App = () => {
-    return <RouterProvider router={router} />;
+    const { token } = useAuthStore();
+
+    return <RouterProvider router={token ? dashboardRouter : loginRouter} />;
 };
 
 export default App;

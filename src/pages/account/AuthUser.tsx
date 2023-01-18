@@ -5,7 +5,7 @@ import { http, wrapAxios } from "../../api/axios";
 import { SimpleButton } from "../../components/SimpleButton";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
-import { UserType } from "../../types/UserType";
+import { useAuthStore } from "../../state/auth";
 
 type Result =
     | {
@@ -31,6 +31,8 @@ const AuthUser: FC<Properties> = ({ register }) => {
         setResult({ status: "none" });
     }, [email, username, password]);
 
+    const { setToken } = useAuthStore();
+
     return (
         <div tw={"w-full md:max-w-[500px] py-20"}>
             <TitledSection title={register ? "Register" : "Log in"}>
@@ -42,7 +44,7 @@ const AuthUser: FC<Properties> = ({ register }) => {
                         setUsername("");
                         setPassword("");
 
-                        wrapAxios<UserType>(
+                        wrapAxios<string>(
                             http.post(
                                 register ? "/auth/register" : "/auth/login",
                                 {
@@ -52,8 +54,11 @@ const AuthUser: FC<Properties> = ({ register }) => {
                                 }
                             )
                         )
-                            .then((user) => {
+                            .then((data) => {
                                 setResult({ status: "success" });
+
+                                if (!register) setToken(data);
+
                                 navigate(register ? "/login" : "/");
                             })
                             .catch((error) =>
