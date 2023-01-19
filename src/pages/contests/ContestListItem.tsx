@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { FiList } from "react-icons/all";
+import { Link } from "react-router-dom";
 
 import { TableItem, TableRow } from "../../components/Table";
 import { ContestType } from "../../types/ContestType";
@@ -36,9 +37,12 @@ export const ContestListItem: FC<Properties> = ({ contest }) => {
     return (
         <TableRow>
             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                <div tw={"flex items-center gap-2"}>
+                <Link
+                    to={"/contest/" + contest.id}
+                    tw={"flex items-center gap-2"}
+                >
                     <FiList tw={"text-xl"} /> {contest.name}
-                </div>
+                </Link>
             </TableItem>
             <TableItem>{contest.start_time.toLocaleString()}</TableItem>
             <TableItem>

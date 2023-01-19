@@ -7,6 +7,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { http, wrapAxios } from "./api/http";
 import { Account } from "./pages/account/Account";
 import { AuthUser } from "./pages/auth/AuthUser";
+import { Contest } from "./pages/contests/Contest";
 import { Contests } from "./pages/contests/Contests";
 import { Dashboard } from "./pages/Dashboard";
 import { Problem } from "./pages/problems/Problem";
@@ -31,6 +32,10 @@ const dashboardRouter = createBrowserRouter([
             {
                 path: "/problem/:problem_id",
                 element: <Problem />,
+            },
+            {
+                path: "/contest/:contest_id",
+                element: <Contest />,
             },
             {
                 path: "/problems",
