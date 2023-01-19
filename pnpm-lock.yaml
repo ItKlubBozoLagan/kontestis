@@ -28,6 +28,7 @@ specifiers:
   http-status-codes: ^2.2.0
   jsonwebtoken: ^9.0.0
   nodemon: ^2.0.19
+  remeda: ^1.6.0
   scyllo: ^1.5.0
   sunflake: ^0.6.0
   ts-node: ^10.9.1
@@ -46,6 +47,7 @@ dependencies:
   http-status-codes: 2.2.0
   jsonwebtoken: 9.0.0
   nodemon: 2.0.20
+  remeda: 1.6.0
   scyllo: 1.7.0
   sunflake: 0.6.0
   ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
@@ -3407,6 +3409,10 @@ packages:
     resolution: {integrity: sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==}
     engines: {node: '>=8'}
     dev: true
+
+  /remeda/1.6.0:
+    resolution: {integrity: sha512-2NBGJZrwWeqAY+Tzo66FyBYyW0CmMFh0tCg97T8G76krXmI45j/EK1oy+5WYrl2j7oPbgRkN6loGIiliiquvxg==}
+    dev: false
 
   /resolve-cwd/3.0.0:
     resolution: {integrity: sha512-OrZaX2Mb+rJCpH/6CpSqt9xFVpN++x01XnN2ie9g6P5/3xelLAkXWVADpdz1IHD/KFfEXyE6V0U01OQ3UO2rEg==}

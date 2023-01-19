@@ -21,6 +21,7 @@
         "http-status-codes": "^2.2.0",
         "jsonwebtoken": "^9.0.0",
         "nodemon": "^2.0.19",
+        "remeda": "^1.6.0",
         "scyllo": "^1.5.0",
         "sunflake": "^0.6.0",
         "ts-node": "^10.9.1"

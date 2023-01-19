@@ -3,6 +3,7 @@ import { compare, hash } from "bcrypt";
 import { Request, Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { sign } from "jsonwebtoken";
+import * as R from "remeda";
 
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
@@ -151,7 +152,7 @@ AuthHandler.post(
  */
 
 AuthHandler.get("/info", useAuth, async (req: AuthenticatedRequest, res) => {
-    return respond(res, StatusCodes.OK, req.user);
+    return respond(res, StatusCodes.OK, R.omit(req.user!, ["password"]));
 });
 
 /**
@@ -184,7 +185,7 @@ AuthHandler.get(
 
         if (!searchUser) return respond(res, StatusCodes.NOT_FOUND);
 
-        return respond(res, StatusCodes.OK, searchUser);
+        return respond(res, StatusCodes.OK, R.omit(searchUser, ["password"]));
     }
 );
 
