@@ -1,20 +1,12 @@
 import { FC, useEffect, useState } from "react";
-import styled from "styled-components";
-import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
 import PageTitle from "../../components/PageTitle";
+import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { ContestType } from "../../types/ContestType";
 import { ContestListItem } from "./ContestListItem";
 
 export type Snowflake = bigint;
-
-export const TableHeadItem = styled.td`
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    padding-left: 1rem;
-    ${tw`text-lg font-mono text-neutral-900`}
-`;
 
 export const Contests: FC = () => {
     const [contests, setContests] = useState<ContestType[]>([]);
@@ -62,21 +54,17 @@ export const Contests: FC = () => {
     return (
         <div tw={"w-full flex flex-col"}>
             <PageTitle>Contests:</PageTitle>
-            <table
-                tw={
-                    "table-fixed bg-neutral-100 border-collapse border-solid border-neutral-200 border-2 text-left"
-                }
-            >
-                <tr tw={"border-[1px] border-neutral-400 border-solid"}>
+            <Table>
+                <TableHeadRow>
                     <TableHeadItem>Name</TableHeadItem>
                     <TableHeadItem>Start time</TableHeadItem>
                     <TableHeadItem>Starts</TableHeadItem>
                     <TableHeadItem>Duration</TableHeadItem>
-                </tr>
+                </TableHeadRow>
                 {contests.map((c) => (
                     <ContestListItem contest={c} key={c.id + ""} />
                 ))}
-            </table>
+            </Table>
         </div>
     );
 };
