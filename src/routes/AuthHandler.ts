@@ -10,6 +10,7 @@ import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { AuthenticatedRequest, useAuth } from "../middlewares/useAuth";
 import { useValidation } from "../middlewares/useValidation";
+import { User } from "../types/User";
 import { respond } from "../utils/response";
 
 const AuthHandler = Router();
@@ -83,12 +84,12 @@ AuthHandler.post(
 
         const hashPassword = await hash(req.body.password, 10);
 
-        const newUser = {
+        const newUser: User = {
             id: generateSnowflake(),
             email: req.body.email,
             username: req.body.username,
             password: hashPassword,
-            permissions: 0,
+            permissions: 0n,
         };
 
         await Database.insertInto("users", newUser);
@@ -176,7 +177,7 @@ AuthHandler.get(
     async (req: AuthenticatedRequest, res) => {
         const user = req.user!;
 
-        if ((user.permissions & 1) === 0)
+        if ((user.permissions & 1n) === 0n)
             return respond(res, StatusCodes.FORBIDDEN);
 
         const searchUser = await Database.selectOneFrom("users", "*", {

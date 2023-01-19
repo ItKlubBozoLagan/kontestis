@@ -88,7 +88,7 @@ export const isAllowedToModifyContest = async (
 
     if (!user) return false;
 
-    return !!(user.permissions & 1);
+    return !!(user.permissions & 1n);
 };
 
 export const isAllowedToViewContest = async (

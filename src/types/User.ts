@@ -5,5 +5,5 @@ export type User = {
     username: string;
     password: string;
     email: string;
-    permissions: number;
+    permissions: bigint;
 };
