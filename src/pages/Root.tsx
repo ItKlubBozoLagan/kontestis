@@ -3,10 +3,14 @@ import { Outlet } from "react-router";
 
 import { NavBar } from "../components/NavBar";
 
-export const Root: FC = () => {
+type Properties = {
+    hideNavbar?: boolean;
+};
+
+export const Root: FC<Properties> = ({ hideNavbar = false }) => {
     return (
         <div tw={"w-full flex flex-col items-center"}>
-            <NavBar />
+            {!hideNavbar && <NavBar />}
             {
                 <div
                     tw={

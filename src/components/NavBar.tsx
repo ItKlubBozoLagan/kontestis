@@ -30,7 +30,7 @@ const items: NavItem[] = [
 ];
 
 export const NavBar: FC = () => {
-    const { isLoggedIn, user, setToken } = useAuthStore();
+    const { user, setToken } = useAuthStore();
 
     return (
         <div
@@ -41,31 +41,27 @@ export const NavBar: FC = () => {
             ]}
         >
             <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
-                {isLoggedIn && (
-                    <img
-                        tw={"w-8 h-auto rounded-full"}
-                        src={`https://www.gravatar.com/avatar/${md5(
-                            user.email.trim().toLowerCase()
-                        )}`}
-                        alt={"Profile avatar"}
-                    />
-                )}
+                <img
+                    tw={"w-8 h-auto rounded-full"}
+                    src={`https://www.gravatar.com/avatar/${md5(
+                        user.email.trim().toLowerCase()
+                    )}`}
+                    alt={"Profile avatar"}
+                />
                 {items.map((item) => (
                     <NavElement item={item} key={item.href} />
                 ))}
             </div>
-            {isLoggedIn && (
-                <div>
-                    <div
-                        tw={
-                            "flex items-center hover:text-red-800 transition-all cursor-pointer"
-                        }
-                        onClick={() => setToken("")}
-                    >
-                        <FiLogOut size={"16px"} />
-                    </div>
+            <div>
+                <div
+                    tw={
+                        "flex items-center hover:text-red-800 transition-all cursor-pointer"
+                    }
+                    onClick={() => setToken("")}
+                >
+                    <FiLogOut size={"16px"} />
                 </div>
-            )}
+            </div>
         </div>
     );
 };

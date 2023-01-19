@@ -51,7 +51,7 @@ const dashboardRouter = createBrowserRouter([
 const loginRouter = createBrowserRouter([
     {
         path: "/",
-        element: <Root />,
+        element: <Root hideNavbar />,
         children: [
             {
                 path: "/register",
@@ -70,7 +70,7 @@ const loginRouter = createBrowserRouter([
 ]);
 
 export const App = () => {
-    const { token, user, setUser, setIsLoggedIn } = useAuthStore();
+    const { isLoggedIn, token, user, setUser, setIsLoggedIn } = useAuthStore();
 
     useEffect(() => {
         if (token.length === 0) {
@@ -85,7 +85,7 @@ export const App = () => {
         });
     }, [token]);
 
-    if (token.length > 0 && !user)
+    if (token.length > 0 && !isLoggedIn)
         // TODO: create spinner
         return <>Loading...</>;
 
