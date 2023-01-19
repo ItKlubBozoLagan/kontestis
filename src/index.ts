@@ -20,8 +20,6 @@ const LanguageSchema = Type.Union([
     Type.Literal("cpp")
 ]);
 
-export type Language = Static<typeof LanguageSchema>;
-
 const schema = Type.Object({
     language: LanguageSchema,
     code: Type.String(),
