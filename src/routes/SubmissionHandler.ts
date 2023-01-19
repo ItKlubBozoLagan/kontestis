@@ -146,6 +146,37 @@ SubmissionHandler.post(
     }
 );
 
+// TODO: Permissions return full res!
+
+/**
+ * @api {get} /api/problem GetSubmissions
+ * @apiName GetSubmissions
+ * @apiGroup Submission
+ *
+ * @apiUse RequiredAuth
+ *
+ * @apiQuery {String} user_id Id of the user to view submissions.
+ *
+ * @apiSuccess {Object} ids submissions with only id field.
+ *
+ */
+
+const getSchema = Type.Object({
+    user_id: Type.String(),
+});
+
+SubmissionHandler.get(
+    "/",
+    useValidation(getSchema, { query: true }),
+    async (req, res) => {
+        const submissions = await Database.selectFrom("submissions", ["id"], {
+            user_id: req.query.user_id,
+        });
+
+        return res.status(200).json(submissions);
+    }
+);
+
 /**
  * @api {get} /api/submission/:problem_id GetSubmissions
  * @apiName GetSubmissions
