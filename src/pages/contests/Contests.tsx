@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 
 import { http, wrapAxios } from "../../api/http";
-import PageTitle from "../../components/PageTitle";
+import { PageTitle } from "../../components/PageTitle";
 import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { ContestType } from "../../types/ContestType";
 import { ContestListItem } from "./ContestListItem";

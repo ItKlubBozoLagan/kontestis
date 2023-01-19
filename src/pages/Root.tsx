@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Outlet } from "react-router";
 
-import NavBar from "../components/NavBar";
+import { NavBar } from "../components/NavBar";
 
 export const Root: FC = () => {
     return (

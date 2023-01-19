@@ -19,7 +19,7 @@ type Properties = {
     item: NavItem;
 };
 
-const NavElement: FC<Properties> = ({ item }) => {
+export const NavElement: FC<Properties> = ({ item }) => {
     return (
         <Link tw={"flex items-center"} to={`./${item.href}`}>
             <div
@@ -33,5 +33,3 @@ const NavElement: FC<Properties> = ({ item }) => {
         </Link>
     );
 };
-
-export default NavElement;

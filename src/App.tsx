@@ -5,11 +5,12 @@ import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { http, wrapAxios } from "./api/http";
-import AuthUser from "./pages/account/AuthUser";
+import { Account } from "./pages/account/Account";
+import { AuthUser } from "./pages/auth/AuthUser";
 import { Contests } from "./pages/contests/Contests";
-import Dashboard from "./pages/Dashboard";
+import { Dashboard } from "./pages/Dashboard";
 import { Problem } from "./pages/problems/Problem";
-import Problems from "./pages/problems/Problems";
+import { Problems } from "./pages/problems/Problems";
 import { Root } from "./pages/Root";
 import { useAuthStore } from "./state/auth";
 import { UserType } from "./types/UserType";
@@ -39,6 +40,10 @@ const dashboardRouter = createBrowserRouter([
                 path: "/contests",
                 element: <Contests />,
             },
+            {
+                path: "/auth",
+                element: <Account />,
+            },
         ],
     },
 ]);
@@ -64,7 +69,7 @@ const loginRouter = createBrowserRouter([
     },
 ]);
 
-const App = () => {
+export const App = () => {
     const { token, user, setUser, setIsLoggedIn } = useAuthStore();
 
     useEffect(() => {
@@ -86,5 +91,3 @@ const App = () => {
 
     return <RouterProvider router={token ? dashboardRouter : loginRouter} />;
 };
-
-export default App;

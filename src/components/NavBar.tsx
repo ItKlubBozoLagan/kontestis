@@ -4,7 +4,7 @@ import { FiLogOut } from "react-icons/all";
 import tw from "twin.macro";
 
 import { useAuthStore } from "../state/auth";
-import NavElement, { NavItem } from "./NavElement";
+import { NavElement, NavItem } from "./NavElement";
 
 const items: NavItem[] = [
     {
@@ -29,7 +29,7 @@ const items: NavItem[] = [
     },
 ];
 
-const NavBar: FC = () => {
+export const NavBar: FC = () => {
     const { isLoggedIn, user, setToken } = useAuthStore();
 
     return (
@@ -69,5 +69,3 @@ const NavBar: FC = () => {
         </div>
     );
 };
-
-export default NavBar;

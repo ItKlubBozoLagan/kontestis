@@ -16,7 +16,7 @@ type Properties = {
     register: boolean;
 };
 
-const AuthUser: FC<Properties> = ({ register }) => {
+export const AuthUser: FC<Properties> = ({ register }) => {
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -114,5 +114,3 @@ const AuthUser: FC<Properties> = ({ register }) => {
         </div>
     );
 };
-
-export default AuthUser;

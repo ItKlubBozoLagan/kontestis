@@ -3,7 +3,7 @@ import styled from "styled-components";
 import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
-import PageTitle from "../../components/PageTitle";
+import { PageTitle } from "../../components/PageTitle";
 import { ProblemType } from "../../types/ProblemType";
 import { ProblemListItem } from "./ProblemListItem";
 
@@ -22,7 +22,7 @@ const TableHead = styled.th`
     ${tw`text-lg font-mono text-neutral-900 py-2 pl-2`}
 `;
 
-const Problems: FC = () => {
+export const Problems: FC = () => {
     const [problems, setProblems] = useState<ProblemType[]>([]);
 
     useEffect(() => {
@@ -55,5 +55,3 @@ const Problems: FC = () => {
         </div>
     );
 };
-
-export default Problems;
