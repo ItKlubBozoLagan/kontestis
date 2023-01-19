@@ -1,11 +1,13 @@
 import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
 import { JwtPayload, verify } from "jsonwebtoken";
 
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
 import { User } from "../types/User";
+import { respond } from "../utils/response";
 
 const jwtSchema = Type.Object({
     _id: Type.String(),
@@ -44,14 +46,14 @@ const getAuth = (optional: boolean) => {
         const auth = req.header("authorization");
 
         if (!(auth && auth.startsWith("Bearer "))) {
-            return optional ? next() : res.status(403).send("Access denied");
+            return optional ? next() : respond(res, StatusCodes.FORBIDDEN);
         }
 
         const token = auth.slice("Bearer ".length);
         const validated = await validateJwt(token);
 
         if (!validated) {
-            return optional ? next() : res.status(403).send("Access denied");
+            return optional ? next() : respond(res, StatusCodes.FORBIDDEN);
         }
 
         req.user = validated;

@@ -3,4 +3,5 @@ import chalk from "chalk";
 
 export const Logger = createLogger({
     info: chalk.blue` INFO `,
+    debug: chalk.yellow` DEBUG `,
 });

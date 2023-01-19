@@ -1,10 +1,7 @@
+import cors from "cors";
 import { config as dotenvConfig } from "dotenv";
 import Express, { json } from "express";
-
-// We must load .env first so the database has correct details.
-dotenvConfig();
-
-import cors from "cors";
+import { StatusCodes } from "http-status-codes";
 
 import { Database, initDatabase } from "./database/Database";
 import { Logger } from "./lib/logger";
@@ -12,6 +9,10 @@ import AuthHandler from "./routes/AuthHandler";
 import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
+import { respond } from "./utils/response";
+
+// We must load .env first so the database has correct details.
+dotenvConfig();
 
 const app = Express();
 
@@ -28,7 +29,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get("/", (req, res) => res.send({ status: 200 }));
+app.get("/", (req, res) => respond(res, StatusCodes.OK));
 
 Database.awaitConnection().then(async () => {
     Logger.info("Successfully connected to database!");
@@ -38,4 +39,4 @@ Database.awaitConnection().then(async () => {
 
 const _PORT = process.env.PORT || 8080;
 
-app.listen(_PORT, () => Logger.info("Listening on " + _PORT));
+app.listen(_PORT, () => Logger.debug("Listening on " + _PORT));

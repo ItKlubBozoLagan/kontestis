@@ -1,5 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
+import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { generateSnowflake } from "../lib/snowflake";
@@ -10,6 +11,7 @@ import {
 } from "../middlewares/useAuth";
 import { useValidation, ValidatedBody } from "../middlewares/useValidation";
 import { Submission } from "../types/Submission";
+import { respond } from "../utils/response";
 import {
     isAllowedToModifyContest,
     isAllowedToViewContest,
@@ -122,14 +124,14 @@ SubmissionHandler.post(
         req: AuthenticatedRequest & ValidatedBody<typeof submissionSchema>,
         res
     ) => {
-        if (!req.user) return res.status(403);
+        const user = req.user!;
 
-        if (!(await isAllowedToViewProblem(req.user.id, req.params.problem_id)))
-            return res.status(404);
+        if (!(await isAllowedToViewProblem(user.id, req.params.problem_id)))
+            return respond(res, StatusCodes.NOT_FOUND);
 
         const submission: Submission = {
             id: generateSnowflake(),
-            user_id: req.user.id,
+            user_id: user.id,
             problem_id: req.params.problem_id,
             language: req.body.language,
             code: req.body.code,
@@ -140,7 +142,7 @@ SubmissionHandler.post(
 
         // TODO: Start evaluation process.
 
-        return res.status(200).json(submission);
+        return respond(res, StatusCodes.CREATED);
     }
 );
 
@@ -168,13 +170,13 @@ SubmissionHandler.get(
             { id: req.params.problem_id }
         );
 
-        if (!problem) return res.status(404);
+        if (!problem) return respond(res, StatusCodes.NOT_FOUND);
 
         const contest = await Database.selectOneFrom("contests", "*", {
             id: problem.contest_id,
         });
 
-        if (!contest) return res.status(500);
+        if (!contest) return respond(res, StatusCodes.INTERNAL_SERVER_ERROR);
 
         if (
             !(await isAllowedToViewContest(
@@ -182,7 +184,7 @@ SubmissionHandler.get(
                 contest.id
             ))
         )
-            return res.status(404);
+            return respond(res, StatusCodes.NOT_FOUND);
 
         const submissions = await Database.selectFrom(
             "submissions",
@@ -200,18 +202,18 @@ SubmissionHandler.get(
             contest.start_time.getTime() + contest.duration_seconds * 1000 <
                 Date.now()
         )
+            return respond(res, StatusCodes.OK, submissions);
+
+        if (!req.user) return respond(res, StatusCodes.NOT_FOUND);
+
+        if (await isAllowedToModifyContest(req.user.id, contest.id))
             return res.status(200).json(submissions);
 
-        if (!req.user) return res.status(404);
-
-        const { user } = req;
-
-        if (await isAllowedToModifyContest(user.id, contest.id))
-            return res.status(200).json(submissions);
-
-        return res
-            .status(200)
-            .json(submissions.filter((s) => s.user_id === user.id));
+        return respond(
+            res,
+            StatusCodes.OK,
+            submissions.filter((s) => s.user_id === req.user?.id)
+        );
     }
 );
 
@@ -237,7 +239,7 @@ SubmissionHandler.get(
             id: req.params.submission_id,
         });
 
-        if (!submission) return res.status(404);
+        if (!submission) return respond(res, StatusCodes.NOT_FOUND);
 
         if (
             !(await isAllowedToViewSubmission(
@@ -245,9 +247,9 @@ SubmissionHandler.get(
                 submission.id
             ))
         )
-            return res.status(404);
+            return respond(res, StatusCodes.NOT_FOUND);
 
-        return res.status(200).json(submission);
+        return respond(res, StatusCodes.OK, submission);
     }
 );
 
@@ -273,7 +275,7 @@ SubmissionHandler.get(
             id: req.params.submission_id,
         });
 
-        if (!submission) return res.status(404);
+        if (!submission) return respond(res, StatusCodes.NOT_FOUND);
 
         if (
             !(await isAllowedToViewSubmission(
@@ -281,13 +283,13 @@ SubmissionHandler.get(
                 submission.id
             ))
         )
-            return res.status(404);
+            return respond(res, StatusCodes.NOT_FOUND);
 
         const clusters = await Database.selectFrom("cluster_submissions", "*", {
             submission_id: submission.id,
         });
 
-        return res.status(200).json(clusters);
+        return respond(res, StatusCodes.OK, clusters);
     }
 );
 
@@ -313,7 +315,7 @@ SubmissionHandler.get(
             id: req.params.submission_id,
         });
 
-        if (!submission) return res.status(404);
+        if (!submission) return respond(res, StatusCodes.NOT_FOUND);
 
         if (
             !(await isAllowedToViewSubmission(
@@ -321,7 +323,7 @@ SubmissionHandler.get(
                 submission.id
             ))
         )
-            return res.status(404);
+            return respond(res, StatusCodes.NOT_FOUND);
 
         const testcases = await Database.selectFrom(
             "testcase_submissions",
@@ -329,7 +331,7 @@ SubmissionHandler.get(
             { submission_id: submission.id }
         );
 
-        return res.status(200).json(testcases);
+        return respond(res, StatusCodes.OK, testcases);
     }
 );
 

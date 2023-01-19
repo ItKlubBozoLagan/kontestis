@@ -1,6 +1,7 @@
 import { Type } from "@sinclair/typebox";
 import { compare, hash } from "bcrypt";
 import { Request, Router } from "express";
+import { StatusCodes } from "http-status-codes";
 import { sign } from "jsonwebtoken";
 
 import { Database } from "../database/Database";
@@ -8,6 +9,7 @@ import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { AuthenticatedRequest, useAuth } from "../middlewares/useAuth";
 import { useValidation } from "../middlewares/useValidation";
+import { respond } from "../utils/response";
 
 const AuthHandler = Router();
 
@@ -76,7 +78,7 @@ AuthHandler.post(
             email: req.body.email,
         });
 
-        if (user) return res.status(400);
+        if (user) return respond(res, StatusCodes.BAD_REQUEST);
 
         const hashPassword = await hash(req.body.password, 10);
 
@@ -90,7 +92,7 @@ AuthHandler.post(
 
         await Database.insertInto("users", newUser);
 
-        return res.status(200).json(newUser);
+        return respond(res, StatusCodes.OK, newUser);
     }
 );
 
@@ -123,15 +125,15 @@ AuthHandler.post(
             email: req.body.email,
         });
 
-        if (!user) return res.status(400);
+        if (!user) return respond(res, StatusCodes.BAD_REQUEST);
 
         const validPassword = await compare(req.body.password, user.password);
 
-        if (!validPassword) return res.status(400);
+        if (!validPassword) return respond(res, StatusCodes.BAD_REQUEST);
 
         const token = sign({ _id: user.id }, Globals.tokenSecret);
 
-        res.status(200).send(token);
+        respond(res, StatusCodes.OK, { token });
     }
 );
 
@@ -149,7 +151,7 @@ AuthHandler.post(
  */
 
 AuthHandler.get("/info", useAuth, async (req: AuthenticatedRequest, res) => {
-    return res.status(200).json(req.user);
+    return respond(res, StatusCodes.OK, req.user);
 });
 
 /**
@@ -171,19 +173,18 @@ AuthHandler.get(
     "/info/:id",
     useAuth,
     async (req: AuthenticatedRequest, res) => {
-        if (!req.user) return res.status(403);
+        const user = req.user!;
 
-        const { user } = req;
-
-        if (!(user.permissions & 1)) return res.status(403);
+        if ((user.permissions & 1) === 0)
+            return respond(res, StatusCodes.FORBIDDEN);
 
         const searchUser = await Database.selectOneFrom("users", "*", {
             id: req.params.id,
         });
 
-        if (!searchUser) return res.status(404);
+        if (!searchUser) return respond(res, StatusCodes.NOT_FOUND);
 
-        return res.status(200).json(searchUser);
+        return respond(res, StatusCodes.OK, searchUser);
     }
 );
 

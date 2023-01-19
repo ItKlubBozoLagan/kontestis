@@ -2,6 +2,9 @@ import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Request } from "express";
 import { Query, RequestHandler } from "express-serve-static-core";
+import { StatusCodes } from "http-status-codes";
+
+import { respond } from "../utils/response";
 
 type SchemaOptions = {
     body?: boolean;
@@ -38,7 +41,7 @@ export const useValidation = <
                 .filter(([, v]) => v)
                 .some(([key]) => !check.Check(req[key as keyof SchemaOptions]))
         )
-            return res.status(400);
+            return respond(res, StatusCodes.BAD_REQUEST);
 
         next();
     };

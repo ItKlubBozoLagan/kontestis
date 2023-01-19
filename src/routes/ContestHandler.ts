@@ -1,5 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
+import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { generateSnowflake } from "../lib/snowflake";
@@ -11,6 +12,7 @@ import {
 import { useValidation, ValidatedBody } from "../middlewares/useValidation";
 import { AllowedUser } from "../types/AllowedUser";
 import { Contest } from "../types/Contest";
+import { respond } from "../utils/response";
 import {
     isAllowedToModifyContest,
     isAllowedToViewContest,
@@ -70,13 +72,12 @@ ContestHandler.post(
     useAuth,
     useValidation(contestSchema),
     async (req: AuthenticatedRequest, res) => {
-        if (!req.user) return res.status(403);
+        const user = req.user!;
 
-        const { user } = req;
         const date = new Date(req.body.start_time);
 
         if (!date || date < new Date())
-            return res.status(400).send("Invalid date!");
+            return respond(res, StatusCodes.BAD_REQUEST);
 
         const contest: Contest = {
             id: generateSnowflake(),
@@ -89,7 +90,7 @@ ContestHandler.post(
 
         await Database.insertInto("contests", contest);
 
-        return res.status(200).json(contest);
+        return respond(res, StatusCodes.OK, contest);
     }
 );
 
@@ -115,7 +116,7 @@ ContestHandler.get(
                 isAllowedToViewContest(req.user ? req.user.id : undefined, c.id)
         );
 
-        return res.status(200).json(contests);
+        return respond(res, StatusCodes.OK, contests);
     }
 );
 
@@ -152,42 +153,45 @@ ContestHandler.post(
         req: AuthenticatedRequest & ValidatedBody<typeof allowUserSchema>,
         res
     ) => {
-        if (!req.user) return res.status(403);
+        const user = req.user!;
 
         const contest = await Database.selectOneFrom("contests", "*", {
             id: req.params.contest_id,
         });
 
-        if (!contest) return res.status(404);
+        if (!contest) return respond(res, StatusCodes.NOT_FOUND);
 
-        if (!(await isAllowedToModifyContest(req.user.id, contest.id)))
-            return res.status(403);
+        if (contest.public) return respond(res, StatusCodes.BAD_REQUEST);
 
-        const user = await Database.selectOneFrom("users", "*", {
+        if (!(await isAllowedToModifyContest(user.id, contest.id)))
+            return respond(res, StatusCodes.FORBIDDEN);
+
+        const databaseUser = await Database.selectOneFrom("users", "*", {
             id: req.body.user_id,
         });
 
-        if (!user) return res.status(404);
+        if (!databaseUser) return respond(res, StatusCodes.NOT_FOUND);
 
-        if (contest.public) return res.status(409);
-
-        if (
-            await Database.selectOneFrom("allowed_users", "*", {
-                user_id: user.id,
+        const allowedDatabaseUser = await Database.selectOneFrom(
+            "allowed_users",
+            "*",
+            {
+                user_id: databaseUser.id,
                 contest_id: contest.id,
-            })
-        )
-            return res.status(409);
+            }
+        );
+
+        if (allowedDatabaseUser) return respond(res, StatusCodes.CONFLICT);
 
         const allowedUser: AllowedUser = {
             id: generateSnowflake(),
-            user_id: user.id,
+            user_id: databaseUser.id,
             contest_id: contest.id,
         };
 
         await Database.insertInto("allowed_users", allowedUser);
 
-        return res.status(200).json(allowedUser);
+        return respond(res, StatusCodes.OK, allowedUser);
     }
 );
 
@@ -219,7 +223,9 @@ ContestHandler.get(
             id: req.params.contest_id,
         });
 
-        if (!contest) return res.status(404);
+        if (!contest) return respond(res, StatusCodes.NOT_FOUND);
+
+        if (contest.public) return respond(res, StatusCodes.BAD_REQUEST);
 
         if (
             !(await isAllowedToViewContest(
@@ -227,9 +233,7 @@ ContestHandler.get(
                 contest.id
             ))
         )
-            return res.status(404);
-
-        if (contest.public) return res.status(409);
+            return respond(res, StatusCodes.NOT_FOUND);
 
         const allowedUsers = await Database.selectFrom(
             "allowed_users",
@@ -237,7 +241,7 @@ ContestHandler.get(
             { contest_id: contest.id }
         );
 
-        return res.status(200).json(allowedUsers);
+        return respond(res, StatusCodes.OK, allowedUsers);
     }
 );
 
@@ -264,7 +268,7 @@ ContestHandler.get(
             id: req.params.contest_id,
         });
 
-        if (!contest) return res.status(404);
+        if (!contest) return respond(res, StatusCodes.NOT_FOUND);
 
         if (
             !(await isAllowedToViewContest(
@@ -272,9 +276,9 @@ ContestHandler.get(
                 contest.id
             ))
         )
-            return res.status(404);
+            return respond(res, StatusCodes.NOT_FOUND);
 
-        return res.status(200).json(contest);
+        return respond(res, StatusCodes.OK, contest);
     }
 );
 
