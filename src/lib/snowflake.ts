@@ -1,11 +1,11 @@
 import { generateSunflake } from "sunflake";
 
-export type Snowflake = string;
+export type Snowflake = bigint;
 
 export const generateSnowflake: () => Snowflake = (() => {
     const sunflake = generateSunflake({
         machineId: process.env.MACHINE_ID ?? 1,
-        as: "string",
+        as: "bigint",
     });
 
     return () => sunflake();

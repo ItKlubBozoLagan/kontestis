@@ -14,6 +14,16 @@ import { respond } from "./utils/response";
 // We must load .env first so the database has correct details.
 dotenvConfig();
 
+declare global {
+    interface BigInt {
+        toJSON(): string;
+    }
+}
+
+BigInt.prototype.toJSON = function () {
+    return this.toString();
+};
+
 const app = Express();
 
 app.use(json());

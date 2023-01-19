@@ -70,7 +70,7 @@ enum EvaluationSchema {
 }
 
 const problemSchema = Type.Object({
-    contest_id: Type.Number(),
+    contest_id: Type.RegEx(/\d{16,20}/g),
     title: Type.String(),
     description: Type.String(),
     evaluation_variant: Type.Enum(EvaluationSchema),
@@ -112,7 +112,9 @@ ProblemHandler.post(
     ) => {
         const user = req.user!;
 
-        if (!(await isAllowedToModifyContest(user.id, req.body.contest_id)))
+        const contest_id = BigInt(req.body.contest_id);
+
+        if (!(await isAllowedToModifyContest(user.id, contest_id)))
             return respond(res, StatusCodes.FORBIDDEN);
 
         if (
@@ -123,7 +125,7 @@ ProblemHandler.post(
 
         const problem: Problem = {
             id: generateSnowflake(),
-            contest_id: req.body.contest_id,
+            contest_id: contest_id,
             title: req.body.title,
             description: req.body.description,
             evaluation_variant: req.body.evaluation_variant,

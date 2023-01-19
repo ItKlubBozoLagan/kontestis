@@ -26,6 +26,9 @@ export const Database = new ScylloClient<{
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
         keyspace: "system",
         localDataCenter: Globals.dbDatacenter,
+        encoding: {
+            useBigIntAsLong: true,
+        },
     },
 });
 
