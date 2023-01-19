@@ -3,7 +3,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { useAuthStore } from "../state/auth";
 
 export const http = axios.create({
-    baseURL: "http://localhost:8080/api",
+    baseURL: "http://192.168.1.197:8080/api",
 });
 
 http.interceptors.request.use((config: AxiosRequestConfig) => {

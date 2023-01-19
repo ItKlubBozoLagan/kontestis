@@ -35,7 +35,7 @@ export const NavBar: FC = () => {
     return (
         <div
             css={[
-                tw`w-full p-4 pl-6 flex flex-col sm:flex-row items-center justify-between items-center gap-6 text-sm flex-wrap md:text-base`,
+                tw`w-full p-4 pl-6 flex flex-col sm:flex-row items-center justify-between items-center gap-6 flex-wrap text-base`,
                 tw`bg-slate-100`,
                 tw`border-solid border-l-0 border-r-0 border-t-0 border-b-2 border-neutral-300`,
             ]}
@@ -48,9 +48,11 @@ export const NavBar: FC = () => {
                     )}`}
                     alt={"Profile avatar"}
                 />
-                {items.map((item) => (
-                    <NavElement item={item} key={item.href} />
-                ))}
+                <div tw={"flex flex-wrap justify-center gap-6"}>
+                    {items.map((item) => (
+                        <NavElement item={item} key={item.href} />
+                    ))}
+                </div>
             </div>
             <div>
                 <div
