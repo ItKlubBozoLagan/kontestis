@@ -17,7 +17,7 @@ import {
     isAllowedToViewContest,
     isAllowedToViewProblem,
     isAllowedToViewSubmission,
-} from "../utils/utills";
+} from "../utils/utils";
 
 const SubmissionHandler = Router();
 

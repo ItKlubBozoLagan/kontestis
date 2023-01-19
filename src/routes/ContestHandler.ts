@@ -16,7 +16,7 @@ import { respond } from "../utils/response";
 import {
     isAllowedToModifyContest,
     isAllowedToViewContest,
-} from "../utils/utills";
+} from "../utils/utils";
 
 /**
  * @apiDefine ExampleContest

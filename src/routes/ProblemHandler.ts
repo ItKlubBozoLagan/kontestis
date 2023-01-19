@@ -18,7 +18,7 @@ import {
     isAllowedToModifyContest,
     isAllowedToViewContest,
     isAllowedToViewProblem,
-} from "../utils/utills";
+} from "../utils/utils";
 
 const ProblemHandler = Router();
 
