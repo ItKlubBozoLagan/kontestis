@@ -39,7 +39,6 @@ export const Contest: FC = () => {
             <Table tw={"w-full"}>
                 <TableHeadRow>
                     <TableHeadItem>Problem</TableHeadItem>
-                    <TableHeadItem>Score</TableHeadItem>
                 </TableHeadRow>
                 {problems.map((p) => (
                     <TableRow key={p.id + ""}>
@@ -51,10 +50,6 @@ export const Contest: FC = () => {
                                 <FiList tw={"text-xl"} /> {p.title}
                             </Link>
                         </TableItem>
-                        {/**
-                         TODO: Implement this!
-                         */}
-                        <TableItem>100</TableItem>
                     </TableRow>
                 ))}
             </Table>
