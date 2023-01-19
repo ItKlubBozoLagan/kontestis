@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import tw from "twin.macro";
 
-import { http, wrapAxios } from "../../api/axios";
+import { http, wrapAxios } from "../../api/http";
 import PageTitle from "../../components/PageTitle";
 import { ProblemType } from "../../types/ProblemType";
 import { ProblemListItem } from "./ProblemListItem";

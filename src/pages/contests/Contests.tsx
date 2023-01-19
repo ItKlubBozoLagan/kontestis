@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import tw from "twin.macro";
 
-import { http, wrapAxios } from "../../api/axios";
+import { http, wrapAxios } from "../../api/http";
 import PageTitle from "../../components/PageTitle";
 import { ContestType } from "../../types/ContestType";
 import { ContestListItem } from "./ContestListItem";

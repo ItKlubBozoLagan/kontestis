@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { http, wrapAxios } from "../../api/axios";
+import { http, wrapAxios } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
 import { TitledSection } from "../../components/TitledSection";
 import { ProblemType } from "../../types/ProblemType";
