@@ -27,7 +27,7 @@ const schema = Type.Object({
     code: Type.String(),
     time_limit: Type.Number(),
     testcases: Type.Array(Type.Object({
-        id: Type.Number(),
+        id: Type.String(),
         in: Type.String(),
         out: Type.String()
     }))

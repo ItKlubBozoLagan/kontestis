@@ -5,7 +5,7 @@ import {timeFunction} from "../recorders/TimeRecorder";
 import {MemoryRecord} from "../recorders/RecordOutputWithMemory";
 
 export type EvaluationResult = {
-    testCaseId: number
+    testCaseId: string
 } & ({
     verdict: "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded";
     time: number
