@@ -41,7 +41,7 @@ const dashboardRouter = createBrowserRouter([
                 element: <Contests />,
             },
             {
-                path: "/auth",
+                path: "/account",
                 element: <Account />,
             },
         ],

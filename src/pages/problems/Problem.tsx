@@ -29,7 +29,7 @@ export const Problem: FC = () => {
     }, []);
 
     return (
-        <div tw={"w-full flex flex-col justify-start items-center gap-4 mt-5"}>
+        <div tw={"w-full flex flex-col justify-start items-center gap-4"}>
             <div tw={"text-neutral-800 text-3xl"}>{problem.title}</div>
             <div tw={"text-neutral-700 text-lg"}>{problem.description}</div>
             <div tw={"w-full flex justify-between gap-5"}>
