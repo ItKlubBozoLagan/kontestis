@@ -35,7 +35,13 @@ const schema = Type.Object({
 
 const typeCheck = TypeCompiler.Compile(schema);
 
-const plainTextEvaluator = "c2lkID0gaW50KGlucHV0KCkpCnRlc3RfaW4sIHRlc3Rfb3V0LCB1c2VyX291dCA9IGlucHV0KCkuc3BsaXQoZiI9PXtzaWR9PT0iKQpwcmludCgiQUMiIGlmIHRlc3Rfb3V0LnN0cmlwKCkgPT0gdXNlcl9vdXQuc3RyaXAoKSBlbHNlICJXQSIpCg==";
+const PLAIN_TEXT_EVALUATOR = `
+sid = int(input())
+test_in, test_out, user_out = input().split(f"=={sid}==")
+print("AC" if test_out.strip() == user_out.strip() else "WA")
+`
+
+const plainTextEvaluatorBase64 = new Buffer(PLAIN_TEXT_EVALUATOR, "utf-8").toString("base64");
 
 app.use(json());
 
@@ -54,7 +60,7 @@ app.post("/", async (req, res) => {
                     recordSimpleOutput
                 ),
                 submission.testcases,
-                getSimplePythonCheckerFunction(Buffer.from(submission.evaluator ?? plainTextEvaluator, 'base64')),
+                getSimplePythonCheckerFunction(Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, 'base64')),
                 submission.time_limit
             )
         );
@@ -68,7 +74,7 @@ app.post("/", async (req, res) => {
                     b,
                     recordSimpleOutput
                 ),
-                submission.testcases, getSimplePythonCheckerFunction(Buffer.from(submission.evaluator ?? plainTextEvaluator, 'base64'))
+                submission.testcases, getSimplePythonCheckerFunction(Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, 'base64'))
                 , submission.time_limit)
         );
     }
