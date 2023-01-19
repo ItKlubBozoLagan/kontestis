@@ -3,12 +3,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 RUN apk add python3 gcc
+RUN npm install --global pnpm
 
 COPY package.json .
 COPY tsconfig.json .
 
-RUN yarn install
+RUN pnpm install
 
 COPY src ./src
 
-CMD ["yarn", "start"]
+CMD ["pnpm", "start"]
