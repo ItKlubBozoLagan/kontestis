@@ -6,16 +6,13 @@ export default defineConfig({
     plugins: [
         react({
             babel: {
-                plugins: ["babel-plugin-twin", "babel-plugin-macros", "babel-plugin-styled-components"],
-                ignore: ["\x00commonjsHelpers.js"] // weird babel-macro bug workaround
-            }
-        })
+                plugins: [
+                    "babel-plugin-twin",
+                    "babel-plugin-macros",
+                    "babel-plugin-styled-components",
+                ],
+                ignore: ["\u0000commonjsHelpers.js"], // weird babel-macro bug workaround
+            },
+        }),
     ],
-    server: {
-        proxy: {
-            "/api": {
-                target: "http://localhost:8080"
-            }
-        }
-    }
 });
