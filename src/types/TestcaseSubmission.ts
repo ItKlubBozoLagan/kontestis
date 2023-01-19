@@ -7,7 +7,7 @@ export type TestcaseSubmission = {
     submission_id: Snowflake;
 
     verdict: Verdict;
-    awardedScore: number;
+    awardedscore: number;
 
     time_used_millis: number;
     memory_used_megabytes: number;

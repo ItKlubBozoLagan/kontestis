@@ -5,7 +5,7 @@ type GlobalsType = {
     dbPort: number;
     dbKeyspace: string;
     dbDatacenter: string;
-    evaluatorURL: string;
+    evaluatorEndpoint: string;
 };
 
 export const Globals: GlobalsType = {
@@ -15,5 +15,6 @@ export const Globals: GlobalsType = {
     dbPort: process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 9042,
     dbKeyspace: process.env.DB_KEYSPACE ?? "",
     dbDatacenter: process.env.DB_DATACENTER ?? "",
-    evaluatorURL: process.env.EVALUATOR_URL ?? "http://localhost:8081",
+    evaluatorEndpoint:
+        process.env.EVALUATOR_ENDPOINT ?? "http://localhost:8082",
 };

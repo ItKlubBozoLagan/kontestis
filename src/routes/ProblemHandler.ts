@@ -372,7 +372,7 @@ ProblemHandler.post(
             id: generateSnowflake(),
             cluster_id: cluster.id,
             input: req.body.input,
-            correctOutput: req.body.correctOutput,
+            correctoutput: req.body.correctOutput,
         };
 
         await Database.insertInto("testcases", testcase);
@@ -459,14 +459,16 @@ ProblemHandler.get(
         req: AuthenticatedRequest & ValidatedBody<typeof getSchema>,
         res
     ) => {
+        const contestId = BigInt(req.query.contest_id as string);
+
         const problems = await Database.selectFrom("problems", "*", {
-            contest_id: req.query.contest_id,
+            contest_id: contestId,
         });
 
         if (
             !(await isAllowedToViewContest(
                 req.user ? req.user.id : undefined,
-                req.query.contest_id
+                contestId
             ))
         )
             return respond(res, StatusCodes.NOT_FOUND);
@@ -474,7 +476,7 @@ ProblemHandler.get(
         if (
             !(await isAllowedToViewContest(
                 req.user ? req.user.id : undefined,
-                req.query.contest_id
+                contestId
             ))
         )
             return respond(res, StatusCodes.NOT_FOUND);

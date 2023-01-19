@@ -2,15 +2,14 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
+import { beginEvaluation } from "../core/evaluation";
 import { Database } from "../database/Database";
-import { generateSnowflake } from "../lib/snowflake";
 import {
     AuthenticatedRequest,
     useAuth,
     useOptionalAuth,
 } from "../middlewares/useAuth";
 import { useValidation, ValidatedBody } from "../middlewares/useValidation";
-import { Submission } from "../types/Submission";
 import { respond } from "../utils/response";
 import {
     isAllowedToModifyContest,
@@ -20,12 +19,6 @@ import {
 } from "../utils/utils";
 
 const SubmissionHandler = Router();
-
-enum EvaluationLanguage {
-    c = "c",
-    cpp = "cpp",
-    py = "python",
-}
 
 /**
  * @apiDefine ExampleSubmissionPending
@@ -94,7 +87,11 @@ enum EvaluationLanguage {
  */
 
 const submissionSchema = Type.Object({
-    language: Type.Enum(EvaluationLanguage),
+    language: Type.Union([
+        Type.Literal("c"),
+        Type.Literal("cpp"),
+        Type.Literal("python"),
+    ]),
     code: Type.String({ maxLength: 64_000 }),
 });
 
@@ -126,23 +123,18 @@ SubmissionHandler.post(
     ) => {
         const user = req.user!;
 
-        if (!(await isAllowedToViewProblem(user.id, req.params.problem_id)))
+        const problemId = BigInt(req.params.problem_id);
+
+        if (!(await isAllowedToViewProblem(user.id, problemId)))
             return respond(res, StatusCodes.NOT_FOUND);
 
-        const submission: Submission = {
-            id: generateSnowflake(),
-            user_id: user.id,
-            problem_id: req.params.problem_id,
+        const submissionId = await beginEvaluation(user, {
+            problemId,
             language: req.body.language,
             code: req.body.code,
-            completed: false,
-        };
+        });
 
-        await Database.insertInto("submissions", submission);
-
-        // TODO: Start evaluation process.
-
-        return respond(res, StatusCodes.CREATED);
+        return respond(res, StatusCodes.CREATED, { submission: submissionId });
     }
 );
 
@@ -279,6 +271,15 @@ SubmissionHandler.get(
             ))
         )
             return respond(res, StatusCodes.NOT_FOUND);
+
+        const cs = await Database.selectFrom("cluster_submissions", "*", {
+            submission_id: submission.id,
+        });
+        const ts = await Database.selectFrom("testcase_submissions", "*", {
+            submission_id: submission.id,
+        });
+
+        console.log(cs, ts);
 
         return respond(res, StatusCodes.OK, submission);
     }

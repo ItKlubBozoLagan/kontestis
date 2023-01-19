@@ -1,7 +1,11 @@
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Request } from "express";
-import { Query, RequestHandler } from "express-serve-static-core";
+import {
+    ParamsDictionary,
+    Query,
+    RequestHandler,
+} from "express-serve-static-core";
 import { StatusCodes } from "http-status-codes";
 
 import { respond } from "../utils/response";
@@ -12,14 +16,14 @@ type SchemaOptions = {
 };
 
 export type ValidatedBody<S extends TSchema> = Request<
-    any,
+    ParamsDictionary,
     any,
     Static<S>,
-    any
+    Query
 >;
 
 type SchemaRequestHandler<S extends SchemaOptions, O> = RequestHandler<
-    any,
+    ParamsDictionary,
     any,
     S extends { body: true } ? O : any,
     S extends { query: true } ? O : Query

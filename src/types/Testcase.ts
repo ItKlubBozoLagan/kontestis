@@ -4,5 +4,5 @@ export type Testcase = {
     id: Snowflake;
     cluster_id: Snowflake;
     input: string;
-    correctOutput?: string;
+    correctoutput?: string;
 };

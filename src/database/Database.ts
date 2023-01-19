@@ -130,7 +130,7 @@ export const initDatabase = async () => {
             id: { type: "bigint" },
             cluster_id: { type: "bigint" },
             input: { type: "text" },
-            correctOutput: { type: "text" },
+            correctoutput: { type: "text" },
         },
         "id"
     );
@@ -151,10 +151,10 @@ export const initDatabase = async () => {
             language: { type: "text" },
             code: { type: "text" },
             verdict: { type: "text" },
-            awardedScore: { type: "int" },
+            awardedscore: { type: "int" },
             time_used_millis: { type: "int" },
             memory_used_megabytes: { type: "int" },
-            completed: { type: "tinyint" },
+            completed: { type: "boolean" },
         },
         "id"
     );
@@ -178,7 +178,7 @@ export const initDatabase = async () => {
             submission_id: { type: "bigint" },
             cluster_id: { type: "bigint" },
             verdict: { type: "text" },
-            awardedScore: { type: "int" },
+            awardedscore: { type: "int" },
             time_used_millis: { type: "int" },
             memory_used_megabytes: { type: "int" },
         },
@@ -204,7 +204,7 @@ export const initDatabase = async () => {
             testcase_id: { type: "bigint" },
             submission_id: { type: "bigint" },
             verdict: { type: "text" },
-            awardedScore: { type: "int" },
+            awardedscore: { type: "int" },
             time_used_millis: { type: "int" },
             memory_used_megabytes: { type: "int" },
         },

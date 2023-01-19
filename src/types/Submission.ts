@@ -6,7 +6,8 @@ export type Verdict =
     | "time_limit_exceeded"
     | "memory_limit_exceeded"
     | "runtime_error"
-    | "compile_error";
+    | "compilation_error"
+    | "evaluation_error";
 
 export type EvaluationLanguage = "c" | "cpp" | "python";
 
@@ -18,7 +19,7 @@ export type Submission = {
     code: string;
 
     verdict?: Verdict;
-    awardedScore?: number;
+    awardedscore?: number;
 
     time_used_millis?: number;
     memory_used_megabytes?: number;
