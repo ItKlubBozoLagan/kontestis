@@ -66,7 +66,7 @@ export const isAllowedToViewProblem = async (
 
     if (!(await isAllowedToViewContest(userId, contest.id))) return false;
 
-    return contest.start_time.getTime() >= Date.now();
+    return contest.start_time.getTime() <= Date.now();
     // return true;
 };
 
