@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { useParams } from "react-router";
+import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
@@ -35,16 +36,21 @@ export const Problem: FC = () => {
     const [code, setCode] = useState("");
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            wrapAxios<SubmissionType[]>(
+                http.get("/submission/" + problem_id + "/")
+            ).then((d) => {
+                setSubmission(d);
+            });
+        }, 1000);
+
         wrapAxios<ProblemType>(http.get("/problem/" + problem_id + "/")).then(
             setProblem
         );
-        wrapAxios<SubmissionType[]>(
-            http.get("/submission/" + problem_id + "/")
-        ).then((d) => {
-            console.log("D: " + d);
-            console.log(d);
-            setSubmission(d);
-        });
+
+        return () => {
+            clearInterval(interval);
+        };
     }, []);
 
     return (
@@ -53,9 +59,9 @@ export const Problem: FC = () => {
             <div tw={"text-neutral-700 text-lg"}>{problem.description}</div>
             <div tw={"w-full flex justify-between gap-5"}>
                 <TitledSection title={"Limits"}>
-                    <div>Time: {problem.time_limit_millis}MS</div>
-                    <div>Memory: {problem.memory_limit_megabytes}MB</div>
-                    <div>Source size: 64KB</div>
+                    <div>Time: {problem.time_limit_millis}ms</div>
+                    <div>Memory: {problem.memory_limit_megabytes} MiB</div>
+                    <div>Source size: 64 KiB</div>
                 </TitledSection>
                 <TitledSection title={"Submit"}>
                     <div>Submit code:</div>
@@ -70,6 +76,8 @@ export const Problem: FC = () => {
                             http.post("/submission/" + problem_id + "/", {
                                 code: btoa(code),
                                 language: "python",
+                            }).then(() => {
+                                location.reload();
                             });
                         }}
                     >
@@ -85,19 +93,32 @@ export const Problem: FC = () => {
                     <TableHeadItem>Time</TableHeadItem>
                     <TableHeadItem>Memory</TableHeadItem>
                 </TableHeadRow>
-                {submissions.map((s) => (
-                    <TableRow key={s.id + ""}>
-                        <TableItem tw={"text-red-600"}>
-                            {s.verdict ?? "Pending"}
-                        </TableItem>
-                        <TableItem>
-                            {s.time_used_millis ?? "Pending"}ms
-                        </TableItem>
-                        <TableItem>
-                            {s.memory_used_megabytes ?? "Pending"}MB
-                        </TableItem>
-                    </TableRow>
-                ))}
+                {submissions
+                    .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                    .map((s) => (
+                        <TableRow key={s.id + ""}>
+                            <TableItem
+                                tw={"text-red-600"}
+                                css={
+                                    s.verdict === "accepted"
+                                        ? tw`text-green-600`
+                                        : ""
+                                }
+                            >
+                                {s.verdict ?? "Pending"}
+                            </TableItem>
+                            <TableItem>
+                                {s.time_used_millis
+                                    ? `${s.time_used_millis} ms`
+                                    : "Pending"}
+                            </TableItem>
+                            <TableItem>
+                                {s.memory_used_megabytes
+                                    ? `${s.memory_used_megabytes} MiB`
+                                    : "Pending"}
+                            </TableItem>
+                        </TableRow>
+                    ))}
             </Table>
         </div>
     );
