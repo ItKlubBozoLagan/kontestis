@@ -16,5 +16,6 @@ export const Globals: GlobalsType = {
     dbKeyspace: process.env.DB_KEYSPACE ?? "",
     dbDatacenter: process.env.DB_DATACENTER ?? "",
     evaluatorEndpoint:
-        process.env.EVALUATOR_ENDPOINT ?? "http://localhost:8082",
+        process.env.EVALUATOR_ENDPOINT ??
+        "https://eval-1-y7a5esl5qq-uc.a.run.app",
 };

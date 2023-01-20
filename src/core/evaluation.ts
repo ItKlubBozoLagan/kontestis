@@ -119,6 +119,25 @@ export const beginEvaluation = async (
             return;
         }
 
+        const verdict =
+            response.find((it) => it.verdict !== "accepted")?.verdict ??
+            "accepted";
+
+        let time = 0;
+        let memory = 0;
+
+        for (const rs of response) {
+            if (rs.verdict !== "accepted") continue;
+
+            if (rs.time > time) {
+                time = rs.time;
+            }
+
+            if (rs.memory > memory) {
+                memory = rs.memory;
+            }
+        }
+
         await Promise.all(
             response.map((result) =>
                 Database.insertInto("testcase_submissions", {
@@ -184,6 +203,9 @@ export const beginEvaluation = async (
             "submissions",
             {
                 completed: true,
+                verdict: verdict,
+                time_used_millis: time,
+                memory_used_megabytes: memory,
             },
             { id: submission.id }
         );

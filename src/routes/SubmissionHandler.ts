@@ -230,7 +230,7 @@ SubmissionHandler.get(
         if (!req.user) return respond(res, StatusCodes.NOT_FOUND);
 
         if (await isAllowedToModifyContest(req.user.id, contest.id))
-            return res.status(200).json(submissions);
+            return respond(res, StatusCodes.OK, submissions);
 
         return respond(
             res,
