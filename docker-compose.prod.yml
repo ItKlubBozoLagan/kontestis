@@ -1,0 +1,30 @@
+# Used in development
+
+version: "2"
+
+services:
+  backend:
+    build: .
+    depends_on:
+      - scylla
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DB_HOST=scylla
+      - DB_PORT=9042
+      - DB_KEYSPACE=kontestis
+      - DB_DATACENTER=datacenter1
+      - TOKEN_SECRET=sometokensecret
+      - EVALUATOR_ENDPOINT=https://eval-1-y7a5esl5qq-uc.a.run.app/
+
+  scylla:
+    image: "scylladb/scylla:5.0.5"
+    command: "--smp 1 --skip-wait-for-gossip-to-settle 0"
+    ports:
+      - "9042:9042"
+    volumes:
+      - "./tools/scylla:/var/lib/scylla"
+    logging:
+      driver: none
+
