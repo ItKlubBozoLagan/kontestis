@@ -42,15 +42,15 @@ export const Dashboard: FC = () => {
     return <div>
         <Header/>
         <div tw="border-solid border-black border-2 rounded-md flex flex-col justify-items-center">
-            <div tw="bg-neutral-400 rounded-md p-x-2 p-y-2.5 flex flex-row justify-between justify-items-center">
+            <div tw="bg-neutral-400 rounded-md px-2 py-2.5 flex flex-row justify-between justify-items-center">
                 <span>Total contests</span>
                 <span tw="">{totalContests}</span>
             </div>
-            <div tw="bg-neutral-400 rounded-md p-x-2 p-y-2.5 flex flex-row justify-between justify-items-center">
+            <div tw="bg-neutral-400 rounded-md px-2 py-2.5 flex flex-row justify-between justify-items-center">
                 <span>Total problems</span>
                 <span>{totalProblems}</span>
             </div>
-            <div tw="bg-neutral-400 rounded-md p-x-2 p-y-2.5 flex flex-row justify-between justify-items-center">
+            <div tw="bg-neutral-400 rounded-md px-2 py-2.5 flex flex-row justify-between justify-items-center">
                 <span>Total submissions</span>
                 <span>{totalSubmissions}</span>
             </div>
