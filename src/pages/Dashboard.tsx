@@ -41,7 +41,7 @@ export const Dashboard: FC = () => {
 
     return <div>
         <Header/>
-        <div tw="border-solid border-black border-2 rounded-md flex flex-column justify-items-center">
+        <div tw="border-solid border-black border-2 rounded-md flex flex-col justify-items-center">
             <div tw="bg-neutral-400 rounded-md p-x-2 p-y-2.5 flex flex-row justify-between justify-items-center">
                 <span>Total contests</span>
                 <span tw="">{totalContests}</span>
