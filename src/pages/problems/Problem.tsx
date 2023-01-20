@@ -3,8 +3,16 @@ import { useParams } from "react-router";
 
 import { http, wrapAxios } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
+import {
+    Table,
+    TableHeadItem,
+    TableHeadRow,
+    TableItem,
+    TableRow,
+} from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
 import { ProblemType } from "../../types/ProblemType";
+import { SubmissionType } from "../../types/SubmissionType";
 
 type Properties = {
     problem_id: string;
@@ -22,10 +30,21 @@ export const Problem: FC = () => {
         memory_limit_megabytes: 0,
     });
 
+    const [submissions, setSubmission] = useState<SubmissionType[]>([]);
+
+    const [code, setCode] = useState("");
+
     useEffect(() => {
         wrapAxios<ProblemType>(http.get("/problem/" + problem_id + "/")).then(
             setProblem
         );
+        wrapAxios<SubmissionType[]>(
+            http.get("/submission/" + problem_id + "/")
+        ).then((d) => {
+            console.log("D: " + d);
+            console.log(d);
+            setSubmission(d);
+        });
     }, []);
 
     return (
@@ -40,14 +59,46 @@ export const Problem: FC = () => {
                 </TitledSection>
                 <TitledSection title={"Submit"}>
                     <div>Submit code:</div>
-                    <textarea tw={"w-4/5"} />
-                    <SimpleButton>Submit</SimpleButton>
-                    <div>Language: CPP</div>
+                    <textarea
+                        tw={"w-4/5"}
+                        value={code}
+                        onChange={(event) => setCode(event.target.value)}
+                    />
+                    <SimpleButton
+                        onClick={async () => {
+                            setCode("");
+                            http.post("/submission/" + problem_id + "/", {
+                                code: btoa(code),
+                                language: "python",
+                            });
+                        }}
+                    >
+                        Submit
+                    </SimpleButton>
+                    <div>Language: Python Only</div>
                 </TitledSection>
             </div>
-            <TitledSection title={"Submissions"}>
-                Your submissions will show up here
-            </TitledSection>
+
+            <Table tw={"w-full"}>
+                <TableHeadRow>
+                    <TableHeadItem>Verdict</TableHeadItem>
+                    <TableHeadItem>Time</TableHeadItem>
+                    <TableHeadItem>Memory</TableHeadItem>
+                </TableHeadRow>
+                {submissions.map((s) => (
+                    <TableRow key={s.id + ""}>
+                        <TableItem tw={"text-red-600"}>
+                            {s.verdict ?? "Pending"}
+                        </TableItem>
+                        <TableItem>
+                            {s.time_used_millis ?? "Pending"}ms
+                        </TableItem>
+                        <TableItem>
+                            {s.memory_used_megabytes ?? "Pending"}MB
+                        </TableItem>
+                    </TableRow>
+                ))}
+            </Table>
         </div>
     );
 };
