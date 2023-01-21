@@ -2,7 +2,7 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-RUN apk add python3 gcc
+RUN apk add python3 gcc g++ gcompat
 RUN npm install --global pnpm
 
 COPY package.json .
