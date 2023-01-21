@@ -10,7 +10,8 @@ services:
     working_dir: "/app"
     command: "npm run dev"
     depends_on:
-      - scylla
+      scylla:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
@@ -31,4 +32,10 @@ services:
       - "./tools/scylla:/var/lib/scylla"
     logging:
       driver: none
+    healthcheck:
+      test: cqlsh -e "exit"
+      interval: 2s
+      retries: 10
+      start_period: 10s
+      timeout: 10s
 
