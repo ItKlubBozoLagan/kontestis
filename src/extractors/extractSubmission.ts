@@ -25,8 +25,10 @@ export const extractSubmission = (
 
         if (!submission) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const user = await extractUser(req);
-        const problem = await extractProblem(req, submission.problem_id);
+        const [user, problem] = await Promise.all([
+            extractUser(req),
+            extractProblem(req, submission.problem_id),
+        ]);
         const contest = await extractContest(req, problem.contest_id);
 
         if (user.id === submission.user_id) return submission;

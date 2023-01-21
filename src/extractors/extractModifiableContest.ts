@@ -10,8 +10,10 @@ export const extractModifiableContest = async (
     req: Request,
     contestId?: Snowflake
 ) => {
-    const user = await extractUser(req);
-    const contest = await extractContest(req, contestId);
+    const [user, contest] = await Promise.all([
+        extractUser(req),
+        extractContest(req, contestId),
+    ]);
 
     if ((user.permissions & BigInt(1)) > 0) return contest;
 
