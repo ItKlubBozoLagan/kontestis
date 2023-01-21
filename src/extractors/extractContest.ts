@@ -4,10 +4,14 @@ import { StatusCodes } from "http-status-codes";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Snowflake } from "../lib/snowflake";
+import { extractIdFromParams as extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-const extractContest = (req: Request, contestId: Snowflake) => {
+export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
+    const contestId =
+        optionalContestId ?? extractIdFromParameters(req, "contest_id");
+
     return memoizedRequestExtractor(req, "__contest_" + contestId, async () => {
         const contest = await Database.selectOneFrom("contests", "*", {
             id: contestId,
