@@ -17,7 +17,7 @@ export const extractCluster = async (
     const clusterId =
         optionalClusterId ?? extractIdFromParameters(req, "cluster_id");
 
-    return memoizedRequestExtractor(req, "__cluster_" + clusterId, async () => {
+    return memoizedRequestExtractor(req, `__cluster_${clusterId}`, async () => {
         const cluster = await Database.selectOneFrom("clusters", "*", {
             id: clusterId,
         });

@@ -12,7 +12,7 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
     const contestId =
         optionalContestId ?? extractIdFromParameters(req, "contest_id");
 
-    return memoizedRequestExtractor(req, "__contest_" + contestId, async () => {
+    return memoizedRequestExtractor(req, `__contest_${contestId}`, async () => {
         const contest = await Database.selectOneFrom("contests", "*", {
             id: contestId,
         });
