@@ -6,9 +6,9 @@ import { sign } from "jsonwebtoken";
 import * as R from "remeda";
 
 import { Database } from "../database/Database";
+import { extractUser } from "../extractors/extractUser";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
-import { AuthenticatedRequest, useAuth } from "../middlewares/useAuth";
 import { useValidation } from "../middlewares/useValidation";
 import { User } from "../types/User";
 import { respond } from "../utils/response";
@@ -152,8 +152,10 @@ AuthHandler.post(
  *
  */
 
-AuthHandler.get("/info", useAuth, async (req: AuthenticatedRequest, res) => {
-    return respond(res, StatusCodes.OK, R.omit(req.user!, ["password"]));
+AuthHandler.get("/info", async (req, res) => {
+    const user = await extractUser(req);
+
+    return respond(res, StatusCodes.OK, R.omit(user, ["password"]));
 });
 
 /**
@@ -171,23 +173,19 @@ AuthHandler.get("/info", useAuth, async (req: AuthenticatedRequest, res) => {
  *
  */
 
-AuthHandler.get(
-    "/info/:id",
-    useAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const user = req.user!;
+AuthHandler.get("/info/:id", async (req, res) => {
+    const user = await extractUser(req);
 
-        if ((user.permissions & 1n) === 0n)
-            return respond(res, StatusCodes.FORBIDDEN);
+    if ((user.permissions & 1n) === 0n)
+        return respond(res, StatusCodes.FORBIDDEN);
 
-        const searchUser = await Database.selectOneFrom("users", "*", {
-            id: req.params.id,
-        });
+    const searchUser = await Database.selectOneFrom("users", "*", {
+        id: req.params.id,
+    });
 
-        if (!searchUser) return respond(res, StatusCodes.NOT_FOUND);
+    if (!searchUser) return respond(res, StatusCodes.NOT_FOUND);
 
-        return respond(res, StatusCodes.OK, R.omit(searchUser, ["password"]));
-    }
-);
+    return respond(res, StatusCodes.OK, R.omit(searchUser, ["password"]));
+});
 
 export default AuthHandler;

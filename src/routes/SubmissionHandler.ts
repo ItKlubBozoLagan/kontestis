@@ -4,19 +4,15 @@ import { StatusCodes } from "http-status-codes";
 
 import { beginEvaluation } from "../core/evaluation";
 import { Database } from "../database/Database";
-import {
-    AuthenticatedRequest,
-    useAuth,
-    useOptionalAuth,
-} from "../middlewares/useAuth";
-import { useValidation, ValidatedBody } from "../middlewares/useValidation";
+import { SafeError } from "../errors/SafeError";
+import { extractContest } from "../extractors/extractContest";
+import { extractModifiableContest } from "../extractors/extractModifiableContest";
+import { extractOptionalUser } from "../extractors/extractOptionalUser";
+import { extractProblem } from "../extractors/extractProblem";
+import { extractSubmission } from "../extractors/extractSubmission";
+import { extractUser } from "../extractors/extractUser";
+import { useValidation } from "../middlewares/useValidation";
 import { respond } from "../utils/response";
-import {
-    isAllowedToModifyContest,
-    isAllowedToViewContest,
-    isAllowedToViewProblem,
-    isAllowedToViewSubmission,
-} from "../utils/utils";
 
 const SubmissionHandler = Router();
 
@@ -115,21 +111,13 @@ const submissionSchema = Type.Object({
 
 SubmissionHandler.post(
     "/:problem_id",
-    useAuth,
     useValidation(submissionSchema),
-    async (
-        req: AuthenticatedRequest & ValidatedBody<typeof submissionSchema>,
-        res
-    ) => {
-        const user = req.user!;
-
-        const problemId = BigInt(req.params.problem_id);
-
-        if (!(await isAllowedToViewProblem(user.id, problemId)))
-            return respond(res, StatusCodes.NOT_FOUND);
+    async (req, res) => {
+        const problem = await extractProblem(req);
+        const user = await extractUser(req);
 
         const submissionId = await beginEvaluation(user, {
-            problemId,
+            problemId: problem.id,
             language: req.body.language,
             code: req.body.code,
         });
@@ -183,62 +171,34 @@ SubmissionHandler.get(
  * @apiSuccess {Object} submissions List of all problem submissions the user has access to!
  */
 
-SubmissionHandler.get(
-    "/:problem_id",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const problem = await Database.selectOneFrom(
-            "problems",
-            ["contest_id"],
-            { id: req.params.problem_id }
-        );
+SubmissionHandler.get("/:problem_id", async (req, res) => {
+    const problem = await extractProblem(req);
+    const user = await extractOptionalUser(req);
+    const contest = await extractContest(req, problem.contest_id);
 
-        if (!problem) return respond(res, StatusCodes.NOT_FOUND);
+    if (!req.query.user_id && !user) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const contest = await Database.selectOneFrom("contests", "*", {
-            id: problem.contest_id,
-        });
+    const submissions = await Database.selectFrom("submissions", "*", {
+        problem_id: problem.id,
+        user_id: req.query.user_id
+            ? BigInt(req.query.user_id.toString())
+            : user?.id,
+    });
 
-        if (!contest) return respond(res, StatusCodes.INTERNAL_SERVER_ERROR);
+    if (!req.query.user_id) return respond(res, StatusCodes.OK, submissions);
 
-        if (
-            !(await isAllowedToViewContest(
-                req.user ? req.user.id : undefined,
-                contest.id
-            ))
-        )
-            return respond(res, StatusCodes.NOT_FOUND);
+    if (
+        contest.start_time.getTime() + contest.duration_seconds * 1000 <=
+        Date.now()
+    )
+        return respond(res, StatusCodes.OK, submissions);
 
-        const submissions = await Database.selectFrom(
-            "submissions",
-            "*",
-            req.query.user_id
-                ? {
-                      problem_id: req.params.problem_id,
-                      user_id: req.params.user_id,
-                  }
-                : { problem_id: req.params.problem_id }
-        );
+    if (!user) return respond(res, StatusCodes.NOT_FOUND);
 
-        if (
-            req.query.user_id ||
-            contest.start_time.getTime() + contest.duration_seconds * 1000 <
-                Date.now()
-        )
-            return respond(res, StatusCodes.OK, submissions);
+    await extractModifiableContest(req, problem.contest_id);
 
-        if (!req.user) return respond(res, StatusCodes.NOT_FOUND);
-
-        if (await isAllowedToModifyContest(req.user.id, contest.id))
-            return respond(res, StatusCodes.OK, submissions);
-
-        return respond(
-            res,
-            StatusCodes.OK,
-            submissions.filter((s) => s.user_id === req.user?.id)
-        );
-    }
-);
+    return respond(res, StatusCodes.OK, submissions);
+});
 
 /**
  * @api {get} /api/submission/submission/:submission_id GetSubmission
@@ -254,36 +214,11 @@ SubmissionHandler.get(
  * @apiSuccess {Object} submission Selected submission.
  */
 
-SubmissionHandler.get(
-    "/submission/:submission_id",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const submission = await Database.selectOneFrom("submissions", "*", {
-            id: req.params.submission_id,
-        });
+SubmissionHandler.get("/submission/:submission_id", async (req, res) => {
+    const submission = await extractSubmission(req);
 
-        if (!submission) return respond(res, StatusCodes.NOT_FOUND);
-
-        if (
-            !(await isAllowedToViewSubmission(
-                req.user ? req.user.id : undefined,
-                submission.id
-            ))
-        )
-            return respond(res, StatusCodes.NOT_FOUND);
-
-        const cs = await Database.selectFrom("cluster_submissions", "*", {
-            submission_id: submission.id,
-        });
-        const ts = await Database.selectFrom("testcase_submissions", "*", {
-            submission_id: submission.id,
-        });
-
-        console.log(cs, ts);
-
-        return respond(res, StatusCodes.OK, submission);
-    }
-);
+    return respond(res, StatusCodes.OK, submission);
+});
 
 /**
  * @api {get} /api/submission/cluster/:submission_id GetSubmissionClusters
@@ -299,31 +234,15 @@ SubmissionHandler.get(
  * @apiUse ExampleSubmissionCluster
  */
 
-SubmissionHandler.get(
-    "/cluster/:submission_id",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const submission = await Database.selectOneFrom("submissions", "*", {
-            id: req.params.submission_id,
-        });
+SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {
+    const submission = await extractSubmission(req);
 
-        if (!submission) return respond(res, StatusCodes.NOT_FOUND);
+    const clusters = await Database.selectFrom("cluster_submissions", "*", {
+        submission_id: submission.id,
+    });
 
-        if (
-            !(await isAllowedToViewSubmission(
-                req.user ? req.user.id : undefined,
-                submission.id
-            ))
-        )
-            return respond(res, StatusCodes.NOT_FOUND);
-
-        const clusters = await Database.selectFrom("cluster_submissions", "*", {
-            submission_id: submission.id,
-        });
-
-        return respond(res, StatusCodes.OK, clusters);
-    }
-);
+    return respond(res, StatusCodes.OK, clusters);
+});
 
 /**
  * @api {get} /api/testcase/cluster/:submission_id GetSubmissionTestcases
@@ -339,32 +258,14 @@ SubmissionHandler.get(
  * @apiUse ExampleSubmissionTestcase
  */
 
-SubmissionHandler.get(
-    "/testcase/:submission_id",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const submission = await Database.selectOneFrom("submissions", "*", {
-            id: req.params.submission_id,
-        });
+SubmissionHandler.get("/testcase/:submission_id", async (req, res) => {
+    const submission = await extractSubmission(req);
 
-        if (!submission) return respond(res, StatusCodes.NOT_FOUND);
+    const testcases = await Database.selectFrom("testcase_submissions", "*", {
+        submission_id: submission.id,
+    });
 
-        if (
-            !(await isAllowedToViewSubmission(
-                req.user ? req.user.id : undefined,
-                submission.id
-            ))
-        )
-            return respond(res, StatusCodes.NOT_FOUND);
-
-        const testcases = await Database.selectFrom(
-            "testcase_submissions",
-            "*",
-            { submission_id: submission.id }
-        );
-
-        return respond(res, StatusCodes.OK, testcases);
-    }
-);
+    return respond(res, StatusCodes.OK, testcases);
+});
 
 export default SubmissionHandler;

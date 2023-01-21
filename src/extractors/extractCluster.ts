@@ -5,7 +5,9 @@ import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Snowflake } from "../lib/snowflake";
 import { extractIdFromParams as extractIdFromParameters } from "../utils/extractorUtils";
+import { extractContest } from "./extractContest";
 import { extractModifiableProblem } from "./extractModifiableProblem";
+import { extractProblem } from "./extractProblem";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractCluster = async (
@@ -21,6 +23,15 @@ export const extractCluster = async (
         });
 
         if (!cluster) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        const problem = await extractProblem(req, cluster.problem_id);
+        const contest = await extractContest(req, problem.contest_id);
+
+        if (
+            Date.now() >=
+            contest.start_time.getTime() + 1000 * contest.duration_seconds
+        )
+            return cluster;
 
         await extractModifiableProblem(req, cluster.problem_id);
 

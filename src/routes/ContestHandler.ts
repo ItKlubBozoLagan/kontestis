@@ -3,20 +3,14 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
+import { extractContest } from "../extractors/extractContest";
+import { extractModifiableContest } from "../extractors/extractModifiableContest";
+import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
-import {
-    AuthenticatedRequest,
-    useAuth,
-    useOptionalAuth,
-} from "../middlewares/useAuth";
-import { useValidation, ValidatedBody } from "../middlewares/useValidation";
+import { useValidation } from "../middlewares/useValidation";
 import { AllowedUser } from "../types/AllowedUser";
 import { Contest } from "../types/Contest";
 import { respond } from "../utils/response";
-import {
-    isAllowedToModifyContest,
-    isAllowedToViewContest,
-} from "../utils/utils";
 
 /**
  * @apiDefine ExampleContest
@@ -67,32 +61,27 @@ const contestSchema = Type.Object({
  *     400 Bad request
  */
 
-ContestHandler.post(
-    "/",
-    useAuth,
-    useValidation(contestSchema),
-    async (req: AuthenticatedRequest, res) => {
-        const user = req.user!;
+ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
+    const user = await extractUser(req);
 
-        const date = new Date(req.body.start_time);
+    const date = new Date(req.body.start_time);
 
-        if (!date || date < new Date())
-            return respond(res, StatusCodes.BAD_REQUEST);
+    if (!date || date < new Date())
+        return respond(res, StatusCodes.BAD_REQUEST);
 
-        const contest: Contest = {
-            id: generateSnowflake(),
-            name: req.body.name,
-            admin_id: user.id,
-            start_time: date,
-            duration_seconds: req.body.duration_seconds,
-            public: req.body.public,
-        };
+    const contest: Contest = {
+        id: generateSnowflake(),
+        name: req.body.name,
+        admin_id: user.id,
+        start_time: date,
+        duration_seconds: req.body.duration_seconds,
+        public: req.body.public,
+    };
 
-        await Database.insertInto("contests", contest);
+    await Database.insertInto("contests", contest);
 
-        return respond(res, StatusCodes.OK, contest);
-    }
-);
+    return respond(res, StatusCodes.OK, contest);
+});
 
 /**
  * @api {get} /api/contest GetContests
@@ -107,18 +96,20 @@ ContestHandler.post(
  *
  */
 
-ContestHandler.get(
-    "/",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const contests = (await Database.selectFrom("contests", "*")).filter(
-            (c) =>
-                isAllowedToViewContest(req.user ? req.user.id : undefined, c.id)
-        );
+ContestHandler.get("/", async (req, res) => {
+    const contestIds = await Database.selectFrom("contests", ["id"]);
+    const contests = [];
 
-        return respond(res, StatusCodes.OK, contests);
+    for (const id of contestIds) {
+        try {
+            contests.push(await extractContest(req, id.id));
+        } catch {
+            // TODO: Clean this up a bit
+        }
     }
-);
+
+    return respond(res, StatusCodes.OK, contests);
+});
 
 const allowUserSchema = Type.Object({
     user_id: Type.Number(),
@@ -147,27 +138,12 @@ const allowUserSchema = Type.Object({
 
 ContestHandler.post(
     "/allow/:contest_id",
-    useAuth,
     useValidation(allowUserSchema),
-    async (
-        req: AuthenticatedRequest & ValidatedBody<typeof allowUserSchema>,
-        res
-    ) => {
-        const user = req.user!;
-
-        const contest = await Database.selectOneFrom("contests", "*", {
-            id: req.params.contest_id,
-        });
-
-        if (!contest) return respond(res, StatusCodes.NOT_FOUND);
-
-        if (contest.public) return respond(res, StatusCodes.BAD_REQUEST);
-
-        if (!(await isAllowedToModifyContest(user.id, contest.id)))
-            return respond(res, StatusCodes.FORBIDDEN);
+    async (req, res) => {
+        const contest = await extractModifiableContest(req);
 
         const databaseUser = await Database.selectOneFrom("users", "*", {
-            id: req.body.user_id,
+            id: BigInt(req.body.user_id),
         });
 
         if (!databaseUser) return respond(res, StatusCodes.NOT_FOUND);
@@ -215,35 +191,19 @@ ContestHandler.post(
  *     }
  */
 
-ContestHandler.get(
-    "/allow/:contest_id",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const contest = await Database.selectOneFrom("contests", "*", {
-            id: req.params.contest_id,
-        });
+ContestHandler.get("/allow/:contest_id", async (req, res) => {
+    const contest = await extractContest(req);
 
-        if (!contest) return respond(res, StatusCodes.NOT_FOUND);
+    if (contest.public) return respond(res, StatusCodes.BAD_REQUEST);
 
-        if (contest.public) return respond(res, StatusCodes.BAD_REQUEST);
+    const allowedUsers = await Database.selectFrom(
+        "allowed_users",
+        ["user_id"],
+        { contest_id: contest.id }
+    );
 
-        if (
-            !(await isAllowedToViewContest(
-                req.user ? req.user.id : undefined,
-                contest.id
-            ))
-        )
-            return respond(res, StatusCodes.NOT_FOUND);
-
-        const allowedUsers = await Database.selectFrom(
-            "allowed_users",
-            ["user_id"],
-            { contest_id: contest.id }
-        );
-
-        return respond(res, StatusCodes.OK, allowedUsers);
-    }
-);
+    return respond(res, StatusCodes.OK, allowedUsers);
+});
 
 /**
  * @api {get} /api/contest/:contest_id GetContest
@@ -260,26 +220,10 @@ ContestHandler.get(
  *
  */
 
-ContestHandler.get(
-    "/:contest_id",
-    useOptionalAuth,
-    async (req: AuthenticatedRequest, res) => {
-        const contest = await Database.selectOneFrom("contests", "*", {
-            id: req.params.contest_id,
-        });
+ContestHandler.get("/:contest_id", async (req, res) => {
+    const contest = await extractContest(req);
 
-        if (!contest) return respond(res, StatusCodes.NOT_FOUND);
-
-        if (
-            !(await isAllowedToViewContest(
-                req.user ? req.user.id : undefined,
-                contest.id
-            ))
-        )
-            return respond(res, StatusCodes.NOT_FOUND);
-
-        return respond(res, StatusCodes.OK, contest);
-    }
-);
+    return respond(res, StatusCodes.OK, contest);
+});
 
 export default ContestHandler;
