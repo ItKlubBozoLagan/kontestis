@@ -4,6 +4,7 @@
     "main": "src/app.ts",
     "license": "MIT",
     "scripts": {
+        "prepare": "husky install",
         "start": "ts-node src/index.ts",
         "dev": "nodemon --exec ts-node src/index.ts",
         "lint": "eslint -c .eslintrc.json --ext .ts ./src"
