@@ -1,6 +1,5 @@
-
 export type Testcase = {
-    id: string,
-    in: string,
-    out: string
-}
+    id: string;
+    in: string;
+    out: string;
+};
