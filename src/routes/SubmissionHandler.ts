@@ -178,12 +178,17 @@ SubmissionHandler.get("/:problem_id", async (req, res) => {
 
     if (!req.query.user_id && !user) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const submissions = await Database.selectFrom("submissions", "*", {
-        problem_id: problem.id,
-        user_id: req.query.user_id
-            ? BigInt(req.query.user_id.toString())
-            : user?.id,
-    });
+    const submissions = await Database.selectFrom(
+        "submissions",
+        "*",
+        {
+            problem_id: problem.id,
+            user_id: req.query.user_id
+                ? BigInt(req.query.user_id.toString())
+                : user?.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     if (!req.query.user_id) return respond(res, StatusCodes.OK, submissions);
 
