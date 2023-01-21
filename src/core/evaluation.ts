@@ -12,19 +12,21 @@ type ProblemDetails = {
     code: string;
 };
 
+type SuccessfulEvaluationResult = {
+    type: "success";
+    verdict:
+        | "accepted"
+        | "wrong_answer"
+        | "time_limit_exceeded"
+        | "memory_limit_exceeded";
+    time: number;
+    memory: number;
+};
+
 type EvaluationResult = {
     testCaseId: string;
 } & (
-    | {
-          type: "success";
-          verdict:
-              | "accepted"
-              | "wrong_answer"
-              | "time_limit_exceeded"
-              | "memory_limit_exceeded";
-          time: number;
-          memory: number;
-      }
+    | SuccessfulEvaluationResult
     | {
           type: "error";
           verdict: "runtime_error";
@@ -90,7 +92,7 @@ export const beginEvaluation = async (
             })),
         });
 
-        const [response, error] = (await axios
+        const [results, error] = (await axios
             .post<EvaluationResult>(
                 Globals.evaluatorEndpoint,
                 {
@@ -113,33 +115,25 @@ export const beginEvaluation = async (
                 error as AxiosError,
             ])) as AxiosEvaluationResponse;
 
-        if (error || !response) {
+        if (error || !results) {
             console.log("evaluator failed", submission.id, error);
 
             return;
         }
 
         const verdict =
-            response.find((it) => it.verdict !== "accepted")?.verdict ??
+            results.find((it) => it.verdict !== "accepted")?.verdict ??
             "accepted";
 
-        let time = 0;
-        let memory = 0;
+        const successfulResults = results
+            .filter((result) => result.type === "success")
+            .map((result) => result as SuccessfulEvaluationResult);
 
-        for (const rs of response) {
-            if (rs.verdict !== "accepted") continue;
-
-            if (rs.time > time) {
-                time = rs.time;
-            }
-
-            if (rs.memory > memory) {
-                memory = rs.memory;
-            }
-        }
+        const time = Math.max(0, ...successfulResults.map((it) => it.time));
+        const memory = Math.max(0, ...successfulResults.map((it) => it.memory));
 
         await Promise.all(
-            response.map((result) =>
+            results.map((result) =>
                 Database.insertInto("testcase_submissions", {
                     id: generateSnowflake(),
                     testcase_id: BigInt(result.testCaseId),
@@ -160,7 +154,7 @@ export const beginEvaluation = async (
                     .filter((testcase) => testcase.cluster_id === cluster.id)
                     .map((it) => ({
                         ...it,
-                        evaluationResult: response.find(
+                        evaluationResult: results.find(
                             (response) =>
                                 response.testCaseId === it.id.toString()
                         )!,
@@ -179,21 +173,21 @@ export const beginEvaluation = async (
                     )
                         ? cluster.awarded_score
                         : 0,
-                    memory_used_megabytes: clusterTestcases.reduce(
-                        (accumulator, current) =>
-                            accumulator +
-                            (current.evaluationResult.type === "success"
-                                ? current.evaluationResult.memory
-                                : 0),
-                        0
+                    memory_used_megabytes: Math.max(
+                        0,
+                        ...clusterTestcases.map((it) =>
+                            it.evaluationResult.type === "success"
+                                ? it.evaluationResult.memory
+                                : 0
+                        )
                     ),
-                    time_used_millis: clusterTestcases.reduce(
-                        (accumulator, current) =>
-                            accumulator +
-                            (current.evaluationResult.type === "success"
-                                ? current.evaluationResult.time
-                                : 0),
-                        0
+                    time_used_millis: Math.max(
+                        0,
+                        ...clusterTestcases.map((it) =>
+                            it.evaluationResult.type === "success"
+                                ? it.evaluationResult.time
+                                : 0
+                        )
                     ),
                 });
             })
