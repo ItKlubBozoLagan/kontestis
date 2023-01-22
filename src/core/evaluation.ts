@@ -87,8 +87,8 @@ export const beginEvaluation = async (
             time_limit: problem.time_limit_millis,
             testcases: testcases.map((testcase) => ({
                 id: testcase.id.toString(),
-                in: testcase.input.replace("\n", " "),
-                out: testcase.correctoutput?.replace("\n", " "),
+                in: testcase.input,
+                out: testcase.correctoutput,
             })),
         });
 
@@ -101,8 +101,8 @@ export const beginEvaluation = async (
                     time_limit: problem.time_limit_millis,
                     testcases: testcases.map((testcase) => ({
                         id: testcase.id.toString(),
-                        in: testcase.input.replace("\n", " "),
-                        out: testcase.correctoutput?.replace("\n", " "),
+                        in: testcase.input,
+                        out: testcase.correctoutput,
                     })),
                 },
                 {
