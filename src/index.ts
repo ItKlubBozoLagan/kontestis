@@ -64,7 +64,7 @@ const plainTextEvaluatorBase64 = Buffer.from(
 app.use(json());
 
 app.post("/", async (req, res) => {
-    if (!typeCheck.Check(req.body)) return res.status(400).send("Bad request!");
+    if (!typeCheck.Check(req.body)) return res.status(400).end();
 
     const submission: Static<typeof schema> & { evaluator?: string } = req.body;
 
@@ -74,7 +74,12 @@ app.post("/", async (req, res) => {
         );
 
         if (!compileResult.success)
-            return res.status(200).send("Compilation error!");
+            return res.status(200).send([
+                submission.testcases.map(() => ({
+                    type: "error",
+                    verdict: "compilation_error",
+                })),
+            ]);
 
         return res
             .status(200)
@@ -123,7 +128,7 @@ app.post("/", async (req, res) => {
             );
     }
 
-    return res.status(200).send("Success!");
+    return res.status(403).end();
 });
 
 const _PORT = process.env.PORT || 8080;
