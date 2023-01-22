@@ -43,7 +43,7 @@ export const Problem: FC = () => {
             wrapAxios<SubmissionType[]>(
                 http.get("/submission/" + problem_id + "/")
             ).then((d) => {
-                setSubmission(d.concat(d).concat(d).concat(d));
+                setSubmission(d);
             });
         }, 1000);
 
@@ -59,6 +59,9 @@ export const Problem: FC = () => {
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 py-10"}>
             <span tw={"text-neutral-800 text-3xl"}>{problem.title}</span>
+            <span tw={"text-xl"}>
+                {`${submissions.length} submissions so far`}
+            </span>
             <div tw={"flex flex-col gap-4"}>
                 <div tw={"w-full flex justify-between gap-4"}>
                     <TitledSection title={"Limits"}>
@@ -102,7 +105,12 @@ export const Problem: FC = () => {
                     </TableHeadRow>
                     {submissions
                         .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
-                        .slice(0, expanded ? submissions.length : 3)
+                        .slice(
+                            0,
+                            expanded || submissions.length <= 4
+                                ? submissions.length
+                                : 3
+                        )
                         .map((s) => (
                             <TableRow key={s.id + ""}>
                                 {s.verdict ? (
@@ -136,35 +144,37 @@ export const Problem: FC = () => {
                                 )}
                             </TableRow>
                         ))}
-                    <tfoot>
-                        <TableRow>
-                            <TableItem
-                                colSpan={4}
-                                onClick={() =>
-                                    setExpanded((previous) => !previous)
-                                }
-                                tw={"cursor-pointer"}
-                            >
-                                <div
-                                    tw={
-                                        "flex gap-2 items-center justify-center"
+                    {submissions.length > 4 && (
+                        <tfoot>
+                            <TableRow>
+                                <TableItem
+                                    colSpan={4}
+                                    onClick={() =>
+                                        setExpanded((previous) => !previous)
                                     }
+                                    tw={"cursor-pointer"}
                                 >
-                                    {expanded ? (
-                                        <>
-                                            <AiFillCaretUp />
-                                            Collapse
-                                        </>
-                                    ) : (
-                                        <>
-                                            <AiFillCaretDown />
-                                            Expand
-                                        </>
-                                    )}
-                                </div>
-                            </TableItem>
-                        </TableRow>
-                    </tfoot>
+                                    <div
+                                        tw={
+                                            "flex gap-2 items-center justify-center"
+                                        }
+                                    >
+                                        {expanded ? (
+                                            <>
+                                                <AiFillCaretUp />
+                                                Collapse
+                                            </>
+                                        ) : (
+                                            <>
+                                                <AiFillCaretDown />
+                                                Expand
+                                            </>
+                                        )}
+                                    </div>
+                                </TableItem>
+                            </TableRow>
+                        </tfoot>
+                    )}
                 </Table>
             </div>
             <div
