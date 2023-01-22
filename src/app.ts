@@ -13,7 +13,7 @@ import AuthHandler from "./routes/AuthHandler";
 import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
-import { respond } from "./utils/response";
+import { reject, respond } from "./utils/response";
 
 // We must load .env first so the database has correct details.
 dotenvConfig();
@@ -45,20 +45,26 @@ app.use("/api/submission", SubmissionHandler);
 
 app.get("/", (req, res) => respond(res, StatusCodes.OK));
 
+app.use(() => {
+    throw new SafeError(StatusCodes.NOT_FOUND);
+});
+
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+    console.log("aa", error);
+
     if (!error) return next();
 
     if (error.name === "SyntaxError")
-        return respond(res, StatusCodes.BAD_REQUEST, {
-            error: "Malformed JSON",
-        });
+        return reject(res, StatusCodes.BAD_REQUEST, "Malformed JSON");
 
     if (error instanceof SafeError)
-        return respond(res, error.code, { error: error.message });
+        return reject(res, error.code, error.message);
 
-    return respond(res, StatusCodes.INTERNAL_SERVER_ERROR, {
-        error: ReasonPhrases.INTERNAL_SERVER_ERROR,
-    });
+    return reject(
+        res,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        ReasonPhrases.INTERNAL_SERVER_ERROR
+    );
 });
 
 Database.awaitConnection().then(async () => {

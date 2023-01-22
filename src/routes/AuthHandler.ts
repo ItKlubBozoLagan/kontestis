@@ -6,6 +6,7 @@ import { sign } from "jsonwebtoken";
 import * as R from "remeda";
 
 import { Database } from "../database/Database";
+import { SafeError } from "../errors/SafeError";
 import { extractUser } from "../extractors/extractUser";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
@@ -80,7 +81,7 @@ AuthHandler.post(
             email: req.body.email,
         });
 
-        if (user) return respond(res, StatusCodes.BAD_REQUEST);
+        if (user) throw new SafeError(StatusCodes.BAD_REQUEST);
 
         const hashPassword = await hash(req.body.password, 10);
 
@@ -127,11 +128,11 @@ AuthHandler.post(
             email: req.body.email,
         });
 
-        if (!user) return respond(res, StatusCodes.BAD_REQUEST);
+        if (!user) throw new SafeError(StatusCodes.BAD_REQUEST);
 
         const validPassword = await compare(req.body.password, user.password);
 
-        if (!validPassword) return respond(res, StatusCodes.BAD_REQUEST);
+        if (!validPassword) throw new SafeError(StatusCodes.BAD_REQUEST);
 
         const token = sign({ _id: user.id }, Globals.tokenSecret);
 
@@ -177,13 +178,13 @@ AuthHandler.get("/info/:id", async (req, res) => {
     const user = await extractUser(req);
 
     if ((user.permissions & 1n) === 0n)
-        return respond(res, StatusCodes.FORBIDDEN);
+        throw new SafeError(StatusCodes.FORBIDDEN);
 
     const searchUser = await Database.selectOneFrom("users", "*", {
         id: req.params.id,
     });
 
-    if (!searchUser) return respond(res, StatusCodes.NOT_FOUND);
+    if (!searchUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
     return respond(res, StatusCodes.OK, R.omit(searchUser, ["password"]));
 });

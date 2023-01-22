@@ -8,7 +8,7 @@ import {
 } from "express-serve-static-core";
 import { StatusCodes } from "http-status-codes";
 
-import { respond } from "../utils/response";
+import { SafeError } from "../errors/SafeError";
 
 type SchemaOptions = {
     body?: boolean;
@@ -45,7 +45,7 @@ export const useValidation = <
                 .filter(([, v]) => v)
                 .some(([key]) => !check.Check(req[key as keyof SchemaOptions]))
         )
-            return respond(res, StatusCodes.BAD_REQUEST);
+            throw new SafeError(StatusCodes.BAD_REQUEST);
 
         next();
     };

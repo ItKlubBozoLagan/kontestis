@@ -3,6 +3,7 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
+import { SafeError } from "../errors/SafeError";
 import { extractContest } from "../extractors/extractContest";
 import { extractModifiableContest } from "../extractors/extractModifiableContest";
 import { extractUser } from "../extractors/extractUser";
@@ -67,7 +68,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const date = new Date(req.body.start_time);
 
     if (!date || date < new Date())
-        return respond(res, StatusCodes.BAD_REQUEST);
+        throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const contest: Contest = {
         id: generateSnowflake(),
@@ -146,7 +147,7 @@ ContestHandler.post(
             id: BigInt(req.body.user_id),
         });
 
-        if (!databaseUser) return respond(res, StatusCodes.NOT_FOUND);
+        if (!databaseUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
         const allowedDatabaseUser = await Database.selectOneFrom(
             "allowed_users",
@@ -157,7 +158,7 @@ ContestHandler.post(
             }
         );
 
-        if (allowedDatabaseUser) return respond(res, StatusCodes.CONFLICT);
+        if (allowedDatabaseUser) throw new SafeError(StatusCodes.CONFLICT);
 
         const allowedUser: AllowedUser = {
             id: generateSnowflake(),
@@ -194,7 +195,7 @@ ContestHandler.post(
 ContestHandler.get("/allow/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
 
-    if (contest.public) return respond(res, StatusCodes.BAD_REQUEST);
+    if (contest.public) throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const allowedUsers = await Database.selectFrom(
         "allowed_users",

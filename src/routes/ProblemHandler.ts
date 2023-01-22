@@ -3,6 +3,7 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
+import { SafeError } from "../errors/SafeError";
 import { extractCluster } from "../extractors/extractCluster";
 import { extractContest } from "../extractors/extractContest";
 import { extractModifiableCluster } from "../extractors/extractModifiableCluster";
@@ -110,7 +111,7 @@ ProblemHandler.post(
             req.body.evaluation_variant != "plain" &&
             !req.body.evaluation_script
         )
-            return respond(res, StatusCodes.BAD_REQUEST);
+            throw new SafeError(StatusCodes.BAD_REQUEST);
 
         const problem: Problem = {
             id: generateSnowflake(),

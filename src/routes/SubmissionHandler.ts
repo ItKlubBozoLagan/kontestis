@@ -198,7 +198,7 @@ SubmissionHandler.get("/:problem_id", async (req, res) => {
     )
         return respond(res, StatusCodes.OK, submissions);
 
-    if (!user) return respond(res, StatusCodes.NOT_FOUND);
+    if (!user) throw new SafeError(StatusCodes.NOT_FOUND);
 
     await extractModifiableContest(req, problem.contest_id);
 
