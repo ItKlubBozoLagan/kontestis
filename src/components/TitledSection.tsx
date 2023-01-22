@@ -9,7 +9,7 @@ export const TitledSection: FC<Properties> = ({ title, children }) => {
     return (
         <div
             tw={
-                "w-full flex flex-col items-center border-solid border-2 border-neutral-200 rounded-md"
+                "w-full flex flex-col items-center border-solid border-2 border-neutral-200"
             }
         >
             <div

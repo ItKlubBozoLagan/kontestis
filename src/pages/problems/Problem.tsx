@@ -126,9 +126,13 @@ export const Problem: FC = () => {
                         ))}
                 </Table>
             </div>
-            <span tw={"text-neutral-700 text-lg whitespace-pre-line"}>
+            <div
+                tw={
+                    "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200"
+                }
+            >
                 {problem.description}
-            </span>
+            </div>
         </div>
     );
 };
