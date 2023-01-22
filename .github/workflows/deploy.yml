@@ -34,17 +34,11 @@ jobs:
       - name: Set up Docker BuildX
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          load: true
-          context: .
-          file: Dockerfile
-          tags: eu.gcr.io/speedy-baton-368023/kontestis-evaluator
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Build image
+        run: docker build . -t eu.gcr.io/speedy-baton-368023/kontestis-evaluator
+
+      - name: Push image
+        run: docker push eu.gcr.io/speedy-baton-368023/kontestis-evaluator
 
   deploy:
     name: "🚚 Release"
