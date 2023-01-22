@@ -20,8 +20,6 @@ type Properties = {
     problem_id: string;
 };
 
-const evaluationLanguages: EvaluationLanguage[] = ["python", "c", "cpp"];
-
 export const Problem: FC = () => {
     const { problem_id } = useParams<Properties>();
 
@@ -66,21 +64,39 @@ export const Problem: FC = () => {
                 {`${submissions.length} submissions so far`}
             </span>
             <div tw={"flex flex-col gap-4"}>
-                <div tw={"w-full flex justify-between gap-4"}>
+                <div tw={"w-full flex gap-4"}>
                     <TitledSection title={"Limits"}>
-                        <span>Time: {problem.time_limit_millis}ms</span>
-                        <span>
-                            Memory: {problem.memory_limit_megabytes} MiB
-                        </span>
-                        <span>Source size: 64 KiB</span>
+                        <div
+                            tw={
+                                "flex flex-col items-center justify-center gap-4"
+                            }
+                        >
+                            <span>Time: {problem.time_limit_millis}ms</span>
+                            <span>
+                                Memory: {problem.memory_limit_megabytes} MiB
+                            </span>
+                            <span>Source size: 64 KiB</span>
+                        </div>
                     </TitledSection>
                     <TitledSection title={"Submit"}>
-                        <span>Submit code:</span>
+                        <span tw={"text-lg w-full text-left"}>Code:</span>
                         <textarea
-                            tw={"w-4/5"}
+                            tw={"w-full h-64 resize-none font-mono text-sm"}
                             value={code}
                             onChange={(event) => setCode(event.target.value)}
                         />
+                        <select
+                            name="languages"
+                            onChange={(event) =>
+                                setLanguage(
+                                    event.target.value as EvaluationLanguage
+                                )
+                            }
+                        >
+                            <option value="cpp">C++</option>
+                            <option value="c">C</option>
+                            <option value="python">Python</option>
+                        </select>
                         <SimpleButton
                             onClick={async () => {
                                 setCode("");
@@ -95,18 +111,6 @@ export const Problem: FC = () => {
                         >
                             Submit
                         </SimpleButton>
-                        <select
-                            name="languages"
-                            onChange={(event) =>
-                                setLanguage(
-                                    event.target.value as EvaluationLanguage
-                                )
-                            }
-                        >
-                            <option value="cpp">C++</option>
-                            <option value="c">C</option>
-                            <option value="python">Python</option>
-                        </select>
                     </TitledSection>
                 </div>
 
