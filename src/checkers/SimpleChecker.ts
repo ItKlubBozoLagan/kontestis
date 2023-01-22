@@ -12,7 +12,7 @@ export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (
     pythonChecker: Buffer
 ) => {
     const separator = randomInt(1, 3000);
-    const separatorBuffer = Buffer.from("==" + separator + "==", "utf8");
+    const separatorBuffer = Buffer.from("\n[" + separator + "]\n", "utf8");
 
     return (
         testcaseInput: Buffer,
@@ -20,12 +20,13 @@ export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (
         runnerOutput: Buffer
     ) => {
         const input = Buffer.concat([
-            Buffer.from(separator + "\n", "utf8"),
+            separatorBuffer,
             testcaseInput,
             separatorBuffer,
             testcaseOutput,
             separatorBuffer,
             runnerOutput,
+            separatorBuffer,
         ]);
 
         return recordSimpleOutput(runPython(pythonChecker), input);

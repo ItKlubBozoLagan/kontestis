@@ -35,9 +35,21 @@ const schema = Type.Object({
 const typeCheck = TypeCompiler.Compile(schema);
 
 const PLAIN_TEXT_EVALUATOR = `
-sid = int(input())
-test_in, test_out, user_out = input().split(f"=={sid}==")
-print("AC" if test_out.strip() == user_out.strip() else "WA")
+def read_until(separator):
+    out = ""
+    while True:
+        line = input()
+        if line == separator:
+            return out
+        out += " " + line.strip()
+
+separator = input()
+
+read_until(separator)
+out = read_until(separator)
+subOut = read_until(separator)
+
+print("AC" if out.strip() == subOut.strip() else "WA")
 `;
 
 const plainTextEvaluatorBase64 = Buffer.from(
