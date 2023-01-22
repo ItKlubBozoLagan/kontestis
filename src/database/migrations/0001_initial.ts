@@ -23,7 +23,7 @@ type InitialDB = {
     testcase_submissions: TestcaseSubmissionV1;
 };
 
-export const migration_0001_initial: Migration<InitialDB> = async (
+export const migration_initial: Migration<InitialDB> = async (
     database,
     log
 ) => {
