@@ -14,11 +14,13 @@ import {
 } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
 import { ProblemType } from "../../types/ProblemType";
-import { SubmissionType } from "../../types/SubmissionType";
+import { EvaluationLanguage, SubmissionType } from "../../types/SubmissionType";
 
 type Properties = {
     problem_id: string;
 };
+
+const evaluationLanguages: EvaluationLanguage[] = ["python", "c", "cpp"];
 
 export const Problem: FC = () => {
     const { problem_id } = useParams<Properties>();
@@ -35,6 +37,7 @@ export const Problem: FC = () => {
     const [submissions, setSubmission] = useState<SubmissionType[]>([]);
 
     const [expanded, setExpanded] = useState(false);
+    const [language, setLanguage] = useState<EvaluationLanguage>("cpp");
 
     const [code, setCode] = useState("");
 
@@ -85,14 +88,25 @@ export const Problem: FC = () => {
                                     "/submission/" + problem_id + "/",
                                     {
                                         code: btoa(code),
-                                        language: "python",
+                                        language,
                                     }
                                 );
                             }}
                         >
                             Submit
                         </SimpleButton>
-                        <span>Language: Python Only</span>
+                        <select
+                            name="languages"
+                            onChange={(event) =>
+                                setLanguage(
+                                    event.target.value as EvaluationLanguage
+                                )
+                            }
+                        >
+                            <option value="cpp">C++</option>
+                            <option value="c">C</option>
+                            <option value="python">Python</option>
+                        </select>
                     </TitledSection>
                 </div>
 
@@ -150,7 +164,7 @@ export const Problem: FC = () => {
                                 <TableItem
                                     colSpan={4}
                                     onClick={() =>
-                                        setExpanded((previous) => !previous)
+                                        setExpanded((current) => !current)
                                     }
                                     tw={"cursor-pointer"}
                                 >
