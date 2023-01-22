@@ -68,7 +68,6 @@ enum EvaluationSchema {
 }
 
 const problemSchema = Type.Object({
-    contest_id: Type.RegEx(/\d{16,20}/g),
     title: Type.String(),
     description: Type.String(),
     evaluation_variant: Type.Enum(EvaluationSchema),
