@@ -153,7 +153,7 @@ SubmissionHandler.get(
             user_id: req.query.user_id,
         });
 
-        return res.status(200).json(submissions);
+        return respond(res, StatusCodes.OK, submissions);
     }
 );
 
