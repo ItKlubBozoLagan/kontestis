@@ -18,13 +18,13 @@ import { SubmissionType } from "../types/SubmissionType";
 export const Dashboard: FC = () => {
     const { user } = useAuthStore();
 
-    const [totalContests, setTotalCOntests] = useState<number>(0);
-    const [totalProblems, setTotalProblems] = useState<number>(0);
-    const [totalSubmissions, setTotalSubmissions] = useState<number>(0);
+    const [totalContests, setTotalContests] = useState(0);
+    const [totalProblems, setTotalProblems] = useState(0);
+    const [totalSubmissions, setTotalSubmissions] = useState(0);
 
     useEffect(() => {
         wrapAxios<ContestType[]>(http.get("/contests")).then((c) => {
-            setTotalCOntests(c.length);
+            setTotalContests(c.length);
         });
 
         wrapAxios<ProblemType[]>(http.get("/problems")).then((p) => {
