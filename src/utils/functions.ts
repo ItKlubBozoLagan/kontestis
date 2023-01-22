@@ -5,7 +5,7 @@ export const mapFields = <
 >(
     data: T,
     fields: K[],
-    mapper: (it: T[K]) => R
+    mapper: (_: T[K]) => R
 ): { [k in keyof T]: k extends K ? R : T[k] } => {
     return Object.assign(
         {},
