@@ -41,7 +41,7 @@ jobs:
           push: true
           context: .
           file: Dockerfile
-          tags: eu.gcr.io/speedy-baton-368023/kontestis-evaluator
+          tags: gcr.io/speedy-baton-368023/kontestis-evaluator
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -67,7 +67,7 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: kontestis-evaluator
-          image: eu.gcr.io/speedy-baton-368023/kontestis-evaluator
+          image: gcr.io/speedy-baton-368023/kontestis-evaluator
           region: europe-west6
 
       - name: Display URL
