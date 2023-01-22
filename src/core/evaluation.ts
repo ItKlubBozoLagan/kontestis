@@ -111,8 +111,6 @@ export const beginEvaluation = async (
             return;
         }
 
-        console.log(results, typeof results);
-
         const verdict =
             results.find((it) => it.verdict !== "accepted")?.verdict ??
             "accepted";
