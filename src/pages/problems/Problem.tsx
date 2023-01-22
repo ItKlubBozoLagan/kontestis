@@ -90,9 +90,6 @@ export const Problem: FC = () => {
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 py-10"}>
             <span tw={"text-neutral-800 text-3xl"}>{problem.title}</span>
-            <span tw={"text-xl"}>
-                {`${submissions.length} submissions so far`}
-            </span>
             <div tw={"flex flex-col gap-4"}>
                 <div tw={"w-full flex gap-4"}>
                     <TitledSection title={"Limits"}>
@@ -119,7 +116,7 @@ export const Problem: FC = () => {
                             <LimitBox
                                 icon={FiUploadCloud}
                                 title={"Submission limit"}
-                                value={"50"}
+                                value={`50 (${submissions.length ?? 0} used)`}
                             />
                         </div>
                     </TitledSection>
@@ -160,55 +157,59 @@ export const Problem: FC = () => {
                 </div>
 
                 <Table tw={"w-full"}>
-                    <TableHeadRow>
-                        <TableHeadItem>Verdict</TableHeadItem>
-                        <TableHeadItem>Time</TableHeadItem>
-                        <TableHeadItem>Memory</TableHeadItem>
-                        <TableHeadItem>Language</TableHeadItem>
-                        <TableHeadItem>Points</TableHeadItem>
-                    </TableHeadRow>
-                    {submissions
-                        .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
-                        .slice(
-                            0,
-                            expanded || submissions.length <= 4
-                                ? submissions.length
-                                : 3
-                        )
-                        .map((s) => (
-                            <TableRow key={s.id + ""}>
-                                {s.verdict ? (
-                                    <>
+                    <thead>
+                        <TableHeadRow>
+                            <TableHeadItem>Verdict</TableHeadItem>
+                            <TableHeadItem>Time</TableHeadItem>
+                            <TableHeadItem>Memory</TableHeadItem>
+                            <TableHeadItem>Language</TableHeadItem>
+                            <TableHeadItem>Points</TableHeadItem>
+                        </TableHeadRow>
+                    </thead>
+                    <tbody>
+                        {submissions
+                            .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                            .slice(
+                                0,
+                                expanded || submissions.length <= 4
+                                    ? submissions.length
+                                    : 3
+                            )
+                            .map((s) => (
+                                <TableRow key={s.id + ""}>
+                                    {s.verdict ? (
+                                        <>
+                                            <TableItem
+                                                css={
+                                                    s.verdict === "accepted"
+                                                        ? tw`text-green-600`
+                                                        : tw`text-red-600`
+                                                }
+                                            >
+                                                {s.verdict}
+                                            </TableItem>
+                                            <TableItem>
+                                                {`${s.time_used_millis} ms`}
+                                            </TableItem>
+                                            <TableItem>
+                                                {`${s.memory_used_megabytes} MiB`}
+                                            </TableItem>
+                                            <TableItem>{s.language}</TableItem>
+                                            <TableItem>
+                                                {s.awardedscore} points
+                                            </TableItem>
+                                        </>
+                                    ) : (
                                         <TableItem
-                                            css={
-                                                s.verdict === "accepted"
-                                                    ? tw`text-green-600`
-                                                    : tw`text-red-600`
-                                            }
+                                            colSpan={5}
+                                            tw={"text-center text-yellow-800"}
                                         >
-                                            {s.verdict}
+                                            Processing
                                         </TableItem>
-                                        <TableItem>
-                                            {`${s.time_used_millis} ms`}
-                                        </TableItem>
-                                        <TableItem>
-                                            {`${s.memory_used_megabytes} MiB`}
-                                        </TableItem>
-                                        <TableItem>{s.language}</TableItem>
-                                        <TableItem>
-                                            {s.awardedscore} points
-                                        </TableItem>
-                                    </>
-                                ) : (
-                                    <TableItem
-                                        colSpan={5}
-                                        tw={"text-center text-yellow-800"}
-                                    >
-                                        Processing
-                                    </TableItem>
-                                )}
-                            </TableRow>
-                        ))}
+                                    )}
+                                </TableRow>
+                            ))}
+                    </tbody>
                     {submissions.length > 4 && (
                         <tfoot>
                             <TableRow>
