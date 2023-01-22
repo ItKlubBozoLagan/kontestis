@@ -54,7 +54,7 @@ export const Problem: FC = () => {
     }, []);
 
     return (
-        <div tw={"w-full flex flex-col justify-start items-center gap-4"}>
+        <div tw={"w-full flex flex-col justify-start items-center gap-4 py-10"}>
             <span tw={"text-neutral-800 text-3xl"}>{problem.title}</span>
             <span tw={"text-neutral-700 text-lg whitespace-pre-line"}>
                 {problem.description}
