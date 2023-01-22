@@ -68,5 +68,5 @@ jobs:
           image: eu.gcr.io/speedy-baton-368023/kontestis-evaluator
           region: europe-west6
 
-      - name: Display URL
+      - name: Verify deployment
         run: "curl \"${{ steps.deploy.outputs.url }}\""
