@@ -82,17 +82,6 @@ export const beginEvaluation = async (
     if (!problem) throw new Error("unexpected state");
 
     const _ = (async () => {
-        console.log({
-            language: problemDetails.language,
-            code: problemDetails.code,
-            time_limit: problem.time_limit_millis,
-            testcases: testcases.map((testcase) => ({
-                id: testcase.id.toString(),
-                in: testcase.input,
-                out: testcase.correctoutput,
-            })),
-        });
-
         const [results, error] = (await axios
             .post<EvaluationResult>(
                 Globals.evaluatorEndpoint,
@@ -121,6 +110,8 @@ export const beginEvaluation = async (
 
             return;
         }
+
+        console.log(results, typeof results);
 
         const verdict =
             results.find((it) => it.verdict !== "accepted")?.verdict ??
