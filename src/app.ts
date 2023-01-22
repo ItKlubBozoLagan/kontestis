@@ -50,8 +50,6 @@ app.use(() => {
 });
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-    console.log("aa", error);
-
     if (!error) return next();
 
     if (error.name === "SyntaxError")
