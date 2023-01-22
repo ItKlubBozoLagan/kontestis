@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
 import { useParams } from "react-router";
-import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
@@ -94,33 +93,35 @@ export const Problem: FC = () => {
                     <TableHeadItem>Verdict</TableHeadItem>
                     <TableHeadItem>Time</TableHeadItem>
                     <TableHeadItem>Memory</TableHeadItem>
+                    <TableHeadItem>Awarded points</TableHeadItem>
                 </TableHeadRow>
                 {submissions
                     .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
                     .map((s) => (
                         <TableRow key={s.id + ""}>
-                            <TableItem
-                                tw={"text-red-600"}
-                                css={
-                                    s.verdict === "accepted"
-                                        ? tw`text-green-600`
-                                        : ""
-                                }
-                            >
-                                {s.verdict
-                                    ? `${s.verdict} (${s.awardedscore ?? 0})`
-                                    : "Pending"}
-                            </TableItem>
-                            <TableItem>
-                                {s.time_used_millis
-                                    ? `${s.time_used_millis} ms`
-                                    : "Pending"}
-                            </TableItem>
-                            <TableItem>
-                                {s.memory_used_megabytes
-                                    ? `${s.memory_used_megabytes} MiB`
-                                    : "Pending"}
-                            </TableItem>
+                            {s.verdict ? (
+                                <>
+                                    <TableItem tw={"text-green-600"}>
+                                        {s.verdict}
+                                    </TableItem>
+                                    <TableItem>
+                                        {`${s.time_used_millis} ms`}
+                                    </TableItem>
+                                    <TableItem>
+                                        {`${s.memory_used_megabytes} MiB`}
+                                    </TableItem>
+                                    <TableItem>
+                                        {s.awardedscore} points
+                                    </TableItem>
+                                </>
+                            ) : (
+                                <TableItem
+                                    colSpan={4}
+                                    tw={"text-center text-yellow-800"}
+                                >
+                                    Pending...
+                                </TableItem>
+                            )}
                         </TableRow>
                     ))}
             </Table>
