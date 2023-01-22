@@ -74,13 +74,13 @@ app.post("/", async (req, res) => {
         );
 
         if (!compileResult.success)
-            return res.status(200).send([
+            return res.status(200).send(
                 submission.testcases.map((testcase) => ({
                     testCaseId: testcase.id,
                     type: "error",
                     verdict: "compilation_error",
-                })),
-            ]);
+                }))
+            );
 
         return res
             .status(200)
