@@ -1,7 +1,10 @@
 import cors from "cors";
 import { config as dotenvConfig } from "dotenv";
 import Express, { json, NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
+// @ts-ignore
+// eslint-disable-next-line unused-imports/no-unused-imports, unused-imports/no-unused-vars
+import _ from "express-async-erorrs";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { Database, initDatabase } from "./database/Database";
 import { SafeError } from "./errors/SafeError";
@@ -28,7 +31,7 @@ BigInt.prototype.toJSON = function () {
 const app = Express();
 
 app.use((req, res, next) => {
-    Logger.info(req.method + " ON " + req.url);
+    Logger.debug(req.method + " ON " + req.url);
     next();
 });
 
@@ -45,9 +48,17 @@ app.get("/", (req, res) => respond(res, StatusCodes.OK));
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     if (!error) return next();
 
-    if (error instanceof SafeError) return respond(res, error.code);
+    if (error.name === "SyntaxError")
+        return respond(res, StatusCodes.BAD_REQUEST, {
+            error: "Malformed JSON",
+        });
 
-    return respond(res, StatusCodes.INTERNAL_SERVER_ERROR);
+    if (error instanceof SafeError)
+        return respond(res, error.code, { error: error.message });
+
+    return respond(res, StatusCodes.INTERNAL_SERVER_ERROR, {
+        error: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
 });
 
 Database.awaitConnection().then(async () => {
