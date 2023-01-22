@@ -18,7 +18,7 @@ export type SubmissionType = {
     code: string;
 
     verdict?: Verdict;
-    awardedScore?: number;
+    awardedscore?: number;
 
     time_used_millis?: number;
     memory_used_megabytes?: number;

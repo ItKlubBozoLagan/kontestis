@@ -108,7 +108,7 @@ export const Problem: FC = () => {
                                 }
                             >
                                 {s.verdict
-                                    ? `${s.verdict} (${s.awardedScore ?? 0})`
+                                    ? `${s.verdict} (${s.awardedscore ?? 0})`
                                     : "Pending"}
                             </TableItem>
                             <TableItem>
