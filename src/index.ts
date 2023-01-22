@@ -43,13 +43,17 @@ def read_until(separator):
             return out
         out += " " + line.strip()
 
-separator = input()
+while True:
+    separator = input()
+    if len(separator.strip()) > 0:
+        break
 
 read_until(separator)
 out = read_until(separator)
 subOut = read_until(separator)
 
 print("AC" if out.strip() == subOut.strip() else "WA")
+
 `;
 
 const plainTextEvaluatorBase64 = Buffer.from(
