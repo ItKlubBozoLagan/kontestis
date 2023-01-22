@@ -23,7 +23,7 @@ export const Dashboard: FC = () => {
     const [totalSubmissions, setTotalSubmissions] = useState(0);
 
     useEffect(() => {
-        wrapAxios<ContestType[]>(http.get("/contests")).then((c) => {
+        wrapAxios<ContestType[]>(http.get("/contest")).then((c) => {
             setTotalContests(c.length);
         });
 
