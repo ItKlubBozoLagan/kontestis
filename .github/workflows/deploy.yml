@@ -45,7 +45,7 @@ jobs:
   deploy:
     name: "🚚 Release"
     runs-on: ubuntu-latest
-    needs: ["deploy"]
+    needs: ["build"]
     permissions:
       contents: "read"
       id-token: "write"
