@@ -7,8 +7,6 @@ export const http = axios.create({
         (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
 });
 
-console.log(http.defaults.baseURL);
-
 http.interceptors.request.use((config: AxiosRequestConfig) => {
     const { token } = useAuthStore.getState();
 
