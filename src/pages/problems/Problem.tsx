@@ -115,7 +115,8 @@ export const Problem: FC = () => {
                         <TableHeadItem>Verdict</TableHeadItem>
                         <TableHeadItem>Time</TableHeadItem>
                         <TableHeadItem>Memory</TableHeadItem>
-                        <TableHeadItem>Awarded points</TableHeadItem>
+                        <TableHeadItem>Language</TableHeadItem>
+                        <TableHeadItem>Points</TableHeadItem>
                     </TableHeadRow>
                     {submissions
                         .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
@@ -144,13 +145,14 @@ export const Problem: FC = () => {
                                         <TableItem>
                                             {`${s.memory_used_megabytes} MiB`}
                                         </TableItem>
+                                        <TableItem>{s.language}</TableItem>
                                         <TableItem>
                                             {s.awardedscore} points
                                         </TableItem>
                                     </>
                                 ) : (
                                     <TableItem
-                                        colSpan={4}
+                                        colSpan={5}
                                         tw={"text-center text-yellow-800"}
                                     >
                                         Processing
@@ -162,7 +164,7 @@ export const Problem: FC = () => {
                         <tfoot>
                             <TableRow>
                                 <TableItem
-                                    colSpan={4}
+                                    colSpan={5}
                                     onClick={() =>
                                         setExpanded((current) => !current)
                                     }
