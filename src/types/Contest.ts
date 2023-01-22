@@ -1,6 +1,6 @@
 import { Snowflake } from "../lib/snowflake";
 
-export type Contest = {
+export type ContestV1 = {
     id: Snowflake;
     admin_id: Snowflake;
     name: string;
@@ -8,3 +8,5 @@ export type Contest = {
     duration_seconds: number;
     public: boolean;
 };
+
+export type Contest = ContestV1;

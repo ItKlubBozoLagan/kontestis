@@ -11,7 +11,7 @@ export type Verdict =
 
 export type EvaluationLanguage = "c" | "cpp" | "python";
 
-export type Submission = {
+export type SubmissionV1 = {
     id: Snowflake;
     user_id: Snowflake;
     problem_id: Snowflake;
@@ -26,3 +26,5 @@ export type Submission = {
 
     completed: boolean;
 };
+
+export type Submission = SubmissionV1;

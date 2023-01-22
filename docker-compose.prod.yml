@@ -18,7 +18,7 @@ services:
       - DB_KEYSPACE=kontestis
       - DB_DATACENTER=datacenter1
       - TOKEN_SECRET=sometokensecret
-      - EVALUATOR_ENDPOINT=https://eval-1-y7a5esl5qq-uc.a.run.app/
+      - EVALUATOR_ENDPOINT=https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app/
 
   scylla:
     image: "scylladb/scylla:5.0.5"
