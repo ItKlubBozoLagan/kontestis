@@ -53,78 +53,82 @@ export const Problem: FC = () => {
     }, []);
 
     return (
-        <div tw={"w-full flex flex-col justify-start items-center gap-4 py-10"}>
+        <div tw={"w-full flex flex-col justify-start items-center gap-6 py-10"}>
             <span tw={"text-neutral-800 text-3xl"}>{problem.title}</span>
+            <div tw={"flex flex-col gap-4"}>
+                <div tw={"w-full flex justify-between gap-4"}>
+                    <TitledSection title={"Limits"}>
+                        <span>Time: {problem.time_limit_millis}ms</span>
+                        <span>
+                            Memory: {problem.memory_limit_megabytes} MiB
+                        </span>
+                        <span>Source size: 64 KiB</span>
+                    </TitledSection>
+                    <TitledSection title={"Submit"}>
+                        <span>Submit code:</span>
+                        <textarea
+                            tw={"w-4/5"}
+                            value={code}
+                            onChange={(event) => setCode(event.target.value)}
+                        />
+                        <SimpleButton
+                            onClick={async () => {
+                                setCode("");
+                                http.post("/submission/" + problem_id + "/", {
+                                    code: btoa(code),
+                                    language: "python",
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            }}
+                        >
+                            Submit
+                        </SimpleButton>
+                        <span>Language: Python Only</span>
+                    </TitledSection>
+                </div>
+
+                <Table tw={"w-full"}>
+                    <TableHeadRow>
+                        <TableHeadItem>Verdict</TableHeadItem>
+                        <TableHeadItem>Time</TableHeadItem>
+                        <TableHeadItem>Memory</TableHeadItem>
+                        <TableHeadItem>Awarded points</TableHeadItem>
+                    </TableHeadRow>
+                    {submissions
+                        .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                        .map((s) => (
+                            <TableRow key={s.id + ""}>
+                                {s.verdict ? (
+                                    <>
+                                        <TableItem tw={"text-green-600"}>
+                                            {s.verdict}
+                                        </TableItem>
+                                        <TableItem>
+                                            {`${s.time_used_millis} ms`}
+                                        </TableItem>
+                                        <TableItem>
+                                            {`${s.memory_used_megabytes} MiB`}
+                                        </TableItem>
+                                        <TableItem>
+                                            {s.awardedscore} points
+                                        </TableItem>
+                                    </>
+                                ) : (
+                                    <TableItem
+                                        colSpan={4}
+                                        tw={"text-center text-yellow-800"}
+                                    >
+                                        Pending...
+                                    </TableItem>
+                                )}
+                            </TableRow>
+                        ))}
+                </Table>
+            </div>
             <span tw={"text-neutral-700 text-lg whitespace-pre-line"}>
                 {problem.description}
             </span>
-            <div tw={"w-full flex justify-between gap-5"}>
-                <TitledSection title={"Limits"}>
-                    <span>Time: {problem.time_limit_millis}ms</span>
-                    <span>Memory: {problem.memory_limit_megabytes} MiB</span>
-                    <span>Source size: 64 KiB</span>
-                </TitledSection>
-                <TitledSection title={"Submit"}>
-                    <span>Submit code:</span>
-                    <textarea
-                        tw={"w-4/5"}
-                        value={code}
-                        onChange={(event) => setCode(event.target.value)}
-                    />
-                    <SimpleButton
-                        onClick={async () => {
-                            setCode("");
-                            http.post("/submission/" + problem_id + "/", {
-                                code: btoa(code),
-                                language: "python",
-                            }).then(() => {
-                                location.reload();
-                            });
-                        }}
-                    >
-                        Submit
-                    </SimpleButton>
-                    <span>Language: Python Only</span>
-                </TitledSection>
-            </div>
-
-            <Table tw={"w-full"}>
-                <TableHeadRow>
-                    <TableHeadItem>Verdict</TableHeadItem>
-                    <TableHeadItem>Time</TableHeadItem>
-                    <TableHeadItem>Memory</TableHeadItem>
-                    <TableHeadItem>Awarded points</TableHeadItem>
-                </TableHeadRow>
-                {submissions
-                    .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
-                    .map((s) => (
-                        <TableRow key={s.id + ""}>
-                            {s.verdict ? (
-                                <>
-                                    <TableItem tw={"text-green-600"}>
-                                        {s.verdict}
-                                    </TableItem>
-                                    <TableItem>
-                                        {`${s.time_used_millis} ms`}
-                                    </TableItem>
-                                    <TableItem>
-                                        {`${s.memory_used_megabytes} MiB`}
-                                    </TableItem>
-                                    <TableItem>
-                                        {s.awardedscore} points
-                                    </TableItem>
-                                </>
-                            ) : (
-                                <TableItem
-                                    colSpan={4}
-                                    tw={"text-center text-yellow-800"}
-                                >
-                                    Pending...
-                                </TableItem>
-                            )}
-                        </TableRow>
-                    ))}
-            </Table>
         </div>
     );
 };
