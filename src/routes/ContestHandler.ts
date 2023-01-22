@@ -32,7 +32,8 @@ const ContestHandler = Router();
 
 const contestSchema = Type.Object({
     name: Type.String(),
-    start_time: Type.Number(),
+    past_contest: Type.Boolean({ default: false }),
+    start_time_millis: Type.Number(),
     duration_seconds: Type.Number({
         minimum: 10 * 60,
         maximum: 7 * 24 * 60 * 60,
@@ -48,7 +49,7 @@ const contestSchema = Type.Object({
  * @apiUse RequiredAuth
  *
  * @apiBody {String} name Name of the contest.
- * @apiBody {Number} start_time UTC Time stamp.
+ * @apiBody {Number} start_time_millis Unix Time stamp in milliseconds.
  * @apiBody {Number} duration_seconds Contest duration in seconds.
  * @apiBody {Boolean} public Controls is the contest open to everyone.
  *
@@ -65,9 +66,12 @@ const contestSchema = Type.Object({
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const user = await extractUser(req);
 
-    const date = new Date(req.body.start_time);
+    const date = new Date(req.body.start_time_millis);
 
-    if (!date || date < new Date())
+    if (
+        !date ||
+        (!req.body.past_contest && req.body.start_time_millis < Date.now())
+    )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const contest: Contest = {
