@@ -37,12 +37,12 @@ export const extractUser = async (req: Request) => {
         const auth = req.header("authorization");
 
         if (!(auth && auth.startsWith("Bearer ")))
-            throw new SafeError(StatusCodes.FORBIDDEN);
+            throw new SafeError(StatusCodes.UNAUTHORIZED);
 
         const token = auth.slice("Bearer ".length);
         const validated = await validateJwt(token);
 
-        if (!validated) throw new SafeError(StatusCodes.FORBIDDEN);
+        if (!validated) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
         return validated;
     });

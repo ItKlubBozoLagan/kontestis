@@ -1,9 +1,13 @@
+// just for this file
+/* eslint-disable simple-import-sort/imports */
+
 import cors from "cors";
 import { config as dotenvConfig } from "dotenv";
+// We must load .env first so the database has correct details.
+dotenvConfig();
+
 import Express, { json, NextFunction, Request, Response } from "express";
-// @ts-ignore
-// eslint-disable-next-line unused-imports/no-unused-imports, unused-imports/no-unused-vars
-import _ from "express-async-erorrs";
+require("express-async-errors");
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { Database, initDatabase } from "./database/Database";
@@ -14,9 +18,6 @@ import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
 import { reject, respond } from "./utils/response";
-
-// We must load .env first so the database has correct details.
-dotenvConfig();
 
 declare global {
     interface BigInt {
