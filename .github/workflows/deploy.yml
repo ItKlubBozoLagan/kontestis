@@ -66,4 +66,4 @@ jobs:
           image: eu.gcr.io/my-first-project/kontestis-evaluator
 
       - name: Display URL
-        run: "curl \"${{ steps.deploy.outputs.url }}"\"
+        run: "curl \"${{ steps.deploy.outputs.url }}\""
