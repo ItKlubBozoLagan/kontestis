@@ -1,5 +1,13 @@
 import { FC, useEffect, useState } from "react";
-import { AiFillCaretDown, AiFillCaretUp } from "react-icons/all";
+import { IconType } from "react-icons";
+import {
+    AiFillCaretDown,
+    AiFillCaretUp,
+    FiClock,
+    FiCode,
+    FiDatabase,
+    FiUploadCloud,
+} from "react-icons/all";
 import { useParams } from "react-router";
 import tw from "twin.macro";
 
@@ -18,6 +26,28 @@ import { EvaluationLanguage, SubmissionType } from "../../types/SubmissionType";
 
 type Properties = {
     problem_id: string;
+};
+
+type LimitBoxProperties = {
+    icon: IconType;
+    title: string;
+    value: string;
+};
+
+const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value }) => {
+    return (
+        <div
+            tw={
+                "w-full bg-neutral-100 border-2 border-solid border-neutral-200 p-4 flex justify-between gap-4"
+            }
+        >
+            <div tw={"flex items-center gap-4 text-lg"}>
+                <Icon size={"18px"} />
+                {title}
+            </div>
+            <span tw={"text-lg"}>{value}</span>
+        </div>
+    );
 };
 
 export const Problem: FC = () => {
@@ -68,20 +98,35 @@ export const Problem: FC = () => {
                     <TitledSection title={"Limits"}>
                         <div
                             tw={
-                                "flex flex-col items-center justify-center gap-4"
+                                "flex flex-col items-center justify-between gap-4 w-full h-full"
                             }
                         >
-                            <span>Time: {problem.time_limit_millis}ms</span>
-                            <span>
-                                Memory: {problem.memory_limit_megabytes} MiB
-                            </span>
-                            <span>Source size: 64 KiB</span>
+                            <LimitBox
+                                icon={FiClock}
+                                title={"Time"}
+                                value={problem.time_limit_millis + " ms"}
+                            />
+                            <LimitBox
+                                icon={FiDatabase}
+                                title={"Memory"}
+                                value={problem.memory_limit_megabytes + " MiB"}
+                            />
+                            <LimitBox
+                                icon={FiCode}
+                                title={"Source size"}
+                                value={"64 KiB"}
+                            />
+                            <LimitBox
+                                icon={FiUploadCloud}
+                                title={"Submission limit"}
+                                value={"50"}
+                            />
                         </div>
                     </TitledSection>
                     <TitledSection title={"Submit"}>
                         <span tw={"text-lg w-full text-left"}>Code:</span>
                         <textarea
-                            tw={"w-full h-64 resize-none font-mono text-sm"}
+                            tw={"w-full h-48 resize-none font-mono text-sm"}
                             value={code}
                             onChange={(event) => setCode(event.target.value)}
                         />
