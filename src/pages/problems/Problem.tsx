@@ -55,16 +55,18 @@ export const Problem: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-4"}>
-            <div tw={"text-neutral-800 text-3xl"}>{problem.title}</div>
-            <div tw={"text-neutral-700 text-lg"}>{problem.description}</div>
+            <span tw={"text-neutral-800 text-3xl"}>{problem.title}</span>
+            <span tw={"text-neutral-700 text-lg whitespace-pre-line"}>
+                {problem.description}
+            </span>
             <div tw={"w-full flex justify-between gap-5"}>
                 <TitledSection title={"Limits"}>
-                    <div>Time: {problem.time_limit_millis}ms</div>
-                    <div>Memory: {problem.memory_limit_megabytes} MiB</div>
-                    <div>Source size: 64 KiB</div>
+                    <span>Time: {problem.time_limit_millis}ms</span>
+                    <span>Memory: {problem.memory_limit_megabytes} MiB</span>
+                    <span>Source size: 64 KiB</span>
                 </TitledSection>
                 <TitledSection title={"Submit"}>
-                    <div>Submit code:</div>
+                    <span>Submit code:</span>
                     <textarea
                         tw={"w-4/5"}
                         value={code}
@@ -83,7 +85,7 @@ export const Problem: FC = () => {
                     >
                         Submit
                     </SimpleButton>
-                    <div>Language: Python Only</div>
+                    <span>Language: Python Only</span>
                 </TitledSection>
             </div>
 
