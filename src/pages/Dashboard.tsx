@@ -25,9 +25,18 @@ export const Dashboard: FC = () => {
     useEffect(() => {
         wrapAxios<ContestType[]>(http.get("/contest")).then((c) => {
             setTotalContests(c.length);
+            setTotalProblems(0);
+
+            for (const contest of c) {
+                wrapAxios<ProblemType[]>(
+                    http.get("/problem", { params: { contest_id: contest.id } })
+                ).then((p) => {
+                    setTotalProblems(totalProblems + p.length);
+                });
+            }
         });
 
-        wrapAxios<ProblemType[]>(http.get("/problems")).then((p) => {
+        wrapAxios<ProblemType[]>(http.get("/contest")).then((p) => {
             setTotalProblems(p.length);
         });
 
