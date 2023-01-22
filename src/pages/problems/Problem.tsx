@@ -1,5 +1,7 @@
 import { FC, useEffect, useState } from "react";
+import { AiFillCaretDown, AiFillCaretUp } from "react-icons/all";
 import { useParams } from "react-router";
+import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
@@ -32,6 +34,8 @@ export const Problem: FC = () => {
 
     const [submissions, setSubmission] = useState<SubmissionType[]>([]);
 
+    const [expanded, setExpanded] = useState(false);
+
     const [code, setCode] = useState("");
 
     useEffect(() => {
@@ -39,7 +43,7 @@ export const Problem: FC = () => {
             wrapAxios<SubmissionType[]>(
                 http.get("/submission/" + problem_id + "/")
             ).then((d) => {
-                setSubmission(d);
+                setSubmission(d.concat(d).concat(d).concat(d));
             });
         }, 1000);
 
@@ -74,12 +78,13 @@ export const Problem: FC = () => {
                         <SimpleButton
                             onClick={async () => {
                                 setCode("");
-                                http.post("/submission/" + problem_id + "/", {
-                                    code: btoa(code),
-                                    language: "python",
-                                }).then(() => {
-                                    location.reload();
-                                });
+                                const _ = http.post(
+                                    "/submission/" + problem_id + "/",
+                                    {
+                                        code: btoa(code),
+                                        language: "python",
+                                    }
+                                );
                             }}
                         >
                             Submit
@@ -97,11 +102,18 @@ export const Problem: FC = () => {
                     </TableHeadRow>
                     {submissions
                         .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                        .slice(0, expanded ? submissions.length : 3)
                         .map((s) => (
                             <TableRow key={s.id + ""}>
                                 {s.verdict ? (
                                     <>
-                                        <TableItem tw={"text-green-600"}>
+                                        <TableItem
+                                            css={
+                                                s.verdict === "accepted"
+                                                    ? tw`text-green-600`
+                                                    : tw`text-red-600`
+                                            }
+                                        >
                                             {s.verdict}
                                         </TableItem>
                                         <TableItem>
@@ -119,11 +131,40 @@ export const Problem: FC = () => {
                                         colSpan={4}
                                         tw={"text-center text-yellow-800"}
                                     >
-                                        Pending...
+                                        Processing
                                     </TableItem>
                                 )}
                             </TableRow>
                         ))}
+                    <tfoot>
+                        <TableRow>
+                            <TableItem
+                                colSpan={4}
+                                onClick={() =>
+                                    setExpanded((previous) => !previous)
+                                }
+                                tw={"cursor-pointer"}
+                            >
+                                <div
+                                    tw={
+                                        "flex gap-2 items-center justify-center"
+                                    }
+                                >
+                                    {expanded ? (
+                                        <>
+                                            <AiFillCaretUp />
+                                            Collapse
+                                        </>
+                                    ) : (
+                                        <>
+                                            <AiFillCaretDown />
+                                            Expand
+                                        </>
+                                    )}
+                                </div>
+                            </TableItem>
+                        </TableRow>
+                    </tfoot>
                 </Table>
             </div>
             <div
