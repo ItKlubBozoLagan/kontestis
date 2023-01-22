@@ -3,6 +3,7 @@ import axios, { AxiosError } from "axios";
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
+import { ClusterSubmission } from "../types/ClusterSubmission";
 import { EvaluationLanguage, Submission } from "../types/Submission";
 import { User } from "../types/User";
 
@@ -148,8 +149,8 @@ export const beginEvaluation = async (
             )
         );
 
-        await Promise.all(
-            clusters.map((cluster) => {
+        const clusterSubmissions = await Promise.all(
+            clusters.map(async (cluster) => {
                 const clusterTestcases = testcases
                     .filter((testcase) => testcase.cluster_id === cluster.id)
                     .map((it) => ({
@@ -160,7 +161,7 @@ export const beginEvaluation = async (
                         )!,
                     }));
 
-                Database.insertInto("cluster_submissions", {
+                const clusterSubmission: ClusterSubmission = {
                     id: generateSnowflake(),
                     cluster_id: cluster.id,
                     submission_id: submission.id,
@@ -168,8 +169,8 @@ export const beginEvaluation = async (
                         clusterTestcases.find(
                             (it) => it.evaluationResult.verdict !== "accepted"
                         )?.evaluationResult.verdict ?? "accepted",
-                    awardedscore: clusterTestcases.some(
-                        (it) => it.evaluationResult.verdict !== "accepted"
+                    awardedscore: clusterTestcases.every(
+                        (it) => it.evaluationResult.verdict === "accepted"
                     )
                         ? cluster.awarded_score
                         : 0,
@@ -189,7 +190,14 @@ export const beginEvaluation = async (
                                 : 0
                         )
                     ),
-                });
+                };
+
+                await Database.insertInto(
+                    "cluster_submissions",
+                    clusterSubmission
+                );
+
+                return clusterSubmission;
             })
         );
 
@@ -197,6 +205,11 @@ export const beginEvaluation = async (
             "submissions",
             {
                 completed: true,
+                awardedscore: clusterSubmissions.reduce(
+                    (accumulator, current) =>
+                        accumulator + current.awardedscore,
+                    0
+                ),
                 verdict: verdict,
                 time_used_millis: time,
                 memory_used_megabytes: memory,
