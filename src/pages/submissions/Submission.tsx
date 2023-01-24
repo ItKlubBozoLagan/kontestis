@@ -61,7 +61,7 @@ export const Submission: FC = () => {
                     .sort((a, b) => Number(BigInt(a.id) - BigInt(b.id)))
                     .map((c, index) => (
                         <TableHeadRow key={c.id + ""}>
-                            <TableItem>Cluster #{index}:</TableItem>
+                            <TableItem>Cluster #{index + 1}:</TableItem>
                             <TableItem
                                 css={
                                     c.verdict === "accepted"
