@@ -22,6 +22,7 @@ import {
     TableRow,
 } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
+import { useInterval } from "../../hooks/useInterval";
 import { ProblemType } from "../../types/ProblemType";
 import { EvaluationLanguage, SubmissionType } from "../../types/SubmissionType";
 
@@ -70,22 +71,18 @@ export const Problem: FC = () => {
 
     const [code, setCode] = useState("");
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            wrapAxios<SubmissionType[]>(
-                http.get("/submission/" + problem_id + "/")
-            ).then((d) => {
-                setSubmission(d);
-            });
-        }, 1000);
+    useInterval(() => {
+        wrapAxios<SubmissionType[]>(
+            http.get("/submission/" + problem_id + "/")
+        ).then((d) => {
+            setSubmission(d);
+        });
+    }, 1000);
 
+    useEffect(() => {
         wrapAxios<ProblemType>(http.get("/problem/" + problem_id + "/")).then(
             setProblem
         );
-
-        return () => {
-            clearInterval(interval);
-        };
     }, []);
 
     return (
