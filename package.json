@@ -1,5 +1,5 @@
 {
-    "name": "power-map-backend",
+    "name": "evaluator-cloud-function",
     "version": "1.0.0",
     "main": "src/app.ts",
     "license": "MIT",
