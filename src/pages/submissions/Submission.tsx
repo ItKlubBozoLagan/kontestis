@@ -58,7 +58,9 @@ export const Submission: FC = () => {
                     <TableHeadItem>Score</TableHeadItem>
                 </TableHeadRow>
                 {clusters
-                    .sort((a, b) => Number(BigInt(a.id) - BigInt(b.id)))
+                    .sort((a, b) =>
+                        Number(BigInt(a.cluster_id) - BigInt(b.cluster_id))
+                    )
                     .map((c, index) => (
                         <TableHeadRow key={c.id + ""}>
                             <TableItem>Cluster #{index + 1}:</TableItem>
