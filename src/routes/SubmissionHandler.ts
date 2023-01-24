@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { beginEvaluation } from "../core/evaluation";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
+import { extractClusterSubmission } from "../extractors/extractClusterSubmission";
 import { extractContest } from "../extractors/extractContest";
 import { extractModifiableContest } from "../extractors/extractModifiableContest";
 import { extractOptionalUser } from "../extractors/extractOptionalUser";
@@ -73,7 +74,7 @@ const SubmissionHandler = Router();
  *     HTTP/1.1 200 OK
  *     [{
  *         "id": "135343706118033408",
- *         "submission_id": 135335143509331968,
+ *         "cluster_submission_id": 135335143509331968,
  *         "testcase_id": "135335143509331968",
  *         "verdict": "accepted",
  *         "awardedScore": 50,
@@ -250,24 +251,24 @@ SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {
 });
 
 /**
- * @api {get} /api/testcase/cluster/:submission_id GetSubmissionTestcases
+ * @api {get} /api/testcase/cluster/:cluster_submission_id GetSubmissionTestcases
  * @apiName GetSubmissionTestcases
  * @apiGroup Submission
  *
  * @apiUse RequiredAuth
  *
- * @apiParam {String} submission_id Id of the submission.
+ * @apiParam {String} cluster_submission_id Id of the cluster submission.
  *
  * @apiSuccess {Object} testcases Submission testcases.
  *
  * @apiUse ExampleSubmissionTestcase
  */
 
-SubmissionHandler.get("/testcase/:submission_id", async (req, res) => {
-    const submission = await extractSubmission(req);
+SubmissionHandler.get("/testcase/:cluster_submission_id", async (req, res) => {
+    const clusterSubmission = await extractClusterSubmission(req);
 
     const testcases = await Database.selectFrom("testcase_submissions", "*", {
-        submission_id: submission.id,
+        cluster_submission_id: clusterSubmission.id,
     });
 
     return respond(res, StatusCodes.OK, testcases);

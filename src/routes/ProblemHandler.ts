@@ -171,16 +171,27 @@ ProblemHandler.delete("/:problem_id", async (req, res) => {
     });
 
     await Promise.all(
-        submissions.map((submission) =>
-            Promise.all([
-                Database.deleteFrom("cluster_submissions", "*", {
+        submissions.map(async (submission) => {
+            const clusterSubmissions = await Database.selectFrom(
+                "cluster_submissions",
+                "*",
+                {
                     submission_id: submission.id,
-                }),
-                Database.deleteFrom("testcase_submissions", "*", {
-                    submission_id: submission.id,
-                }),
-            ])
-        )
+                }
+            );
+
+            await Database.deleteFrom("cluster_submissions", "*", {
+                submission_id: submission.id,
+            });
+
+            await Promise.all(
+                clusterSubmissions.map((cs) =>
+                    Database.deleteFrom("testcase_submissions", "*", {
+                        cluster_submission_id: cs.id,
+                    })
+                )
+            );
+        })
     );
 
     return respond(res, StatusCodes.OK);

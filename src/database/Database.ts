@@ -12,6 +12,7 @@ import { Testcase } from "../types/Testcase";
 import { TestcaseSubmission } from "../types/TestcaseSubmission";
 import { User } from "../types/User";
 import { migration_initial } from "./migrations/0001_initial";
+import { migration_update_testcase_submission } from "./migrations/0002_update_testcase_submission";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -35,7 +36,10 @@ export const Database = new ScylloClient<{
     log: Logger.database,
 });
 
-const migrations: Migration<any>[] = [migration_initial];
+const migrations: Migration<any>[] = [
+    migration_initial,
+    migration_update_testcase_submission,
+];
 
 export const initDatabase = async () => {
     await Database.useKeyspace(Globals.dbKeyspace, true);

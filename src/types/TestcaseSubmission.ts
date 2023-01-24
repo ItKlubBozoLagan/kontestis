@@ -16,10 +16,10 @@ export type TestcaseSubmissionV1 = {
 export type TestcaseSubmissionV2 = {
     id: Snowflake;
     testcase_id: Snowflake;
-    submission_cluster_id: Snowflake;
+    cluster_submission_id: Snowflake;
 
     verdict: Verdict;
-    awardedscore: number;
+    awarded_score: number;
 
     time_used_millis: number;
     memory_used_megabytes: number;

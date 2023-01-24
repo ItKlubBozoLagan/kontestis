@@ -9,7 +9,6 @@ import { SubmissionV1 } from "../../types/Submission";
 import { TestcaseV1 } from "../../types/Testcase";
 import { TestcaseSubmissionV1 } from "../../types/TestcaseSubmission";
 import { UserV1 } from "../../types/User";
-import { Database } from "../Database";
 
 type InitialDB = {
     users: UserV1;
@@ -27,7 +26,7 @@ export const migration_initial: Migration<InitialDB> = async (
     database,
     log
 ) => {
-    await Database.createTable(
+    await database.createTable(
         "users",
         true,
         {
@@ -40,9 +39,9 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex("users", "users_by_email", "email");
+    await database.createIndex("users", "users_by_email", "email");
 
-    await Database.createTable(
+    await database.createTable(
         "allowed_users",
         true,
         {
@@ -53,13 +52,13 @@ export const migration_initial: Migration<InitialDB> = async (
         "user_id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "allowed_users",
         "allowed_users_by_allowed_id",
         "contest_id"
     );
 
-    await Database.createTable(
+    await database.createTable(
         "contests",
         true,
         {
@@ -73,10 +72,10 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex("contests", "contests_by_admin_id", "admin_id");
-    await Database.createIndex("contests", "contests_by_name", "name");
+    await database.createIndex("contests", "contests_by_admin_id", "admin_id");
+    await database.createIndex("contests", "contests_by_name", "name");
 
-    await Database.createTable(
+    await database.createTable(
         "problems",
         true,
         {
@@ -92,13 +91,13 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "problems",
         "problems_by_contest_id",
         "contest_id"
     );
 
-    await Database.createTable(
+    await database.createTable(
         "clusters",
         true,
         {
@@ -109,13 +108,13 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "clusters",
         "clusters_by_problem_id",
         "problem_id"
     );
 
-    await Database.createTable(
+    await database.createTable(
         "testcases",
         true,
         {
@@ -127,13 +126,13 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "testcases",
         "testcases_by_cluster_id",
         "cluster_id"
     );
 
-    await Database.createTable(
+    await database.createTable(
         "submissions",
         true,
         {
@@ -151,18 +150,18 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "submissions",
         "submissions_by_user_id",
         "user_id"
     );
-    await Database.createIndex(
+    await database.createIndex(
         "submissions",
         "submissions_by_problem_id",
         "problem_id"
     );
 
-    await Database.createTable(
+    await database.createTable(
         "cluster_submissions",
         true,
         {
@@ -177,18 +176,18 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "cluster_submissions",
         "cluster_submissions_by_submission_id",
         "submission_id"
     );
-    await Database.createIndex(
+    await database.createIndex(
         "cluster_submissions",
         "cluster_submissions_by_cluster_id",
         "cluster_id"
     );
 
-    await Database.createTable(
+    await database.createTable(
         "testcase_submissions",
         true,
         {
@@ -203,12 +202,12 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await Database.createIndex(
+    await database.createIndex(
         "testcase_submissions",
         "testcase_submissions_by_testcase_id",
         "testcase_id"
     );
-    await Database.createIndex(
+    await database.createIndex(
         "testcase_submissions",
         "testcase_submissions_by_submission_id",
         "submission_id"

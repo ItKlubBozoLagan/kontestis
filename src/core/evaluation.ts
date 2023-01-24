@@ -127,9 +127,10 @@ export const beginEvaluation = async (
                 Database.insertInto("testcase_submissions", {
                     id: generateSnowflake(),
                     testcase_id: BigInt(result.testCaseId),
-                    submission_id: submission.id,
+                    // TODO: Fix
+                    cluster_submission_id: "",
                     verdict: result.verdict,
-                    awardedscore: 0,
+                    awarded_score: 0,
                     memory_used_megabytes:
                         result.type === "success" ? result.memory : 0,
                     time_used_millis:
