@@ -13,6 +13,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Problem } from "./pages/problems/Problem";
 import { Problems } from "./pages/problems/Problems";
 import { Root } from "./pages/Root";
+import { Submission } from "./pages/submissions/Submission";
 import { useAuthStore } from "./state/auth";
 import { UserType } from "./types/UserType";
 
@@ -28,6 +29,10 @@ const dashboardRouter = createBrowserRouter([
             {
                 path: "/",
                 element: <Dashboard />,
+            },
+            {
+                path: "/submission/:submission_id",
+                element: <Submission />,
             },
             {
                 path: "/problem/:problem_id",

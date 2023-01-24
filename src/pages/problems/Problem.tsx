@@ -9,6 +9,7 @@ import {
     FiUploadCloud,
 } from "react-icons/all";
 import { useParams } from "react-router";
+import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
@@ -186,7 +187,11 @@ export const Problem: FC = () => {
                                                         : tw`text-red-600`
                                                 }
                                             >
-                                                {s.verdict}
+                                                <Link
+                                                    to={"/submission/" + s.id}
+                                                >
+                                                    {s.verdict}
+                                                </Link>
                                             </TableItem>
                                             <TableItem>
                                                 {`${s.time_used_millis} ms`}
