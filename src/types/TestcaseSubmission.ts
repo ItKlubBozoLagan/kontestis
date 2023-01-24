@@ -13,4 +13,16 @@ export type TestcaseSubmissionV1 = {
     memory_used_megabytes: number;
 };
 
-export type TestcaseSubmission = TestcaseSubmissionV1;
+export type TestcaseSubmissionV2 = {
+    id: Snowflake;
+    testcase_id: Snowflake;
+    submission_cluster_id: Snowflake;
+
+    verdict: Verdict;
+    awardedscore: number;
+
+    time_used_millis: number;
+    memory_used_megabytes: number;
+};
+
+export type TestcaseSubmission = TestcaseSubmissionV2;
