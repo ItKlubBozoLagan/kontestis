@@ -1,4 +1,4 @@
-import { Snowflake } from "../pages/contests/Contests";
+import { Snowflake } from "./Snowflake";
 import { Verdict } from "./SubmissionType";
 
 export type ClusterSubmissionType = {

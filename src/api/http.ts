@@ -1,6 +1,29 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import {
+    UseMutationOptions,
+    UseMutationResult,
+    UseQueryResult,
+} from "react-query";
 
 import { useAuthStore } from "../state/auth";
+import { HttpError } from "./HttpError";
+
+export type ServerData<T> = { data: T };
+
+export type MutationHandler<TVariables, TData, Parameter = never> = [
+    Parameter
+] extends [never]
+    ? (
+          options?: UseMutationOptions<TData, HttpError, TVariables>
+      ) => UseMutationResult<TData, HttpError, TVariables>
+    : (
+          parameters: Parameter,
+          options?: UseMutationOptions<TData, HttpError, TVariables>
+      ) => UseMutationResult<TData, HttpError, TVariables>;
+
+export type QueryHandler<TData, Arguments extends unknown[] = never[]> = (
+    ...arguments_: Arguments
+) => UseQueryResult<TData, HttpError>;
 
 export const http = axios.create({
     baseURL:
@@ -17,5 +40,5 @@ http.interceptors.request.use((config: AxiosRequestConfig) => {
 });
 
 export const wrapAxios = <T>(
-    request: Promise<AxiosResponse<{ data: T }>>
+    request: Promise<AxiosResponse<ServerData<T>>>
 ): Promise<T> => request.then((data) => data.data.data);

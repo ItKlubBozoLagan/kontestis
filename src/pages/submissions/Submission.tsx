@@ -1,8 +1,7 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { useParams } from "react-router";
 import tw from "twin.macro";
 
-import { http, wrapAxios } from "../../api/http";
 import {
     Table,
     TableHeadItem,
@@ -10,8 +9,8 @@ import {
     TableItem,
 } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
-import { ClusterSubmissionType } from "../../types/ClusterSubmissionType";
-import { SubmissionType } from "../../types/SubmissionType";
+import { useSubmission } from "../../hooks/submission/useSubmission";
+import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
 
 type Properties = {
     submission_id: string;
@@ -20,32 +19,17 @@ type Properties = {
 export const Submission: FC = () => {
     const { submission_id } = useParams<Properties>();
 
-    const [submission, setSubmission] = useState<SubmissionType>({
-        id: BigInt(0),
-        user_id: BigInt(0),
-        problem_id: BigInt(0),
-        code: "Loading",
-        language: "python",
-        completed: false,
-    });
-
-    const [clusters, setClusters] = useState<ClusterSubmissionType[]>([]);
-
-    useEffect(() => {
-        wrapAxios<SubmissionType>(
-            http.get("/submission/submission/" + submission_id + "/")
-        ).then(setSubmission);
-
-        wrapAxios<ClusterSubmissionType[]>(
-            http.get("/submission/cluster/" + submission_id + "/")
-        ).then(setClusters);
-    }, []);
+    // TODO: maybe verify submission_id
+    const { data: submission } = useSubmission(BigInt(submission_id ?? 0));
+    const { data: submissionCluster } = useSubmissionClusters(
+        BigInt(submission_id ?? 0)
+    );
 
     return (
         <div tw={"w-full h-full py-12 flex flex-col gap-5"}>
             <TitledSection title={"Code"}>
                 <textarea
-                    value={atob(submission.code)}
+                    value={atob(submission?.code ?? "")}
                     tw={"w-full h-[500px]"}
                 ></textarea>
             </TitledSection>
@@ -57,8 +41,8 @@ export const Submission: FC = () => {
                     <TableHeadItem>Memory</TableHeadItem>
                     <TableHeadItem>Score</TableHeadItem>
                 </TableHeadRow>
-                {clusters
-                    .sort((a, b) =>
+                {submissionCluster
+                    ?.sort((a, b) =>
                         Number(BigInt(a.cluster_id) - BigInt(b.cluster_id))
                     )
                     .map((c, index) => (

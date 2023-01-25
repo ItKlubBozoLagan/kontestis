@@ -10,59 +10,51 @@ import {
     TableItem,
     TableRow,
 } from "../components/Table";
+import { useAllContests } from "../hooks/contest/useAllContests";
+import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
 import { useAuthStore } from "../state/auth";
-import { ContestType } from "../types/ContestType";
 import { ProblemType } from "../types/ProblemType";
-import { SubmissionType } from "../types/SubmissionType";
 
 export const Dashboard: FC = () => {
     const { user } = useAuthStore();
 
-    const [totalContests, setTotalContests] = useState(0);
     const [totalProblems, setTotalProblems] = useState(0);
-    const [totalSubmissions, setTotalSubmissions] = useState(0);
+
+    const { isSuccess: isContestsSuccess, data: contests } = useAllContests();
+    const { data: submissions } = useAllSubmissions(user.id);
 
     useEffect(() => {
-        wrapAxios<ContestType[]>(http.get("/contest")).then((c) => {
-            setTotalContests(c.length);
-            setTotalProblems(0);
+        if (!isContestsSuccess) return;
 
-            for (const contest of c) {
-                wrapAxios<ProblemType[]>(
-                    http.get("/problem", { params: { contest_id: contest.id } })
-                ).then((p) => {
-                    setTotalProblems(totalProblems + p.length);
-                });
-            }
-        });
-
-        wrapAxios<ProblemType[]>(http.get("/contest")).then((p) => {
-            setTotalProblems(p.length);
-        });
-
-        wrapAxios<[SubmissionType[]]>(
-            http.get("/submission", {
-                params: { user_id: user.id },
-            })
-        ).then((s) => {
-            setTotalSubmissions(s.length);
-        });
-    }, [user]);
+        // TODO: utilize with react query
+        // TODO 2: maybe fix backend so we don't make O(n) requests
+        for (const contest of contests) {
+            wrapAxios<ProblemType[]>(
+                http.get("/problem", { params: { contest_id: contest.id } })
+            ).then((problems) => {
+                setTotalProblems((previous) => previous + problems.length);
+            });
+        }
+    }, [isContestsSuccess, contests]);
 
     return (
         <div>
             <Header />
             <Table tw={"w-full"}>
-                <TableHeadRow>
-                    <TableHeadItem>Total Contests</TableHeadItem>
-                    <TableHeadItem>Total Problems</TableHeadItem>
-                    <TableHeadItem>Total Submissions</TableHeadItem>
-                </TableHeadRow>
-                <TableRow>
-                    <TableItem>{totalContests}</TableItem>
-                    <TableItem>{totalProblems}</TableItem>
-                    <TableItem>{totalSubmissions}</TableItem>
-                </TableRow>
+                <thead>
+                    <TableHeadRow>
+                        <TableHeadItem>Total Contests</TableHeadItem>
+                        <TableHeadItem>Total Problems</TableHeadItem>
+                        <TableHeadItem>Total Submissions</TableHeadItem>
+                    </TableHeadRow>
+                </thead>
+                <tbody>
+                    <TableRow>
+                        <TableItem>{contests?.length ?? 0}</TableItem>
+                        <TableItem>{totalProblems}</TableItem>
+                        <TableItem>{submissions?.length ?? 0}</TableItem>
+                    </TableRow>
+                </tbody>
             </Table>
         </div>
     );

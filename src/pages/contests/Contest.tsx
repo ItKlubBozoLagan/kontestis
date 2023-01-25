@@ -11,7 +11,7 @@ import {
     TableItem,
     TableRow,
 } from "../../components/Table";
-import { ContestType } from "../../types/ContestType";
+import { useContest } from "../../hooks/contest/useContest";
 import { ProblemType } from "../../types/ProblemType";
 
 type Properties = {
@@ -21,40 +21,46 @@ type Properties = {
 export const Contest: FC = () => {
     const { contest_id } = useParams<Properties>();
 
-    const [contest, setContest] = useState<ContestType>();
+    const { isSuccess, data: contest } = useContest(BigInt(contest_id ?? 0n));
     const [problems, setProblems] = useState<ProblemType[]>([]);
 
     useEffect(() => {
-        wrapAxios<ContestType>(http.get("/contest/" + contest_id + "/")).then(
-            setContest
-        );
-        wrapAxios<ProblemType[]>(
-            http.get("/problem", { params: { contest_id: contest_id } })
-        ).then(setProblems);
-    }, []);
+        if (!isSuccess) return;
 
-    return contest ? (
+        // TODO: react query
+        wrapAxios<ProblemType[]>(
+            http.get("/problem", { params: { contest_id: contest.id } })
+        ).then(setProblems);
+    }, [isSuccess, contest]);
+
+    if (!contest) return <div>Loading...</div>;
+
+    return (
         <div tw={"w-full flex flex-col justify-start items-center gap-4 mt-5"}>
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
             <Table tw={"w-full"}>
-                <TableHeadRow>
-                    <TableHeadItem>Problem</TableHeadItem>
-                </TableHeadRow>
-                {problems.map((p) => (
-                    <TableRow key={p.id + ""}>
-                        <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                            <Link
-                                to={"/problem/" + p.id}
-                                tw={"flex items-center gap-2"}
+                <thead>
+                    <TableHeadRow>
+                        <TableHeadItem>Problem</TableHeadItem>
+                    </TableHeadRow>
+                </thead>
+                <tbody>
+                    {problems?.map((p) => (
+                        <TableRow key={p.id + ""}>
+                            <TableItem
+                                tw={"hover:(text-sky-800 cursor-pointer)"}
                             >
-                                <FiList tw={"text-xl"} /> {p.title}
-                            </Link>
-                        </TableItem>
-                    </TableRow>
-                ))}
+                                <Link
+                                    to={"/problem/" + p.id}
+                                    tw={"flex items-center gap-2"}
+                                >
+                                    <FiList tw={"text-xl"} /> {p.title}
+                                </Link>
+                            </TableItem>
+                        </TableRow>
+                    ))}
+                </tbody>
             </Table>
         </div>
-    ) : (
-        <div>Loading!</div>
     );
 };

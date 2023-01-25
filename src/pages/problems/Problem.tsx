@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { IconType } from "react-icons";
 import {
     AiFillCaretDown,
@@ -12,7 +12,7 @@ import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
-import { http, wrapAxios } from "../../api/http";
+import { http } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
 import {
     Table,
@@ -22,9 +22,10 @@ import {
     TableRow,
 } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
+import { useProblem } from "../../hooks/problem/useProblem";
+import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
 import { useInterval } from "../../hooks/useInterval";
-import { ProblemType } from "../../types/ProblemType";
-import { EvaluationLanguage, SubmissionType } from "../../types/SubmissionType";
+import { EvaluationLanguage } from "../../types/SubmissionType";
 
 type Properties = {
     problem_id: string;
@@ -55,39 +56,24 @@ const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value }) => {
 export const Problem: FC = () => {
     const { problem_id } = useParams<Properties>();
 
-    const [problem, setProblem] = useState<ProblemType>({
-        id: BigInt(0),
-        contest_id: BigInt(0),
-        title: "Loading",
-        description: "Loading",
-        time_limit_millis: 0,
-        memory_limit_megabytes: 0,
-    });
-
-    const [submissions, setSubmission] = useState<SubmissionType[]>([]);
-
     const [expanded, setExpanded] = useState(false);
     const [language, setLanguage] = useState<EvaluationLanguage>("cpp");
 
     const [code, setCode] = useState("");
 
-    useInterval(() => {
-        wrapAxios<SubmissionType[]>(
-            http.get("/submission/" + problem_id + "/")
-        ).then((d) => {
-            setSubmission(d);
-        });
-    }, 1000);
+    const { data: problem } = useProblem(BigInt(problem_id ?? 0));
 
-    useEffect(() => {
-        wrapAxios<ProblemType>(http.get("/problem/" + problem_id + "/")).then(
-            setProblem
-        );
-    }, []);
+    const { data: submissions, refetch } = useAllProblemSubmissions(
+        BigInt(problem_id ?? 0)
+    );
+
+    useInterval(() => {
+        const _ = refetch();
+    }, 1000);
 
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 py-10"}>
-            <span tw={"text-neutral-800 text-3xl"}>{problem.title}</span>
+            <span tw={"text-neutral-800 text-3xl"}>{problem?.title}</span>
             <div tw={"flex flex-col gap-4"}>
                 <div tw={"w-full flex gap-4"}>
                     <TitledSection title={"Limits"}>
@@ -99,12 +85,17 @@ export const Problem: FC = () => {
                             <LimitBox
                                 icon={FiClock}
                                 title={"Time"}
-                                value={problem.time_limit_millis + " ms"}
+                                value={
+                                    (problem?.time_limit_millis ?? 0) + " ms"
+                                }
                             />
                             <LimitBox
                                 icon={FiDatabase}
                                 title={"Memory"}
-                                value={problem.memory_limit_megabytes + " MiB"}
+                                value={
+                                    (problem?.memory_limit_megabytes ?? 0) +
+                                    " MiB"
+                                }
                             />
                             <LimitBox
                                 icon={FiCode}
@@ -114,7 +105,7 @@ export const Problem: FC = () => {
                             <LimitBox
                                 icon={FiUploadCloud}
                                 title={"Submission limit"}
-                                value={`50 (${submissions.length ?? 0} used)`}
+                                value={`50 (${submissions?.length ?? 0} used)`}
                             />
                         </div>
                     </TitledSection>
@@ -138,8 +129,10 @@ export const Problem: FC = () => {
                             <option value="python">Python</option>
                         </select>
                         <SimpleButton
-                            onClick={async () => {
+                            onClick={() => {
                                 setCode("");
+
+                                // TODO: react query mutations
                                 const _ = http.post(
                                     "/submission/" + problem_id + "/",
                                     {
@@ -166,7 +159,9 @@ export const Problem: FC = () => {
                     </thead>
                     <tbody>
                         {submissions
-                            .sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                            ?.sort((b, a) =>
+                                Number(BigInt(a.id) - BigInt(b.id))
+                            )
                             .slice(
                                 0,
                                 expanded || submissions.length <= 4
@@ -212,7 +207,7 @@ export const Problem: FC = () => {
                                 </TableRow>
                             ))}
                     </tbody>
-                    {submissions.length > 4 && (
+                    {submissions && submissions.length > 4 && (
                         <tfoot>
                             <TableRow>
                                 <TableItem
@@ -250,7 +245,7 @@ export const Problem: FC = () => {
                     "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200"
                 }
             >
-                {problem.description}
+                {problem?.description}
             </div>
         </div>
     );

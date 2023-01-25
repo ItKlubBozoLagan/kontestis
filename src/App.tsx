@@ -80,7 +80,7 @@ const loginRouter = createBrowserRouter([
 ]);
 
 export const App = () => {
-    const { isLoggedIn, token, user, setUser, setIsLoggedIn } = useAuthStore();
+    const { isLoggedIn, token, setUser, setIsLoggedIn } = useAuthStore();
 
     useEffect(() => {
         if (token.length === 0) {

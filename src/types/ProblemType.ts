@@ -1,4 +1,4 @@
-import { Snowflake } from "../pages/contests/Contests";
+import { Snowflake } from "./Snowflake";
 
 export type ProblemType = {
     id: Snowflake;
