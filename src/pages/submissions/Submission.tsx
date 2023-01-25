@@ -7,6 +7,7 @@ import {
     TableHeadItem,
     TableHeadRow,
     TableItem,
+    TableRow,
 } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
 import { useSubmission } from "../../hooks/submission/useSubmission";
@@ -46,7 +47,7 @@ export const Submission: FC = () => {
                         Number(BigInt(a.cluster_id) - BigInt(b.cluster_id))
                     )
                     .map((c, index) => (
-                        <TableHeadRow key={c.id + ""}>
+                        <TableRow key={c.id + ""}>
                             <TableItem>Cluster #{index + 1}:</TableItem>
                             <TableItem
                                 css={
@@ -60,7 +61,7 @@ export const Submission: FC = () => {
                             <TableItem>{c.time_used_millis} ms</TableItem>
                             <TableItem>{c.memory_used_megabytes} MiB</TableItem>
                             <TableItem>{c.awardedscore} points</TableItem>
-                        </TableHeadRow>
+                        </TableRow>
                     ))}
             </Table>
         </div>
