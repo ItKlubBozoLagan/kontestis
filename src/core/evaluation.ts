@@ -5,6 +5,7 @@ import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { ClusterSubmission } from "../types/ClusterSubmission";
 import { EvaluationLanguage, Submission } from "../types/Submission";
+import { Testcase } from "../types/Testcase";
 import { User } from "../types/User";
 
 type ProblemDetails = {
@@ -79,6 +80,10 @@ export const beginEvaluation = async (
         )
     ).flat();
 
+    const testCasesById: Record<string, Testcase> = {};
+
+    for (const t of testcases) testCasesById[t.id + ""] = t;
+
     if (!problem) throw new Error("unexpected state");
 
     const _ = (async () => {
@@ -121,23 +126,6 @@ export const beginEvaluation = async (
 
         const time = Math.max(0, ...successfulResults.map((it) => it.time));
         const memory = Math.max(0, ...successfulResults.map((it) => it.memory));
-
-        await Promise.all(
-            results.map((result) =>
-                Database.insertInto("testcase_submissions", {
-                    id: generateSnowflake(),
-                    testcase_id: BigInt(result.testCaseId),
-                    // TODO: Fix
-                    cluster_submission_id: 0n,
-                    verdict: result.verdict,
-                    awarded_score: 0,
-                    memory_used_megabytes:
-                        result.type === "success" ? result.memory : 0,
-                    time_used_millis:
-                        result.type === "success" ? result.time : 0,
-                })
-            )
-        );
 
         const clusterSubmissions = await Promise.all(
             clusters.map(async (cluster) => {
@@ -189,6 +177,32 @@ export const beginEvaluation = async (
 
                 return clusterSubmission;
             })
+        );
+
+        const clusterSubmissionsByClusterId: Record<string, ClusterSubmission> =
+            {};
+
+        for (const c of clusterSubmissions)
+            clusterSubmissionsByClusterId[c.cluster_id + ""] = c;
+
+        await Promise.all(
+            results.map((result) =>
+                Database.insertInto("testcase_submissions", {
+                    id: generateSnowflake(),
+                    testcase_id: BigInt(result.testCaseId),
+                    // TODO: Maybe do this better
+                    cluster_submission_id:
+                        clusterSubmissionsByClusterId[
+                            testCasesById[result.testCaseId].cluster_id + ""
+                        ].id,
+                    verdict: result.verdict,
+                    awarded_score: 0,
+                    memory_used_megabytes:
+                        result.type === "success" ? result.memory : 0,
+                    time_used_millis:
+                        result.type === "success" ? result.time : 0,
+                })
+            )
         );
 
         await Database.update(
