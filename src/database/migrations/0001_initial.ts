@@ -207,6 +207,7 @@ export const migration_initial: Migration<InitialDB> = async (
         "testcase_submissions_by_testcase_id",
         "testcase_id"
     );
+
     await database.createIndex(
         "testcase_submissions",
         "testcase_submissions_by_submission_id",

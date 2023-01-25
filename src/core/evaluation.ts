@@ -128,7 +128,7 @@ export const beginEvaluation = async (
                     id: generateSnowflake(),
                     testcase_id: BigInt(result.testCaseId),
                     // TODO: Fix
-                    cluster_submission_id: "",
+                    cluster_submission_id: 0n,
                     verdict: result.verdict,
                     awarded_score: 0,
                     memory_used_megabytes:
