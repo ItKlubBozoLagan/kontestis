@@ -6,13 +6,16 @@ import { SubmissionType } from "../../types/SubmissionType";
 
 export const useAllSubmissions: QueryHandler<
     SubmissionType[],
-    [Snowflake | undefined]
-> = (userId) =>
-    useQuery(["submission"], () =>
-        wrapAxios(
-            http.get(
-                "/submission",
-                userId ? { params: { user_id: userId } } : undefined
-            )
-        )
-    );
+    Snowflake | undefined
+> = (userId, options) =>
+    useQuery({
+        queryKey: ["submission"],
+        queryFn: () =>
+            wrapAxios(
+                http.get(
+                    "/submission",
+                    userId ? { params: { user_id: userId } } : undefined
+                )
+            ),
+        ...options,
+    });

@@ -6,8 +6,11 @@ import { Snowflake } from "../../types/Snowflake";
 
 export const useSubmissionClusters: QueryHandler<
     ClusterSubmissionType[],
-    [Snowflake]
-> = (submissionId) =>
-    useQuery(["submission", submissionId, "cluster"], () =>
-        wrapAxios(http.get(`/submission/cluster/${submissionId}`))
-    );
+    Snowflake
+> = (submissionId, options) =>
+    useQuery({
+        queryKey: ["submission", submissionId, "cluster"],
+        queryFn: () =>
+            wrapAxios(http.get(`/submission/cluster/${submissionId}`)),
+        ...options,
+    });

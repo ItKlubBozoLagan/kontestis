@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { FC } from "react";
+import { useQueries } from "react-query";
 
 import { http, wrapAxios } from "../api/http";
 import { Header } from "../components/Header";
@@ -18,24 +19,32 @@ import { ProblemType } from "../types/ProblemType";
 export const Dashboard: FC = () => {
     const { user } = useAuthStore();
 
-    const [totalProblems, setTotalProblems] = useState(0);
-
-    const { isSuccess: isContestsSuccess, data: contests } = useAllContests();
+    const { data: contests } = useAllContests();
     const { data: submissions } = useAllSubmissions(user.id);
+    const problemQueries = useQueries(
+        (contests ?? []).map((contest) => ({
+            queryKey: ["contest", contest.id, "problem"],
+            queryFn: () =>
+                wrapAxios<ProblemType[]>(
+                    http.get(
+                        "/problem",
+                        contest.id
+                            ? { params: { contest_id: contest.id } }
+                            : undefined
+                    )
+                ),
+        }))
+    );
 
-    useEffect(() => {
-        if (!isContestsSuccess) return;
-
-        // TODO: utilize with react query
-        // TODO 2: maybe fix backend so we don't make O(n) requests
-        for (const contest of contests) {
-            wrapAxios<ProblemType[]>(
-                http.get("/problem", { params: { contest_id: contest.id } })
-            ).then((problems) => {
-                setTotalProblems((previous) => previous + problems.length);
-            });
-        }
-    }, [isContestsSuccess, contests]);
+    const totalProblems = useMemo(
+        () =>
+            problemQueries.reduce(
+                (accumulator, current) =>
+                    accumulator + (current.data?.length ?? 0),
+                0
+            ),
+        [problemQueries]
+    );
 
     return (
         <div>

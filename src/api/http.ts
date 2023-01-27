@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import {
     UseMutationOptions,
     UseMutationResult,
+    UseQueryOptions,
     UseQueryResult,
 } from "react-query";
 
@@ -21,9 +22,19 @@ export type MutationHandler<TVariables, TData, Parameter = never> = [
           options?: UseMutationOptions<TData, HttpError, TVariables>
       ) => UseMutationResult<TData, HttpError, TVariables>;
 
-export type QueryHandler<TData, Arguments extends unknown[] = never[]> = (
-    ...arguments_: Arguments
-) => UseQueryResult<TData, HttpError>;
+type QueryOptions<TData> = UseQueryOptions<
+    unknown,
+    HttpError,
+    TData,
+    (string | number | bigint)[]
+>;
+
+export type QueryHandler<TData, Parameter = never> = [Parameter] extends [never]
+    ? (options?: QueryOptions<TData>) => UseQueryResult<TData, HttpError>
+    : (
+          parameters: Parameter,
+          options?: QueryOptions<TData>
+      ) => UseQueryResult<TData, HttpError>;
 
 export const http = axios.create({
     baseURL:

@@ -1,9 +1,8 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { FiList } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 
-import { http, wrapAxios } from "../../api/http";
 import {
     Table,
     TableHeadItem,
@@ -12,7 +11,7 @@ import {
     TableRow,
 } from "../../components/Table";
 import { useContest } from "../../hooks/contest/useContest";
-import { ProblemType } from "../../types/ProblemType";
+import { useAllProblems } from "../../hooks/problem/useAllProblems";
 
 type Properties = {
     contest_id: string;
@@ -21,17 +20,10 @@ type Properties = {
 export const Contest: FC = () => {
     const { contest_id } = useParams<Properties>();
 
-    const { isSuccess, data: contest } = useContest(BigInt(contest_id ?? 0n));
-    const [problems, setProblems] = useState<ProblemType[]>([]);
-
-    useEffect(() => {
-        if (!isSuccess) return;
-
-        // TODO: react query
-        wrapAxios<ProblemType[]>(
-            http.get("/problem", { params: { contest_id: contest.id } })
-        ).then(setProblems);
-    }, [isSuccess, contest]);
+    const { data: contest } = useContest(BigInt(contest_id ?? 0n));
+    const { data: problems } = useAllProblems(contest?.id, {
+        enabled: !!contest?.id,
+    });
 
     if (!contest) return <div>Loading...</div>;
 

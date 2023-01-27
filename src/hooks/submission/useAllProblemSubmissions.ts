@@ -6,8 +6,10 @@ import { SubmissionType } from "../../types/SubmissionType";
 
 export const useAllProblemSubmissions: QueryHandler<
     SubmissionType[],
-    [Snowflake]
-> = (problemId) =>
-    useQuery(["submission", "problem", problemId], () =>
-        wrapAxios(http.get(`/submission/${problemId}`))
-    );
+    Snowflake
+> = (problemId, options) =>
+    useQuery({
+        queryKey: ["submission", "problem", problemId],
+        queryFn: () => wrapAxios(http.get(`/submission/${problemId}`)),
+        ...options,
+    });

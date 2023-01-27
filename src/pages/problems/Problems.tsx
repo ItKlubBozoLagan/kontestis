@@ -15,26 +15,29 @@ import { useAllContests } from "../../hooks/contest/useAllContests";
 import { ContestType } from "../../types/ContestType";
 import { ProblemType } from "../../types/ProblemType";
 
-type ContestProblemList = {
-    contest: ContestType;
-    problems: ProblemType[];
-};
-
 export const Problems: FC = () => {
-    const [problems, setProblems] = useState<ContestProblemList[]>([]);
+    const [problems, setProblems] = useState<
+        (ProblemType & { contest: ContestType })[]
+    >([]);
 
     const { isSuccess: isContestsSuccess, data: contests } = useAllContests();
 
     useEffect(() => {
         if (!isContestsSuccess) return;
 
+        setProblems([]);
+
+        // TODO: react query
         for (const contest of contests) {
             wrapAxios<ProblemType[]>(
                 http.get("/problem", {
                     params: { contest_id: contest.id },
                 })
-            ).then((p) => {
-                setProblems([...problems, { contest, problems: p }]);
+            ).then((response) => {
+                setProblems((previous) => [
+                    ...previous,
+                    ...response.map((problem) => ({ ...problem, contest })),
+                ]);
             });
         }
     }, [isContestsSuccess, contests]);
@@ -51,26 +54,24 @@ export const Problems: FC = () => {
                     </TableHeadRow>
                 </thead>
                 <tbody>
-                    {problems.map((p) =>
-                        p.problems.map((cp) => (
-                            <TableRow key={cp.id + ""}>
-                                <TableItem
-                                    tw={"hover:(text-sky-800 cursor-pointer)"}
+                    {problems.map((problem) => (
+                        <TableRow key={problem.id + ""}>
+                            <TableItem
+                                tw={"hover:(text-sky-800 cursor-pointer)"}
+                            >
+                                <Link
+                                    to={"/problem/" + problem.id}
+                                    tw={"flex items-center gap-2"}
                                 >
-                                    <Link
-                                        to={"/problem/" + cp.id}
-                                        tw={"flex items-center gap-2"}
-                                    >
-                                        <FiList tw={"text-xl"} /> {cp.title}
-                                    </Link>
-                                </TableItem>
-                                <TableItem>{p.contest.name}</TableItem>
-                                <TableItem>
-                                    {p.contest.start_time.toLocaleString()}
-                                </TableItem>
-                            </TableRow>
-                        ))
-                    )}
+                                    <FiList tw={"text-xl"} /> {problem.title}
+                                </Link>
+                            </TableItem>
+                            <TableItem>{problem.contest.name}</TableItem>
+                            <TableItem>
+                                {problem.contest.start_time.toLocaleString()}
+                            </TableItem>
+                        </TableRow>
+                    ))}
                 </tbody>
             </Table>
         </div>
