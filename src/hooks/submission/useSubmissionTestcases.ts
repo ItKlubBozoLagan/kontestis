@@ -6,8 +6,13 @@ import { TestcaseSubmission } from "../../types/TestcaseSubmissionType";
 
 export const useSubmissionTestcases: QueryHandler<
     TestcaseSubmission[],
-    [Snowflake]
-> = (cluster_submission_id) =>
-    useQuery(["submission", "cluster", cluster_submission_id, "testcase"], () =>
-        wrapAxios(http.get(`/submission/testcase/${cluster_submission_id}`))
-    );
+    Snowflake
+> = (cluster_submission_id, options) =>
+    useQuery({
+        queryKey: ["submission", "cluster", cluster_submission_id, "testcase"],
+        queryFn: () =>
+            wrapAxios(
+                http.get(`/submission/testcase/${cluster_submission_id}`)
+            ),
+        ...options,
+    });
