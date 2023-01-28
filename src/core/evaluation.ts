@@ -97,7 +97,7 @@ export const beginEvaluation = async (
                     testcases: testcases.map((testcase) => ({
                         id: testcase.id.toString(),
                         in: testcase.input,
-                        out: testcase.correctoutput,
+                        out: testcase.correct_output,
                     })),
                 },
                 {
@@ -147,7 +147,7 @@ export const beginEvaluation = async (
                         clusterTestcases.find(
                             (it) => it.evaluationResult.verdict !== "accepted"
                         )?.evaluationResult.verdict ?? "accepted",
-                    awardedscore: clusterTestcases.every(
+                    awarded_score: clusterTestcases.every(
                         (it) => it.evaluationResult.verdict === "accepted"
                     )
                         ? cluster.awarded_score
@@ -209,9 +209,9 @@ export const beginEvaluation = async (
             "submissions",
             {
                 completed: true,
-                awardedscore: clusterSubmissions.reduce(
+                awarded_score: clusterSubmissions.reduce(
                     (accumulator, current) =>
-                        accumulator + current.awardedscore,
+                        accumulator + current.awarded_score,
                     0
                 ),
                 verdict: verdict,

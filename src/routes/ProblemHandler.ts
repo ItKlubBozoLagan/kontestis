@@ -308,7 +308,7 @@ ProblemHandler.post(
             id: generateSnowflake(),
             cluster_id: cluster.id,
             input: req.body.input,
-            correctoutput: req.body.correctOutput,
+            correct_output: req.body.correctOutput,
         };
 
         await Database.insertInto("testcases", testcase);
