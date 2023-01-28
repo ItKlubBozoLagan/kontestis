@@ -14,6 +14,7 @@ import { User } from "../types/User";
 import { migration_initial } from "./migrations/0001_initial";
 import { migration_update_testcase_submission } from "./migrations/0002_update_testcase_submission";
 import { migration_fix_column_names } from "./migrations/0003_fix_column_names";
+import { migration_running_contest_preparation } from "./migrations/0004_running_contest_preparation";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -41,6 +42,7 @@ const migrations: Migration<any>[] = [
     migration_initial,
     migration_update_testcase_submission,
     migration_fix_column_names,
+    migration_running_contest_preparation,
 ];
 
 export const initDatabase = async () => {

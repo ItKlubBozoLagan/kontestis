@@ -6,7 +6,7 @@
     "scripts": {
         "prepare": "husky install",
         "start": "ts-node src/app.ts",
-        "dev": "nodemon --exec ts-node src/app.ts",
+        "dev": "nodemon -e ts --exec ts-node src/app.ts",
         "lint": "eslint -c .eslintrc.json --ext .ts ./src",
         "create-migration": "bash scripts/create_migration.sh src/database/migrations"
     },

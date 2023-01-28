@@ -51,6 +51,7 @@ export const beginEvaluation = async (
 ) => {
     const submission: Submission = {
         id: generateSnowflake(),
+        created_at: new Date(),
         user_id: user.id,
         problem_id: problemDetails.problemId,
         language: problemDetails.language,

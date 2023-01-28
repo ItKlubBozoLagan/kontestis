@@ -31,4 +31,6 @@ export type SubmissionV2 = Omit<SubmissionV1, "awardedscore"> & {
     awarded_score?: number;
 };
 
-export type Submission = SubmissionV2;
+export type SubmissionV3 = SubmissionV2 & { created_at: Date };
+
+export type Submission = SubmissionV3;
