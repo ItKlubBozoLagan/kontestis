@@ -13,4 +13,8 @@ export type ClusterSubmissionV1 = {
     memory_used_megabytes: number;
 };
 
-export type ClusterSubmission = ClusterSubmissionV1;
+export type ClusterSubmissionV2 = Omit<ClusterSubmissionV1, "awardedscore"> & {
+    awarded_score: number;
+};
+
+export type ClusterSubmission = ClusterSubmissionV2;

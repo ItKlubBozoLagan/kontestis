@@ -7,4 +7,8 @@ export type TestcaseV1 = {
     correctoutput?: string;
 };
 
-export type Testcase = TestcaseV1;
+export type TestcaseV2 = Omit<TestcaseV1, "correctoutput"> & {
+    correct_output?: string;
+};
+
+export type Testcase = TestcaseV2;

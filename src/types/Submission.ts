@@ -27,4 +27,8 @@ export type SubmissionV1 = {
     completed: boolean;
 };
 
-export type Submission = SubmissionV1;
+export type SubmissionV2 = Omit<SubmissionV1, "awardedscore"> & {
+    awarded_score?: number;
+};
+
+export type Submission = SubmissionV2;
