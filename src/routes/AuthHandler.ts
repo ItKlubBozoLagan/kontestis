@@ -11,6 +11,10 @@ import { extractUser } from "../extractors/extractUser";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
+import {
+    AdministrativePermissions,
+    hasAdminPermission,
+} from "../types/AdministrativePermissions";
 import { User } from "../types/User";
 import { respond } from "../utils/response";
 
@@ -177,7 +181,12 @@ AuthHandler.get("/info", async (req, res) => {
 AuthHandler.get("/info/:id", async (req, res) => {
     const user = await extractUser(req);
 
-    if ((user.permissions & 1n) === 0n)
+    if (
+        !hasAdminPermission(
+            user.permissions,
+            AdministrativePermissions.VIEW_USER
+        )
+    )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     const searchUser = await Database.selectOneFrom("users", "*", {

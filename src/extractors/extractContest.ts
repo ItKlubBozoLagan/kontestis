@@ -4,6 +4,10 @@ import { StatusCodes } from "http-status-codes";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Snowflake } from "../lib/snowflake";
+import {
+    AdministrativePermissions,
+    hasAdminPermission,
+} from "../types/AdministrativePermissions";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
@@ -23,7 +27,13 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
 
         const user = await extractUser(req);
 
-        if ((user.permissions & BigInt(1)) > 0) return contest;
+        if (
+            hasAdminPermission(
+                user.permissions,
+                AdministrativePermissions.VIEW_CONTEST
+            )
+        )
+            return contest;
 
         if (user.id == contest.admin_id) return contest;
 

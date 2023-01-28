@@ -3,6 +3,10 @@ import { StatusCodes } from "http-status-codes";
 
 import { SafeError } from "../errors/SafeError";
 import { Snowflake } from "../lib/snowflake";
+import {
+    AdministrativePermissions,
+    hasAdminPermission,
+} from "../types/AdministrativePermissions";
 import { extractContest } from "./extractContest";
 import { extractUser } from "./extractUser";
 
@@ -15,7 +19,13 @@ export const extractModifiableContest = async (
         extractContest(req, contestId),
     ]);
 
-    if ((user.permissions & BigInt(1)) > 0) return contest;
+    if (
+        hasAdminPermission(
+            user.permissions,
+            AdministrativePermissions.EDIT_CONTEST
+        )
+    )
+        return contest;
 
     if (user.id === contest.admin_id) return contest;
 

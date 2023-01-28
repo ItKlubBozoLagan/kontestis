@@ -1,3 +1,5 @@
+import { PermissionData } from "permissio";
+
 import { Snowflake } from "../lib/snowflake";
 
 export type UserV1 = {
@@ -5,7 +7,7 @@ export type UserV1 = {
     username: string;
     password: string;
     email: string;
-    permissions: bigint;
+    permissions: PermissionData;
 };
 
 export type User = UserV1;

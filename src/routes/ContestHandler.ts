@@ -9,6 +9,10 @@ import { extractModifiableContest } from "../extractors/extractModifiableContest
 import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
+import {
+    AdministrativePermissions,
+    hasAdminPermission,
+} from "../types/AdministrativePermissions";
 import { AllowedUser } from "../types/AllowedUser";
 import { Contest } from "../types/Contest";
 import { respond } from "../utils/response";
@@ -65,6 +69,14 @@ const contestSchema = Type.Object({
 
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const user = await extractUser(req);
+
+    if (
+        !hasAdminPermission(
+            user.permissions,
+            AdministrativePermissions.ADD_CONTEST
+        )
+    )
+        throw new SafeError(StatusCodes.FORBIDDEN);
 
     const date = new Date(req.body.start_time_millis);
 
