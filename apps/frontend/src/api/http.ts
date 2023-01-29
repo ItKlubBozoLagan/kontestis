@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import {
     UseMutationOptions,
     UseMutationResult,
@@ -41,7 +41,7 @@ export const http = axios.create({
         (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
 });
 
-http.interceptors.request.use((config: AxiosRequestConfig) => {
+http.interceptors.request.use((config) => {
     const { token } = useAuthStore.getState();
 
     if (token.length > 0)
