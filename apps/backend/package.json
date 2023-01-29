@@ -1,14 +1,13 @@
 {
-    "name": "kontestis-backend",
+    "name": "@kontestis/backend",
     "version": "1.0.0",
     "main": "src/app.ts",
     "license": "MIT",
     "scripts": {
-        "prepare": "husky install",
         "start": "ts-node src/app.ts",
         "dev": "nodemon -e ts --exec ts-node src/app.ts",
-        "lint": "eslint -c .eslintrc.json --ext .ts ./src",
-        "create-migration": "bash scripts/create_migration.sh src/database/migrations"
+        "create-migration": "bash scripts/create_migration.sh src/database/migrations",
+        "typecheck": "tsc --noEmit"
     },
     "dependencies": {
         "@lvksh/logger": "^1.6.3",
@@ -38,15 +37,6 @@
         "@types/express-serve-static-core": "^4.17.30",
         "@types/jsonwebtoken": "^8.5.9",
         "@types/node": "^18.7.11",
-        "@typescript-eslint/eslint-plugin": "^5.36.1",
-        "@typescript-eslint/parser": "^5.48.2",
-        "eslint": "^8.32.0",
-        "eslint-plugin-radar": "^0.2.1",
-        "eslint-plugin-simple-import-sort": "^8.0.0",
-        "eslint-plugin-sonarjs": "^0.15.0",
-        "eslint-plugin-unused-imports": "^2.0.0",
-        "eslint-plugin-v3xlabs": "^1.5.2",
-        "husky": "^8.0.3",
         "typescript": "^4.9.4"
     }
 }

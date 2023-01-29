@@ -11,4 +11,4 @@ RUN pnpm install
 
 COPY ./src ./src
 
-CMD [ "sh", "-c", "sleep 4 && pnpm start" ]
+CMD [ "sh", "-c", "pnpm start" ]

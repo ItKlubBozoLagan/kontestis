@@ -1,29 +1,6 @@
 {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "ecmaVersion": 2021
-    },
-    "extends": [
-        "plugin:v3xlabs/recommended"
-    ],
-    "ignorePatterns": [
-        "!**/*"
-    ],
-    "plugins": [
-        "v3xlabs"
-    ],
-    "env": {
-        "node": true
-    },
-    "rules": {
-        "unicorn/no-nested-ternary": "off",
-        "unused-imports/no-unused-vars": "warn",
-        "quotes": ["error", "double"],
-        "sonarjs/no-nested-template-literals": "off",
-        "unicorn/no-null": "off",
-        "unicorn/consistent-destructuring": "off",
-        "unicorn/no-await-expression-member": "off",
-        "unicorn/prevent-abbreviations": [
+   "rules": {
+       "unicorn/prevent-abbreviations": [
             "error",
             {
                 "allowList": {
@@ -31,13 +8,7 @@
                     "res": true
                 }
             }
-        ],
-        "prettier/prettier": [
-            "error",
-            {
-                "singleQuote": false
-            }
         ]
-    }
+   }
 }
 
