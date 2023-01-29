@@ -4,13 +4,14 @@ version: "2"
 
 services:
   backend:
-    build: .
+    build: ./apps/backend
     tty: true
+    command: "npm run dev"
     depends_on:
       scylla:
         condition: service_healthy
     ports:
-      - "80:8080"
+      - "8080:8080"
     environment:
       - PORT=8080
       - DB_HOST=scylla
@@ -18,7 +19,7 @@ services:
       - DB_KEYSPACE=kontestis
       - DB_DATACENTER=datacenter1
       - TOKEN_SECRET=sometokensecret
-      - EVALUATOR_ENDPOINT=https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app/
+      - EVALUATOR_ENDPOINT=https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app
 
   scylla:
     image: "scylladb/scylla:5.0.5"
@@ -27,11 +28,10 @@ services:
       - "9042:9042"
     volumes:
       - "./tools/scylla:/var/lib/scylla"
-    logging:
-      driver: none
     healthcheck:
       test: cqlsh -e "exit"
       interval: 2s
       retries: 10
       start_period: 10s
       timeout: 10s
+

@@ -3,13 +3,25 @@
 version: "2"
 
 services:
-  backend:
+  frontend:
     image: "node:hydrogen-alpine"
+    tty: true
     volumes:
       - ".:/app"
-    working_dir: "/app"
-    command: "npm run dev"
+    working_dir: "/app/apps/frontend"
+    command: "npm run dev -- --host"
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_ENDPOINT=http://localhost:8080
+
+  backend:
+    image: "node:hydrogen-alpine"
     tty: true
+    volumes:
+      - ".:/app"
+    working_dir: "/app/apps/backend"
+    command: "npm run dev"
     depends_on:
       scylla:
         condition: service_healthy
@@ -31,8 +43,6 @@ services:
       - "9042:9042"
     volumes:
       - "./tools/scylla:/var/lib/scylla"
-    logging:
-      driver: none
     healthcheck:
       test: cqlsh -e "exit"
       interval: 2s
