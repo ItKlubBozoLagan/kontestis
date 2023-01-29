@@ -33,10 +33,10 @@ jobs:
             pnpm-${{ runner.os }}-
 
       - name: Install packages
-        run: pnpm install
+        run: pnpm --filter=@kontestis/frontend... install
 
       - name: Build
-        run: pnpm build
+        run: pnpm --filter=@kontestis/frontend... build
 
       - name: Edgeserver Upload
         uses: v3xlabs/edgeserver-upload@master
