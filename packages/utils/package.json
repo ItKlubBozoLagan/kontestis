@@ -1,0 +1,9 @@
+{
+    "name": "@kontestis/utils",
+    "version": "1.0.0",
+    "main": "src/index.ts",
+    "license": "MIT",
+    "dependencies": {
+        "typescript": "^4.9.4"
+    }
+}
