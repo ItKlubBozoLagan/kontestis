@@ -1,9 +1,5 @@
 import React, { FC, InputHTMLAttributes } from "react";
 
-type Properties = {
-    title: string;
-};
-
 export const TitledInput: FC<InputHTMLAttributes<HTMLInputElement>> = ({
     title,
     ...properties
