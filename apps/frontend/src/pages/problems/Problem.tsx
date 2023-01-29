@@ -8,6 +8,7 @@ import {
     FiDatabase,
     FiUploadCloud,
 } from "react-icons/all";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
@@ -245,7 +246,9 @@ export const Problem: FC = () => {
                     "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200"
                 }
             >
-                {problem?.description}
+                <ReactMarkdown>
+                    {problem ? problem.description : "Loading"}
+                </ReactMarkdown>
             </div>
         </div>
     );

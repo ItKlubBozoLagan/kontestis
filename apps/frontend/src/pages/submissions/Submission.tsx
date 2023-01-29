@@ -1,4 +1,5 @@
 import { FC, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router";
 import tw from "twin.macro";
 
@@ -35,10 +36,12 @@ export const Submission: FC = () => {
     return (
         <div tw={"w-full h-full py-12 flex flex-col gap-5"}>
             <TitledSection title={"Code"}>
-                <textarea
-                    value={atob(submission?.code ?? "")}
-                    tw={"w-full h-[500px]"}
-                ></textarea>
+                <ReactMarkdown tw={"w-full"}>
+                    {"```" +
+                        (submission?.language ?? "py") +
+                        atob(submission?.code ?? "") +
+                        "```"}
+                </ReactMarkdown>
             </TitledSection>
             {!displayTestcase ? (
                 <Table tw={"w-full"}>

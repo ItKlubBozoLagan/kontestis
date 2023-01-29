@@ -144,6 +144,34 @@ AuthHandler.post(
     }
 );
 
+const updateSchema = Type.Object({
+    email: Type.String({ minLength: 5, maxLength: 50 }),
+    username: Type.String({ minLength: 5, maxLength: 50 }),
+    password: Type.String({ minLength: 5, maxLength: 50 }),
+    currentPassword: Type.String(),
+});
+
+AuthHandler.patch("/", useValidation(updateSchema), async (req, res) => {
+    const user = await extractUser(req);
+
+    if (!(await compare(req.body.currentPassword, user.password)))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const hashPassword = await hash(req.body.password, 10);
+
+    await Database.update(
+        "users",
+        {
+            username: req.body.username,
+            password: hashPassword,
+            email: req.body.email,
+        },
+        { id: user.id }
+    );
+
+    return respond(res, StatusCodes.OK);
+});
+
 /**
  * @api {get} /api/auth/info UserInfo
  * @apiName InfoUser
