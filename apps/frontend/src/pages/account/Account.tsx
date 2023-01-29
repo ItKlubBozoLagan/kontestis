@@ -34,6 +34,7 @@ export const Account: FC = () => {
                     ? {
                           username: username,
                           email: email,
+                          currentPassword: password,
                       }
                     : {
                           username: username,
