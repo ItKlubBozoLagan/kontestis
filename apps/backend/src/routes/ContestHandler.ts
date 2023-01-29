@@ -100,6 +100,29 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     return respond(res, StatusCodes.OK, contest);
 });
 
+ContestHandler.patch(
+    "/:contest_id",
+    useValidation(contestSchema),
+    async (req, res) => {
+        const contest = await extractModifiableContest(req);
+
+        const date = new Date(req.body.start_time_millis);
+
+        if (!date) throw new SafeError(StatusCodes.BAD_REQUEST);
+
+        await Database.update(
+            "contests",
+            {
+                name: req.body.name,
+                start_time: date,
+                duration_seconds: req.body.duration_seconds,
+                public: req.body.public,
+            },
+            { id: contest.id }
+        );
+    }
+);
+
 /**
  * @api {get} /api/contest GetContests
  * @apiName GetContests
@@ -152,7 +175,6 @@ const allowUserSchema = Type.Object({
  *      "contest_id": "135493060095119360"
  *     }
  */
-
 ContestHandler.post(
     "/allow/:contest_id",
     useValidation(allowUserSchema),
