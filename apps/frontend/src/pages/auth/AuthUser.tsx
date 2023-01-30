@@ -60,31 +60,35 @@ export const AuthUser: FC<Properties> = ({ register }) => {
     return (
         <div tw={"w-full md:max-w-[500px] py-20"}>
             <TitledSection title={register ? "Register" : "Log in"}>
-                <span tw={"text-red-600 font-bold text-2xl"}>
-                    TODO: replace with some OAuth provider
-                </span>
-                <form tw="w-full flex flex-col gap-3" onSubmit={onFormSubmit}>
-                    <TitledInput
-                        title={"Email:"}
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                    />
-                    {register && (
+                <form
+                    tw="w-full flex flex-col w-[256px] items-center gap-6"
+                    onSubmit={onFormSubmit}
+                >
+                    <div tw={"flex flex-col gap-2"}>
                         <TitledInput
-                            title={"Username: "}
-                            value={username}
+                            name={"Email"}
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                        />
+                        {register && (
+                            <TitledInput
+                                name={"Username"}
+                                value={username}
+                                onChange={(event) =>
+                                    setUsername(event.target.value)
+                                }
+                            />
+                        )}
+                        <TitledInput
+                            type={"password"}
+                            name={"Password"}
+                            value={password}
                             onChange={(event) =>
-                                setUsername(event.target.value)
+                                setPassword(event.target.value)
                             }
                         />
-                    )}
-                    <TitledInput
-                        type={"password"}
-                        title={"Password: "}
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                    />
-                    <SimpleButton>
+                    </div>
+                    <SimpleButton tw={"w-full"}>
                         {register ? "Register" : "Log In"}
                     </SimpleButton>
                     <div tw={"flex flex-col gap-2 items-center"}>

@@ -1,27 +1,33 @@
 import React, { FC, InputHTMLAttributes } from "react";
-import styled from "styled-components";
-
-const InputWithTitle = styled.input<{ inputTitle: string }>`
-    &::before {
-        content: "${({ inputTitle }) => inputTitle}";
-    }
-`;
 
 export const TitledInput: FC<InputHTMLAttributes<HTMLInputElement>> = ({
-    title,
+    name,
     ...properties
 }) => {
     return (
-        <div tw={"w-full flex flex-col justify-start"}>
-            <div tw={"w-full flex justify-center"}>
-                <InputWithTitle
-                    inputTitle={title ?? ""}
-                    tw={
-                        "py-1 px-2 border-neutral-300 bg-neutral-200 border-solid"
-                    }
-                    {...properties}
-                />
-            </div>
+        <div
+            tw={
+                "w-full flex flex-col justify-start relative pt-4 max-w-[256px]"
+            }
+        >
+            <label
+                id={name}
+                tw={
+                    "absolute text-sm right-2 bg-neutral-200 px-1 border border-solid border-neutral-300 select-none"
+                }
+                style={{
+                    transform: "translateY(-40%)",
+                }}
+            >
+                {name}
+            </label>
+            <input
+                name={name}
+                tw={
+                    "py-1 px-2 bg-neutral-200 border border-solid border-neutral-300 text-base outline-none focus:bg-neutral-300"
+                }
+                {...properties}
+            />
         </div>
     );
 };

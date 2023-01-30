@@ -5,10 +5,6 @@ import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
 import { useAuthStore } from "../../state/auth";
 
-type Result = {
-    status: "success" | "error" | "none";
-};
-
 export const Account: FC = () => {
     const { user } = useAuthStore();
 
@@ -32,12 +28,12 @@ export const Account: FC = () => {
                             }
                         >
                             <TitledInput
-                                title={"Username"}
+                                name={"Username"}
                                 value={user.username}
                                 readOnly
                             />
                             <TitledInput
-                                title={"E-mail"}
+                                name={"E-mail"}
                                 value={user.email}
                                 readOnly
                             />
