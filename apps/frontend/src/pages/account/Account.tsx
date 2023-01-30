@@ -14,20 +14,16 @@ export const Account: FC = () => {
 
     return (
         <div tw={"w-full md:w-4/5 flex flex-col gap-2 py-10"}>
-            <TitledSection title={"Account"}>
-                <div tw={"w-full flex items-center justify-between px-10"}>
+            <TitledSection title={"Account information"}>
+                <div tw={"w-full flex items-center justify-center gap-10 p-10"}>
                     <div tw={"flex flex-col justify-start gap-2 font-mono"}>
                         <img
-                            tw={"w-64 h-64 rounded-full"}
+                            tw={"w-32 w-32 rounded-full"}
                             src={`https://www.gravatar.com/avatar/${md5(
                                 user.email.trim().toLowerCase()
-                            )}`}
+                            )}?s=150`}
                             alt={"Profile avatar"}
                         />
-                        <span tw={"text-[10px]"}>
-                            Image provided by{" "}
-                            <a href={"https://en.gravatar.com/"}>Gravatar</a>!
-                        </span>
                     </div>
                     <div>
                         <div
@@ -36,10 +32,15 @@ export const Account: FC = () => {
                             }
                         >
                             <TitledInput
-                                title={"Name:"}
+                                title={"Username"}
                                 value={user.username}
+                                readOnly
                             />
-                            <TitledInput title={"Email:"} value={user.email} />
+                            <TitledInput
+                                title={"E-mail"}
+                                value={user.email}
+                                readOnly
+                            />
                         </div>
                     </div>
                 </div>
