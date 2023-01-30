@@ -48,10 +48,18 @@ export const transformToBinary = async (
                     stdErr: Buffer.concat(stdError),
                 });
 
-            resolve({
-                success: true,
-                binary: await readFile(`/tmp/${fName}`),
-            });
+            try {
+                resolve({
+                    success: true,
+                    binary: await readFile(`/tmp/${fName}`),
+                });
+            } catch {
+                resolve({
+                    success: false,
+                    exitCode: 1,
+                    stdErr: Buffer.from(""),
+                });
+            }
         });
     });
 };
