@@ -1,6 +1,8 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
+import { useQueries } from "react-query";
 import { Link } from "react-router-dom";
+import * as R from "remeda";
 
 import { http, wrapAxios } from "../../api/http";
 import { PageTitle } from "../../components/PageTitle";
@@ -12,35 +14,33 @@ import {
     TableRow,
 } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
-import { ContestType } from "../../types/ContestType";
 import { ProblemType } from "../../types/ProblemType";
 
 export const Problems: FC = () => {
-    const [problems, setProblems] = useState<
-        (ProblemType & { contest: ContestType })[]
-    >([]);
-
     const { isSuccess: isContestsSuccess, data: contests } = useAllContests();
 
-    useEffect(() => {
-        if (!isContestsSuccess) return;
+    // TODO: extract to hook
+    const rawProblems = useQueries(
+        (contests ?? []).map((contest) => ({
+            queryKey: ["contest", contest.id, "problem"],
+            queryFn: () =>
+                wrapAxios<ProblemType[]>(
+                    http.get("/problem", { params: { contest_id: contest.id } })
+                ).then((p) => p.map((it) => ({ ...it, contest }))),
+        }))
+    );
 
-        setProblems([]);
-
-        // TODO: react query
-        for (const contest of contests) {
-            wrapAxios<ProblemType[]>(
-                http.get("/problem", {
-                    params: { contest_id: contest.id },
-                })
-            ).then((response) => {
-                setProblems((previous) => [
-                    ...previous,
-                    ...response.map((problem) => ({ ...problem, contest })),
-                ]);
-            });
-        }
-    }, [isContestsSuccess, contests]);
+    const problems = useMemo(
+        () =>
+            R.pipe(
+                rawProblems,
+                R.map((it) => it.data),
+                R.flatten(),
+                R.filter(R.isTruthy),
+                R.sort((a, b) => a.title.localeCompare(b.title))
+            ),
+        [rawProblems]
+    );
 
     return (
         <div tw={"w-full flex flex-col"}>

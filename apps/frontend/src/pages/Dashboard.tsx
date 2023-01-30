@@ -26,12 +26,7 @@ export const Dashboard: FC = () => {
             queryKey: ["contest", contest.id, "problem"],
             queryFn: () =>
                 wrapAxios<ProblemType[]>(
-                    http.get(
-                        "/problem",
-                        contest.id
-                            ? { params: { contest_id: contest.id } }
-                            : undefined
-                    )
+                    http.get("/problem", { params: { contest_id: contest.id } })
                 ),
         }))
     );
