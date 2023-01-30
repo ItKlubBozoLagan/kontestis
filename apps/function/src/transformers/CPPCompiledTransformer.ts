@@ -23,7 +23,6 @@ export const transformToBinary = async (
         ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", "c++", "-"],
         {
             shell: true,
-            timeout: 5000,
         }
     );
 
