@@ -111,110 +111,116 @@ export const beginEvaluation = async (
                 error as AxiosError,
             ])) as AxiosEvaluationResponse;
 
-        if (error || !results) {
-            console.log("evaluator failed", submission.id, error);
+        const verdict = error
+            ? "evaluation_error"
+            : results.find((it) => it.verdict !== "accepted")?.verdict ??
+              "accepted";
 
-            return;
-        }
-
-        const verdict =
-            results.find((it) => it.verdict !== "accepted")?.verdict ??
-            "accepted";
-
-        const successfulResults = results
+        const successfulResults = (results ?? [])
             .filter((result) => result.type === "success")
             .map((result) => result as SuccessfulEvaluationResult);
 
         const time = Math.max(0, ...successfulResults.map((it) => it.time));
         const memory = Math.max(0, ...successfulResults.map((it) => it.memory));
 
-        const clusterSubmissions = await Promise.all(
-            clusters.map(async (cluster) => {
-                const clusterTestcases = testcases
-                    .filter((testcase) => testcase.cluster_id === cluster.id)
-                    .map((it) => ({
-                        ...it,
-                        evaluationResult: results.find(
-                            (response) =>
-                                response.testCaseId === it.id.toString()
-                        )!,
-                    }));
+        let clusterSubmissions: ClusterSubmission[] = [];
 
-                const clusterSubmission: ClusterSubmission = {
-                    id: generateSnowflake(),
-                    cluster_id: cluster.id,
-                    submission_id: submission.id,
-                    verdict:
-                        clusterTestcases.find(
-                            (it) => it.evaluationResult.verdict !== "accepted"
-                        )?.evaluationResult.verdict ?? "accepted",
-                    awarded_score: clusterTestcases.every(
-                        (it) => it.evaluationResult.verdict === "accepted"
-                    )
-                        ? cluster.awarded_score
-                        : 0,
-                    memory_used_megabytes: Math.max(
-                        0,
-                        ...clusterTestcases.map((it) =>
-                            it.evaluationResult.type === "success"
-                                ? it.evaluationResult.memory
-                                : 0
+        if (!error && results) {
+            clusterSubmissions = await Promise.all(
+                clusters.map(async (cluster) => {
+                    const clusterTestcases = testcases
+                        .filter(
+                            (testcase) => testcase.cluster_id === cluster.id
                         )
-                    ),
-                    time_used_millis: Math.max(
-                        0,
-                        ...clusterTestcases.map((it) =>
-                            it.evaluationResult.type === "success"
-                                ? it.evaluationResult.time
-                                : 0
+                        .map((it) => ({
+                            ...it,
+                            evaluationResult: results.find(
+                                (response) =>
+                                    response.testCaseId === it.id.toString()
+                            )!,
+                        }));
+
+                    const clusterSubmission: ClusterSubmission = {
+                        id: generateSnowflake(),
+                        cluster_id: cluster.id,
+                        submission_id: submission.id,
+                        verdict:
+                            clusterTestcases.find(
+                                (it) =>
+                                    it.evaluationResult.verdict !== "accepted"
+                            )?.evaluationResult.verdict ?? "accepted",
+                        awarded_score: clusterTestcases.every(
+                            (it) => it.evaluationResult.verdict === "accepted"
                         )
-                    ),
-                };
+                            ? cluster.awarded_score
+                            : 0,
+                        memory_used_megabytes: Math.max(
+                            0,
+                            ...clusterTestcases.map((it) =>
+                                it.evaluationResult.type === "success"
+                                    ? it.evaluationResult.memory
+                                    : 0
+                            )
+                        ),
+                        time_used_millis: Math.max(
+                            0,
+                            ...clusterTestcases.map((it) =>
+                                it.evaluationResult.type === "success"
+                                    ? it.evaluationResult.time
+                                    : 0
+                            )
+                        ),
+                    };
 
-                await Database.insertInto(
-                    "cluster_submissions",
-                    clusterSubmission
-                );
+                    await Database.insertInto(
+                        "cluster_submissions",
+                        clusterSubmission
+                    );
 
-                return clusterSubmission;
-            })
-        );
-
-        const clusterSubmissionsByClusterId: Record<string, ClusterSubmission> =
-            {};
-
-        for (const c of clusterSubmissions)
-            clusterSubmissionsByClusterId[c.cluster_id + ""] = c;
-
-        await Promise.all(
-            results.map((result) =>
-                Database.insertInto("testcase_submissions", {
-                    id: generateSnowflake(),
-                    testcase_id: BigInt(result.testCaseId),
-                    // TODO: Maybe do this better
-                    cluster_submission_id:
-                        clusterSubmissionsByClusterId[
-                            testCasesById[result.testCaseId].cluster_id + ""
-                        ].id,
-                    verdict: result.verdict,
-                    awarded_score: 0,
-                    memory_used_megabytes:
-                        result.type === "success" ? result.memory : 0,
-                    time_used_millis:
-                        result.type === "success" ? result.time : 0,
+                    return clusterSubmission;
                 })
-            )
-        );
+            );
+
+            const clusterSubmissionsByClusterId: Record<
+                string,
+                ClusterSubmission
+            > = {};
+
+            for (const c of clusterSubmissions)
+                clusterSubmissionsByClusterId[c.cluster_id + ""] = c;
+
+            await Promise.all(
+                results.map((result) =>
+                    Database.insertInto("testcase_submissions", {
+                        id: generateSnowflake(),
+                        testcase_id: BigInt(result.testCaseId),
+                        // TODO: Maybe do this better
+                        cluster_submission_id:
+                            clusterSubmissionsByClusterId[
+                                testCasesById[result.testCaseId].cluster_id + ""
+                            ].id,
+                        verdict: result.verdict,
+                        awarded_score: 0,
+                        memory_used_megabytes:
+                            result.type === "success" ? result.memory : 0,
+                        time_used_millis:
+                            result.type === "success" ? result.time : 0,
+                    })
+                )
+            );
+        }
 
         await Database.update(
             "submissions",
             {
                 completed: true,
-                awarded_score: clusterSubmissions.reduce(
-                    (accumulator, current) =>
-                        accumulator + current.awarded_score,
-                    0
-                ),
+                awarded_score: error
+                    ? 0
+                    : clusterSubmissions.reduce(
+                          (accumulator, current) =>
+                              accumulator + current.awarded_score,
+                          0
+                      ),
                 verdict: verdict,
                 time_used_millis: time,
                 memory_used_megabytes: memory,
