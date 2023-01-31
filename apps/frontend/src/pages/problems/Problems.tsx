@@ -73,9 +73,9 @@ export const Problems: FC = () => {
                                     <FiList tw={"text-xl"} /> {problem.title}
                                 </Link>
                             </TableItem>
-                            <TableItem>{problem.contest.name}</TableItem>
+                            <TableItem>{problem.contest?.name}</TableItem>
                             <TableItem>
-                                {problem.contest.start_time.toLocaleString()}
+                                {problem.contest?.start_time.toLocaleString()}
                             </TableItem>
                         </TableRow>
                     ))}
