@@ -36,12 +36,9 @@ export const Submission: FC = () => {
     return (
         <div tw={"w-full h-full py-12 flex flex-col gap-5"}>
             <TitledSection title={"Code"}>
-                <ReactMarkdown tw={"w-full"}>
-                    {"```" +
-                        (submission?.language ?? "py") +
-                        atob(submission?.code ?? "") +
-                        "```"}
-                </ReactMarkdown>
+                <pre tw={"w-full font-mono"}>
+                    {atob(submission?.code ?? "")}
+                </pre>
             </TitledSection>
             {!displayTestcase ? (
                 <Table tw={"w-full"}>
