@@ -17,7 +17,7 @@ import { useAllContests } from "../../hooks/contest/useAllContests";
 import { ProblemType } from "../../types/ProblemType";
 
 export const Problems: FC = () => {
-    const { isSuccess: isContestsSuccess, data: contests } = useAllContests();
+    const { data: contests } = useAllContests();
 
     // TODO: extract to hook
     const rawProblems = useQueries(
@@ -26,7 +26,7 @@ export const Problems: FC = () => {
             queryFn: () =>
                 wrapAxios<ProblemType[]>(
                     http.get("/problem", { params: { contest_id: contest.id } })
-                ).then((p) => p.map((it) => ({ ...it, contest }))),
+                ),
         }))
     );
 
@@ -37,6 +37,13 @@ export const Problems: FC = () => {
                 R.map((it) => it.data),
                 R.flatten(),
                 R.filter(R.isTruthy),
+                R.map((it) => ({
+                    ...it,
+                    contest: (contests ?? []).find(
+                        (contest) =>
+                            BigInt(contest.id) === BigInt(it.contest_id)
+                    ),
+                })),
                 R.sort((a, b) => a.title.localeCompare(b.title))
             ),
         [rawProblems]
