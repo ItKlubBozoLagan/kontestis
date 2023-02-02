@@ -120,6 +120,8 @@ ContestHandler.patch(
             },
             { id: contest.id }
         );
+
+        respond(res, StatusCodes.OK);
     }
 );
 
