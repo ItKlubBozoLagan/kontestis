@@ -5,7 +5,9 @@
     "license": "MIT",
     "private": true,
     "scripts": {
+        "link-tsconfig": "pnpm list -r --depth -1 --parseable | xargs -I {} bash -c 'if [[ -f \"{}\"/tsconfig.json ]]; then ln -sf ../../tsconfig.base.json \"{}\"/tsconfig.base.json; fi'",
         "preinstall": "npx only-allow pnpm",
+        "postinstall": "pnpm link-tsconfig",
         "prepare": "husky install",
         "lint": "eslint --ignore-pattern '**/node_modules/**' --ext .tsx,.ts ./apps ./packages",
         "typecheck": "pnpm -r typecheck"

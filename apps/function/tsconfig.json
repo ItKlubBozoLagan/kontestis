@@ -1,16 +1,7 @@
 {
-    "compileOnSave": true,
-    "compilerOptions": {
-        "esModuleInterop": true,
-        "resolveJsonModule": true,
-        "lib": ["ESNext"],
-        "target": "ES2022",
-        "downlevelIteration": true,
-        "moduleResolution": "node",
-        "strict": true
-    },
-    "exclude": ["node_modules"],
-    "ts-node": {
-        "files": true
-    }
+  "extends": "tsconfig.base.json",
+  "ts-node": {
+    "files": true
+  }
 }
+

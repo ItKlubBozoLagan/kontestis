@@ -4,3 +4,6 @@ node_modules/
 
 tools/**
 !tools/.gitkeep
+
+**/tsconfig.base.json
+!/tsconfig.base.json
