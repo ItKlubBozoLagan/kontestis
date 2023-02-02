@@ -12,4 +12,4 @@ RUN pnpm install
 
 COPY ./src ./src
 
-CMD [ "sh", "-c", "pnpm start" ]
+CMD [ "pnpm", "start" ]
