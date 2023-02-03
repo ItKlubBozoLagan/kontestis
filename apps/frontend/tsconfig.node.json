@@ -1,8 +1,15 @@
 {
-    "extends": "tsconfig.base.json",
-    "compilerOptions": {
-      "composite": true
-    },
-    "include": ["vite.config.ts"]
-  }
+  "compilerOptions": {
+    "composite": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": ["ESNext"],
+    "target": "ES2022",
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "strict": true
+  },
+  "exclude": ["node_modules"],
+  "include": ["vite.config.ts"]
+}
   
