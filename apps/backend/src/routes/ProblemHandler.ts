@@ -1,10 +1,10 @@
+import { Cluster } from "@kontestis/models";
+import { Problem } from "@kontestis/models";
+import { Testcase } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Cluster } from "../../../../packages/models/src/Cluster";
-import { Problem } from "../../../../packages/models/src/Problem";
-import { Testcase } from "../../../../packages/models/src/Testcase";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractCluster } from "../extractors/extractCluster";

@@ -1,10 +1,10 @@
+import { User } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 import { JwtPayload, verify } from "jsonwebtoken";
 
-import { User } from "../../../../packages/models/src/User";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Globals } from "../globals";

@@ -1,11 +1,7 @@
+import { ClusterSubmissionV1 } from "@kontestis/models";
+import { TestcaseV1 } from "@kontestis/models";
+import { TestcaseSubmissionV1, TestcaseSubmissionV2 } from "@kontestis/models";
 import { Migration } from "scyllo";
-
-import { ClusterSubmissionV1 } from "../../../../../packages/models/src/ClusterSubmission";
-import { TestcaseV1 } from "../../../../../packages/models/src/Testcase";
-import {
-    TestcaseSubmissionV1,
-    TestcaseSubmissionV2,
-} from "../../../../../packages/models/src/TestcaseSubmission";
 
 type MigrationType = {
     testcases: TestcaseV1;

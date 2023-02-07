@@ -1,14 +1,14 @@
+import { AllowedUser } from "@kontestis/models";
+import { Cluster } from "@kontestis/models";
+import { ClusterSubmission } from "@kontestis/models";
+import { Contest } from "@kontestis/models";
+import { Problem } from "@kontestis/models";
+import { Submission } from "@kontestis/models";
+import { Testcase } from "@kontestis/models";
+import { TestcaseSubmission } from "@kontestis/models";
+import { User } from "@kontestis/models";
 import { Migration, ScylloClient } from "scyllo";
 
-import { AllowedUser } from "../../../../packages/models/src/AllowedUser";
-import { Cluster } from "../../../../packages/models/src/Cluster";
-import { ClusterSubmission } from "../../../../packages/models/src/ClusterSubmission";
-import { Contest } from "../../../../packages/models/src/Contest";
-import { Problem } from "../../../../packages/models/src/Problem";
-import { Submission } from "../../../../packages/models/src/Submission";
-import { Testcase } from "../../../../packages/models/src/Testcase";
-import { TestcaseSubmission } from "../../../../packages/models/src/TestcaseSubmission";
-import { User } from "../../../../packages/models/src/User";
 import { Globals } from "../globals";
 import { Logger } from "../lib/logger";
 import { migration_initial } from "./migrations/0001_initial";

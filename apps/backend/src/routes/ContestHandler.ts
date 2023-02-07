@@ -1,9 +1,9 @@
+import { AllowedUser } from "@kontestis/models";
+import { Contest } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { AllowedUser } from "../../../../packages/models/src/AllowedUser";
-import { Contest } from "../../../../packages/models/src/Contest";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractContest } from "../extractors/extractContest";

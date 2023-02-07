@@ -1,3 +1,4 @@
+import { User } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { compare, hash } from "bcrypt";
 import { Request, Router } from "express";
@@ -5,7 +6,6 @@ import { StatusCodes } from "http-status-codes";
 import { sign } from "jsonwebtoken";
 import * as R from "remeda";
 
-import { User } from "../../../../packages/models/src/User";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractUser } from "../extractors/extractUser";
