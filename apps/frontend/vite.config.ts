@@ -10,6 +10,14 @@ export default defineConfig({
                     "babel-plugin-twin",
                     "babel-plugin-macros",
                     "babel-plugin-styled-components",
+                    [
+                        "prismjs",
+                        {
+                            languages: ["python", "c", "cpp"],
+                            plugins: ["line-numbers", "match-braces"],
+                            css: true,
+                        },
+                    ],
                 ],
                 ignore: ["\u0000commonjsHelpers.js"], // weird babel-macro bug workaround
             },
