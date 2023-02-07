@@ -80,7 +80,8 @@ const loginRouter = createBrowserRouter([
 ]);
 
 export const App = () => {
-    const { isLoggedIn, token, setUser, setIsLoggedIn } = useAuthStore();
+    const { isLoggedIn, token, setUser, setToken, setIsLoggedIn } =
+        useAuthStore();
 
     useEffect(() => {
         if (token.length === 0) {
@@ -89,10 +90,12 @@ export const App = () => {
             return;
         }
 
-        wrapAxios<User>(http.get("/auth/info")).then((data) => {
-            setUser(data);
-            setIsLoggedIn(true);
-        });
+        wrapAxios<User>(http.get("/auth/info"))
+            .then((data) => {
+                setUser(data);
+                setIsLoggedIn(true);
+            })
+            .catch(() => setToken(""));
     }, [token]);
 
     if (token.length > 0 && !isLoggedIn)
