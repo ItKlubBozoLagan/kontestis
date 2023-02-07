@@ -64,7 +64,7 @@ export const AuthUser: FC<Properties> = ({ register }) => {
                     tw="w-full flex flex-col w-[256px] items-center gap-6"
                     onSubmit={onFormSubmit}
                 >
-                    <div tw={"flex flex-col gap-2"}>
+                    <div tw={"flex flex-col w-full gap-2"}>
                         <TitledInput
                             name={"Email"}
                             value={email}
