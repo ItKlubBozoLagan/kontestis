@@ -51,6 +51,7 @@ importers:
       remeda: ^1.6.0
       scyllo: ^1.5.0
       sunflake: ^0.6.0
+      superjson: ^1.12.2
       ts-node: ^10.9.1
       typescript: ^4.9.4
     dependencies:
@@ -72,6 +73,7 @@ importers:
       remeda: 1.6.1
       scyllo: 1.7.0
       sunflake: 0.6.0
+      superjson: 1.12.2
       ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
     devDependencies:
       '@types/apidoc': 0.50.0
@@ -87,6 +89,7 @@ importers:
     specifiers:
       '@kontestis/models': workspace:^1.0.0
       '@kontestis/utils': workspace:^1.0.0
+      '@types/content-type': ^1.1.5
       '@types/md5': ^2.3.2
       '@types/node': ^16.18.11
       '@types/react': ^18.0.26
@@ -97,6 +100,7 @@ importers:
       babel-plugin-macros: ^3.1.0
       babel-plugin-styled-components: ^2.0.7
       babel-plugin-twin: ^1.0.2
+      content-type: ^1.0.5
       eslint-plugin-react: ^7.32.2
       eslint-plugin-react-hooks: ^4.6.0
       md5: ^2.3.0
@@ -112,10 +116,12 @@ importers:
       sass: ^1.54.0
       styled-components: ^5.3.5
       sunflake: ^0.6.0
+      superjson: ^1.12.2
       tailwindcss: ^3.1.6
       twin.macro: ^2.8.2
       typescript: ^4.9.4
       vite: ^4.0.3
+      zod: ^3.20.2
       zustand: ^4.3.2
     dependencies:
       '@kontestis/models': link:../../packages/models
@@ -124,6 +130,7 @@ importers:
       babel-plugin-macros: 3.1.0
       babel-plugin-styled-components: 2.0.7_styled-components@5.3.6
       babel-plugin-twin: 1.1.0
+      content-type: 1.0.5
       md5: 2.3.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
@@ -137,10 +144,13 @@ importers:
       sass: 1.57.1
       styled-components: 5.3.6_7i5myeigehqah43i5u7wbekgba
       sunflake: 0.6.0
+      superjson: 1.12.2
       tailwindcss: 3.2.4_postcss@8.4.21
       twin.macro: 2.8.2
+      zod: 3.20.2
       zustand: 4.3.2_react@18.2.0
     devDependencies:
+      '@types/content-type': 1.1.5
       '@types/md5': 2.3.2
       '@types/node': 16.18.11
       '@types/react': 18.0.27
@@ -892,6 +902,10 @@ packages:
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
     dependencies:
       '@types/node': 18.11.18
+
+  /@types/content-type/1.1.5:
+    resolution: {integrity: sha512-dgMN+syt1xb7Hk8LU6AODOfPlvz5z1CbXpPuJE5ZrX9STfBOIXF09pEB8N7a97WT9dbngt3ksDCm6GW6yMrxfQ==}
+    dev: true
 
   /@types/cors/2.8.13:
     resolution: {integrity: sha512-RG8AStHlUiV5ysZQKq97copd2UmVYw3/pRMLefISZ3S1hK104Cwm7iLQ3fTKx+lsUH2CE8FlLaYeEA2LSeqYUA==}
@@ -1957,6 +1971,11 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /content-type/1.0.5:
+    resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
+    engines: {node: '>= 0.6'}
+    dev: false
+
   /convert-source-map/1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
     dev: true
@@ -1968,6 +1987,13 @@ packages:
   /cookie/0.5.0:
     resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /copy-anything/3.0.3:
+    resolution: {integrity: sha512-fpW2W/BqEzqPp29QS+MwwfisHCQZtiduTe/m8idFo0xbti9fIZ2WVhAsCv4ggFVH3AgCkVdpoOCtQC6gBrdhjw==}
+    engines: {node: '>=12.13'}
+    dependencies:
+      is-what: 4.1.8
     dev: false
 
   /cors/2.8.5:
@@ -3570,6 +3596,11 @@ packages:
       call-bind: 1.0.2
       get-intrinsic: 1.2.0
     dev: true
+
+  /is-what/4.1.8:
+    resolution: {integrity: sha512-yq8gMao5upkPoGEU9LsB2P+K3Kt8Q3fQFCGyNCWOAnJAMzEXVV9drYb0TXr42TTliLLhKIBvulgAXgtLLnwzGA==}
+    engines: {node: '>=12.13'}
+    dev: false
 
   /isarray/2.0.5:
     resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
@@ -5400,6 +5431,13 @@ packages:
     resolution: {integrity: sha512-iIlhmXk9RbZgaJhrg/H1rY+QM7eQ++Jnx93ezCrCAKbYUSVGMMxleSCL59AWEHCibJYqMYGlyi8meBXjnXy6Ag==}
     dev: false
 
+  /superjson/1.12.2:
+    resolution: {integrity: sha512-ugvUo9/WmvWOjstornQhsN/sR9mnGtWGYeTxFuqLb4AiT4QdUavjGFRALCPKWWnAiUJ4HTpytj5e0t5HoMRkXg==}
+    engines: {node: '>=10'}
+    dependencies:
+      copy-anything: 3.0.3
+    dev: false
+
   /supports-color/5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
     engines: {node: '>=4'}
@@ -6162,6 +6200,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  /zod/3.20.2:
+    resolution: {integrity: sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==}
+    dev: false
 
   /zustand/4.3.2_react@18.2.0:
     resolution: {integrity: sha512-rd4haDmlwMTVWVqwvgy00ny8rtti/klRoZjFbL/MAcDnmD5qSw/RZc+Vddstdv90M5Lv6RPgWvm1Hivyn0QgJw==}

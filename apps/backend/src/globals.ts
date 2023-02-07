@@ -1,4 +1,5 @@
 type GlobalsType = {
+    mode: "development" | "production" | string;
     port: number;
     tokenSecret: string;
     dbHost: string;
@@ -9,6 +10,7 @@ type GlobalsType = {
 };
 
 export const Globals: GlobalsType = {
+    mode: process.env.MODE ?? "development",
     port: process.env.PORT ? Number.parseInt(process.env.PORT) : 8080,
     tokenSecret: process.env.TOKEN_SECRET ?? "",
     dbHost: process.env.DB_HOST ?? "",

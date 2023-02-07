@@ -3,7 +3,11 @@ import "./globals.scss";
 
 import { User } from "@kontestis/models";
 import React, { useEffect } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+    createBrowserRouter,
+    Navigate,
+    RouterProvider,
+} from "react-router-dom";
 
 import { http, wrapAxios } from "./api/http";
 import { Account } from "./pages/account/Account";
@@ -68,12 +72,12 @@ const loginRouter = createBrowserRouter([
                 element: <AuthUser register={true} />,
             },
             {
-                path: "/*",
+                path: "/",
                 element: <AuthUser register={false} />,
             },
             {
-                path: "/",
-                element: <AuthUser register={false} />,
+                path: "/*",
+                element: <Navigate to={"/"} />,
             },
         ],
     },
