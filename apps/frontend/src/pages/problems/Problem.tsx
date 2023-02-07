@@ -243,7 +243,7 @@ export const Problem: FC = () => {
             </div>
             <div
                 tw={
-                    "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200"
+                    "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200 w-full"
                 }
             >
                 <ReactMarkdown>
