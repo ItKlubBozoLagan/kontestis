@@ -1,9 +1,7 @@
 .idea/
 node_modules/
 .env
+pruned/
 
 tools/**
 !tools/.gitkeep
-
-**/tsconfig.base.json
-!/tsconfig.base.json

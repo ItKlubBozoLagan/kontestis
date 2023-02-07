@@ -28,9 +28,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          context: apps/backend
+          context: .
           platforms: linux/amd64
-          file: apps/backend/Dockerfile
+          file: .deploy/backend.dockerfile
           tags: ghcr.io/itklubbozolagan/kontestis-backend:latest
   release:
     name: "🚚 Release"

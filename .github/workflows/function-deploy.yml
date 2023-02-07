@@ -38,7 +38,7 @@ jobs:
           password: ${{ steps.auth.outputs.access_token }}
 
       - name: Build image
-        run: docker build -t eu.gcr.io/speedy-baton-368023/kontestis-evaluator ./apps/function
+        run: docker build -t eu.gcr.io/speedy-baton-368023/kontestis-evaluator -f ./.deploy/function.dockerfile .
 
       - name: Push image
         run: docker push eu.gcr.io/speedy-baton-368023/kontestis-evaluator

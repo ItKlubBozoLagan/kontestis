@@ -1,7 +1,6 @@
 # Used in development
 
 version: "2"
-
 services:
   frontend:
     image: "node:hydrogen-alpine"
