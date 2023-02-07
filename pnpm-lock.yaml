@@ -86,6 +86,7 @@ importers:
   apps/frontend:
     specifiers:
       '@kontestis/models': workspace:^1.0.0
+      '@kontestis/utils': workspace:^1.0.0
       '@types/md5': ^2.3.2
       '@types/node': ^16.18.11
       '@types/react': ^18.0.26
@@ -118,6 +119,7 @@ importers:
       zustand: ^4.3.2
     dependencies:
       '@kontestis/models': link:../../packages/models
+      '@kontestis/utils': link:../../packages/utils
       axios: 1.2.6
       babel-plugin-macros: 3.1.0
       babel-plugin-styled-components: 2.0.7_styled-components@5.3.6

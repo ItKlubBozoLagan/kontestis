@@ -1,8 +1,7 @@
 import { User } from "@kontestis/models";
+import { mapFields } from "@kontestis/utils";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-import { mapFields } from "../utils/functions";
 
 type AuthState = {
     isLoggedIn: boolean;

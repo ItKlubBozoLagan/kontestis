@@ -1,10 +1,10 @@
 import { Contest } from "@kontestis/models";
+import { parseTime } from "@kontestis/utils";
 import { FC, useEffect, useState } from "react";
 import { FiList } from "react-icons/all";
 import { Link } from "react-router-dom";
 
 import { TableItem, TableRow } from "../../components/Table";
-import { parseTime } from "../../utils/utils";
 
 type Properties = {
     contest: Contest;
