@@ -10,6 +10,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@kontestis/models": "workspace:^1.0.0",
         "@lvksh/logger": "^1.6.3",
         "@sinclair/typebox": "^0.24.34",
         "apidoc": "^0.53.1",

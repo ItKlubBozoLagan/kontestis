@@ -1,3 +1,4 @@
+import { Problem } from "@kontestis/models";
 import { useMemo } from "react";
 import { FC } from "react";
 import { useQueries } from "react-query";
@@ -14,7 +15,6 @@ import {
 import { useAllContests } from "../hooks/contest/useAllContests";
 import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
 import { useAuthStore } from "../state/auth";
-import { ProblemType } from "../types/ProblemType";
 
 export const Dashboard: FC = () => {
     const { user } = useAuthStore();
@@ -25,7 +25,7 @@ export const Dashboard: FC = () => {
         (contests ?? []).map((contest) => ({
             queryKey: ["contest", contest.id, "problem"],
             queryFn: () =>
-                wrapAxios<ProblemType[]>(
+                wrapAxios<Problem[]>(
                     http.get("/problem", { params: { contest_id: contest.id } })
                 ),
         }))

@@ -1,6 +1,6 @@
+import { Snowflake } from "@kontestis/models";
 import { Request } from "express";
 
-import { Snowflake } from "../lib/snowflake";
 import { extractModifiableContest } from "./extractModifiableContest";
 import { extractProblem } from "./extractProblem";
 

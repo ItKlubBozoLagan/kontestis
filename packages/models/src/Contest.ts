@@ -1,4 +1,4 @@
-import { Snowflake } from "../lib/snowflake";
+import { Snowflake } from "./Snowflake";
 
 export type ContestV1 = {
     id: Snowflake;

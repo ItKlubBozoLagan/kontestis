@@ -1,11 +1,11 @@
+import { ClusterSubmission } from "@kontestis/models";
+import { Snowflake } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { ClusterSubmissionType } from "../../types/ClusterSubmissionType";
-import { Snowflake } from "../../types/Snowflake";
 
 export const useSubmissionClusters: QueryHandler<
-    ClusterSubmissionType[],
+    ClusterSubmission[],
     Snowflake
 > = (submissionId, options) =>
     useQuery({

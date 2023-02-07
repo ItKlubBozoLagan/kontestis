@@ -26,6 +26,7 @@ importers:
 
   apps/backend:
     specifiers:
+      '@kontestis/models': workspace:^1.0.0
       '@lvksh/logger': ^1.6.3
       '@sinclair/typebox': ^0.24.34
       '@types/apidoc': ^0.50.0
@@ -53,6 +54,7 @@ importers:
       ts-node: ^10.9.1
       typescript: ^4.9.4
     dependencies:
+      '@kontestis/models': link:../../packages/models
       '@lvksh/logger': 1.6.4
       '@sinclair/typebox': 0.24.51
       apidoc: 0.53.1
@@ -83,6 +85,7 @@ importers:
 
   apps/frontend:
     specifiers:
+      '@kontestis/models': workspace:^1.0.0
       '@types/md5': ^2.3.2
       '@types/node': ^16.18.11
       '@types/react': ^18.0.26
@@ -114,6 +117,7 @@ importers:
       vite: ^4.0.3
       zustand: ^4.3.2
     dependencies:
+      '@kontestis/models': link:../../packages/models
       axios: 1.2.6
       babel-plugin-macros: 3.1.0
       babel-plugin-styled-components: 2.0.7_styled-components@5.3.6
@@ -148,6 +152,7 @@ importers:
 
   apps/function:
     specifiers:
+      '@kontestis/models': workspace:^1.0.0
       '@lvksh/logger': ^1.6.3
       '@sinclair/typebox': ^0.24.34
       '@types/bcrypt': ^5.0.0
@@ -170,6 +175,7 @@ importers:
       ts-node: ^10.9.1
       typescript: ^4.9.4
     dependencies:
+      '@kontestis/models': link:../../packages/models
       '@lvksh/logger': 1.6.4
       '@sinclair/typebox': 0.24.51
       '@types/cors': 2.8.13
@@ -195,7 +201,10 @@ importers:
 
   packages/models:
     specifiers:
+      permissio: ^2.0.2
       typescript: ^4.9.4
+    dependencies:
+      permissio: 2.0.2
     devDependencies:
       typescript: 4.9.4
 

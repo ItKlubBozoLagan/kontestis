@@ -1,6 +1,5 @@
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
-import { Request } from "express";
 import {
     ParamsDictionary,
     Query,
@@ -14,13 +13,6 @@ type SchemaOptions = {
     body?: boolean;
     query?: boolean;
 };
-
-export type ValidatedBody<S extends TSchema> = Request<
-    ParamsDictionary,
-    any,
-    Static<S>,
-    Query
->;
 
 type SchemaRequestHandler<S extends SchemaOptions, O> = RequestHandler<
     ParamsDictionary,

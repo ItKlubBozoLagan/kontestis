@@ -1,6 +1,5 @@
+import { Snowflake } from "@kontestis/models";
 import { decode, generateSunflake, SunflakeConfig } from "sunflake";
-
-export type Snowflake = bigint;
 
 const sunFlakeConfig: SunflakeConfig<"bigint"> = {
     machineId: process.env.MACHINE_ID ?? 1,

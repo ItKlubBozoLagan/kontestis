@@ -1,6 +1,6 @@
 import { hasPermission, PermissionData } from "permissio";
 
-export enum AdministrativePermissions {
+export enum AdminPermissions {
     ADMIN,
     VIEW_USER,
     EDIT_USER,
@@ -16,10 +16,10 @@ export enum AdministrativePermissions {
 
 export const hasAdminPermission = (
     data: PermissionData,
-    permission: AdministrativePermissions
+    permission: AdminPermissions
 ) => {
     return (
-        hasPermission(data, AdministrativePermissions.ADMIN) ||
+        hasPermission(data, AdminPermissions.ADMIN) ||
         hasPermission(data, permission)
     );
 };

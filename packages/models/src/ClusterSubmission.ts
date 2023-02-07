@@ -1,12 +1,12 @@
-import { Snowflake } from "../lib/snowflake";
-import { Verdict } from "./Submission";
+import { EvaluationVerdict } from "./Evaluation";
+import { Snowflake } from "./Snowflake";
 
 export type ClusterSubmissionV1 = {
     id: Snowflake;
     submission_id: Snowflake;
     cluster_id: Snowflake;
 
-    verdict: Verdict;
+    verdict: EvaluationVerdict;
     awardedscore: number;
 
     time_used_millis: number;

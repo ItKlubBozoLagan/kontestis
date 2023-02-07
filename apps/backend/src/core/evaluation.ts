@@ -1,44 +1,23 @@
+import {
+    ClusterSubmission,
+    EvaluationLanguage,
+    EvaluationResult,
+    Submission,
+    SuccessfulEvaluationResult,
+    Testcase,
+    User,
+} from "@kontestis/models";
 import axios, { AxiosError } from "axios";
 
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
-import { ClusterSubmission } from "../types/ClusterSubmission";
-import { EvaluationLanguage, Submission } from "../types/Submission";
-import { Testcase } from "../types/Testcase";
-import { User } from "../types/User";
 
 type ProblemDetails = {
     problemId: bigint;
     language: EvaluationLanguage;
     code: string;
 };
-
-type SuccessfulEvaluationResult = {
-    type: "success";
-    verdict:
-        | "accepted"
-        | "wrong_answer"
-        | "time_limit_exceeded"
-        | "memory_limit_exceeded";
-    time: number;
-    memory: number;
-};
-
-type EvaluationResult = {
-    testCaseId: string;
-} & (
-    | SuccessfulEvaluationResult
-    | {
-          type: "error";
-          verdict: "runtime_error";
-          exitCode: number;
-      }
-    | {
-          type: "error";
-          verdict: "compilation_error" | "evaluation_error";
-      }
-);
 
 type AxiosEvaluationResponse =
     | [EvaluationResult[], undefined]

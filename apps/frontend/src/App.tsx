@@ -1,6 +1,7 @@
 import "twin.macro";
 import "./globals.scss";
 
+import { User } from "@kontestis/models";
 import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -15,7 +16,6 @@ import { Problems } from "./pages/problems/Problems";
 import { Root } from "./pages/Root";
 import { Submission } from "./pages/submissions/Submission";
 import { useAuthStore } from "./state/auth";
-import { UserType } from "./types/UserType";
 
 BigInt.prototype.toJSON = function () {
     return this.toString();
@@ -89,7 +89,7 @@ export const App = () => {
             return;
         }
 
-        wrapAxios<UserType>(http.get("/auth/info")).then((data) => {
+        wrapAxios<User>(http.get("/auth/info")).then((data) => {
             setUser(data);
             setIsLoggedIn(true);
         });

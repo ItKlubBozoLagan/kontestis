@@ -1,3 +1,4 @@
+import { ClusterSubmission } from "@kontestis/models";
 import { FC, useState } from "react";
 import { useParams } from "react-router";
 import tw from "twin.macro";
@@ -12,7 +13,6 @@ import {
 import { TitledSection } from "../../components/TitledSection";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
-import { ClusterSubmissionType } from "../../types/ClusterSubmissionType";
 import { SubmissionTestcaseTable } from "./SubmissionTestcaseTable";
 
 type Properties = {
@@ -28,8 +28,7 @@ export const Submission: FC = () => {
         BigInt(submission_id ?? 0)
     );
 
-    const [selectedCluster, setSelectedCluster] =
-        useState<ClusterSubmissionType>();
+    const [selectedCluster, setSelectedCluster] = useState<ClusterSubmission>();
     const [displayTestcase, setDisplayTestcase] = useState(false);
 
     return (
@@ -76,7 +75,7 @@ export const Submission: FC = () => {
                                 <TableItem>
                                     {c.memory_used_megabytes} MiB
                                 </TableItem>
-                                <TableItem>{c.awardedscore} points</TableItem>
+                                <TableItem>{c.awarded_score} points</TableItem>
                             </TableRow>
                         ))}
                 </Table>

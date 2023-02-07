@@ -2,6 +2,8 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
+import { AllowedUser } from "../../../../packages/models/src/AllowedUser";
+import { Contest } from "../../../../packages/models/src/Contest";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractContest } from "../extractors/extractContest";
@@ -10,11 +12,9 @@ import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
 import {
-    AdministrativePermissions,
+    AdminPermissions,
     hasAdminPermission,
-} from "../types/AdministrativePermissions";
-import { AllowedUser } from "../types/AllowedUser";
-import { Contest } from "../types/Contest";
+} from "../permissions/AdminPermissions";
 import { respond } from "../utils/response";
 
 /**
@@ -70,12 +70,7 @@ const contestSchema = Type.Object({
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const user = await extractUser(req);
 
-    if (
-        !hasAdminPermission(
-            user.permissions,
-            AdministrativePermissions.ADD_CONTEST
-        )
-    )
+    if (!hasAdminPermission(user.permissions, AdminPermissions.ADD_CONTEST))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     const date = new Date(req.body.start_time_millis);

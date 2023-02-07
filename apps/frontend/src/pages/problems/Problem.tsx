@@ -1,3 +1,4 @@
+import { EvaluationLanguage } from "@kontestis/models";
 import { FC, useState } from "react";
 import { IconType } from "react-icons";
 import {
@@ -26,7 +27,6 @@ import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
 import { useInterval } from "../../hooks/useInterval";
-import { EvaluationLanguage } from "../../types/SubmissionType";
 
 type Properties = {
     problem_id: string;
@@ -194,7 +194,7 @@ export const Problem: FC = () => {
                                             </TableItem>
                                             <TableItem>{s.language}</TableItem>
                                             <TableItem>
-                                                {s.awardedscore} points
+                                                {s.awarded_score} points
                                             </TableItem>
                                         </>
                                     ) : (

@@ -1,3 +1,4 @@
+import { Problem } from "@kontestis/models";
 import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useQueries } from "react-query";
@@ -14,7 +15,6 @@ import {
     TableRow,
 } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
-import { ProblemType } from "../../types/ProblemType";
 
 export const Problems: FC = () => {
     const { data: contests } = useAllContests();
@@ -24,7 +24,7 @@ export const Problems: FC = () => {
         (contests ?? []).map((contest) => ({
             queryKey: ["contest", contest.id, "problem"],
             queryFn: () =>
-                wrapAxios<ProblemType[]>(
+                wrapAxios<Problem[]>(
                     http.get("/problem", { params: { contest_id: contest.id } })
                 ),
         }))

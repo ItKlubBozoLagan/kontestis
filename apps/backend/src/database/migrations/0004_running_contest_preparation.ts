@@ -1,8 +1,8 @@
 import { Migration } from "scyllo";
 
+import { ContestMemberV1 } from "../../../../../packages/models/src/ContestMember";
+import { SubmissionV3 } from "../../../../../packages/models/src/Submission";
 import { getSnowflakeTime } from "../../lib/snowflake";
-import { ContestMemberV1 } from "../../types/ContestMember";
-import { SubmissionV3 } from "../../types/Submission";
 
 type MigrationType = {
     submissions: SubmissionV3;

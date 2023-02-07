@@ -1,6 +1,6 @@
 import { PermissionData } from "permissio";
 
-import { Snowflake } from "../lib/snowflake";
+import { Snowflake } from "./Snowflake";
 
 export type UserV1 = {
     id: Snowflake;
@@ -11,3 +11,5 @@ export type UserV1 = {
 };
 
 export type User = UserV1;
+
+export type PasswordlessUser = Omit<User, "password">;

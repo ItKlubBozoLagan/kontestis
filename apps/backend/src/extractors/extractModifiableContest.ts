@@ -1,12 +1,12 @@
+import { Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { SafeError } from "../errors/SafeError";
-import { Snowflake } from "../lib/snowflake";
 import {
-    AdministrativePermissions,
+    AdminPermissions,
     hasAdminPermission,
-} from "../types/AdministrativePermissions";
+} from "../permissions/AdminPermissions";
 import { extractContest } from "./extractContest";
 import { extractUser } from "./extractUser";
 
@@ -19,12 +19,7 @@ export const extractModifiableContest = async (
         extractContest(req, contestId),
     ]);
 
-    if (
-        hasAdminPermission(
-            user.permissions,
-            AdministrativePermissions.EDIT_CONTEST
-        )
-    )
+    if (hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST))
         return contest;
 
     if (user.id === contest.admin_id) return contest;

@@ -3,9 +3,15 @@ import { Migration } from "scyllo";
 import {
     ClusterSubmissionV1,
     ClusterSubmissionV2,
-} from "../../types/ClusterSubmission";
-import { SubmissionV1, SubmissionV2 } from "../../types/Submission";
-import { TestcaseV1, TestcaseV2 } from "../../types/Testcase";
+} from "../../../../../packages/models/src/ClusterSubmission";
+import {
+    SubmissionV1,
+    SubmissionV2,
+} from "../../../../../packages/models/src/Submission";
+import {
+    TestcaseV1,
+    TestcaseV2,
+} from "../../../../../packages/models/src/Testcase";
 
 type MigrationType = {
     submissions: SubmissionV2 & SubmissionV1;

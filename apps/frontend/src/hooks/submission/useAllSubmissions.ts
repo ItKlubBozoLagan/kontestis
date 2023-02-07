@@ -1,11 +1,11 @@
+import { Snowflake } from "@kontestis/models";
+import { Submission } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { Snowflake } from "../../types/Snowflake";
-import { SubmissionType } from "../../types/SubmissionType";
 
 export const useAllSubmissions: QueryHandler<
-    SubmissionType[],
+    Submission[],
     Snowflake | undefined
 > = (userId, options) =>
     useQuery({

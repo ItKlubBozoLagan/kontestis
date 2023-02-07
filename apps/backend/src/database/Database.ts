@@ -1,16 +1,16 @@
 import { Migration, ScylloClient } from "scyllo";
 
+import { AllowedUser } from "../../../../packages/models/src/AllowedUser";
+import { Cluster } from "../../../../packages/models/src/Cluster";
+import { ClusterSubmission } from "../../../../packages/models/src/ClusterSubmission";
+import { Contest } from "../../../../packages/models/src/Contest";
+import { Problem } from "../../../../packages/models/src/Problem";
+import { Submission } from "../../../../packages/models/src/Submission";
+import { Testcase } from "../../../../packages/models/src/Testcase";
+import { TestcaseSubmission } from "../../../../packages/models/src/TestcaseSubmission";
+import { User } from "../../../../packages/models/src/User";
 import { Globals } from "../globals";
 import { Logger } from "../lib/logger";
-import { AllowedUser } from "../types/AllowedUser";
-import { Cluster } from "../types/Cluster";
-import { ClusterSubmission } from "../types/ClusterSubmission";
-import { Contest } from "../types/Contest";
-import { Problem } from "../types/Problem";
-import { Submission } from "../types/Submission";
-import { Testcase } from "../types/Testcase";
-import { TestcaseSubmission } from "../types/TestcaseSubmission";
-import { User } from "../types/User";
 import { migration_initial } from "./migrations/0001_initial";
 import { migration_update_testcase_submission } from "./migrations/0002_update_testcase_submission";
 import { migration_fix_column_names } from "./migrations/0003_fix_column_names";

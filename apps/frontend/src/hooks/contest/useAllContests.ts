@@ -1,9 +1,9 @@
+import { Contest } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { ContestType } from "../../types/ContestType";
 
-export const useAllContests: QueryHandler<ContestType[]> = (options) =>
+export const useAllContests: QueryHandler<Contest[]> = (options) =>
     useQuery({
         queryKey: ["contest"],
         queryFn: () => wrapAxios(http.get("/contest")),

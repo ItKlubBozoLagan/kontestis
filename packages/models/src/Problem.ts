@@ -1,6 +1,5 @@
-import { Snowflake } from "../lib/snowflake";
-
-export type EvaluationVariant = "plain" | "script" | "interactive";
+import { EvaluationVariant } from "./Evaluation";
+import { Snowflake } from "./Snowflake";
 
 export type ProblemV1 = {
     id: Snowflake;

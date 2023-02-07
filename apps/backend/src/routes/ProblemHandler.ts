@@ -2,6 +2,9 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
+import { Cluster } from "../../../../packages/models/src/Cluster";
+import { Problem } from "../../../../packages/models/src/Problem";
+import { Testcase } from "../../../../packages/models/src/Testcase";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractCluster } from "../extractors/extractCluster";
@@ -13,9 +16,6 @@ import { extractModifiableTestcase } from "../extractors/extractModifiableTestca
 import { extractProblem } from "../extractors/extractProblem";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
-import { Cluster } from "../types/Cluster";
-import { Problem } from "../types/Problem";
-import { Testcase } from "../types/Testcase";
 import { respond } from "../utils/response";
 
 const ProblemHandler = Router();

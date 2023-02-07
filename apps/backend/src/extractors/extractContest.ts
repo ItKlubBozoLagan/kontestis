@@ -1,13 +1,13 @@
+import { Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
-import { Snowflake } from "../lib/snowflake";
 import {
-    AdministrativePermissions,
+    AdminPermissions,
     hasAdminPermission,
-} from "../types/AdministrativePermissions";
+} from "../permissions/AdminPermissions";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
@@ -27,12 +27,7 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
 
         const user = await extractUser(req);
 
-        if (
-            hasAdminPermission(
-                user.permissions,
-                AdministrativePermissions.VIEW_CONTEST
-            )
-        )
+        if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
             return contest;
 
         if (user.id == contest.admin_id) return contest;

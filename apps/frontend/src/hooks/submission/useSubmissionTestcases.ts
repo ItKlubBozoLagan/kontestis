@@ -1,8 +1,8 @@
+import { Snowflake } from "@kontestis/models";
+import { TestcaseSubmission } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { Snowflake } from "../../types/Snowflake";
-import { TestcaseSubmission } from "../../types/TestcaseSubmissionType";
 
 export const useSubmissionTestcases: QueryHandler<
     TestcaseSubmission[],

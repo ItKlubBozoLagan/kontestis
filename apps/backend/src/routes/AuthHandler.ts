@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { sign } from "jsonwebtoken";
 import * as R from "remeda";
 
+import { User } from "../../../../packages/models/src/User";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractUser } from "../extractors/extractUser";
@@ -12,10 +13,9 @@ import { Globals } from "../globals";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
 import {
-    AdministrativePermissions,
+    AdminPermissions,
     hasAdminPermission,
-} from "../types/AdministrativePermissions";
-import { User } from "../types/User";
+} from "../permissions/AdminPermissions";
 import { respond } from "../utils/response";
 
 const AuthHandler = Router();
@@ -209,12 +209,7 @@ AuthHandler.get("/info", async (req, res) => {
 AuthHandler.get("/info/:id", async (req, res) => {
     const user = await extractUser(req);
 
-    if (
-        !hasAdminPermission(
-            user.permissions,
-            AdministrativePermissions.VIEW_USER
-        )
-    )
+    if (!hasAdminPermission(user.permissions, AdminPermissions.VIEW_USER))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     const searchUser = await Database.selectOneFrom("users", "*", {

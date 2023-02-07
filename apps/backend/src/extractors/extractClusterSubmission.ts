@@ -1,9 +1,9 @@
+import { Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
-import { Snowflake } from "../lib/snowflake";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractSubmission } from "./extractSubmission";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";

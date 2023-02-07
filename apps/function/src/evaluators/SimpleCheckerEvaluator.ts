@@ -1,43 +1,16 @@
 import { Buffer } from "node:buffer";
 
+import { EvaluationResult } from "@kontestis/models";
+
 import { MemoryRecord } from "../recorders/RecordOutputWithMemory";
 import { OutputRecord } from "../recorders/SimpleOutputRecorder";
 import { timeFunction } from "../recorders/TimeRecorder";
 import { Testcase } from "../types/Testcase";
 
-export type EvaluationResult = {
-    testCaseId: string;
-} & (
-    | {
-          type: "success";
-          verdict:
-              | "accepted"
-              | "wrong_answer"
-              | "time_limit_exceeded"
-              | "memory_limit_exceeded";
-          time: number;
-          memory: number;
-      }
-    | {
-          type: "error";
-          verdict: "runtime_error";
-          exitCode: number;
-      }
-    | {
-          type: "error";
-          verdict: "compilation_error" | "evaluation_error";
-      }
-    | {
-          type: "custom";
-          verdict: "custom";
-          extraInfo: string;
-          time: number;
-      }
-);
-
 export type RunnerFunction = (
     testcaseInput: Buffer
 ) => Promise<OutputRecord & MemoryRecord>;
+
 export type CheckerFunction = (
     testcaseInput: Buffer,
     testcaseOutput: Buffer,
@@ -121,11 +94,9 @@ export const evaluateSimpleChecker = async (
         }
 
         evaluated.push({
-            type: "custom",
+            type: "error",
+            verdict: "system_error",
             testCaseId: testcase.id,
-            verdict: "custom",
-            extraInfo: checkerResult,
-            time: timeMillis,
         });
     }
 

@@ -1,14 +1,14 @@
 import { Migration } from "scyllo";
 
-import { AllowedUserV1 } from "../../types/AllowedUser";
-import { ClusterV1 } from "../../types/Cluster";
-import { ClusterSubmissionV1 } from "../../types/ClusterSubmission";
-import { ContestV1 } from "../../types/Contest";
-import { ProblemV1 } from "../../types/Problem";
-import { SubmissionV1 } from "../../types/Submission";
-import { TestcaseV1 } from "../../types/Testcase";
-import { TestcaseSubmissionV1 } from "../../types/TestcaseSubmission";
-import { UserV1 } from "../../types/User";
+import { AllowedUserV1 } from "../../../../../packages/models/src/AllowedUser";
+import { ClusterV1 } from "../../../../../packages/models/src/Cluster";
+import { ClusterSubmissionV1 } from "../../../../../packages/models/src/ClusterSubmission";
+import { ContestV1 } from "../../../../../packages/models/src/Contest";
+import { ProblemV1 } from "../../../../../packages/models/src/Problem";
+import { SubmissionV1 } from "../../../../../packages/models/src/Submission";
+import { TestcaseV1 } from "../../../../../packages/models/src/Testcase";
+import { TestcaseSubmissionV1 } from "../../../../../packages/models/src/TestcaseSubmission";
+import { UserV1 } from "../../../../../packages/models/src/User";
 
 type InitialDB = {
     users: UserV1;
