@@ -7,6 +7,7 @@ type GlobalsType = {
     dbKeyspace: string;
     dbDatacenter: string;
     evaluatorEndpoint: string;
+    redisUrl: string;
 };
 
 export const Globals: GlobalsType = {
@@ -19,5 +20,6 @@ export const Globals: GlobalsType = {
     dbDatacenter: process.env.DB_DATACENTER ?? "",
     evaluatorEndpoint:
         process.env.EVALUATOR_ENDPOINT ??
-        "https://eval-1-y7a5esl5qq-uc.a.run.app",
+        "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
+    redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
 };

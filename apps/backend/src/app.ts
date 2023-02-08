@@ -18,6 +18,8 @@ import ContestHandler from "./routes/ContestHandler";
 import ProblemHandler from "./routes/ProblemHandler";
 import SubmissionHandler from "./routes/SubmissionHandler";
 import { reject, respond } from "./utils/response";
+import { Redis } from "./redis/Redis";
+import { Globals } from "./globals";
 
 declare global {
     interface BigInt {
@@ -59,6 +61,8 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof SafeError)
         return reject(res, error.code, error.message);
 
+    if (Globals.mode === "development") throw error;
+
     return reject(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -66,12 +70,25 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     );
 });
 
-Database.awaitConnection().then(async () => {
-    Logger.info("Successfully connected to database!");
-    await initDatabase();
-    Logger.info("Initialized database!");
-});
+Promise.allSettled([
+    Database.awaitConnection()
+        .then(async () => {
+            Logger.database("Successfully connected to database!");
+            await initDatabase();
+            Logger.database("Initialized database!");
+        })
+        .catch((error) => {
+            Logger.panic("Scylla failed", error);
+        }),
+    Redis.connect()
+        .then(() => {
+            Logger.redis("Connected to Redis");
+        })
+        .catch((error) => {
+            Logger.panic("Redis failed", error);
+        }),
+]);
 
 const _PORT = process.env.PORT || 8080;
 
-app.listen(_PORT, () => Logger.debug("Listening on " + _PORT));
+app.listen(_PORT, () => Logger.info("Listening on " + _PORT));

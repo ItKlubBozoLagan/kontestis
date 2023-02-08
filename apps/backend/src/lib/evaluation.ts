@@ -2,7 +2,7 @@ import {
     ClusterSubmission,
     EvaluationLanguage,
     EvaluationResult,
-    Submission,
+    PendingSubmission,
     SuccessfulEvaluationResult,
     Testcase,
     User,
@@ -11,7 +11,11 @@ import axios, { AxiosError } from "axios";
 
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
-import { generateSnowflake } from "../lib/snowflake";
+import {
+    completePendingSubmission,
+    storePendingSubmission,
+} from "./pendingSubmission";
+import { generateSnowflake } from "./snowflake";
 
 type ProblemDetails = {
     problemId: bigint;
@@ -28,17 +32,21 @@ export const beginEvaluation = async (
     problemDetails: ProblemDetails
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const submission: Submission = {
+    const pendingSubmission: PendingSubmission = {
         id: generateSnowflake(),
         created_at: new Date(),
         user_id: user.id,
-        problem_id: problemDetails.problemId,
         language: problemDetails.language,
         code: problemDetails.code,
-        completed: false,
     };
 
-    await Database.insertInto("submissions", submission);
+    await storePendingSubmission(
+        {
+            userId: user.id,
+            problemId: problemDetails.problemId,
+        },
+        pendingSubmission
+    );
 
     const problem = await Database.selectOneFrom(
         "problems",
@@ -62,7 +70,8 @@ export const beginEvaluation = async (
 
     const testCasesById: Record<string, Testcase> = {};
 
-    for (const t of testcases) testCasesById[t.id + ""] = t;
+    for (const testcase of testcases)
+        testCasesById[testcase.id + ""] = testcase;
 
     if (!problem) throw new Error("unexpected state");
 
@@ -122,7 +131,7 @@ export const beginEvaluation = async (
                     const clusterSubmission: ClusterSubmission = {
                         id: generateSnowflake(),
                         cluster_id: cluster.id,
-                        submission_id: submission.id,
+                        submission_id: pendingSubmission.id,
                         verdict:
                             clusterTestcases.find(
                                 (it) =>
@@ -189,24 +198,31 @@ export const beginEvaluation = async (
             );
         }
 
-        await Database.update(
-            "submissions",
+        await Database.insertInto("submissions", {
+            ...pendingSubmission,
+            problem_id: problemDetails.problemId,
+            awarded_score: error
+                ? 0
+                : clusterSubmissions.reduce(
+                      (accumulator, current) =>
+                          accumulator + current.awarded_score,
+                      0
+                  ),
+            verdict: verdict,
+            time_used_millis: time,
+            memory_used_megabytes: memory,
+        });
+
+        // I know I can put this in Promise.all, but it needs to be removed
+        // from redis after we have successfully stored it in the database
+        await completePendingSubmission(
             {
-                completed: true,
-                awarded_score: error
-                    ? 0
-                    : clusterSubmissions.reduce(
-                          (accumulator, current) =>
-                              accumulator + current.awarded_score,
-                          0
-                      ),
-                verdict: verdict,
-                time_used_millis: time,
-                memory_used_megabytes: memory,
+                userId: user.id,
+                problemId: problemDetails.problemId,
             },
-            { id: submission.id }
+            pendingSubmission.id
         );
     })();
 
-    return submission.id;
+    return pendingSubmission.id;
 };

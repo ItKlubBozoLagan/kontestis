@@ -1,8 +1,8 @@
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import * as R from "remeda";
 
-import { beginEvaluation } from "../core/evaluation";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractClusterSubmission } from "../extractors/extractClusterSubmission";
@@ -12,6 +12,8 @@ import { extractOptionalUser } from "../extractors/extractOptionalUser";
 import { extractProblem } from "../extractors/extractProblem";
 import { extractSubmission } from "../extractors/extractSubmission";
 import { extractUser } from "../extractors/extractUser";
+import { beginEvaluation } from "../lib/evaluation";
+import { getAllPendingSubmissions } from "../lib/pendingSubmission";
 import { useValidation } from "../middlewares/useValidation";
 import { respond } from "../utils/response";
 
@@ -172,26 +174,47 @@ SubmissionHandler.get(
  * @apiSuccess {Object} submissions List of all problem submissions the user has access to!
  */
 
-SubmissionHandler.get("/:problem_id", async (req, res) => {
+SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
     const user = await extractOptionalUser(req);
     const contest = await extractContest(req, problem.contest_id);
 
     if (!req.query.user_id && !user) throw new SafeError(StatusCodes.NOT_FOUND);
 
+    const userId = req.query.user_id
+        ? BigInt(req.query.user_id as string)
+        : user!.id;
+
     const submissions = await Database.selectFrom(
         "submissions",
         "*",
         {
             problem_id: problem.id,
-            user_id: req.query.user_id
-                ? BigInt(req.query.user_id.toString())
-                : user?.id,
+            user_id: userId,
         },
         "ALLOW FILTERING"
     );
 
-    if (!req.query.user_id) return respond(res, StatusCodes.OK, submissions);
+    const pendingSubmissions = await getAllPendingSubmissions({
+        userId: userId,
+        problemId: problem.id,
+    });
+
+    if (!req.query.user_id) {
+        // only return pending submissions if the submitter is the user
+        const combined = [
+            ...R.map(submissions, R.addProp("completed", true)),
+            ...R.pipe(
+                pendingSubmissions,
+                R.map(R.addProp("completed", false)),
+                R.filter((it) =>
+                    submissions.every((submission) => submission.id !== it.id)
+                )
+            ),
+        ];
+
+        return respond(res, StatusCodes.OK, combined);
+    }
 
     if (
         contest.start_time.getTime() + contest.duration_seconds * 1000 <=
@@ -220,7 +243,7 @@ SubmissionHandler.get("/:problem_id", async (req, res) => {
  * @apiSuccess {Object} submission Selected submission.
  */
 
-SubmissionHandler.get("/submission/:submission_id", async (req, res) => {
+SubmissionHandler.get("/:submission_id", async (req, res) => {
     const submission = await extractSubmission(req);
 
     return respond(res, StatusCodes.OK, submission);

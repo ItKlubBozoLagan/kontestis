@@ -171,7 +171,7 @@ export const Problem: FC = () => {
                             )
                             .map((s) => (
                                 <TableRow key={s.id + ""}>
-                                    {s.verdict ? (
+                                    {s.completed ? (
                                         <>
                                             <TableItem
                                                 css={

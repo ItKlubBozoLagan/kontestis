@@ -24,9 +24,12 @@ services:
     depends_on:
       scylla:
         condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "8080:8080"
     environment:
+      - MODE=development
       - PORT=8080
       - DB_HOST=scylla
       - DB_PORT=9042
@@ -34,6 +37,7 @@ services:
       - DB_DATACENTER=datacenter1
       - TOKEN_SECRET=sometokensecret
       - EVALUATOR_ENDPOINT=https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app
+      - REDIS_URL=redis://redis:6379
 
   scylla:
     image: "scylladb/scylla:5.0.5"
@@ -48,4 +52,11 @@ services:
       retries: 10
       start_period: 10s
       timeout: 10s
+
+  redis:
+    image: "redis:latest"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
 

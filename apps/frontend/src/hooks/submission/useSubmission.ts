@@ -10,7 +10,6 @@ export const useSubmission: QueryHandler<Submission, Snowflake> = (
 ) =>
     useQuery({
         queryKey: ["submission", submissionId],
-        queryFn: () =>
-            wrapAxios(http.get(`/submission/submission/${submissionId}`)),
+        queryFn: () => wrapAxios(http.get(`/submission/${submissionId}`)),
         ...options,
     });

@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "@kontestis/models": "workspace:^1.0.0",
+        "@kontestis/utils": "workspace:^1.0.0",
         "@lvksh/logger": "^1.6.3",
         "@sinclair/typebox": "^0.24.34",
         "apidoc": "^0.53.1",
@@ -25,6 +26,7 @@
         "jsonwebtoken": "^9.0.0",
         "nodemon": "^2.0.19",
         "permissio": "^2.0.2",
+        "redis": "^4.6.4",
         "remeda": "^1.6.0",
         "scyllo": "^1.5.0",
         "sunflake": "^0.6.0",
