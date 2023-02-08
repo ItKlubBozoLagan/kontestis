@@ -7,6 +7,7 @@ import * as R from "remeda";
 
 import { http, wrapAxios } from "../../api/http";
 import { PageTitle } from "../../components/PageTitle";
+import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import {
     Table,
     TableHeadItem,
@@ -58,6 +59,7 @@ export const Problems: FC = () => {
                         <TableHeadItem>Name</TableHeadItem>
                         <TableHeadItem>Contest Name</TableHeadItem>
                         <TableHeadItem>Added</TableHeadItem>
+                        <TableHeadItem>Score</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
@@ -76,6 +78,9 @@ export const Problems: FC = () => {
                             <TableItem>{problem.contest?.name}</TableItem>
                             <TableItem>
                                 {problem.contest?.start_time.toLocaleString()}
+                            </TableItem>
+                            <TableItem>
+                                <ProblemScoreBox score={20} maxScore={20} />
                             </TableItem>
                         </TableRow>
                     ))}

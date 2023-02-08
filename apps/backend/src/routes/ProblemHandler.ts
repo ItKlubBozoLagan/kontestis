@@ -385,18 +385,24 @@ ProblemHandler.get(
         return respond(
             res,
             StatusCodes.OK,
-            allowedProblems.map(async (problem) => {
-                const clusters = await Database.selectFrom("clusters", "*", {
-                    problem_id: problem.id,
-                });
-                const score = clusters.reduce(
-                    (accumulator, current) =>
-                        accumulator + current.awarded_score,
-                    0
-                );
+            await Promise.all(
+                allowedProblems.map(async (problem) => {
+                    const clusters = await Database.selectFrom(
+                        "clusters",
+                        "*",
+                        {
+                            problem_id: problem.id,
+                        }
+                    );
+                    const score = clusters.reduce(
+                        (accumulator, current) =>
+                            accumulator + current.awarded_score,
+                        0
+                    );
 
-                return R.addProp(problem, "score", score);
-            })
+                    return R.addProp(problem, "score", score);
+                })
+            )
         );
     }
 );

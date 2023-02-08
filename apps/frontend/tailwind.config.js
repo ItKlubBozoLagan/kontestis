@@ -16,14 +16,15 @@ module.exports = {
                 neutral: {
                     ...colors.neutral,
                     800: "#282828",
-                    900: "#1d1d1d"
+                    900: "#1d1d1d",
                 },
                 stone: colors.stone,
                 red: colors.red,
+                lime: colors.lime,
                 orange: colors.orange,
                 yellow: {
                     ...colors.yellow,
-                    400: "#F1D302"
+                    400: "#F1D302",
                 },
                 green: {
                     ...colors.green,
@@ -31,18 +32,18 @@ module.exports = {
                     600: "#65c53a",
                     700: "#469123",
                     800: "#397a1b",
-                    900: "#255908"
+                    900: "#255908",
                 },
                 cyan: colors.cyan,
                 sky: colors.sky,
                 blue: {
                     ...colors.blue,
-                    500: "#4287f5"
-                }
+                    500: "#4287f5",
+                },
             },
             animation: {
                 "spin-slow": "spin 1.5s linear infinite",
-            }
+            },
         },
     },
     plugins: [],
