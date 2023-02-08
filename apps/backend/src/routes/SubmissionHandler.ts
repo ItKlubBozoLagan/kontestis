@@ -19,72 +19,6 @@ import { respond } from "../utils/response";
 
 const SubmissionHandler = Router();
 
-/**
- * @apiDefine ExampleSubmissionPending
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *         "id": "135343706118033408",
- *         "user_id": 135335143509331968,
- *         "problem_id": "135335143509331968",
- *         "language": "cpp",
- *         "code": "RXhhbXBsZSB0ZXh0IQ==",
- *         "completed": false
- *     }
- */
-
-/**
- * @apiDefine ExampleSubmission
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *         "id": "135343706118033408",
- *         "user_id": 135335143509331968,
- *         "problem_id": "135335143509331968",
- *         "language": "cpp",
- *         "code": "RXhhbXBsZSB0ZXh0IQ==",
- *         "completed": true,
- *         "verdict": "accepted",
- *         "awardedScore": 110,
- *         "time_used_millis": 523,
- *         "memory_used_megabytes": 2.54
- *     }
- */
-
-/**
- * @apiDefine ExampleSubmissionCluster
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     [{
- *         "id": "135343706118033408",
- *         "submission_id": 135335143509331968,
- *         "cluster_id": "135335143509331968",
- *         "verdict": "accepted",
- *         "awardedScore": 50,
- *         "time_used_millis": 234,
- *         "memory_used_megabytes": 1.94
- *     }]
- */
-
-/**
- * @apiDefine ExampleSubmissionTestcase
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     [{
- *         "id": "135343706118033408",
- *         "cluster_submission_id": 135335143509331968,
- *         "testcase_id": "135335143509331968",
- *         "verdict": "accepted",
- *         "awardedScore": 50,
- *         "time_used_millis": 123,
- *         "memory_used_megabytes": 1.54
- *     }]
- */
-
 const submissionSchema = Type.Object({
     language: Type.Union([
         Type.Literal("c"),
@@ -93,24 +27,6 @@ const submissionSchema = Type.Object({
     ]),
     code: Type.String({ maxLength: 64_000 }),
 });
-
-/**
- * @api {post} /api/submission/:problem_id CreateSubmission
- * @apiName CreateSubmission
- * @apiGroup Submission
- *
- * @apiUse RequiredAuth
- *
- * @apiParam {String} problem_id Id of the problem.
- *
- * @apiBody {String="c","cpp","python"} language Programing language.
- * @apiBody {String} code Base64 encoded code.
- *
- * @apiSuccess {Object} submission Created submission.
- *
- * @apiUse ExampleSubmissionPending
- *
- */
 
 SubmissionHandler.post(
     "/:problem_id",
@@ -131,19 +47,6 @@ SubmissionHandler.post(
 
 // TODO: Permissions return full res!
 
-/**
- * @api {get} /api/problem GetSubmissions
- * @apiName GetSubmissions
- * @apiGroup Submission
- *
- * @apiUse RequiredAuth
- *
- * @apiQuery {String} user_id Id of the user to view submissions.
- *
- * @apiSuccess {Object} ids submissions with only id field.
- *
- */
-
 const getSchema = Type.Object({
     user_id: Type.String(),
 });
@@ -159,20 +62,6 @@ SubmissionHandler.get(
         return respond(res, StatusCodes.OK, submissions);
     }
 );
-
-/**
- * @api {get} /api/submission/:problem_id GetSubmissions
- * @apiName GetSubmissions
- * @apiGroup Submission
- *
- * @apiUse RequiredAuth
- *
- * @apiParam {String} problem_id Id of the problem.
- *
- * @apiUse ExampleSubmission
- *
- * @apiSuccess {Object} submissions List of all problem submissions the user has access to!
- */
 
 SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
@@ -229,39 +118,11 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
     return respond(res, StatusCodes.OK, submissions);
 });
 
-/**
- * @api {get} /api/submission/submission/:submission_id GetSubmission
- * @apiName GetSubmission
- * @apiGroup Submission
- *
- * @apiUse RequiredAuth
- *
- * @apiParam {String} submission_id Id of the submission.
- *
- * @apiUse ExampleSubmission
- *
- * @apiSuccess {Object} submission Selected submission.
- */
-
 SubmissionHandler.get("/:submission_id", async (req, res) => {
     const submission = await extractSubmission(req);
 
     return respond(res, StatusCodes.OK, submission);
 });
-
-/**
- * @api {get} /api/submission/cluster/:submission_id GetSubmissionClusters
- * @apiName GetSubmissionClusters
- * @apiGroup Submission
- *
- * @apiUse RequiredAuth
- *
- * @apiParam {String} submission_id Id of the submission.
- *
- * @apiSuccess {Object} clusters Submission cluster results.
- *
- * @apiUse ExampleSubmissionCluster
- */
 
 SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {
     const submission = await extractSubmission(req);
@@ -272,20 +133,6 @@ SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {
 
     return respond(res, StatusCodes.OK, clusters);
 });
-
-/**
- * @api {get} /api/testcase/cluster/:cluster_submission_id GetSubmissionTestcases
- * @apiName GetSubmissionTestcases
- * @apiGroup Submission
- *
- * @apiUse RequiredAuth
- *
- * @apiParam {String} cluster_submission_id Id of the cluster submission.
- *
- * @apiSuccess {Object} testcases Submission testcases.
- *
- * @apiUse ExampleSubmissionTestcase
- */
 
 SubmissionHandler.get("/testcase/:cluster_submission_id", async (req, res) => {
     const clusterSubmission = await extractClusterSubmission(req);
