@@ -14,3 +14,17 @@ export const mapFields = <
         )
     );
 };
+
+export const filterAsync = async <T>(
+    data: T[],
+    predicate: (it: T, index: number, source: T[]) => boolean | Promise<boolean>
+): Promise<T[]> => {
+    return Promise.all(
+        data.map(
+            async (it, index, array) =>
+                [it, await predicate(it, index, array)] as const
+        )
+    ).then((resolved) =>
+        resolved.filter(([_, condition]) => condition).map(([value]) => value)
+    );
+};
