@@ -5,6 +5,7 @@ import { filterAsync } from "@kontestis/utils";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import * as R from "remeda";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
@@ -381,7 +382,22 @@ ProblemHandler.get(
                 .catch(() => false)
         );
 
-        return respond(res, StatusCodes.OK, allowedProblems);
+        return respond(
+            res,
+            StatusCodes.OK,
+            allowedProblems.map(async (problem) => {
+                const clusters = await Database.selectFrom("clusters", "*", {
+                    problem_id: problem.id,
+                });
+                const score = clusters.reduce(
+                    (accumulator, current) =>
+                        accumulator + current.awarded_score,
+                    0
+                );
+
+                return R.addProp(problem, "score", score);
+            })
+        );
     }
 );
 
@@ -403,7 +419,15 @@ ProblemHandler.get(
 ProblemHandler.get("/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
 
-    return respond(res, StatusCodes.OK, problem);
+    const clusters = await Database.selectFrom("clusters", ["awarded_score"], {
+        problem_id: problem.id,
+    });
+    const score = clusters.reduce(
+        (accumulator, current) => accumulator + current.awarded_score,
+        0
+    );
+
+    return respond(res, StatusCodes.OK, R.addProp(problem, "score", score));
 });
 
 /**
