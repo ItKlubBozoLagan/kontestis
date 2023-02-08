@@ -1,6 +1,7 @@
 import { Cluster } from "@kontestis/models";
 import { Problem } from "@kontestis/models";
 import { Testcase } from "@kontestis/models";
+import { filterAsync } from "@kontestis/utils";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -374,28 +375,11 @@ ProblemHandler.get(
             contest_id: contestId,
         });
 
-        // cancer
-        // still cancer but now with extractors
-        const allowedProblems = (
-            await Promise.all(
-                problems.map((problem) => {
-                    return [
-                        problem,
-                        (async (): Promise<boolean> => {
-                            try {
-                                await extractProblem(req, problem.id);
-                            } catch {
-                                return false;
-                            }
-
-                            return true;
-                        })(),
-                    ] as [Problem, Promise<boolean>];
-                })
-            )
-        )
-            .filter(([_, allowed]) => allowed)
-            .map(([problem]) => problem);
+        const allowedProblems = await filterAsync(problems, ({ id }) =>
+            extractProblem(req, id)
+                .then(() => true)
+                .catch(() => false)
+        );
 
         return respond(res, StatusCodes.OK, allowedProblems);
     }
