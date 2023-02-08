@@ -6,7 +6,7 @@ export const Table = tw.table`
 `;
 
 export const TableHeadRow = tw.tr`
-    border-[1px] border-neutral-400 border-solid
+    border border-neutral-400 border-solid
 `;
 
 export const TableHeadItem = styled.td`

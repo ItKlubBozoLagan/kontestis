@@ -87,8 +87,10 @@ Promise.allSettled([
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
-]);
+]).then(() => {
+    Logger.info("Ready");
 
-const _PORT = process.env.PORT || 8080;
+    const _PORT = process.env.PORT || 8080;
 
-app.listen(_PORT, () => Logger.info("Listening on " + _PORT));
+    app.listen(_PORT, () => Logger.info("Listening on " + _PORT));
+});

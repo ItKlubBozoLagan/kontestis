@@ -11,7 +11,7 @@ import {
 
 import { http, wrapAxios } from "./api/http";
 import { Account } from "./pages/account/Account";
-import { AuthUser } from "./pages/auth/AuthUser";
+import { LoginPage } from "./pages/auth/LoginPage";
 import { Contest } from "./pages/contests/Contest";
 import { Contests } from "./pages/contests/Contests";
 import { Dashboard } from "./pages/Dashboard";
@@ -68,12 +68,8 @@ const loginRouter = createBrowserRouter([
         element: <Root hideNavbar />,
         children: [
             {
-                path: "/register",
-                element: <AuthUser register={true} />,
-            },
-            {
                 path: "/",
-                element: <AuthUser register={false} />,
+                element: <LoginPage register={false} />,
             },
             {
                 path: "/*",

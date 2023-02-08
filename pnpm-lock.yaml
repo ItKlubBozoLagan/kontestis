@@ -93,6 +93,7 @@ importers:
     specifiers:
       '@kontestis/models': workspace:^1.0.0
       '@kontestis/utils': workspace:^1.0.0
+      '@react-oauth/google': ^0.7.0
       '@types/content-type': ^1.1.5
       '@types/md5': ^2.3.2
       '@types/node': ^16.18.11
@@ -133,6 +134,7 @@ importers:
     dependencies:
       '@kontestis/models': link:../../packages/models
       '@kontestis/utils': link:../../packages/utils
+      '@react-oauth/google': 0.7.0_biqbaboplfbrettd7655fr4n2y
       axios: 1.2.6
       babel-plugin-macros: 3.1.0
       babel-plugin-styled-components: 2.0.7_styled-components@5.3.6
@@ -858,6 +860,16 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
+
+  /@react-oauth/google/0.7.0_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-KLLYlLYYpXf1zmcrsJPAxImvoq2b0Rs0Pi/6GYfdwjmTh66Pf6jkZ4fpO10tuJuUPWvEeqloPEC/i4BySgbYVQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
 
   /@redis/bloom/1.2.0_@redis+client@1.5.5:
     resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}
