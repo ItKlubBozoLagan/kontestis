@@ -8,6 +8,11 @@ type GlobalsType = {
     dbDatacenter: string;
     evaluatorEndpoint: string;
     redisUrl: string;
+    oauthClientId: string;
+    oauthClientSecret: string;
+    oauthRedirectUri: string;
+
+    oauthAllowedDomains: string[];
 };
 
 export const Globals: GlobalsType = {
@@ -22,4 +27,11 @@ export const Globals: GlobalsType = {
         process.env.EVALUATOR_ENDPOINT ??
         "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
+    oauthClientId: process.env.OAUTH_CLIENT_ID ?? "",
+    oauthClientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
+    oauthRedirectUri:
+        process.env.OAUTH_REDIRECT_URI ?? "https://kontestis.ac/oauth/callback",
+    oauthAllowedDomains: process.env.OAUTH_ALLOWED_DOMAINS
+        ? process.env.OAUTH_ALLOWED_DOMAINS.split(",").filter(Boolean)
+        : [],
 };

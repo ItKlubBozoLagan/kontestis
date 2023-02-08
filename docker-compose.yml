@@ -13,7 +13,8 @@ services:
       - "3000:3000"
     environment:
       - VITE_API_ENDPOINT=http://localhost:8080
-      - VITE_GOOGLE_CLIENT_ID=953907026294-mr84goqc833s5re6lc9jmcnl4ui2i26t.apps.googleusercontent.com
+      - VITE_OAUTH_CLIENT_ID=953907026294-mr84goqc833s5re6lc9jmcnl4ui2i26t.apps.googleusercontent.com
+      - VITE_OAUTH_REDIRECT_URI=http://localhost:3000/oauth/callback
 
   backend:
     image: "node:hydrogen-alpine"
@@ -29,6 +30,8 @@ services:
         condition: service_started
     ports:
       - "8080:8080"
+    env_file:
+      - "global.env"
     environment:
       - MODE=development
       - PORT=8080
@@ -36,9 +39,10 @@ services:
       - DB_PORT=9042
       - DB_KEYSPACE=kontestis
       - DB_DATACENTER=datacenter1
-      - TOKEN_SECRET=sometokensecret
-      - EVALUATOR_ENDPOINT=https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app
       - REDIS_URL=redis://redis:6379
+      - OAUTH_CLIENT_ID=953907026294-mr84goqc833s5re6lc9jmcnl4ui2i26t.apps.googleusercontent.com
+      - OAUTH_REDIRECT_URI=http://localhost:3000/oauth/callback
+      - OAUTH_ALLOWED_DOMAINS=skole.hr,hm4.dev
 
   scylla:
     image: "scylladb/scylla:5.0.5"

@@ -1,15 +1,26 @@
-import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
-import React, { FC } from "react";
+import {
+    CodeResponse,
+    GoogleOAuthProvider,
+    useGoogleLogin,
+} from "@react-oauth/google";
+import React, { FC, useCallback } from "react";
 
+import { http } from "../../api/http";
 import { GoogleButton } from "../../components/GoogleButton";
 import { TitledSection } from "../../components/TitledSection";
 
 const LoginBase: FC = () => {
+    const onLoginSuccess = useCallback((codeResponse: CodeResponse) => {
+        console.log(codeResponse);
+        http.post("/auth/google-login", codeResponse).then(console.log);
+    }, []);
+
+    console.log(import.meta.env.VITE_OAUTH_REDIRECT_URI);
     const googleLogin = useGoogleLogin({
-        onSuccess: console.log,
-        hosted_domain: "skole.hr",
+        onSuccess: onLoginSuccess,
+        redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
         flow: "auth-code",
-        ux_mode: "popup",
+        ux_mode: "redirect",
         select_account: true,
     });
 
@@ -29,11 +40,9 @@ const LoginBase: FC = () => {
                         >
                             skole.hr
                         </a>{" "}
-                        domains
+                        accounts
                     </span>
-                    <GoogleButton onClick={() => googleLogin()}>
-                        Sign in with Google
-                    </GoogleButton>
+                    <GoogleButton onClick={() => googleLogin()} />
                 </div>
             </TitledSection>
         </div>
@@ -41,7 +50,7 @@ const LoginBase: FC = () => {
 };
 
 export const LoginPage: FC = () => (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_OAUTH_CLIENT_ID}>
         <LoginBase />
     </GoogleOAuthProvider>
 );

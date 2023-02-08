@@ -1,4 +1,4 @@
-import { createLogger } from "@lvksh/logger";
+import { createLogger, shimLog } from "@lvksh/logger";
 import chalk from "chalk";
 
 export const Logger = createLogger(
@@ -7,6 +7,7 @@ export const Logger = createLogger(
         debug: chalk.yellow` DEBUG `,
         database: chalk.cyan` DATABASE `,
         redis: chalk.redBright` REDIS `,
+        console: chalk.green` CONSOLE `,
         panic: chalk.bgRed.white`!! PANIC !!`,
     },
     {
@@ -23,3 +24,5 @@ export const Logger = createLogger(
         ],
     }
 );
+
+shimLog(Logger, "console");

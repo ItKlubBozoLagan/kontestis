@@ -69,7 +69,11 @@ const loginRouter = createBrowserRouter([
         children: [
             {
                 path: "/",
-                element: <LoginPage register={false} />,
+                element: <LoginPage />,
+            },
+            {
+                path: "/oauth/callback",
+                element: <div>hi</div>,
             },
             {
                 path: "/*",
