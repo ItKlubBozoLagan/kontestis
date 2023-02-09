@@ -12,9 +12,11 @@ export const Account: FC = () => {
     const { user } = useAuthStore();
 
     return (
-        <div tw={"w-full md:w-4/5 flex flex-col gap-2 py-10"}>
+        <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
             <TitledSection title={"Account information"}>
-                <div tw={"w-full flex items-center justify-center gap-10 p-10"}>
+                <div
+                    tw={"w-full flex items-center justify-center gap-10 py-10"}
+                >
                     <div tw={"flex flex-col justify-start gap-2 font-mono"}>
                         <img
                             tw={"w-32 w-32 rounded-full"}
