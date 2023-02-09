@@ -1,4 +1,9 @@
-import { AllowedUser, Contest, ContestMemberPermissions } from "@kontestis/models";
+import {
+    AllowedUser,
+    Contest,
+    ContestMemberPermissions,
+    hasContestPermission,
+} from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -126,17 +131,36 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
     const user = await extractUser(req);
 
-    const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
-        user_id: user.id,
+    const targetId = req.body.user_id ? BigInt(req.body.user_id) : undefined;
+
+    if (targetId) {
+        const contestMember = await Database.selectOneFrom("contest_members", "*", {
+            user_id: user.id,
+            contest_id: contest.id,
+        });
+
+        if (!contestMember) throw new SafeError(StatusCodes.FORBIDDEN);
+
+        if (
+            !hasContestPermission(
+                contestMember.contest_permissions,
+                ContestMemberPermissions.ADD_USER
+            )
+        )
+            throw new SafeError(StatusCodes.FORBIDDEN);
+    }
+
+    const addedMember = await Database.selectOneFrom("contest_members", ["id"], {
+        user_id: targetId ?? user.id,
         contest_id: contest.id,
     });
 
     if (Date.now() > contest.start_time.getTime()) throw new SafeError(StatusCodes.CONFLICT);
 
-    if (contestMember) throw new SafeError(StatusCodes.CONFLICT);
+    if (addedMember) throw new SafeError(StatusCodes.CONFLICT);
 
     await Database.insertInto("contest_members", {
-        user_id: user.id,
+        user_id: targetId ?? user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
     });
