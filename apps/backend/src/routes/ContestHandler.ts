@@ -131,6 +131,8 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
         contest_id: contest.id,
     });
 
+    if (Date.now() > contest.start_time.getTime()) throw new SafeError(StatusCodes.CONFLICT);
+
     if (contestMember) throw new SafeError(StatusCodes.CONFLICT);
 
     await Database.insertInto("contest_members", {
