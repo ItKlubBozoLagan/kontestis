@@ -14,6 +14,7 @@ export const recordOutputWithMemory: (
 ) => Promise<OutputRecord & MemoryRecord> = async (process, input, next) => {
     const record = recordMemory(process.pid!);
     const output = await next(process, input);
+
     const memory: MemoryRecord = {
         memory_usage_bytes: record(),
     };

@@ -68,8 +68,9 @@ app.post("/", async (req, res) => {
 
     const submission: Static<typeof schema> & { evaluator?: string } = req.body;
 
-    if (submission.language === "cpp") {
+    if (submission.language === "cpp" || submission.language === "c") {
         const compileResult = await transformToBinary(
+            submission.language === "cpp" ? "c++" : "c",
             Buffer.from(submission.code, "base64")
         );
 

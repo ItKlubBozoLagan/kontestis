@@ -8,6 +8,7 @@ dotenvConfig();
 
 import Express, { json, NextFunction, Request, Response } from "express";
 require("express-async-errors");
+
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 import { Database, initDatabase } from "./database/Database";
@@ -61,7 +62,7 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof SafeError)
         return reject(res, error.code, error.message);
 
-    if (Globals.mode === "development") throw error;
+    if (Globals.mode === "development") console.error(error);
 
     return reject(
         res,

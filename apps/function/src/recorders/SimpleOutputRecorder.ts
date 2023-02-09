@@ -21,6 +21,8 @@ export const recordSimpleOutput: OutputRecorderFunction = (
     process: ChildProcessWithoutNullStreams,
     input: Buffer
 ) => {
+    process.stdin.on("error", () => {}); // ignore, will throw globally if not explicitly handled
+
     process.stdin.write(input);
     process.stdin.end();
 

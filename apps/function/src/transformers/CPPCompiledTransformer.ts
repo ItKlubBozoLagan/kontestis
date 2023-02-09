@@ -14,13 +14,14 @@ type CompileResult =
       };
 
 export const transformToBinary = async (
+    variant: "c++" | "c",
     code: Buffer
 ): Promise<CompileResult> => {
     const fName = randomBytes(16).toString("hex");
 
     const compile = spawn(
-        "/usr/bin/g++",
-        ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", "c++", "-"],
+        variant === "c++" ? "/usr/bin/g++" : "/usr/bin/gcc",
+        ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", variant, "-"],
         {
             shell: true,
         }
