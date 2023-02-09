@@ -1,8 +1,8 @@
-import { AllowedUser } from "@kontestis/models";
-import { Contest } from "@kontestis/models";
+import { AllowedUser, Contest, ContestMemberPermissions } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { grantPermission } from "permissio";
 
 import {
     AdminPermissions,
@@ -120,6 +120,26 @@ ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async 
     await Database.insertInto("allowed_users", allowedUser);
 
     return respond(res, StatusCodes.OK, allowedUser);
+});
+
+ContestHandler.post("/register/:contest_id", async (req, res) => {
+    const contest = await extractContest(req);
+    const user = await extractUser(req);
+
+    const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
+        user_id: user.id,
+        contest_id: contest.id,
+    });
+
+    if (contestMember) throw new SafeError(StatusCodes.CONFLICT);
+
+    await Database.insertInto("contest_members", {
+        user_id: user.id,
+        contest_id: contest.id,
+        contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
+    });
+
+    return respond(res, StatusCodes.OK);
 });
 
 ContestHandler.get("/allow/:contest_id", async (req, res) => {
