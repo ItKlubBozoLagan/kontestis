@@ -8,7 +8,6 @@ import {
     FiClock,
     FiCode,
     FiDatabase,
-    FiUploadCloud,
 } from "react-icons/all";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router";
@@ -84,11 +83,6 @@ export const Problem: FC = () => {
                                 value={(problem?.memory_limit_megabytes ?? 0) + " MiB"}
                             />
                             <LimitBox icon={FiCode} title={"Source size"} value={"64 KiB"} />
-                            <LimitBox
-                                icon={FiUploadCloud}
-                                title={"Submission limit"}
-                                value={`50 (${submissions?.length ?? 0} used)`}
-                            />
                             <LimitBox
                                 icon={FiCheckSquare}
                                 title={"Points"}

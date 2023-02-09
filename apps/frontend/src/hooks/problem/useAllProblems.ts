@@ -4,10 +4,10 @@ import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
 
-export const useAllProblems: QueryHandler<
-    ProblemWithScore[],
-    Snowflake | undefined
-> = (contestId, options) =>
+export const useAllProblems: QueryHandler<ProblemWithScore[], Snowflake | undefined> = (
+    contestId,
+    options
+) =>
     useQuery({
         queryKey: contestId ? ["contest", contestId, "problem"] : ["problem"],
         queryFn: () =>
