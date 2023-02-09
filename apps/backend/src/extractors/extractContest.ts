@@ -28,14 +28,16 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
 
         if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return contest;
 
-        const contestUser = await Database.selectOneFrom("contest_members", "*", {
+        const contestMembers = await Database.selectOneFrom("contest_members", "*", {
             contest_id: contest.id,
             user_id: user.id,
         });
 
-        if (!contestUser) throw new SafeError(StatusCodes.NOT_FOUND);
+        if (!contestMembers) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        if (!hasContestPermission(contestUser.contest_permissions, ContestMemberPermissions.VIEW))
+        if (
+            !hasContestPermission(contestMembers.contest_permissions, ContestMemberPermissions.VIEW)
+        )
             throw new SafeError(StatusCodes.NOT_FOUND);
 
         return contest;

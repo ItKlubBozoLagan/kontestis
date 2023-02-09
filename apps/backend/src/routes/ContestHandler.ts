@@ -168,16 +168,70 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
     return respond(res, StatusCodes.OK);
 });
 
-ContestHandler.get("/allow/:contest_id", async (req, res) => {
+ContestHandler.get("/members/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
 
-    if (contest.public) throw new SafeError(StatusCodes.BAD_REQUEST);
-
-    const allowedUsers = await Database.selectFrom("allowed_users", ["user_id"], {
+    const contestMembers = await Database.selectFrom("contest_members", "*", {
         contest_id: contest.id,
     });
 
-    return respond(res, StatusCodes.OK, allowedUsers);
+    return respond(res, StatusCodes.OK, contestMembers);
+});
+
+ContestHandler.get("/members/:contest_id/:user_id", async (req, res) => {
+    const contest = await extractContest(req);
+    const targetId = BigInt(req.params.user_id);
+
+    const contestMember = await Database.selectOneFrom("contest_members", "*", {
+        contest_id: contest.id,
+        user_id: targetId,
+    });
+
+    if (!contestMember) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    return respond(res, StatusCodes.OK, contestMember);
+});
+
+ContestHandler.patch("/members/:contest_id/:user_id", async (req, res) => {
+    const contest = await extractContest(req);
+    const user = await extractUser(req);
+
+    const targetId = BigInt(req.params.user_id);
+
+    const contestMember = await Database.selectOneFrom("contest_members", "*", {
+        user_id: user.id,
+        contest_id: contest.id,
+    });
+
+    const newPermissions = req.body.contest_permissions
+        ? BigInt(req.body.contest_permissions)
+        : undefined;
+
+    if (!newPermissions) throw new SafeError(StatusCodes.BAD_REQUEST);
+
+    if (
+        !contestMember ||
+        !hasContestPermission(
+            contestMember.contest_permissions,
+            ContestMemberPermissions.EDIT_USER_PERMISSIONS
+        )
+    )
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const targetMember = await Database.selectOneFrom("contest_members", "*", {
+        user_id: targetId,
+        contest_id: contest.id,
+    });
+
+    if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    await Database.update(
+        "contest_members",
+        { contest_permissions: newPermissions },
+        { user_id: targetId, contest_id: contest.id }
+    );
+
+    return respond(res, StatusCodes.OK);
 });
 
 ContestHandler.get("/:contest_id", async (req, res) => {
