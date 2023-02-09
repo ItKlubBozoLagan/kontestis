@@ -2,11 +2,11 @@ import { Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { SafeError } from "../errors/SafeError";
 import {
     AdminPermissions,
     hasAdminPermission,
-} from "../permissions/AdminPermissions";
+} from "../../../../packages/models/src/permissions/AdminPermissions";
+import { SafeError } from "../errors/SafeError";
 import { extractContest } from "./extractContest";
 import { extractUser } from "./extractUser";
 

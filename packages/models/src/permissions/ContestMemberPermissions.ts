@@ -1,4 +1,4 @@
-enum ContestMemberPermissions {
+export enum ContestMemberPermissions {
     ADMIN,
     VIEW,
     VIEW_PRIVATE,

@@ -2,12 +2,12 @@ import { Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../database/Database";
-import { SafeError } from "../errors/SafeError";
 import {
     AdminPermissions,
     hasAdminPermission,
-} from "../permissions/AdminPermissions";
+} from "../../../../packages/models/src/permissions/AdminPermissions";
+import { Database } from "../database/Database";
+import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";

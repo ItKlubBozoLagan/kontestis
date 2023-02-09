@@ -5,6 +5,7 @@ export * from "./Contest";
 export * from "./ContestMember";
 export * from "./Evaluation";
 export * from "./KnownUserData";
+export * from "./permissions";
 export * from "./Problem";
 export * from "./Snowflake";
 export * from "./Submission";

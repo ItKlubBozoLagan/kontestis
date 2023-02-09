@@ -3,8 +3,8 @@ import axios from "axios";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import * as R from "remeda";
 
+import { AdminPermissions } from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
-import { AdminPermissions } from "../permissions/AdminPermissions";
 import { generateSnowflake } from "./snowflake";
 
 type VerifyTokenResponse = {

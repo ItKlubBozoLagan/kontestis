@@ -1,5 +1,9 @@
+import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
 import React, { FC } from "react";
+import { FcGoogle } from "react-icons/all";
+import { theme } from "twin.macro";
 
+import { Breadcrumb } from "../../components/Breadcrumb";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
 import { useAuthStore } from "../../state/auth";
@@ -18,14 +22,38 @@ export const Account: FC = () => {
                             alt={"Profile avatar"}
                         />
                     </div>
-                    <div>
+                    <div tw={"flex flex-col gap-2"}>
+                        <div tw={"flex gap-2"}>
+                            <Breadcrumb
+                                prependIcon={FcGoogle}
+                                color={theme`colors.white`}
+                                borderColor={theme("colors.neutral.200")}
+                            >
+                                Google
+                            </Breadcrumb>
+                            <Breadcrumb
+                                color={theme`colors.neutral.200`}
+                                borderColor={theme("colors.neutral.400")}
+                            >
+                                skole.hr
+                            </Breadcrumb>
+                            {hasAdminPermission(
+                                user.permissions,
+                                AdminPermissions.ADMIN
+                            ) && (
+                                <Breadcrumb
+                                    color={theme`colors.red.400`}
+                                    borderColor={theme`colors.red.500`}
+                                >
+                                    Admin
+                                </Breadcrumb>
+                            )}
+                        </div>
                         <div
-                            tw={
-                                "flex flex-col justify-between gap-y-2 font-mono"
-                            }
+                            tw={"flex flex-col justify-between gap-2 font-mono"}
                         >
                             <TitledInput
-                                name={"Username"}
+                                name={"Full Name"}
                                 value={user.full_name}
                                 readOnly
                             />

@@ -2,15 +2,15 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
+import {
+    AdminPermissions,
+    hasAdminPermission,
+} from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractUser } from "../extractors/extractUser";
 import { processUserFromTokenData, verifyToken } from "../lib/google";
 import { useValidation } from "../middlewares/useValidation";
-import {
-    AdminPermissions,
-    hasAdminPermission,
-} from "../permissions/AdminPermissions";
 import { respond } from "../utils/response";
 
 const AuthHandler = Router();

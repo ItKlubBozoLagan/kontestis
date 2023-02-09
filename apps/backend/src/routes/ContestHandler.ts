@@ -4,6 +4,10 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
+import {
+    AdminPermissions,
+    hasAdminPermission,
+} from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractContest } from "../extractors/extractContest";
@@ -11,10 +15,6 @@ import { extractModifiableContest } from "../extractors/extractModifiableContest
 import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
-import {
-    AdminPermissions,
-    hasAdminPermission,
-} from "../permissions/AdminPermissions";
 import { respond } from "../utils/response";
 
 const ContestHandler = Router();

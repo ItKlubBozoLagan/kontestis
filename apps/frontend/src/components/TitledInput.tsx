@@ -5,26 +5,14 @@ export const TitledInput: FC<InputHTMLAttributes<HTMLInputElement>> = ({
     ...properties
 }) => {
     return (
-        <div
-            tw={
-                "w-full flex flex-col justify-start relative pt-4 max-w-[256px]"
-            }
-        >
-            <label
-                id={name}
-                tw={
-                    "absolute text-sm right-2 bg-neutral-200 px-1 border border-solid border-neutral-300 select-none"
-                }
-                style={{
-                    transform: "translateY(-40%)",
-                }}
-            >
+        <div tw={"w-full flex flex-col justify-start pt-2 max-w-[256px]"}>
+            <label id={name} tw={"text-sm pl-1 pb-1"}>
                 {name}
             </label>
             <input
                 name={name}
                 tw={
-                    "py-1 px-2 bg-neutral-200 border border-solid border-neutral-300 text-base outline-none focus:bg-neutral-300"
+                    "py-1 px-2 bg-neutral-200 border border-solid border-neutral-300 text-base outline-none hover:bg-neutral-300"
                 }
                 {...properties}
             />
