@@ -1,4 +1,4 @@
-import { Problem } from "@kontestis/models";
+import { ProblemWithScore } from "@kontestis/models";
 import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useQueries } from "react-query";
@@ -25,7 +25,7 @@ export const Problems: FC = () => {
         (contests ?? []).map((contest) => ({
             queryKey: ["contest", contest.id, "problem"],
             queryFn: () =>
-                wrapAxios<Problem[]>(
+                wrapAxios<ProblemWithScore[]>(
                     http.get("/problem", { params: { contest_id: contest.id } })
                 ),
         }))
@@ -80,7 +80,10 @@ export const Problems: FC = () => {
                                 {problem.contest?.start_time.toLocaleString()}
                             </TableItem>
                             <TableItem>
-                                <ProblemScoreBox score={20} maxScore={20} />
+                                <ProblemScoreBox
+                                    score={20}
+                                    maxScore={problem.score}
+                                />
                             </TableItem>
                         </TableRow>
                     ))}

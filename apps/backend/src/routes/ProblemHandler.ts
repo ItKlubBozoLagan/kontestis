@@ -1,6 +1,4 @@
-import { Cluster } from "@kontestis/models";
-import { Problem } from "@kontestis/models";
-import { Testcase } from "@kontestis/models";
+import { Cluster, Problem, Testcase } from "@kontestis/models";
 import { filterAsync } from "@kontestis/utils";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
@@ -16,6 +14,7 @@ import { extractModifiableContest } from "../extractors/extractModifiableContest
 import { extractModifiableProblem } from "../extractors/extractModifiableProblem";
 import { extractModifiableTestcase } from "../extractors/extractModifiableTestcase";
 import { extractProblem } from "../extractors/extractProblem";
+import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
 import { respond } from "../utils/response";
@@ -406,6 +405,43 @@ ProblemHandler.get(
         );
     }
 );
+
+ProblemHandler.get("/scores", async (req, res) => {
+    const user = await extractUser(req);
+
+    const submissions = await Database.selectFrom("submissions", "*", {
+        user_id: user.id,
+    });
+
+    const problemScores: Record<string, number> = {};
+
+    for (const s of submissions) {
+        problemScores[s.problem_id + ""] = Math.max(
+            s.awarded_score,
+            problemScores[s.problem_id + ""] ?? 0
+        );
+    }
+
+    return respond(res, StatusCodes.OK, problemScores);
+});
+
+ProblemHandler.get("/score/:problem_id", async (req, res) => {
+    const user = await extractUser(req);
+    const problem = await extractProblem(req);
+
+    const submissions = await Database.selectFrom("submissions", "*", {
+        user_id: user.id,
+        problem_id: problem.id,
+    });
+
+    let score = 0;
+
+    for (const s of submissions) score = Math.max(score, s.awarded_score);
+
+    return respond(res, StatusCodes.OK, {
+        score,
+    });
+});
 
 /**
  * @api {get} /api/problem/:problem_id GetProblem

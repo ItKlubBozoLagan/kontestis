@@ -14,4 +14,8 @@ export type ProblemV1 = {
     memory_limit_megabytes: number;
 };
 
+export type ProblemWithScore = Problem & {
+    score: number;
+};
+
 export type Problem = ProblemV1;
