@@ -3,9 +3,11 @@ import { FiList } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 
+import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
+import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 
 type Properties = {
     contest_id: string;
@@ -19,6 +21,8 @@ export const Contest: FC = () => {
         enabled: !!contest?.id,
     });
 
+    const problemScores = useAllProblemScores();
+
     if (!contest) return <div>Loading...</div>;
 
     return (
@@ -28,6 +32,7 @@ export const Contest: FC = () => {
                 <thead>
                     <TableHeadRow>
                         <TableHeadItem>Problem</TableHeadItem>
+                        <TableHeadItem>Score</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
@@ -37,6 +42,14 @@ export const Contest: FC = () => {
                                 <Link to={"/problem/" + p.id} tw={"flex items-center gap-2"}>
                                     <FiList tw={"text-xl"} /> {p.title}
                                 </Link>
+                            </TableItem>
+                            <TableItem>
+                                <ProblemScoreBox
+                                    score={
+                                        problemScores.data ? problemScores.data[p.id + ""] ?? 0 : 0
+                                    }
+                                    maxScore={p.score}
+                                />
                             </TableItem>
                         </TableRow>
                     ))}

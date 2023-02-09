@@ -4,6 +4,7 @@ import { IconType } from "react-icons";
 import {
     AiFillCaretDown,
     AiFillCaretUp,
+    FiCheckSquare,
     FiClock,
     FiCode,
     FiDatabase,
@@ -15,6 +16,7 @@ import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
 import { http } from "../../api/http";
+import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { SimpleButton } from "../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
@@ -87,6 +89,11 @@ export const Problem: FC = () => {
                                 title={"Submission limit"}
                                 value={`50 (${submissions?.length ?? 0} used)`}
                             />
+                            <LimitBox
+                                icon={FiCheckSquare}
+                                title={"Points"}
+                                value={(problem?.score ?? 0) + ""}
+                            />
                         </div>
                     </TitledSection>
                     <TitledSection title={"Submit"}>
@@ -156,7 +163,12 @@ export const Problem: FC = () => {
                                                 {`${s.memory_used_megabytes} MiB`}
                                             </TableItem>
                                             <TableItem>{s.language}</TableItem>
-                                            <TableItem>{s.awarded_score} points</TableItem>
+                                            <TableItem>
+                                                <ProblemScoreBox
+                                                    score={s.awarded_score}
+                                                    maxScore={problem?.score ?? 0}
+                                                />
+                                            </TableItem>
                                         </>
                                     ) : (
                                         <TableItem colSpan={5} tw={"text-center text-yellow-800"}>

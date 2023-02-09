@@ -40,7 +40,7 @@ export const ProblemScoreBox: FC<Properties> = ({ score, maxScore }) => {
     }
 
     return (
-        <ScoreDiv $color={color} tw={"border-solid border-2 border-neutral-100 rounded-md p-2"}>
+        <ScoreDiv $color={color} tw={"border-solid border-2 border-neutral-100 rounded-md"}>
             {score}/{maxScore}
         </ScoreDiv>
     );

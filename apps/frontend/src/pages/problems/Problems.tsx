@@ -10,6 +10,7 @@ import { PageTitle } from "../../components/PageTitle";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
+import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 
 export const Problems: FC = () => {
     const { data: contests } = useAllContests();
@@ -24,6 +25,8 @@ export const Problems: FC = () => {
                 ),
         }))
     );
+
+    const problemScores = useAllProblemScores();
 
     const problems = useMemo(
         () =>
@@ -40,7 +43,7 @@ export const Problems: FC = () => {
                 })),
                 R.sort((a, b) => a.title.localeCompare(b.title))
             ),
-        [rawProblems]
+        [rawProblems, problemScores]
     );
 
     return (
@@ -65,8 +68,16 @@ export const Problems: FC = () => {
                             </TableItem>
                             <TableItem>{problem.contest?.name}</TableItem>
                             <TableItem>{problem.contest?.start_time.toLocaleString()}</TableItem>
+                            <TableItem>{problem.contest?.start_time.toLocaleString()}</TableItem>
                             <TableItem>
-                                <ProblemScoreBox score={20} maxScore={problem.score} />
+                                <ProblemScoreBox
+                                    score={
+                                        problemScores.data
+                                            ? problemScores.data[problem.id + ""] ?? 0
+                                            : 0
+                                    }
+                                    maxScore={problem.score}
+                                />
                             </TableItem>
                         </TableRow>
                     ))}
