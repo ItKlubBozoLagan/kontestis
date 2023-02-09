@@ -5,10 +5,7 @@ type MigrationType = {
     known_users: KnownUserDataV1;
 };
 
-export const migration_known_user_data: Migration<MigrationType> = async (
-    database,
-    log
-) => {
+export const migration_known_user_data: Migration<MigrationType> = async (database, log) => {
     await database.createTable(
         "known_users",
         true,

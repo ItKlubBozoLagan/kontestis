@@ -19,33 +19,29 @@ const oauthSchema = Type.Object({
     credential: Type.String(),
 });
 
-AuthHandler.post(
-    "/google-login",
-    useValidation(oauthSchema),
-    async (req, res) => {
-        const { credential } = req.body;
+AuthHandler.post("/google-login", useValidation(oauthSchema), async (req, res) => {
+    const { credential } = req.body;
 
-        const googleResponse = await verifyToken(credential).catch(() => null);
+    const googleResponse = await verifyToken(credential).catch(() => null);
 
-        if (googleResponse === null) throw new SafeError(StatusCodes.FORBIDDEN);
+    if (googleResponse === null) throw new SafeError(StatusCodes.FORBIDDEN);
 
-        const tokenData = await processUserFromTokenData(googleResponse);
+    const tokenData = await processUserFromTokenData(googleResponse);
 
-        await Database.update(
-            "known_users",
-            {
-                email: tokenData.email,
-                full_name: tokenData.full_name,
-                picture_url: tokenData.picture_url,
-            },
-            {
-                user_id: tokenData.id,
-            }
-        );
+    await Database.update(
+        "known_users",
+        {
+            email: tokenData.email,
+            full_name: tokenData.full_name,
+            picture_url: tokenData.picture_url,
+        },
+        {
+            user_id: tokenData.id,
+        }
+    );
 
-        respond(res, StatusCodes.OK);
-    }
-);
+    respond(res, StatusCodes.OK);
+});
 
 AuthHandler.get("/info", async (req, res) => {
     const user = await extractUser(req);

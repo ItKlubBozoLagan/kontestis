@@ -8,13 +8,7 @@ import * as R from "remeda";
 import { http, wrapAxios } from "../../api/http";
 import { PageTitle } from "../../components/PageTitle";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
-import {
-    Table,
-    TableHeadItem,
-    TableHeadRow,
-    TableItem,
-    TableRow,
-} from "../../components/Table";
+import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 
 export const Problems: FC = () => {
@@ -41,8 +35,7 @@ export const Problems: FC = () => {
                 R.map((it) => ({
                     ...it,
                     contest: (contests ?? []).find(
-                        (contest) =>
-                            BigInt(contest.id) === BigInt(it.contest_id)
+                        (contest) => BigInt(contest.id) === BigInt(it.contest_id)
                     ),
                 })),
                 R.sort((a, b) => a.title.localeCompare(b.title))
@@ -65,25 +58,15 @@ export const Problems: FC = () => {
                 <tbody>
                     {problems.map((problem) => (
                         <TableRow key={problem.id + ""}>
-                            <TableItem
-                                tw={"hover:(text-sky-800 cursor-pointer)"}
-                            >
-                                <Link
-                                    to={"/problem/" + problem.id}
-                                    tw={"flex items-center gap-2"}
-                                >
+                            <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
+                                <Link to={"/problem/" + problem.id} tw={"flex items-center gap-2"}>
                                     <FiList tw={"text-xl"} /> {problem.title}
                                 </Link>
                             </TableItem>
                             <TableItem>{problem.contest?.name}</TableItem>
+                            <TableItem>{problem.contest?.start_time.toLocaleString()}</TableItem>
                             <TableItem>
-                                {problem.contest?.start_time.toLocaleString()}
-                            </TableItem>
-                            <TableItem>
-                                <ProblemScoreBox
-                                    score={20}
-                                    maxScore={problem.score}
-                                />
+                                <ProblemScoreBox score={20} maxScore={problem.score} />
                             </TableItem>
                         </TableRow>
                     ))}

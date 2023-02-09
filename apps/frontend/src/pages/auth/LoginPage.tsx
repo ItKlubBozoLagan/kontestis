@@ -1,8 +1,4 @@
-import {
-    CredentialResponse,
-    GoogleLogin,
-    GoogleOAuthProvider,
-} from "@react-oauth/google";
+import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import React, { FC, useCallback } from "react";
 
 import { http } from "../../api/http";
@@ -12,18 +8,13 @@ import { useAuthStore } from "../../state/auth";
 const LoginBase: FC = () => {
     const { setToken } = useAuthStore();
 
-    const onLoginSuccess = useCallback(
-        (credentialResponse: CredentialResponse) => {
-            const { credential } = credentialResponse;
+    const onLoginSuccess = useCallback((credentialResponse: CredentialResponse) => {
+        const { credential } = credentialResponse;
 
-            if (!credential) return;
+        if (!credential) return;
 
-            http.post("/auth/google-login", credentialResponse).then(() =>
-                setToken(credential)
-            );
-        },
-        []
-    );
+        http.post("/auth/google-login", credentialResponse).then(() => setToken(credential));
+    }, []);
 
     return (
         <div tw={"w-full md:max-w-[500px] mt-20"}>

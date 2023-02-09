@@ -15,9 +15,7 @@ import { HttpError } from "./HttpError";
 
 export type ServerData<T> = { data: T };
 
-export type MutationHandler<TVariables, TData, Parameter = never> = [
-    Parameter
-] extends [never]
+export type MutationHandler<TVariables, TData, Parameter = never> = [Parameter] extends [never]
     ? (
           options?: UseMutationOptions<TData, HttpError, TVariables>
       ) => UseMutationResult<TData, HttpError, TVariables>
@@ -26,19 +24,11 @@ export type MutationHandler<TVariables, TData, Parameter = never> = [
           options?: UseMutationOptions<TData, HttpError, TVariables>
       ) => UseMutationResult<TData, HttpError, TVariables>;
 
-type QueryOptions<TData> = UseQueryOptions<
-    unknown,
-    HttpError,
-    TData,
-    (string | number | bigint)[]
->;
+type QueryOptions<TData> = UseQueryOptions<unknown, HttpError, TData, (string | number | bigint)[]>;
 
 export type QueryHandler<TData, Parameter = never> = [Parameter] extends [never]
     ? (options?: QueryOptions<TData>) => UseQueryResult<TData, HttpError>
-    : (
-          parameters: Parameter,
-          options?: QueryOptions<TData>
-      ) => UseQueryResult<TData, HttpError>;
+    : (parameters: Parameter, options?: QueryOptions<TData>) => UseQueryResult<TData, HttpError>;
 
 const ExpectedResponseSchema = z.object({
     status: z.number(),
@@ -48,22 +38,16 @@ const ExpectedResponseSchema = z.object({
 });
 
 export const http = axios.create({
-    baseURL:
-        (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
+    baseURL: (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
     transformResponse: (data, headers) => {
-        if (
-            contentType.parse(headers.get("content-type") as string).type !==
-            "application/json"
-        )
+        if (contentType.parse(headers.get("content-type") as string).type !== "application/json")
             return data;
 
         const jsonParseResult = safeParseJson(data);
 
         if (!jsonParseResult.success) return data;
 
-        const parseResult = ExpectedResponseSchema.safeParse(
-            jsonParseResult.data
-        );
+        const parseResult = ExpectedResponseSchema.safeParse(jsonParseResult.data);
 
         if (!parseResult.success) return data;
 
@@ -77,12 +61,10 @@ export const http = axios.create({
 http.interceptors.request.use((config) => {
     const { token } = useAuthStore.getState();
 
-    if (token.length > 0)
-        config.headers.set("Authorization", `Bearer ${token}`);
+    if (token.length > 0) config.headers.set("Authorization", `Bearer ${token}`);
 
     return config;
 });
 
-export const wrapAxios = <T>(
-    request: Promise<AxiosResponse<ServerData<T>>>
-): Promise<T> => request.then((data) => data.data.data);
+export const wrapAxios = <T>(request: Promise<AxiosResponse<ServerData<T>>>): Promise<T> =>
+    request.then((data) => data.data.data);

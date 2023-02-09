@@ -22,9 +22,7 @@ type NiceTokenResponse = Omit<VerifyTokenResponse, "sub" | "picture"> & {
     picture_url: string;
 };
 
-export const verifyToken = async (
-    token: string
-): Promise<NiceTokenResponse> => {
+export const verifyToken = async (token: string): Promise<NiceTokenResponse> => {
     const niceGoogleResponse = await axios
         .get<VerifyTokenResponse>("https://oauth2.googleapis.com/tokeninfo", {
             params: { id_token: token },
@@ -35,22 +33,15 @@ export const verifyToken = async (
             picture_url: data.picture,
         }));
 
-    if (niceGoogleResponse.email_verified !== "true")
-        throw new Error("email not verified");
+    if (niceGoogleResponse.email_verified !== "true") throw new Error("email not verified");
 
-    if (
-        !Globals.oauthAllowedDomains.some((it) =>
-            niceGoogleResponse.email.endsWith("@" + it)
-        )
-    )
+    if (!Globals.oauthAllowedDomains.some((it) => niceGoogleResponse.email.endsWith("@" + it)))
         throw new Error("domain not supported");
 
     return niceGoogleResponse;
 };
 
-export const processUserFromTokenData = async (
-    tokenData: NiceTokenResponse
-): Promise<FullUser> => {
+export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Promise<FullUser> => {
     const { id: googleId } = tokenData;
 
     const [numberUsers, potentialEntry] = await Promise.all([

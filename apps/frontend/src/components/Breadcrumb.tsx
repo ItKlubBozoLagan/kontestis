@@ -8,12 +8,7 @@ type Properties = {
     children: string;
 };
 
-export const Breadcrumb: FC<Properties> = ({
-    prependIcon: Icon,
-    color,
-    borderColor,
-    children,
-}) => {
+export const Breadcrumb: FC<Properties> = ({ prependIcon: Icon, color, borderColor, children }) => {
     return (
         <div
             tw={

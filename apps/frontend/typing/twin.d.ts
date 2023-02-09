@@ -1,10 +1,7 @@
 import "twin.macro";
 
 import { DOMAttributes } from "react";
-import styledImport, {
-    css as cssImport,
-    CSSProp,
-} from "styled-components/macro";
+import styledImport, { css as cssImport, CSSProp } from "styled-components/macro";
 
 declare module "twin.macro" {
     // The styled and css imports

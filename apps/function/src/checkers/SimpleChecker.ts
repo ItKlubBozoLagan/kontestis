@@ -8,17 +8,11 @@ import { runPython } from "../runners/PythonRunner";
 
 type CheckerFunctionGenerator = (checker: Buffer) => CheckerFunction;
 
-export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (
-    pythonChecker: Buffer
-) => {
+export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (pythonChecker: Buffer) => {
     const separator = randomInt(1, 3000);
     const separatorBuffer = Buffer.from("\n[" + separator + "]\n", "utf8");
 
-    return (
-        testcaseInput: Buffer,
-        testcaseOutput: Buffer,
-        runnerOutput: Buffer
-    ) => {
+    return (testcaseInput: Buffer, testcaseOutput: Buffer, runnerOutput: Buffer) => {
         const input = Buffer.concat([
             separatorBuffer,
             testcaseInput,
@@ -33,14 +27,8 @@ export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (
     };
 };
 
-export const getSimpleCPPCheckerFunction: CheckerFunctionGenerator = (
-    binaryChecker: Buffer
-) => {
-    return async (
-        testcaseInput: Buffer,
-        testcaseOutput: Buffer,
-        runnerOutput: Buffer
-    ) => {
+export const getSimpleCPPCheckerFunction: CheckerFunctionGenerator = (binaryChecker: Buffer) => {
+    return async (testcaseInput: Buffer, testcaseOutput: Buffer, runnerOutput: Buffer) => {
         const input = Buffer.concat([
             testcaseInput,
             Buffer.from("\n"),

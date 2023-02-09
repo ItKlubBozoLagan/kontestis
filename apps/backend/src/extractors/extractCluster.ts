@@ -10,12 +10,8 @@ import { extractModifiableProblem } from "./extractModifiableProblem";
 import { extractProblem } from "./extractProblem";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractCluster = async (
-    req: Request,
-    optionalClusterId?: Snowflake
-) => {
-    const clusterId =
-        optionalClusterId ?? extractIdFromParameters(req, "cluster_id");
+export const extractCluster = async (req: Request, optionalClusterId?: Snowflake) => {
+    const clusterId = optionalClusterId ?? extractIdFromParameters(req, "cluster_id");
 
     return memoizedRequestExtractor(req, `__cluster_${clusterId}`, async () => {
         const cluster = await Database.selectOneFrom("clusters", "*", {
@@ -27,10 +23,7 @@ export const extractCluster = async (
         const problem = await extractProblem(req, cluster.problem_id);
         const contest = await extractContest(req, problem.contest_id);
 
-        if (
-            Date.now() >=
-            contest.start_time.getTime() + 1000 * contest.duration_seconds
-        )
+        if (Date.now() >= contest.start_time.getTime() + 1000 * contest.duration_seconds)
             return cluster;
 
         await extractModifiableProblem(req, cluster.problem_id);

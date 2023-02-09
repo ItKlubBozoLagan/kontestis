@@ -4,11 +4,7 @@ export type EvaluationVariant = "plain" | "script" | "interactive";
 
 export type SuccessfulEvaluationResult = {
     type: "success";
-    verdict:
-        | "accepted"
-        | "wrong_answer"
-        | "time_limit_exceeded"
-        | "memory_limit_exceeded";
+    verdict: "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded";
     time: number;
     memory: number;
 };

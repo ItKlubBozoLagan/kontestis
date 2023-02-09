@@ -14,9 +14,7 @@ export const Account: FC = () => {
     return (
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
             <TitledSection title={"Account information"}>
-                <div
-                    tw={"w-full flex items-center justify-center gap-10 py-10"}
-                >
+                <div tw={"w-full flex items-center justify-center gap-10 py-10"}>
                     <div tw={"flex flex-col justify-start gap-2 font-mono"}>
                         <img
                             tw={"w-32 w-32 rounded-full"}
@@ -39,10 +37,7 @@ export const Account: FC = () => {
                             >
                                 skole.hr
                             </Breadcrumb>
-                            {hasAdminPermission(
-                                user.permissions,
-                                AdminPermissions.ADMIN
-                            ) && (
+                            {hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && (
                                 <Breadcrumb
                                     color={theme`colors.red.400`}
                                     borderColor={theme`colors.red.500`}
@@ -51,19 +46,9 @@ export const Account: FC = () => {
                                 </Breadcrumb>
                             )}
                         </div>
-                        <div
-                            tw={"flex flex-col justify-between gap-2 font-mono"}
-                        >
-                            <TitledInput
-                                name={"Full Name"}
-                                value={user.full_name}
-                                readOnly
-                            />
-                            <TitledInput
-                                name={"E-mail"}
-                                value={user.email}
-                                readOnly
-                            />
+                        <div tw={"flex flex-col justify-between gap-2 font-mono"}>
+                            <TitledInput name={"Full Name"} value={user.full_name} readOnly />
+                            <TitledInput name={"E-mail"} value={user.email} readOnly />
                         </div>
                     </div>
                 </div>

@@ -16,13 +16,7 @@ import tw from "twin.macro";
 
 import { http } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
-import {
-    Table,
-    TableHeadItem,
-    TableHeadRow,
-    TableItem,
-    TableRow,
-} from "../../components/Table";
+import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
@@ -64,9 +58,7 @@ export const Problem: FC = () => {
 
     const { data: problem } = useProblem(BigInt(problem_id ?? 0));
 
-    const { data: submissions, refetch } = useAllProblemSubmissions(
-        BigInt(problem_id ?? 0)
-    );
+    const { data: submissions, refetch } = useAllProblemSubmissions(BigInt(problem_id ?? 0));
 
     useInterval(() => {
         const _ = refetch();
@@ -78,31 +70,18 @@ export const Problem: FC = () => {
             <div tw={"flex flex-col gap-4"}>
                 <div tw={"w-full flex gap-4"}>
                     <TitledSection title={"Limits"}>
-                        <div
-                            tw={
-                                "flex flex-col items-center justify-between gap-4 w-full h-full"
-                            }
-                        >
+                        <div tw={"flex flex-col items-center justify-between gap-4 w-full h-full"}>
                             <LimitBox
                                 icon={FiClock}
                                 title={"Time"}
-                                value={
-                                    (problem?.time_limit_millis ?? 0) + " ms"
-                                }
+                                value={(problem?.time_limit_millis ?? 0) + " ms"}
                             />
                             <LimitBox
                                 icon={FiDatabase}
                                 title={"Memory"}
-                                value={
-                                    (problem?.memory_limit_megabytes ?? 0) +
-                                    " MiB"
-                                }
+                                value={(problem?.memory_limit_megabytes ?? 0) + " MiB"}
                             />
-                            <LimitBox
-                                icon={FiCode}
-                                title={"Source size"}
-                                value={"64 KiB"}
-                            />
+                            <LimitBox icon={FiCode} title={"Source size"} value={"64 KiB"} />
                             <LimitBox
                                 icon={FiUploadCloud}
                                 title={"Submission limit"}
@@ -120,9 +99,7 @@ export const Problem: FC = () => {
                         <select
                             name="languages"
                             onChange={(event) =>
-                                setLanguage(
-                                    event.target.value as EvaluationLanguage
-                                )
+                                setLanguage(event.target.value as EvaluationLanguage)
                             }
                         >
                             <option value="cpp">C++</option>
@@ -134,13 +111,10 @@ export const Problem: FC = () => {
                                 setCode("");
 
                                 // TODO: react query mutations
-                                const _ = http.post(
-                                    "/submission/" + problem_id + "/",
-                                    {
-                                        code: btoa(code),
-                                        language,
-                                    }
-                                );
+                                const _ = http.post("/submission/" + problem_id + "/", {
+                                    code: btoa(code),
+                                    language,
+                                });
                             }}
                         >
                             Submit
@@ -160,15 +134,8 @@ export const Problem: FC = () => {
                     </thead>
                     <tbody>
                         {submissions
-                            ?.sort((b, a) =>
-                                Number(BigInt(a.id) - BigInt(b.id))
-                            )
-                            .slice(
-                                0,
-                                expanded || submissions.length <= 4
-                                    ? submissions.length
-                                    : 3
-                            )
+                            ?.sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                            .slice(0, expanded || submissions.length <= 4 ? submissions.length : 3)
                             .map((s) => (
                                 <TableRow key={s.id + ""}>
                                     {s.completed ? (
@@ -180,28 +147,17 @@ export const Problem: FC = () => {
                                                         : tw`text-red-600`
                                                 }
                                             >
-                                                <Link
-                                                    to={"/submission/" + s.id}
-                                                >
-                                                    {s.verdict}
-                                                </Link>
+                                                <Link to={"/submission/" + s.id}>{s.verdict}</Link>
                                             </TableItem>
-                                            <TableItem>
-                                                {`${s.time_used_millis} ms`}
-                                            </TableItem>
+                                            <TableItem>{`${s.time_used_millis} ms`}</TableItem>
                                             <TableItem>
                                                 {`${s.memory_used_megabytes} MiB`}
                                             </TableItem>
                                             <TableItem>{s.language}</TableItem>
-                                            <TableItem>
-                                                {s.awarded_score} points
-                                            </TableItem>
+                                            <TableItem>{s.awarded_score} points</TableItem>
                                         </>
                                     ) : (
-                                        <TableItem
-                                            colSpan={5}
-                                            tw={"text-center text-yellow-800"}
-                                        >
+                                        <TableItem colSpan={5} tw={"text-center text-yellow-800"}>
                                             Processing
                                         </TableItem>
                                     )}
@@ -213,16 +169,10 @@ export const Problem: FC = () => {
                             <TableRow>
                                 <TableItem
                                     colSpan={5}
-                                    onClick={() =>
-                                        setExpanded((current) => !current)
-                                    }
+                                    onClick={() => setExpanded((current) => !current)}
                                     tw={"cursor-pointer"}
                                 >
-                                    <div
-                                        tw={
-                                            "flex gap-2 items-center justify-center"
-                                        }
-                                    >
+                                    <div tw={"flex gap-2 items-center justify-center"}>
                                         {expanded ? (
                                             <>
                                                 <AiFillCaretUp />
@@ -246,9 +196,7 @@ export const Problem: FC = () => {
                     "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200 w-full"
                 }
             >
-                <ReactMarkdown>
-                    {problem ? problem.description : "Loading"}
-                </ReactMarkdown>
+                <ReactMarkdown>{problem ? problem.description : "Loading"}</ReactMarkdown>
             </div>
         </div>
     );

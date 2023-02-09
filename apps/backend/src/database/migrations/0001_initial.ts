@@ -21,10 +21,7 @@ type InitialDB = {
     testcase_submissions: TestcaseSubmissionV1;
 };
 
-export const migration_initial: Migration<InitialDB> = async (
-    database,
-    log
-) => {
+export const migration_initial: Migration<InitialDB> = async (database, log) => {
     await database.createTable(
         "users",
         true,
@@ -51,11 +48,7 @@ export const migration_initial: Migration<InitialDB> = async (
         "user_id"
     );
 
-    await database.createIndex(
-        "allowed_users",
-        "allowed_users_by_allowed_id",
-        "contest_id"
-    );
+    await database.createIndex("allowed_users", "allowed_users_by_allowed_id", "contest_id");
 
     await database.createTable(
         "contests",
@@ -90,11 +83,7 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await database.createIndex(
-        "problems",
-        "problems_by_contest_id",
-        "contest_id"
-    );
+    await database.createIndex("problems", "problems_by_contest_id", "contest_id");
 
     await database.createTable(
         "clusters",
@@ -107,11 +96,7 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await database.createIndex(
-        "clusters",
-        "clusters_by_problem_id",
-        "problem_id"
-    );
+    await database.createIndex("clusters", "clusters_by_problem_id", "problem_id");
 
     await database.createTable(
         "testcases",
@@ -125,11 +110,7 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await database.createIndex(
-        "testcases",
-        "testcases_by_cluster_id",
-        "cluster_id"
-    );
+    await database.createIndex("testcases", "testcases_by_cluster_id", "cluster_id");
 
     await database.createTable(
         "submissions",
@@ -149,16 +130,8 @@ export const migration_initial: Migration<InitialDB> = async (
         "id"
     );
 
-    await database.createIndex(
-        "submissions",
-        "submissions_by_user_id",
-        "user_id"
-    );
-    await database.createIndex(
-        "submissions",
-        "submissions_by_problem_id",
-        "problem_id"
-    );
+    await database.createIndex("submissions", "submissions_by_user_id", "user_id");
+    await database.createIndex("submissions", "submissions_by_problem_id", "problem_id");
 
     await database.createTable(
         "cluster_submissions",

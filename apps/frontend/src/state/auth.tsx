@@ -24,8 +24,7 @@ export const useAuthStore = create<AuthState>()(
                     user: token.length === 0 ? ({} as any) : state.user,
                     isLoggedIn: token.length === 0 ? false : state.isLoggedIn,
                 })),
-            setUser: (user) =>
-                set({ user: mapFields(user, ["id", "permissions"], BigInt) }),
+            setUser: (user) => set({ user: mapFields(user, ["id", "permissions"], BigInt) }),
             setIsLoggedIn: (newLoggedIn) => set({ isLoggedIn: newLoggedIn }),
         }),
         {

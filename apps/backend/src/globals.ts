@@ -21,8 +21,7 @@ export const Globals: GlobalsType = {
     dbKeyspace: process.env.DB_KEYSPACE ?? "",
     dbDatacenter: process.env.DB_DATACENTER ?? "",
     evaluatorEndpoint:
-        process.env.EVALUATOR_ENDPOINT ??
-        "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
+        process.env.EVALUATOR_ENDPOINT ?? "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "",
     oauthAllowedDomains: process.env.OAUTH_ALLOWED_DOMAINS

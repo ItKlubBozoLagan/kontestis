@@ -12,8 +12,6 @@ export const generateSnowflake: () => Snowflake = (() => {
     return () => sunflake();
 })();
 
-export const getSnowflakeTime: (s: Snowflake) => Date = (
-    snowflake: Snowflake
-) => {
+export const getSnowflakeTime: (s: Snowflake) => Date = (snowflake: Snowflake) => {
     return new Date(Number(decode(snowflake, sunFlakeConfig).time));
 };

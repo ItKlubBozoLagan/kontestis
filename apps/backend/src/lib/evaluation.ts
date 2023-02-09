@@ -11,10 +11,7 @@ import axios, { AxiosError } from "axios";
 
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
-import {
-    completePendingSubmission,
-    storePendingSubmission,
-} from "./pendingSubmission";
+import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
 
 type ProblemDetails = {
@@ -23,9 +20,7 @@ type ProblemDetails = {
     code: string;
 };
 
-type AxiosEvaluationResponse =
-    | [EvaluationResult[], undefined]
-    | [undefined, AxiosError];
+type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
 
 export const beginEvaluation = async (
     user: User,
@@ -48,11 +43,9 @@ export const beginEvaluation = async (
         pendingSubmission
     );
 
-    const problem = await Database.selectOneFrom(
-        "problems",
-        ["time_limit_millis"],
-        { id: problemDetails.problemId }
-    );
+    const problem = await Database.selectOneFrom("problems", ["time_limit_millis"], {
+        id: problemDetails.problemId,
+    });
 
     const clusters = await Database.selectFrom("clusters", "*", {
         problem_id: problemDetails.problemId,
@@ -70,8 +63,7 @@ export const beginEvaluation = async (
 
     const testCasesById: Record<string, Testcase> = {};
 
-    for (const testcase of testcases)
-        testCasesById[testcase.id + ""] = testcase;
+    for (const testcase of testcases) testCasesById[testcase.id + ""] = testcase;
 
     if (!problem) throw new Error("unexpected state");
 
@@ -94,15 +86,11 @@ export const beginEvaluation = async (
                 }
             )
             .then((data) => [data.data, undefined])
-            .catch((error) => [
-                undefined,
-                error as AxiosError,
-            ])) as AxiosEvaluationResponse;
+            .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 
         const verdict = error
             ? "evaluation_error"
-            : results.find((it) => it.verdict !== "accepted")?.verdict ??
-              "accepted";
+            : results.find((it) => it.verdict !== "accepted")?.verdict ?? "accepted";
 
         const successfulResults = (results ?? [])
             .filter((result) => result.type === "success")
@@ -117,14 +105,11 @@ export const beginEvaluation = async (
             clusterSubmissions = await Promise.all(
                 clusters.map(async (cluster) => {
                     const clusterTestcases = testcases
-                        .filter(
-                            (testcase) => testcase.cluster_id === cluster.id
-                        )
+                        .filter((testcase) => testcase.cluster_id === cluster.id)
                         .map((it) => ({
                             ...it,
                             evaluationResult: results.find(
-                                (response) =>
-                                    response.testCaseId === it.id.toString()
+                                (response) => response.testCaseId === it.id.toString()
                             )!,
                         }));
 
@@ -134,8 +119,7 @@ export const beginEvaluation = async (
                         submission_id: pendingSubmission.id,
                         verdict:
                             clusterTestcases.find(
-                                (it) =>
-                                    it.evaluationResult.verdict !== "accepted"
+                                (it) => it.evaluationResult.verdict !== "accepted"
                             )?.evaluationResult.verdict ?? "accepted",
                         awarded_score: clusterTestcases.every(
                             (it) => it.evaluationResult.verdict === "accepted"
@@ -160,19 +144,13 @@ export const beginEvaluation = async (
                         ),
                     };
 
-                    await Database.insertInto(
-                        "cluster_submissions",
-                        clusterSubmission
-                    );
+                    await Database.insertInto("cluster_submissions", clusterSubmission);
 
                     return clusterSubmission;
                 })
             );
 
-            const clusterSubmissionsByClusterId: Record<
-                string,
-                ClusterSubmission
-            > = {};
+            const clusterSubmissionsByClusterId: Record<string, ClusterSubmission> = {};
 
             for (const c of clusterSubmissions)
                 clusterSubmissionsByClusterId[c.cluster_id + ""] = c;
@@ -189,10 +167,8 @@ export const beginEvaluation = async (
                             ].id,
                         verdict: result.verdict,
                         awarded_score: 0,
-                        memory_used_megabytes:
-                            result.type === "success" ? result.memory : 0,
-                        time_used_millis:
-                            result.type === "success" ? result.time : 0,
+                        memory_used_megabytes: result.type === "success" ? result.memory : 0,
+                        time_used_millis: result.type === "success" ? result.time : 0,
                     })
                 )
             );
@@ -204,8 +180,7 @@ export const beginEvaluation = async (
             awarded_score: error
                 ? 0
                 : clusterSubmissions.reduce(
-                      (accumulator, current) =>
-                          accumulator + current.awarded_score,
+                      (accumulator, current) => accumulator + current.awarded_score,
                       0
                   ),
             verdict: verdict,

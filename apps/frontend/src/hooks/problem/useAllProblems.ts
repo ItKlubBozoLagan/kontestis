@@ -12,12 +12,7 @@ export const useAllProblems: QueryHandler<Problem[], Snowflake | undefined> = (
         queryKey: contestId ? ["contest", contestId, "problem"] : ["problem"],
         queryFn: () =>
             wrapAxios(
-                http.get(
-                    "/problem",
-                    contestId
-                        ? { params: { contest_id: contestId } }
-                        : undefined
-                )
+                http.get("/problem", contestId ? { params: { contest_id: contestId } } : undefined)
             ),
         ...options,
     });

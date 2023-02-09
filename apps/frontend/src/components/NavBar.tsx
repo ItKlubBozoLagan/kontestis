@@ -40,11 +40,7 @@ export const NavBar: FC = () => {
             ]}
         >
             <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
-                <img
-                    tw={"w-8 h-auto rounded-full"}
-                    src={user.picture_url}
-                    alt={"Profile avatar"}
-                />
+                <img tw={"w-8 h-auto rounded-full"} src={user.picture_url} alt={"Profile avatar"} />
                 <div tw={"flex flex-wrap justify-center gap-6"}>
                     {items.map((item) => (
                         <NavElement item={item} key={item.href} />
@@ -53,9 +49,7 @@ export const NavBar: FC = () => {
             </div>
             <div>
                 <div
-                    tw={
-                        "flex items-center hover:text-red-800 transition-all cursor-pointer"
-                    }
+                    tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
                     onClick={() => setToken("")}
                 >
                     <FiLogOut size={"16px"} />

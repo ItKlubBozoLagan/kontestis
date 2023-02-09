@@ -5,10 +5,7 @@ type MigrationType = {
     users: UserV2;
 };
 
-export const migration_refractor_user: Migration<MigrationType> = async (
-    database,
-    log
-) => {
+export const migration_refractor_user: Migration<MigrationType> = async (database, log) => {
     await database.dropTable("users");
 
     await database.createTable(

@@ -7,13 +7,7 @@ import { FiCopy } from "react-icons/all";
 import { useParams } from "react-router";
 import tw from "twin.macro";
 
-import {
-    Table,
-    TableHeadItem,
-    TableHeadRow,
-    TableItem,
-    TableRow,
-} from "../../components/Table";
+import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
@@ -32,9 +26,7 @@ export const Submission: FC = () => {
     const { isSuccess: isSubmissionSuccess, data: submission } = useSubmission(
         BigInt(submission_id ?? 0)
     );
-    const { data: submissionCluster } = useSubmissionClusters(
-        BigInt(submission_id ?? 0)
-    );
+    const { data: submissionCluster } = useSubmissionClusters(BigInt(submission_id ?? 0));
 
     useEffect(() => {
         if (!isSubmissionSuccess) return;
@@ -61,11 +53,7 @@ export const Submission: FC = () => {
                             <FiCopy
                                 tw={"cursor-pointer hover:opacity-75"}
                                 size={"24px"}
-                                onClick={() =>
-                                    navigator.clipboard.writeText(
-                                        atob(submission.code)
-                                    )
-                                }
+                                onClick={() => navigator.clipboard.writeText(atob(submission.code))}
                             />
                         </div>
                     </div>
@@ -84,17 +72,11 @@ export const Submission: FC = () => {
                     </thead>
                     <tbody>
                         {submissionCluster
-                            ?.sort((a, b) =>
-                                Number(
-                                    BigInt(a.cluster_id) - BigInt(b.cluster_id)
-                                )
-                            )
+                            ?.sort((a, b) => Number(BigInt(a.cluster_id) - BigInt(b.cluster_id)))
                             .map((c, index) => (
                                 <TableRow key={c.id + ""}>
                                     <TableItem
-                                        tw={
-                                            "hover:(text-sky-800 cursor-pointer)"
-                                        }
+                                        tw={"hover:(text-sky-800 cursor-pointer)"}
                                         onClick={() => {
                                             setSelectedCluster(c);
                                             setDisplayTestcase(true);
@@ -111,15 +93,9 @@ export const Submission: FC = () => {
                                     >
                                         {c.verdict}
                                     </TableItem>
-                                    <TableItem>
-                                        {c.time_used_millis} ms
-                                    </TableItem>
-                                    <TableItem>
-                                        {c.memory_used_megabytes} MiB
-                                    </TableItem>
-                                    <TableItem>
-                                        {c.awarded_score} points
-                                    </TableItem>
+                                    <TableItem>{c.time_used_millis} ms</TableItem>
+                                    <TableItem>{c.memory_used_megabytes} MiB</TableItem>
+                                    <TableItem>{c.awarded_score} points</TableItem>
                                 </TableRow>
                             ))}
                     </tbody>

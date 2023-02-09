@@ -11,8 +11,7 @@ import { extractModifiableContest } from "./extractModifiableContest";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractProblem = (req: Request, optionalProblemId?: Snowflake) => {
-    const problemId =
-        optionalProblemId ?? extractIdFromParameters(req, "problem_id");
+    const problemId = optionalProblemId ?? extractIdFromParameters(req, "problem_id");
 
     return memoizedRequestExtractor(req, "__problem_" + problemId, async () => {
         const problem = await Database.selectOneFrom("problems", "*", {

@@ -36,8 +36,7 @@ export const transformToBinary = async (
         compile.stderr.on("data", (data) => {
             if (Buffer.isBuffer(data)) stdError.push(data);
 
-            if (typeof data === "string")
-                stdError.push(Buffer.from(data, "utf8"));
+            if (typeof data === "string") stdError.push(Buffer.from(data, "utf8"));
         });
 
         compile.on("close", async (code) => {

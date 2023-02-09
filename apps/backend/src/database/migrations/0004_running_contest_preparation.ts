@@ -9,9 +9,10 @@ type MigrationType = {
     contest_members: ContestMemberV1;
 };
 
-export const migration_running_contest_preparation: Migration<
-    MigrationType
-> = async (database, log) => {
+export const migration_running_contest_preparation: Migration<MigrationType> = async (
+    database,
+    log
+) => {
     const submissions = await database.selectFrom("submissions", "*");
 
     await database.raw("ALTER TABLE submissions ADD created_at date");
@@ -29,16 +30,8 @@ export const migration_running_contest_preparation: Migration<
         "id"
     );
 
-    await database.createIndex(
-        "contest_members",
-        "contest_members_by_contest_id",
-        "contest_id"
-    );
-    await database.createIndex(
-        "contest_members",
-        "contest_members_by_user_id",
-        "user_id"
-    );
+    await database.createIndex("contest_members", "contest_members_by_contest_id", "contest_id");
+    await database.createIndex("contest_members", "contest_members_by_user_id", "user_id");
 
     await Promise.all(
         submissions.map((s) =>

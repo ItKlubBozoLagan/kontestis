@@ -13,11 +13,7 @@ import { transformToBinary } from "./transformers/CPPCompiledTransformer";
 
 const app = Express();
 
-const LanguageSchema = Type.Union([
-    Type.Literal("python"),
-    Type.Literal("c"),
-    Type.Literal("cpp"),
-]);
+const LanguageSchema = Type.Union([Type.Literal("python"), Type.Literal("c"), Type.Literal("cpp")]);
 
 const schema = Type.Object({
     language: LanguageSchema,
@@ -56,10 +52,7 @@ print("AC" if out.strip() == subOut.strip() else "WA")
 
 `;
 
-const plainTextEvaluatorBase64 = Buffer.from(
-    PLAIN_TEXT_EVALUATOR,
-    "utf8"
-).toString("base64");
+const plainTextEvaluatorBase64 = Buffer.from(PLAIN_TEXT_EVALUATOR, "utf8").toString("base64");
 
 app.use(json());
 
@@ -95,10 +88,7 @@ app.post("/", async (req, res) => {
                         ),
                     submission.testcases,
                     getSimplePythonCheckerFunction(
-                        Buffer.from(
-                            submission.evaluator ?? plainTextEvaluatorBase64,
-                            "base64"
-                        )
+                        Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
                     ),
                     submission.time_limit
                 )
@@ -112,18 +102,13 @@ app.post("/", async (req, res) => {
                 await evaluateSimpleChecker(
                     async (b) =>
                         recordOutputWithMemory(
-                            await runPython(
-                                Buffer.from(submission.code, "base64")
-                            ),
+                            await runPython(Buffer.from(submission.code, "base64")),
                             b,
                             recordSimpleOutput
                         ),
                     submission.testcases,
                     getSimplePythonCheckerFunction(
-                        Buffer.from(
-                            submission.evaluator ?? plainTextEvaluatorBase64,
-                            "base64"
-                        )
+                        Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
                     ),
                     submission.time_limit
                 )

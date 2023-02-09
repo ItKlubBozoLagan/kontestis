@@ -19,12 +19,8 @@ export const Contests: FC = () => {
                 };
             })
             .sort((a, b) => {
-                const firstDone =
-                    a.start_time.getTime() + a.duration_seconds * 1000 >=
-                    Date.now();
-                const secondDone =
-                    b.start_time.getTime() + b.duration_seconds * 1000 >=
-                    Date.now();
+                const firstDone = a.start_time.getTime() + a.duration_seconds * 1000 >= Date.now();
+                const secondDone = b.start_time.getTime() + b.duration_seconds * 1000 >= Date.now();
 
                 if (firstDone != secondDone) {
                     return firstDone ? -1 : 1;

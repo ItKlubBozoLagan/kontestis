@@ -12,9 +12,7 @@ type Properties = {
 
 export const ContestListItem: FC<Properties> = ({ contest }) => {
     const [time, setTime] = useState(Date.now());
-    const [state, setState] = useState<"pending" | "started" | "finished">(
-        "pending"
-    );
+    const [state, setState] = useState<"pending" | "started" | "finished">("pending");
 
     useEffect(() => {
         const interval = setInterval(() => setTime(Date.now()), 1000);
@@ -23,10 +21,7 @@ export const ContestListItem: FC<Properties> = ({ contest }) => {
 
         if (Date.now() > contest.start_time.getTime()) setState("started");
 
-        if (
-            Date.now() >
-            contest.start_time.getTime() + contest.duration_seconds * 1000
-        )
+        if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
             setState("finished");
 
         return () => {
@@ -37,10 +32,7 @@ export const ContestListItem: FC<Properties> = ({ contest }) => {
     return (
         <TableRow>
             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                <Link
-                    to={"/contest/" + contest.id}
-                    tw={"flex items-center gap-2"}
-                >
+                <Link to={"/contest/" + contest.id} tw={"flex items-center gap-2"}>
                     <FiList tw={"text-xl"} /> {contest.name}
                 </Link>
             </TableItem>
@@ -57,9 +49,7 @@ export const ContestListItem: FC<Properties> = ({ contest }) => {
             <TableItem>
                 {state == "started"
                     ? parseTime(
-                          contest.start_time.getTime() +
-                              contest.duration_seconds * 1000 -
-                              time
+                          contest.start_time.getTime() + contest.duration_seconds * 1000 - time
                       )
                     : parseTime(contest.duration_seconds * 1000)}
             </TableItem>

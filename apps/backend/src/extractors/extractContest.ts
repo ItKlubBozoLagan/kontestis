@@ -13,8 +13,7 @@ import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
-    const contestId =
-        optionalContestId ?? extractIdFromParameters(req, "contest_id");
+    const contestId = optionalContestId ?? extractIdFromParameters(req, "contest_id");
 
     return memoizedRequestExtractor(req, `__contest_${contestId}`, async () => {
         const contest = await Database.selectOneFrom("contests", "*", {
@@ -27,19 +26,14 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
 
         const user = await extractUser(req);
 
-        if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
-            return contest;
+        if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return contest;
 
         if (user.id == contest.admin_id) return contest;
 
-        const allowedUser = await Database.selectOneFrom(
-            "allowed_users",
-            ["id"],
-            {
-                user_id: user.id,
-                contest_id: contest.id,
-            }
-        );
+        const allowedUser = await Database.selectOneFrom("allowed_users", ["id"], {
+            user_id: user.id,
+            contest_id: contest.id,
+        });
 
         if (!allowedUser) throw new SafeError(StatusCodes.NOT_FOUND);
 

@@ -1,9 +1,6 @@
 import pidusage from "pidusage";
 
-const recordMemoryPeriodically = (
-    processId: number,
-    saveFunction: (value: number) => void
-) => {
+const recordMemoryPeriodically = (processId: number, saveFunction: (value: number) => void) => {
     const intervalId = setInterval(async () => {
         try {
             const { memory } = await pidusage(processId);
@@ -17,9 +14,7 @@ const recordMemoryPeriodically = (
     return () => clearInterval(intervalId);
 };
 
-export const recordMemory: (pid: number) => () => number = (
-    processId: number
-) => {
+export const recordMemory: (pid: number) => () => number = (processId: number) => {
     let maxMemory = 0;
 
     const stop = recordMemoryPeriodically(processId, (v) => {

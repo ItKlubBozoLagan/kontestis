@@ -11,12 +11,8 @@ import { extractProblem } from "./extractProblem";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractSubmission = (
-    req: Request,
-    optionalSubmissionId?: Snowflake
-) => {
-    const submissionId =
-        optionalSubmissionId ?? extractIdFromParameters(req, "submission_id");
+export const extractSubmission = (req: Request, optionalSubmissionId?: Snowflake) => {
+    const submissionId = optionalSubmissionId ?? extractIdFromParameters(req, "submission_id");
 
     return memoizedRequestExtractor(req, "__submission", async () => {
         const submission = await Database.selectOneFrom("submissions", "*", {
@@ -33,10 +29,7 @@ export const extractSubmission = (
 
         if (user.id === submission.user_id) return submission;
 
-        if (
-            Date.now() >=
-            contest.start_time.getTime() + 1000 * contest.duration_seconds
-        )
+        if (Date.now() >= contest.start_time.getTime() + 1000 * contest.duration_seconds)
             return submission;
 
         await extractModifiableContest(req, contest.id);

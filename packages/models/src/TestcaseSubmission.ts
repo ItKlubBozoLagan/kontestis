@@ -13,10 +13,7 @@ export type TestcaseSubmissionV1 = {
     memory_used_megabytes: number;
 };
 
-export type TestcaseSubmissionV2 = Omit<
-    TestcaseSubmissionV1,
-    "submission_id" | "awardedscore"
-> & {
+export type TestcaseSubmissionV2 = Omit<TestcaseSubmissionV1, "submission_id" | "awardedscore"> & {
     cluster_submission_id: Snowflake;
     awarded_score: number;
 };

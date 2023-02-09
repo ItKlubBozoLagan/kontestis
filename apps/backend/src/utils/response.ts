@@ -21,11 +21,7 @@ export const respond = (
     });
 };
 
-export const reject = (
-    response: Response,
-    status: StatusCodes,
-    error: string | string[]
-) => {
+export const reject = (response: Response, status: StatusCodes, error: string | string[]) => {
     response.status(status).json({
         status,
         ...(Globals.mode === "development"

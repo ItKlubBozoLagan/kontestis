@@ -3,11 +3,7 @@ import "./globals.scss";
 
 import { FullUser } from "@kontestis/models";
 import React, { useEffect } from "react";
-import {
-    createBrowserRouter,
-    Navigate,
-    RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 
 import { http, wrapAxios } from "./api/http";
 import { Account } from "./pages/account/Account";
@@ -84,8 +80,7 @@ const loginRouter = createBrowserRouter([
 ]);
 
 export const App = () => {
-    const { isLoggedIn, token, setUser, setToken, setIsLoggedIn } =
-        useAuthStore();
+    const { isLoggedIn, token, setUser, setToken, setIsLoggedIn } = useAuthStore();
 
     useEffect(() => {
         if (token.length === 0) {

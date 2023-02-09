@@ -7,9 +7,7 @@ import { OutputRecord } from "../recorders/SimpleOutputRecorder";
 import { timeFunction } from "../recorders/TimeRecorder";
 import { Testcase } from "../types/Testcase";
 
-export type RunnerFunction = (
-    testcaseInput: Buffer
-) => Promise<OutputRecord & MemoryRecord>;
+export type RunnerFunction = (testcaseInput: Buffer) => Promise<OutputRecord & MemoryRecord>;
 
 export type CheckerFunction = (
     testcaseInput: Buffer,
@@ -66,10 +64,7 @@ export const evaluateSimpleChecker = async (
             continue;
         }
 
-        const checkerResult = checkerRecord.output
-            .toString("utf8")
-            .trim()
-            .toLowerCase();
+        const checkerResult = checkerRecord.output.toString("utf8").trim().toLowerCase();
 
         if (checkerResult === "ac" || checkerResult == "accepted") {
             evaluated.push({

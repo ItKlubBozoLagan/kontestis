@@ -46,15 +46,13 @@ export const recordSimpleOutput: OutputRecorderFunction = (
         process.stderr.on("data", (data) => {
             if (Buffer.isBuffer(data)) stdError.push(data);
 
-            if (typeof data === "string")
-                stdError.push(Buffer.from(data, "utf8"));
+            if (typeof data === "string") stdError.push(Buffer.from(data, "utf8"));
         });
 
         process.stdout.on("data", (data) => {
             if (Buffer.isBuffer(data)) stdOut.push(data);
 
-            if (typeof data === "string")
-                stdOut.push(Buffer.from(data, "utf8"));
+            if (typeof data === "string") stdOut.push(Buffer.from(data, "utf8"));
         });
 
         process.on("close", (code) => {

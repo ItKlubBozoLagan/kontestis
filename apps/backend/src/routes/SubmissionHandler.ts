@@ -20,30 +20,22 @@ import { respond } from "../utils/response";
 const SubmissionHandler = Router();
 
 const submissionSchema = Type.Object({
-    language: Type.Union([
-        Type.Literal("c"),
-        Type.Literal("cpp"),
-        Type.Literal("python"),
-    ]),
+    language: Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")]),
     code: Type.String({ maxLength: 64_000 }),
 });
 
-SubmissionHandler.post(
-    "/:problem_id",
-    useValidation(submissionSchema),
-    async (req, res) => {
-        const problem = await extractProblem(req);
-        const user = await extractUser(req);
+SubmissionHandler.post("/:problem_id", useValidation(submissionSchema), async (req, res) => {
+    const problem = await extractProblem(req);
+    const user = await extractUser(req);
 
-        const submissionId = await beginEvaluation(user, {
-            problemId: problem.id,
-            language: req.body.language,
-            code: req.body.code,
-        });
+    const submissionId = await beginEvaluation(user, {
+        problemId: problem.id,
+        language: req.body.language,
+        code: req.body.code,
+    });
 
-        return respond(res, StatusCodes.CREATED, { submission: submissionId });
-    }
-);
+    return respond(res, StatusCodes.CREATED, { submission: submissionId });
+});
 
 // TODO: Permissions return full res!
 
@@ -51,17 +43,13 @@ const getSchema = Type.Object({
     user_id: Type.String(),
 });
 
-SubmissionHandler.get(
-    "/",
-    useValidation(getSchema, { query: true }),
-    async (req, res) => {
-        const submissions = await Database.selectFrom("submissions", ["id"], {
-            user_id: req.query.user_id,
-        });
+SubmissionHandler.get("/", useValidation(getSchema, { query: true }), async (req, res) => {
+    const submissions = await Database.selectFrom("submissions", ["id"], {
+        user_id: req.query.user_id,
+    });
 
-        return respond(res, StatusCodes.OK, submissions);
-    }
-);
+    return respond(res, StatusCodes.OK, submissions);
+});
 
 SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
@@ -70,9 +58,7 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
 
     if (!req.query.user_id && !user) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const userId = req.query.user_id
-        ? BigInt(req.query.user_id as string)
-        : user!.id;
+    const userId = req.query.user_id ? BigInt(req.query.user_id as string) : user!.id;
 
     const submissions = await Database.selectFrom(
         "submissions",
@@ -96,19 +82,14 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
             ...R.pipe(
                 pendingSubmissions,
                 R.map(R.addProp("completed", false)),
-                R.filter((it) =>
-                    submissions.every((submission) => submission.id !== it.id)
-                )
+                R.filter((it) => submissions.every((submission) => submission.id !== it.id))
             ),
         ];
 
         return respond(res, StatusCodes.OK, combined);
     }
 
-    if (
-        contest.start_time.getTime() + contest.duration_seconds * 1000 <=
-        Date.now()
-    )
+    if (contest.start_time.getTime() + contest.duration_seconds * 1000 <= Date.now())
         return respond(res, StatusCodes.OK, submissions);
 
     if (!user) throw new SafeError(StatusCodes.NOT_FOUND);

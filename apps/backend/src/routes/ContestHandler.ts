@@ -38,10 +38,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
 
     const date = new Date(req.body.start_time_millis);
 
-    if (
-        !date ||
-        (!req.body.past_contest && req.body.start_time_millis < Date.now())
-    )
+    if (!date || (!req.body.past_contest && req.body.start_time_millis < Date.now()))
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const contest: Contest = {
@@ -58,30 +55,26 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     return respond(res, StatusCodes.OK, contest);
 });
 
-ContestHandler.patch(
-    "/:contest_id",
-    useValidation(contestSchema),
-    async (req, res) => {
-        const contest = await extractModifiableContest(req);
+ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, res) => {
+    const contest = await extractModifiableContest(req);
 
-        const date = new Date(req.body.start_time_millis);
+    const date = new Date(req.body.start_time_millis);
 
-        if (!date) throw new SafeError(StatusCodes.BAD_REQUEST);
+    if (!date) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-        await Database.update(
-            "contests",
-            {
-                name: req.body.name,
-                start_time: date,
-                duration_seconds: req.body.duration_seconds,
-                public: req.body.public,
-            },
-            { id: contest.id }
-        );
+    await Database.update(
+        "contests",
+        {
+            name: req.body.name,
+            start_time: date,
+            duration_seconds: req.body.duration_seconds,
+            public: req.body.public,
+        },
+        { id: contest.id }
+    );
 
-        respond(res, StatusCodes.OK);
-    }
-);
+    respond(res, StatusCodes.OK);
+});
 
 ContestHandler.get("/", async (req, res) => {
     const contestIds = await Database.selectFrom("contests", ["id"]);
@@ -102,51 +95,41 @@ const allowUserSchema = Type.Object({
     user_id: Type.Number(),
 });
 
-ContestHandler.post(
-    "/allow/:contest_id",
-    useValidation(allowUserSchema),
-    async (req, res) => {
-        const contest = await extractModifiableContest(req);
+ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async (req, res) => {
+    const contest = await extractModifiableContest(req);
 
-        const databaseUser = await Database.selectOneFrom("users", "*", {
-            id: BigInt(req.body.user_id),
-        });
+    const databaseUser = await Database.selectOneFrom("users", "*", {
+        id: BigInt(req.body.user_id),
+    });
 
-        if (!databaseUser) throw new SafeError(StatusCodes.NOT_FOUND);
+    if (!databaseUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const allowedDatabaseUser = await Database.selectOneFrom(
-            "allowed_users",
-            "*",
-            {
-                user_id: databaseUser.id,
-                contest_id: contest.id,
-            }
-        );
+    const allowedDatabaseUser = await Database.selectOneFrom("allowed_users", "*", {
+        user_id: databaseUser.id,
+        contest_id: contest.id,
+    });
 
-        if (allowedDatabaseUser) throw new SafeError(StatusCodes.CONFLICT);
+    if (allowedDatabaseUser) throw new SafeError(StatusCodes.CONFLICT);
 
-        const allowedUser: AllowedUser = {
-            id: generateSnowflake(),
-            user_id: databaseUser.id,
-            contest_id: contest.id,
-        };
+    const allowedUser: AllowedUser = {
+        id: generateSnowflake(),
+        user_id: databaseUser.id,
+        contest_id: contest.id,
+    };
 
-        await Database.insertInto("allowed_users", allowedUser);
+    await Database.insertInto("allowed_users", allowedUser);
 
-        return respond(res, StatusCodes.OK, allowedUser);
-    }
-);
+    return respond(res, StatusCodes.OK, allowedUser);
+});
 
 ContestHandler.get("/allow/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
 
     if (contest.public) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    const allowedUsers = await Database.selectFrom(
-        "allowed_users",
-        ["user_id"],
-        { contest_id: contest.id }
-    );
+    const allowedUsers = await Database.selectFrom("allowed_users", ["user_id"], {
+        contest_id: contest.id,
+    });
 
     return respond(res, StatusCodes.OK, allowedUsers);
 });

@@ -5,9 +5,7 @@ export type TimedRecord<T> = {
     value: T;
 };
 
-export const timeFunction = async <T>(
-    f: () => Promise<T>
-): Promise<TimedRecord<T>> => {
+export const timeFunction = async <T>(f: () => Promise<T>): Promise<TimedRecord<T>> => {
     const startTime = performance.now();
     const c: T = await f();
 

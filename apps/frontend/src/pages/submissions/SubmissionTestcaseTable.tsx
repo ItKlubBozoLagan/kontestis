@@ -2,13 +2,7 @@ import { FC } from "react";
 import { FiChevronsLeft } from "react-icons/all";
 import tw from "twin.macro";
 
-import {
-    Table,
-    TableHeadItem,
-    TableHeadRow,
-    TableItem,
-    TableRow,
-} from "../../components/Table";
+import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useSubmissionTestcases } from "../../hooks/submission/useSubmissionTestcases";
 
 type Properties = {
@@ -16,13 +10,8 @@ type Properties = {
     back: () => void;
 };
 
-export const SubmissionTestcaseTable: FC<Properties> = ({
-    cluster_submission_id,
-    back,
-}) => {
-    const { data: testcaseSubmissions } = useSubmissionTestcases(
-        cluster_submission_id
-    );
+export const SubmissionTestcaseTable: FC<Properties> = ({ cluster_submission_id, back }) => {
+    const { data: testcaseSubmissions } = useSubmissionTestcases(cluster_submission_id);
 
     return (
         <Table tw={"w-full"}>
@@ -41,18 +30,12 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                 <TableHeadItem>Memory</TableHeadItem>
             </TableHeadRow>
             {testcaseSubmissions
-                ?.sort((a, b) =>
-                    Number(BigInt(a.testcase_id) - BigInt(b.testcase_id))
-                )
+                ?.sort((a, b) => Number(BigInt(a.testcase_id) - BigInt(b.testcase_id)))
                 .map((ts, index) => (
                     <TableRow key={ts.id + ""}>
                         <TableItem>Testcase #{index + 1}</TableItem>
                         <TableItem
-                            css={
-                                ts.verdict === "accepted"
-                                    ? tw`text-green-600`
-                                    : tw`text-red-600`
-                            }
+                            css={ts.verdict === "accepted" ? tw`text-green-600` : tw`text-red-600`}
                         >
                             {ts.verdict}
                         </TableItem>

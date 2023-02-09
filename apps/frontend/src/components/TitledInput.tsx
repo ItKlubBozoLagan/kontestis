@@ -1,9 +1,6 @@
 import React, { FC, InputHTMLAttributes } from "react";
 
-export const TitledInput: FC<InputHTMLAttributes<HTMLInputElement>> = ({
-    name,
-    ...properties
-}) => {
+export const TitledInput: FC<InputHTMLAttributes<HTMLInputElement>> = ({ name, ...properties }) => {
     return (
         <div tw={"w-full flex flex-col justify-start pt-2 max-w-[256px]"}>
             <label id={name} tw={"text-sm pl-1 pb-1"}>

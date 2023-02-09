@@ -10,8 +10,7 @@ export const extractUser = async (req: Request): Promise<FullUser> => {
     return memoizedRequestExtractor(req, "__user", async () => {
         const auth = req.header("authorization");
 
-        if (!(auth && auth.startsWith("Bearer ")))
-            throw new SafeError(StatusCodes.UNAUTHORIZED);
+        if (!(auth && auth.startsWith("Bearer "))) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
         const token = auth.slice("Bearer ".length);
         const tokenData = await verifyToken(token).catch(() => null);

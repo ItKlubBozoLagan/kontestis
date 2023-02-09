@@ -1,10 +1,6 @@
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
-import {
-    ParamsDictionary,
-    Query,
-    RequestHandler,
-} from "express-serve-static-core";
+import { ParamsDictionary, Query, RequestHandler } from "express-serve-static-core";
 import { StatusCodes } from "http-status-codes";
 
 import { SafeError } from "../errors/SafeError";
@@ -21,10 +17,7 @@ type SchemaRequestHandler<S extends SchemaOptions, O> = RequestHandler<
     S extends { query: true } ? O : Query
 >;
 
-export const useValidation = <
-    TS extends TSchema,
-    S extends SchemaOptions = { body: true }
->(
+export const useValidation = <TS extends TSchema, S extends SchemaOptions = { body: true }>(
     schema: TS,
     options_?: S & SchemaOptions
 ): SchemaRequestHandler<S, Static<TS>> => {

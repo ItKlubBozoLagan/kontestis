@@ -4,10 +4,7 @@ import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
 
-export const useContest: QueryHandler<Contest, Snowflake> = (
-    contestId,
-    options
-) =>
+export const useContest: QueryHandler<Contest, Snowflake> = (contestId, options) =>
     useQuery({
         queryKey: ["contest", contestId],
         queryFn: () => wrapAxios(http.get(`/contest/${contestId}`)),

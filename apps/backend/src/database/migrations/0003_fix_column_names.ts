@@ -9,15 +9,9 @@ type MigrationType = {
     testcases: TestcaseV2 & TestcaseV1;
 };
 
-export const migration_fix_column_names: Migration<MigrationType> = async (
-    database,
-    log
-) => {
+export const migration_fix_column_names: Migration<MigrationType> = async (database, log) => {
     const testcases: TestcaseV1[] = await database.selectFrom("testcases", "*");
-    const submissions: SubmissionV1[] = await database.selectFrom(
-        "submissions",
-        "*"
-    );
+    const submissions: SubmissionV1[] = await database.selectFrom("submissions", "*");
     const clusterSubmissions: ClusterSubmissionV1[] = await database.selectFrom(
         "cluster_submissions",
         "*"

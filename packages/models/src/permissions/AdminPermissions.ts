@@ -14,12 +14,6 @@ export enum AdminPermissions {
     DELETE_ALERTS,
 }
 
-export const hasAdminPermission = (
-    data: PermissionData,
-    permission: AdminPermissions
-) => {
-    return (
-        hasPermission(data, AdminPermissions.ADMIN) ||
-        hasPermission(data, permission)
-    );
+export const hasAdminPermission = (data: PermissionData, permission: AdminPermissions) => {
+    return hasPermission(data, AdminPermissions.ADMIN) || hasPermission(data, permission);
 };

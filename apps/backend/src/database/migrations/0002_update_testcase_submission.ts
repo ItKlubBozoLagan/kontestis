@@ -9,32 +9,21 @@ type MigrationType = {
     testcase_submissions: TestcaseSubmissionV1 & TestcaseSubmissionV2;
 };
 
-export const migration_update_testcase_submission: Migration<
-    MigrationType
-> = async (database, log) => {
-    const testcaseSubmissionData = await database.selectFrom(
-        "testcase_submissions",
-        "*"
-    );
+export const migration_update_testcase_submission: Migration<MigrationType> = async (
+    database,
+    log
+) => {
+    const testcaseSubmissionData = await database.selectFrom("testcase_submissions", "*");
 
     const testcaseData = await database.selectFrom("testcases", "*");
-    const clusterSubmissionData = await database.selectFrom(
-        "cluster_submissions",
-        "*"
-    );
+    const clusterSubmissionData = await database.selectFrom("cluster_submissions", "*");
 
-    await database.raw(
-        "DROP INDEX IF EXISTS testcase_submissions_by_submission_id"
-    );
+    await database.raw("DROP INDEX IF EXISTS testcase_submissions_by_submission_id");
     await database.raw("ALTER TABLE testcase_submissions DROP submission_id");
-    await database.raw(
-        "ALTER TABLE testcase_submissions ADD cluster_submission_id bigint"
-    );
+    await database.raw("ALTER TABLE testcase_submissions ADD cluster_submission_id bigint");
 
     await database.raw("ALTER TABLE testcase_submissions DROP awardedscore");
-    await database.raw(
-        "ALTER TABLE testcase_submissions ADD awarded_score int"
-    );
+    await database.raw("ALTER TABLE testcase_submissions ADD awarded_score int");
 
     const batch = database.batch();
 
@@ -46,8 +35,7 @@ export const migration_update_testcase_submission: Migration<
                     clusterSubmissionData.find(
                         (cs) =>
                             cs.cluster_id ===
-                            (testcaseData.find((t) => t.id === it.testcase_id)
-                                ?.cluster_id ?? 0n)
+                            (testcaseData.find((t) => t.id === it.testcase_id)?.cluster_id ?? 0n)
                     )?.id ?? 0n,
                 awarded_score: it.awardedscore,
             },
