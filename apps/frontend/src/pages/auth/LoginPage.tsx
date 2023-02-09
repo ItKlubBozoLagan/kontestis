@@ -1,28 +1,29 @@
 import {
-    CodeResponse,
+    CredentialResponse,
+    GoogleLogin,
     GoogleOAuthProvider,
-    useGoogleLogin,
 } from "@react-oauth/google";
 import React, { FC, useCallback } from "react";
 
 import { http } from "../../api/http";
-import { GoogleButton } from "../../components/GoogleButton";
 import { TitledSection } from "../../components/TitledSection";
+import { useAuthStore } from "../../state/auth";
 
 const LoginBase: FC = () => {
-    const onLoginSuccess = useCallback((codeResponse: CodeResponse) => {
-        console.log(codeResponse);
-        http.post("/auth/google-login", codeResponse).then(console.log);
-    }, []);
+    const { setToken } = useAuthStore();
 
-    console.log(import.meta.env.VITE_OAUTH_REDIRECT_URI);
-    const googleLogin = useGoogleLogin({
-        onSuccess: onLoginSuccess,
-        redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI,
-        flow: "auth-code",
-        ux_mode: "redirect",
-        select_account: true,
-    });
+    const onLoginSuccess = useCallback(
+        (credentialResponse: CredentialResponse) => {
+            const { credential } = credentialResponse;
+
+            if (!credential) return;
+
+            http.post("/auth/google-login", credentialResponse).then(() =>
+                setToken(credential)
+            );
+        },
+        []
+    );
 
     return (
         <div tw={"w-full md:max-w-[500px] mt-20"}>
@@ -42,7 +43,16 @@ const LoginBase: FC = () => {
                         </a>{" "}
                         accounts
                     </span>
-                    <GoogleButton onClick={() => googleLogin()} />
+                    <GoogleLogin
+                        onSuccess={onLoginSuccess}
+                        hosted_domain={"skole.hr"}
+                        width={"256px"}
+                        size={"large"}
+                        text={"signin"}
+                        theme={"outline"}
+                        shape={"rectangular"}
+                        auto_select={true}
+                    />
                 </div>
             </TitledSection>
         </div>

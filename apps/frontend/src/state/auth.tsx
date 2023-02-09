@@ -1,4 +1,4 @@
-import { User } from "@kontestis/models";
+import { FullUser } from "@kontestis/models";
 import { mapFields } from "@kontestis/utils";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -6,10 +6,10 @@ import { persist } from "zustand/middleware";
 type AuthState = {
     isLoggedIn: boolean;
     token: string;
-    user: User;
+    user: FullUser;
     setIsLoggedIn: (_: boolean) => void;
     setToken: (_: string) => void;
-    setUser: (_: User) => void;
+    setUser: (_: FullUser) => void;
 };
 
 export const useAuthStore = create<AuthState>()(

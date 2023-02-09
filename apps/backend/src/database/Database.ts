@@ -1,4 +1,4 @@
-import { AllowedUser } from "@kontestis/models";
+import { AllowedUser, KnownUserData } from "@kontestis/models";
 import { Cluster } from "@kontestis/models";
 import { ClusterSubmission } from "@kontestis/models";
 import { Contest } from "@kontestis/models";
@@ -16,9 +16,12 @@ import { migration_update_testcase_submission } from "./migrations/0002_update_t
 import { migration_fix_column_names } from "./migrations/0003_fix_column_names";
 import { migration_running_contest_preparation } from "./migrations/0004_running_contest_preparation";
 import { migration_remove_submission_completed } from "./migrations/0005_remove_submission_completed";
+import { migration_refractor_user } from "./migrations/0006_refractor_user";
+import { migration_known_user_data } from "./migrations/0007_known_user_data";
 
 export const Database = new ScylloClient<{
     users: User;
+    known_users: KnownUserData;
     contests: Contest;
     allowed_users: AllowedUser;
     problems: Problem;
@@ -45,6 +48,8 @@ const migrations: Migration<any>[] = [
     migration_fix_column_names,
     migration_running_contest_preparation,
     migration_remove_submission_completed,
+    migration_refractor_user,
+    migration_known_user_data,
 ];
 
 export const initDatabase = async () => {

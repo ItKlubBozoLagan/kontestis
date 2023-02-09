@@ -1,15 +1,11 @@
-import * as querystring from "node:querystring";
-
 import { Type } from "@sinclair/typebox";
-import axios, { AxiosError } from "axios";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractUser } from "../extractors/extractUser";
-import { Globals } from "../globals";
+import { processUserFromTokenData, verifyToken } from "../lib/google";
 import { useValidation } from "../middlewares/useValidation";
 import {
     AdminPermissions,
@@ -20,51 +16,33 @@ import { respond } from "../utils/response";
 const AuthHandler = Router();
 
 const oauthSchema = Type.Object({
-    code: Type.String(),
-    hd: Type.Optional(Type.String()),
+    credential: Type.String(),
 });
 
 AuthHandler.post(
     "/google-login",
     useValidation(oauthSchema),
     async (req, res) => {
-        const { hd: hostedDomain } = req.body;
+        const { credential } = req.body;
 
-        if (
-            !hostedDomain ||
-            !Globals.oauthAllowedDomains.includes(hostedDomain)
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
+        const googleResponse = await verifyToken(credential).catch(() => null);
 
-        console.log("ruri", Globals.oauthRedirectUri);
-        const accessTokenResponse = await axios
-            .post(
-                "https://oauth2.googleapis.com/token",
-                querystring.stringify({
-                    client_id: Globals.oauthClientId,
-                    client_secret: Globals.oauthClientSecret,
-                    code: req.body.code,
-                    grant_type: "authorization_code",
-                    redirect_uri: Globals.oauthRedirectUri,
-                }),
-                {
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                }
-            )
-            .catch((error: AxiosError) => {
-                console.log(error.response?.data);
+        if (googleResponse === null) throw new SafeError(StatusCodes.FORBIDDEN);
 
-                return null;
-            });
+        const tokenData = await processUserFromTokenData(googleResponse);
 
-        console.log(accessTokenResponse);
+        await Database.update(
+            "known_users",
+            {
+                email: tokenData.email,
+                full_name: tokenData.full_name,
+                picture_url: tokenData.picture_url,
+            },
+            {
+                user_id: tokenData.id,
+            }
+        );
 
-        if (accessTokenResponse === null)
-            throw new SafeError(StatusCodes.FORBIDDEN);
-
-        console.log(accessTokenResponse);
         respond(res, StatusCodes.OK);
     }
 );
@@ -72,7 +50,7 @@ AuthHandler.post(
 AuthHandler.get("/info", async (req, res) => {
     const user = await extractUser(req);
 
-    return respond(res, StatusCodes.OK, R.omit(user, ["password"]));
+    return respond(res, StatusCodes.OK, user);
 });
 
 AuthHandler.get("/info/:id", async (req, res) => {
@@ -81,13 +59,18 @@ AuthHandler.get("/info/:id", async (req, res) => {
     if (!hasAdminPermission(user.permissions, AdminPermissions.VIEW_USER))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const searchUser = await Database.selectOneFrom("users", "*", {
-        id: req.params.id,
-    });
+    const id = BigInt(req.params.id);
 
-    if (!searchUser) throw new SafeError(StatusCodes.NOT_FOUND);
+    if (id === user.id) return respond(res, StatusCodes.OK, user);
 
-    return respond(res, StatusCodes.OK, R.omit(searchUser, ["password"]));
+    const [userData, knownData] = await Promise.all([
+        Database.selectOneFrom("known_users", "*", { user_id: id }),
+        Database.selectOneFrom("users", "*", { id: id }),
+    ]);
+
+    if (!userData || !knownData) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    respond(res, StatusCodes.OK, { ...userData, ...knownData });
 });
 
 export default AuthHandler;

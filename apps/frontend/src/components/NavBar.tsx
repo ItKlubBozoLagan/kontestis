@@ -1,4 +1,3 @@
-import md5 from "md5";
 import { FC } from "react";
 import { FiLogOut } from "react-icons/all";
 import tw from "twin.macro";
@@ -43,9 +42,7 @@ export const NavBar: FC = () => {
             <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
                 <img
                     tw={"w-8 h-auto rounded-full"}
-                    src={`https://www.gravatar.com/avatar/${md5(
-                        user.email.trim().toLowerCase()
-                    )}`}
+                    src={user.picture_url}
                     alt={"Profile avatar"}
                 />
                 <div tw={"flex flex-wrap justify-center gap-6"}>

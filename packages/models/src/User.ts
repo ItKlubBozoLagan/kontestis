@@ -10,6 +10,17 @@ export type UserV1 = {
     permissions: PermissionData;
 };
 
-export type User = UserV1;
+// we switched to Google auth
+export type UserV2 = {
+    id: Snowflake;
+    google_id: Snowflake;
+    permissions: PermissionData;
+};
 
-export type PasswordlessUser = Omit<User, "password">;
+export type User = UserV2;
+
+export type FullUser = User & {
+    full_name: string;
+    email: string;
+    picture_url: string;
+};

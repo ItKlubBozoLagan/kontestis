@@ -1,4 +1,3 @@
-import md5 from "md5";
 import React, { FC } from "react";
 
 import { TitledInput } from "../../components/TitledInput";
@@ -15,9 +14,7 @@ export const Account: FC = () => {
                     <div tw={"flex flex-col justify-start gap-2 font-mono"}>
                         <img
                             tw={"w-32 w-32 rounded-full"}
-                            src={`https://www.gravatar.com/avatar/${md5(
-                                user.email.trim().toLowerCase()
-                            )}?s=150`}
+                            src={user.picture_url}
                             alt={"Profile avatar"}
                         />
                     </div>
@@ -29,7 +26,7 @@ export const Account: FC = () => {
                         >
                             <TitledInput
                                 name={"Username"}
-                                value={user.username}
+                                value={user.full_name}
                                 readOnly
                             />
                             <TitledInput
