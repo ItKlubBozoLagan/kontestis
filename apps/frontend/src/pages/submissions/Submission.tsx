@@ -59,6 +59,13 @@ export const Submission: FC = () => {
                     </div>
                 )}
             </TitledSection>
+            {isSubmissionSuccess && submission.verdict === "compilation_error" && (
+                <TitledSection title={"Compile time error"}>
+                    <div tw={"bg-neutral-100 px-4 w-full rounded"}>
+                        <pre>{submission.error}</pre>
+                    </div>
+                </TitledSection>
+            )}
             {!displayTestcase ? (
                 <Table tw={"w-full"}>
                     <thead>

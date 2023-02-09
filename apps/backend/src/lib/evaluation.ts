@@ -1,5 +1,6 @@
 import {
     ClusterSubmission,
+    CompilationErrorResult,
     EvaluationLanguage,
     EvaluationResult,
     PendingSubmission,
@@ -184,6 +185,14 @@ export const beginEvaluation = async (
                       0
                   ),
             verdict: verdict,
+            error:
+                verdict === "compilation_error"
+                    ? (
+                          results?.find(
+                              (result) => result.verdict === "compilation_error"
+                          ) as CompilationErrorResult
+                      ).error
+                    : undefined,
             time_used_millis: time,
             memory_used_megabytes: memory,
         });

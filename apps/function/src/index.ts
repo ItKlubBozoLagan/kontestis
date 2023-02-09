@@ -73,6 +73,7 @@ app.post("/", async (req, res) => {
                     testCaseId: testcase.id,
                     type: "error",
                     verdict: "compilation_error",
+                    error: compileResult.stdErr.toString(),
                 }))
             );
 

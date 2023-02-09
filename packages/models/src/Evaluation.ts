@@ -9,10 +9,17 @@ export type SuccessfulEvaluationResult = {
     memory: number;
 };
 
+export type CompilationErrorResult = {
+    type: "error";
+    verdict: "compilation_error";
+    error: string;
+};
+
 export type EvaluationResult = {
     testCaseId: string;
 } & (
     | SuccessfulEvaluationResult
+    | CompilationErrorResult
     | {
           type: "error";
           verdict: "runtime_error";
@@ -20,7 +27,7 @@ export type EvaluationResult = {
       }
     | {
           type: "error";
-          verdict: "compilation_error" | "evaluation_error" | "system_error";
+          verdict: "evaluation_error" | "system_error";
       }
 );
 

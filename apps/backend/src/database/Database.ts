@@ -18,6 +18,7 @@ import { migration_running_contest_preparation } from "./migrations/0004_running
 import { migration_remove_submission_completed } from "./migrations/0005_remove_submission_completed";
 import { migration_refractor_user } from "./migrations/0006_refractor_user";
 import { migration_known_user_data } from "./migrations/0007_known_user_data";
+import { migration_add_error_to_submission } from "./migrations/0008_add_error_to_submission";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -50,6 +51,7 @@ const migrations: Migration<any>[] = [
     migration_remove_submission_completed,
     migration_refractor_user,
     migration_known_user_data,
+    migration_add_error_to_submission,
 ];
 
 export const initDatabase = async () => {

@@ -28,7 +28,18 @@ export type SubmissionV4 = Omit<SubmissionV3, "verdict" | "awarded_score" | "com
     awarded_score: number;
 };
 
-export type Submission = SubmissionV4;
+export type SubmissionV5 = Omit<SubmissionV4, "verdict"> &
+    (
+        | {
+              verdict: Exclude<EvaluationVerdict, "compilation_error">;
+          }
+        | {
+              verdict: Extract<EvaluationVerdict, "compilation_error">;
+              error: string;
+          }
+    );
+
+export type Submission = SubmissionV5;
 
 export type PendingSubmission = Omit<
     Submission,
