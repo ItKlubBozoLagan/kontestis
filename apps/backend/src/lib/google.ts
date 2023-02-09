@@ -5,6 +5,7 @@ import * as R from "remeda";
 
 import { AdminPermissions } from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
+import { Globals } from "../globals";
 import { generateSnowflake } from "./snowflake";
 
 type VerifyTokenResponse = {
@@ -37,7 +38,11 @@ export const verifyToken = async (
     if (niceGoogleResponse.email_verified !== "true")
         throw new Error("email not verified");
 
-    if (!niceGoogleResponse.email.endsWith("@skole.hr"))
+    if (
+        !Globals.oauthAllowedDomains.some((it) =>
+            niceGoogleResponse.email.endsWith("@" + it)
+        )
+    )
         throw new Error("domain not supported");
 
     return niceGoogleResponse;

@@ -2,6 +2,7 @@
 node_modules/
 .env
 pruned/
+global.env
 
 tools/**
 !tools/.gitkeep
