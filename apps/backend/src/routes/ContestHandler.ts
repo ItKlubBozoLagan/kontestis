@@ -234,6 +234,39 @@ ContestHandler.patch("/members/:contest_id/:user_id", async (req, res) => {
     return respond(res, StatusCodes.OK);
 });
 
+ContestHandler.delete("/members/:contest_id/:user_id", async (req, res) => {
+    const contest = await extractContest(req);
+    const user = await extractUser(req);
+    const targetId = BigInt(req.params.user_id);
+    const contestMember = await Database.selectOneFrom("contest_members", "*", {
+        user_id: user.id,
+        contest_id: contest.id,
+    });
+
+    if (
+        !contestMember ||
+        !hasContestPermission(
+            contestMember.contest_permissions,
+            ContestMemberPermissions.REMOVE_USER
+        )
+    )
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const targetMember = await Database.selectOneFrom("contest_members", ["id"], {
+        user_id: targetId,
+        contest_id: contest.id,
+    });
+
+    if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    await Database.deleteFrom("contest_members", "*", {
+        user_id: targetId,
+        contest_id: contest.id,
+    });
+
+    return respond(res, StatusCodes.OK);
+});
+
 ContestHandler.get("/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
 
