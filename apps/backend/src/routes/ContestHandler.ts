@@ -188,9 +188,16 @@ ContestHandler.get("/members/:contest_id/:user_id", async (req, res) => {
         user_id: targetId,
     });
 
-    if (!contestMember) throw new SafeError(StatusCodes.NOT_FOUND);
-
-    return respond(res, StatusCodes.OK, contestMember);
+    return respond(
+        res,
+        StatusCodes.OK,
+        contestMember ?? {
+            user_id: targetId,
+            contest_id: contest.id,
+            contest_permissions: 0n,
+            score: 0,
+        }
+    );
 });
 
 ContestHandler.patch("/members/:contest_id/:user_id", async (req, res) => {
