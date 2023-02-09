@@ -27,6 +27,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      function:
+        condition: service_started
     ports:
       - "8080:8080"
     env_file:
@@ -41,6 +43,19 @@ services:
       - REDIS_URL=redis://redis:6379
       - OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
       - OAUTH_ALLOWED_DOMAINS=skole.hr
+      - EVALUATOR_ENDPOINT=http://function:8080
+
+  function:
+    build:
+      context: ./apps/function
+      dockerfile: base.dockerfile
+    tty: true
+    volumes:
+      - ".:/app"
+    working_dir: "/app/apps/function"
+    command: "npm run dev"
+    ports:
+      - 8081:8080
 
   scylla:
     image: "scylladb/scylla:5.0.5"
