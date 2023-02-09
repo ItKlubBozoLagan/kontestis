@@ -178,6 +178,7 @@ ContestHandler.get("/members/:contest_id", async (req, res) => {
     return respond(res, StatusCodes.OK, contestMembers);
 });
 
+// eslint-disable-next-line sonarjs/no-duplicate-string
 ContestHandler.get("/members/:contest_id/:user_id", async (req, res) => {
     const contest = await extractContest(req);
     const targetId = BigInt(req.params.user_id);
