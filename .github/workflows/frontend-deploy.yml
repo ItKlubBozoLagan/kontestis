@@ -9,15 +9,18 @@ jobs:
   check:
     name: "🔎 Check"
     runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Filter files
+      - id: changes
+        name: Filter files
         uses: dorny/paths-filter@v2
         with:
           filters: |
-            backend:
+            frontend:
               - "apps/frontend/**"
               - "pacakges/**"
   deploy:

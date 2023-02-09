@@ -108,6 +108,8 @@ export const Problem: FC = () => {
                         </select>
                         <SimpleButton
                             onClick={() => {
+                                if (code.trim().length === 0) return;
+
                                 setCode("");
 
                                 // TODO: react query mutations
