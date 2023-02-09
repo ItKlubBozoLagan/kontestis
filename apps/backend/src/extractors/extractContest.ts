@@ -1,4 +1,4 @@
-import { Snowflake } from "@kontestis/models";
+import { ContestMemberPermissions, hasContestPermission, Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
@@ -28,14 +28,15 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
 
         if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return contest;
 
-        if (user.id == contest.admin_id) return contest;
-
-        const allowedUser = await Database.selectOneFrom("allowed_users", ["id"], {
-            user_id: user.id,
+        const contestUser = await Database.selectOneFrom("contest_members", "*", {
             contest_id: contest.id,
+            user_id: user.id,
         });
 
-        if (!allowedUser) throw new SafeError(StatusCodes.NOT_FOUND);
+        if (!contestUser) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        if (!hasContestPermission(contestUser.contest_permissions, ContestMemberPermissions.VIEW))
+            throw new SafeError(StatusCodes.NOT_FOUND);
 
         return contest;
     });

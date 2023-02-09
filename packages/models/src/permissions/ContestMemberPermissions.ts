@@ -1,3 +1,5 @@
+import { hasPermission, PermissionData } from "permissio";
+
 export enum ContestMemberPermissions {
     ADMIN,
     VIEW,
@@ -9,3 +11,10 @@ export enum ContestMemberPermissions {
     VIEW_QUESTIONS,
     ANSWER_QUESTIONS,
 }
+
+export const hasContestPermission = (
+    data: PermissionData,
+    permission: ContestMemberPermissions
+) => {
+    return hasPermission(data, ContestMemberPermissions.ADMIN) || hasPermission(data, permission);
+};
