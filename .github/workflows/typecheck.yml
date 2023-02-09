@@ -6,9 +6,25 @@ on:
       - "main"
 
 jobs:
+  check:
+    name: "🔎 Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Filter files
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            typecheck:
+              - "**.ts"
+              - "**.tsx"
   deploy:
     name: "🛠 Typecheck"
     runs-on: ubuntu-latest
+    needs: ["check"]
+    if: needs.check.outputs.typecheck == 'true'
     steps:
       - uses: actions/checkout@v2
 
