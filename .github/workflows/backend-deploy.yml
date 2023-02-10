@@ -63,5 +63,5 @@ jobs:
         run: "mkdir ~/.kube && echo '${{ secrets.KUBE_CONFIG }}' | base64 -d > ~/.kube/config && KUBECONFIG=~/.kube/config"
 
       - name: "Rollout an application update"
-        run: "kubectl rollout restart deployment kontestis"
+        run: "kubectl rollout restart deployment kontestis -n kontestis"
 
