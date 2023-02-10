@@ -62,7 +62,7 @@ export const Contests: FC = () => {
                         <TableHeadItem>Start time</TableHeadItem>
                         <TableHeadItem>Starts</TableHeadItem>
                         <TableHeadItem>Duration</TableHeadItem>
-                        <TableHeadItem>Registration</TableHeadItem>
+                        <TableHeadItem>Partaking</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

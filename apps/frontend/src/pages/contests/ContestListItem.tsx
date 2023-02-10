@@ -1,7 +1,7 @@
 import { Contest } from "@kontestis/models";
-import { parseTime } from "@kontestis/utils";
+import { cutText, parseTime } from "@kontestis/utils";
 import { FC, useEffect, useState } from "react";
-import { FiList } from "react-icons/all";
+import { FiCheck, FiList, FiX } from "react-icons/all";
 import { Link } from "react-router-dom";
 
 import { http } from "../../api/http";
@@ -35,7 +35,7 @@ export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
         <TableRow>
             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
                 <Link to={"/contest/" + contest.id} tw={"flex items-center gap-2"}>
-                    <FiList tw={"text-xl"} /> {contest.name}
+                    <FiList tw={"text-xl"} /> {cutText(contest.name, 32)}
                 </Link>
             </TableItem>
             <TableItem>{contest.start_time.toLocaleString()}</TableItem>
@@ -55,9 +55,9 @@ export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
                       )
                     : parseTime(contest.duration_seconds * 1000)}
             </TableItem>
-            {state != "finished" && (
-                <TableItem>
-                    {registered ? (
+            <TableItem>
+                {state != "finished" ? (
+                    registered ? (
                         <span tw={"text-green-700"}>Registered</span>
                     ) : (
                         <span
@@ -68,9 +68,17 @@ export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
                         >
                             Register
                         </span>
-                    )}
-                </TableItem>
-            )}
+                    )
+                ) : (
+                    <div tw={"flex items-center"}>
+                        {registered ? (
+                            <FiCheck tw={"text-green-600"} size={"16px"} />
+                        ) : (
+                            <FiX tw={"text-red-400"} size={"18px"} />
+                        )}
+                    </div>
+                )}
+            </TableItem>
         </TableRow>
     );
 };

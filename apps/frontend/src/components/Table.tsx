@@ -9,11 +9,8 @@ export const TableHeadRow = tw.tr`
     border border-neutral-400 border-solid
 `;
 
-export const TableHeadItem = styled.td`
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    padding-left: 1rem;
-    ${tw`text-lg font-mono text-neutral-900`}
+export const TableHeadItem = tw.td`
+    text-lg font-mono text-neutral-900 py-2 px-4
 `;
 
 export const TableRow = styled.tr`
@@ -21,9 +18,6 @@ export const TableRow = styled.tr`
     ${tw`border-neutral-300`};
 `;
 
-export const TableItem = styled.td`
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    padding-left: 1rem;
-    ${tw`text-sm font-mono text-neutral-700`}
+export const TableItem = tw.td`
+    text-sm font-mono text-neutral-700 py-4 px-4
 `;
