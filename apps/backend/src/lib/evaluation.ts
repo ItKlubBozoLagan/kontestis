@@ -197,6 +197,8 @@ export const beginEvaluation = async (
             memory_used_megabytes: memory,
         });
 
+        // TODO: Insert into contest member if contest is running
+
         // I know I can put this in Promise.all, but it needs to be removed
         // from redis after we have successfully stored it in the database
         await completePendingSubmission(
