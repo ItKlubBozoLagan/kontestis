@@ -27,18 +27,16 @@ const computePerformance = (
     // edge case for when score is 0
     if (score === 0) return 0;
 
-    const siz = userScores.length;
-
     //function works like weighted arithmetic mean such that
 
     let sum = 0;
     let weight = 0;
 
-    for (let index = 0; index < siz; ++index) {
-        if (userScores[index] === 0) continue;
+    for (const [index, userScore] of userScores.entries()) {
+        if (userScore === 0) continue;
 
-        const ratio = score / userScores[index];
-        const howClose = Math.min(score, userScores[index]) / Math.max(score, userScores[index]);
+        const ratio = score / userScore;
+        const howClose = Math.min(score, userScore) / Math.max(score, userScore);
         const rto = userRatings[index] * ratio * Math.sqrt(ratio) * howClose;
 
         sum += rto;
@@ -70,11 +68,10 @@ export const computeELODifference = (
     const maxScore = problems.maxPoints.reduce((sum, p) => sum + p);
 
     const score = targetMember.problemPoints.reduce((sum, p) => sum + p);
-    const totalPoints = problems.maxPoints.reduce((sum, p) => sum + p);
 
-    const perf = computePerformance(userScores, userRatings, score, maxScore);
+    const performance = computePerformance(userScores, userRatings, score, maxScore);
 
-    const perc = perf / targetMember.currentGlobalElo;
+    const percentage = performance / targetMember.currentGlobalElo;
 
-    return (Math.sqrt(perc) - 1) * targetMember.currentGlobalElo;
+    return (Math.sqrt(percentage) - 1) * targetMember.currentGlobalElo;
 };
