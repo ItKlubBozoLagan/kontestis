@@ -68,7 +68,6 @@ export const Problems: FC = () => {
                             </TableItem>
                             <TableItem>{problem.contest?.name}</TableItem>
                             <TableItem>{problem.contest?.start_time.toLocaleString()}</TableItem>
-                            <TableItem>{problem.contest?.start_time.toLocaleString()}</TableItem>
                             <TableItem>
                                 <ProblemScoreBox
                                     score={
