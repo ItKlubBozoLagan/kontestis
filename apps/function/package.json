@@ -4,7 +4,7 @@
     "main": "src/app.ts",
     "license": "MIT",
     "scripts": {
-        "start": "ts-node src/index.ts",
+        "start": "ts-node --skipIgnore src/index.ts",
         "dev": "nodemon --exec ts-node src/index.ts",
         "typecheck": "tsc --noEmit"
     },

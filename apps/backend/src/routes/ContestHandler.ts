@@ -1,7 +1,9 @@
 import {
+    AdminPermissions,
     AllowedUser,
     Contest,
     ContestMemberPermissions,
+    hasAdminPermission,
     hasContestPermission,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
@@ -9,10 +11,6 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { grantPermission } from "permissio";
 
-import {
-    AdminPermissions,
-    hasAdminPermission,
-} from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractContest } from "../extractors/extractContest";

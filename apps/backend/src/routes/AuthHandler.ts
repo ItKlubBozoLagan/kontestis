@@ -1,11 +1,8 @@
+import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import {
-    AdminPermissions,
-    hasAdminPermission,
-} from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractUser } from "../extractors/extractUser";

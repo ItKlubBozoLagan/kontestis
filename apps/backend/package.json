@@ -4,7 +4,7 @@
     "main": "src/app.ts",
     "license": "MIT",
     "scripts": {
-        "start": "ts-node src/app.ts",
+        "start": "ts-node --skipIgnore src/app.ts",
         "dev": "nodemon -e ts --exec ts-node src/app.ts",
         "create-migration": "bash scripts/create_migration.sh src/database/migrations",
         "typecheck": "tsc --noEmit"

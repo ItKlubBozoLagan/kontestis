@@ -1,9 +1,9 @@
 import { FullUser, User } from "@kontestis/models";
+import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import * as R from "remeda";
 
-import { AdminPermissions } from "../../../../packages/models/src/permissions/AdminPermissions";
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
 import { generateSnowflake } from "./snowflake";
