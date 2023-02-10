@@ -17,7 +17,16 @@ export type UserV2 = {
     permissions: PermissionData;
 };
 
-export type User = UserV2;
+export const DEFAULT_ELO = 1000;
+
+export type UserV3 = {
+    id: Snowflake;
+    google_id: Snowflake;
+    permissions: PermissionData;
+    elo: number;
+};
+
+export type User = UserV3;
 
 export type FullUser = User & {
     full_name: string;

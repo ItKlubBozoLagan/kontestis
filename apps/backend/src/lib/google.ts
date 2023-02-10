@@ -1,4 +1,4 @@
-import { FullUser, User } from "@kontestis/models";
+import { DEFAULT_ELO, FullUser, User } from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
@@ -55,6 +55,7 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
 
     const user: User = potentialEntry ?? {
         id: generateSnowflake(),
+        elo: DEFAULT_ELO,
         google_id: BigInt(googleId),
         permissions:
             numberUsers === 0n
