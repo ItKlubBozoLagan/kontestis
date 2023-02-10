@@ -107,10 +107,16 @@ ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async 
 
     if (!databaseUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const allowedDatabaseUser = await Database.selectOneFrom("allowed_users", "*", {
-        user_id: databaseUser.id,
-        contest_id: contest.id,
-    });
+    const allowedDatabaseUser = await Database.selectOneFrom(
+        "allowed_users",
+        "*",
+        {
+            user_id: databaseUser.id,
+            contest_id: contest.id,
+        },
+        // eslint-disable-next-line sonarjs/no-duplicate-string
+        "ALLOW FILTERING"
+    );
 
     if (allowedDatabaseUser) throw new SafeError(StatusCodes.CONFLICT);
 
@@ -132,10 +138,15 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
     const targetId = req.body.user_id ? BigInt(req.body.user_id) : undefined;
 
     if (targetId) {
-        const contestMember = await Database.selectOneFrom("contest_members", "*", {
-            user_id: user.id,
-            contest_id: contest.id,
-        });
+        const contestMember = await Database.selectOneFrom(
+            "contest_members",
+            "*",
+            {
+                user_id: user.id,
+                contest_id: contest.id,
+            },
+            "ALLOW FILTERING"
+        );
 
         if (!contestMember) throw new SafeError(StatusCodes.FORBIDDEN);
 
@@ -148,22 +159,35 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
             throw new SafeError(StatusCodes.FORBIDDEN);
     }
 
-    const addedMember = await Database.selectOneFrom("contest_members", ["id"], {
-        user_id: targetId ?? user.id,
-        contest_id: contest.id,
-    });
+    const addedMember = await Database.selectOneFrom(
+        "contest_members",
+        ["id"],
+        {
+            user_id: targetId ?? user.id,
+            contest_id: contest.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     if (Date.now() > contest.start_time.getTime()) throw new SafeError(StatusCodes.CONFLICT);
 
     if (addedMember) throw new SafeError(StatusCodes.CONFLICT);
 
     await Database.insertInto("contest_members", {
+        id: generateSnowflake(),
         user_id: targetId ?? user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
     });
 
     return respond(res, StatusCodes.OK);
+});
+
+ContestHandler.get("/members/self", async (req, res) => {
+    const user = await extractUser(req);
+    const contestMembers = await Database.selectFrom("contest_members", "*", { user_id: user.id });
+
+    return respond(res, StatusCodes.OK, contestMembers);
 });
 
 ContestHandler.get("/members/:contest_id", async (req, res) => {
@@ -181,10 +205,15 @@ ContestHandler.get("/members/:contest_id/:user_id", async (req, res) => {
     const contest = await extractContest(req);
     const targetId = BigInt(req.params.user_id);
 
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
-        contest_id: contest.id,
-        user_id: targetId,
-    });
+    const contestMember = await Database.selectOneFrom(
+        "contest_members",
+        "*",
+        {
+            contest_id: contest.id,
+            user_id: targetId,
+        },
+        "ALLOW FILTERING"
+    );
 
     return respond(
         res,
@@ -204,10 +233,15 @@ ContestHandler.patch("/members/:contest_id/:user_id", async (req, res) => {
 
     const targetId = BigInt(req.params.user_id);
 
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
-        user_id: user.id,
-        contest_id: contest.id,
-    });
+    const contestMember = await Database.selectOneFrom(
+        "contest_members",
+        "*",
+        {
+            user_id: user.id,
+            contest_id: contest.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     const newPermissions = req.body.contest_permissions
         ? BigInt(req.body.contest_permissions)
@@ -244,10 +278,15 @@ ContestHandler.delete("/members/:contest_id/:user_id", async (req, res) => {
     const contest = await extractContest(req);
     const user = await extractUser(req);
     const targetId = BigInt(req.params.user_id);
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
-        user_id: user.id,
-        contest_id: contest.id,
-    });
+    const contestMember = await Database.selectOneFrom(
+        "contest_members",
+        "*",
+        {
+            user_id: user.id,
+            contest_id: contest.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     if (
         !contestMember ||
@@ -258,10 +297,15 @@ ContestHandler.delete("/members/:contest_id/:user_id", async (req, res) => {
     )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const targetMember = await Database.selectOneFrom("contest_members", ["id"], {
-        user_id: targetId,
-        contest_id: contest.id,
-    });
+    const targetMember = await Database.selectOneFrom(
+        "contest_members",
+        ["id"],
+        {
+            user_id: targetId,
+            contest_id: contest.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
 

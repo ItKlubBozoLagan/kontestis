@@ -4,13 +4,15 @@ import { FC, useEffect, useState } from "react";
 import { FiList } from "react-icons/all";
 import { Link } from "react-router-dom";
 
+import { http } from "../../api/http";
 import { TableItem, TableRow } from "../../components/Table";
 
 type Properties = {
     contest: Contest;
+    registered: boolean;
 };
 
-export const ContestListItem: FC<Properties> = ({ contest }) => {
+export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
     const [time, setTime] = useState(Date.now());
     const [state, setState] = useState<"pending" | "started" | "finished">("pending");
 
@@ -53,6 +55,22 @@ export const ContestListItem: FC<Properties> = ({ contest }) => {
                       )
                     : parseTime(contest.duration_seconds * 1000)}
             </TableItem>
+            {state != "finished" && (
+                <TableItem>
+                    {registered ? (
+                        <span tw={"text-green-700"}>Registered</span>
+                    ) : (
+                        <span
+                            tw={"text-red-500 hover:(text-red-700 cursor-pointer)"}
+                            onClick={async () => {
+                                await http.post("/contest/register/" + contest.id);
+                            }}
+                        >
+                            Register
+                        </span>
+                    )}
+                </TableItem>
+            )}
         </TableRow>
     );
 };

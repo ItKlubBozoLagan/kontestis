@@ -1,12 +1,30 @@
+import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
 import { FC, useMemo } from "react";
 
 import { PageTitle } from "../../components/PageTitle";
 import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
+import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
 import { ContestListItem } from "./ContestListItem";
 
 export const Contests: FC = () => {
     const { isSuccess, data: contests } = useAllContests();
+    const { isSuccess: isSuccessMembers, data: contestMembers } = useSelfContestMembers();
+
+    const registeredContests = useMemo<Record<string, boolean>>(() => {
+        if (!isSuccessMembers) return {};
+
+        const registeredContests: Record<string, boolean> = {};
+
+        for (const c of contestMembers) {
+            registeredContests[c.contest_id + ""] = hasContestPermission(
+                c.contest_permissions,
+                ContestMemberPermissions.VIEW
+            );
+        }
+
+        return registeredContests;
+    }, [isSuccessMembers, contestMembers]);
 
     const sortedContests = useMemo(() => {
         if (!isSuccess) return [];
@@ -44,11 +62,16 @@ export const Contests: FC = () => {
                         <TableHeadItem>Start time</TableHeadItem>
                         <TableHeadItem>Starts</TableHeadItem>
                         <TableHeadItem>Duration</TableHeadItem>
+                        <TableHeadItem>Registration</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
                     {sortedContests.map((c) => (
-                        <ContestListItem contest={c} key={c.id + ""} />
+                        <ContestListItem
+                            contest={c}
+                            key={c.id + ""}
+                            registered={registeredContests[c.id + ""] ?? false}
+                        />
                     ))}
                 </tbody>
             </Table>
