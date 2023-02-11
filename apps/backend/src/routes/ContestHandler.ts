@@ -236,6 +236,44 @@ ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
     );
 });
 
+const announcementSchema = Type.Object({
+    message: Type.String(),
+});
+
+ContestHandler.post(
+    "/announcement/:contest_id",
+    useValidation(announcementSchema),
+    async (req, res) => {
+        const member = await extractContestMember(req);
+
+        if (
+            !hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.CREATE_ANNOUNCEMENT
+            )
+        )
+            throw new SafeError(StatusCodes.FORBIDDEN);
+
+        await Database.insertInto("contest_announcements", {
+            id: generateSnowflake(),
+            contest_id: member.contest_id,
+            message: req.body.message,
+        });
+
+        return respond(res, StatusCodes.OK);
+    }
+);
+
+ContestHandler.get("/announcement/:contest_id", async (req, res) => {
+    const contest = await extractContest(req);
+
+    const announcements = await Database.selectFrom("contest_announcements", "*", {
+        contest_id: contest.id,
+    });
+
+    return respond(res, StatusCodes.OK, announcements);
+});
+
 const questionSchema = Type.Object({
     question: Type.String(),
 });
