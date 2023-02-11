@@ -22,6 +22,8 @@ module.exports = {
                 red: colors.red,
                 lime: colors.lime,
                 orange: colors.orange,
+                pink: colors.pink,
+                purple: colors.purple,
                 yellow: {
                     ...colors.yellow,
                     400: "#F1D302",

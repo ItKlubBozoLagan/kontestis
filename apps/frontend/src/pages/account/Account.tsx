@@ -1,13 +1,55 @@
 import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
-import { darkenHex, textToColor } from "@kontestis/utils";
+import { capitalize, darkenHex, textToColor } from "@kontestis/utils";
 import React, { FC, useMemo } from "react";
-import { FcGoogle } from "react-icons/all";
+import { FcGoogle, RxTriangleDown } from "react-icons/all";
 import { theme } from "twin.macro";
 
 import { Breadcrumb } from "../../components/Breadcrumb";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
 import { useAuthStore } from "../../state/auth";
+import {
+    AllRanks,
+    colorFromRank,
+    GlobalRank,
+    minScoreForRank,
+    nextRankFromRank,
+} from "../../util/rank";
+
+type RankComponentProperties = {
+    rankName: GlobalRank;
+};
+
+const RankPoint: FC<RankComponentProperties> = ({ rankName }) => {
+    return (
+        <div
+            tw={"relative w-3 h-3 rounded-full"}
+            style={{ backgroundColor: colorFromRank(rankName) }}
+        >
+            <span tw={"absolute top-4 left-0 text-sm"} style={{ transform: "translateX(-40%)" }}>
+                {capitalize(rankName)}
+            </span>
+            <span
+                tw={"absolute -top-5 left-0 text-sm w-12 text-center"}
+                style={{ transform: "translate(-40%)" }}
+            >
+                {minScoreForRank(rankName)}
+            </span>
+        </div>
+    );
+};
+
+const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankName, basis }) => {
+    console.log(rankName, basis);
+
+    return (
+        <div
+            tw={"flex-grow h-1"}
+            css={basis ? { flexBasis: `calc(${basis * 100}% - 7 * 0.75rem)` } : ""}
+            style={{ backgroundColor: colorFromRank(rankName) }}
+        ></div>
+    );
+};
 
 export const Account: FC = () => {
     const { user } = useAuthStore();
@@ -39,7 +81,6 @@ export const Account: FC = () => {
                             {emailDomain && (
                                 <Breadcrumb
                                     color={textToColor(emailDomain)}
-                                    // color={theme`colors.neutral.200`}
                                     borderColor={darkenHex(textToColor(emailDomain), 40)}
                                 >
                                     {emailDomain}
@@ -59,6 +100,32 @@ export const Account: FC = () => {
                             <TitledInput name={"E-mail"} value={user.email} readOnly />
                         </div>
                     </div>
+                </div>
+                <div tw={"w-10/12 flex items-center pb-12 pt-4 relative"}>
+                    <RxTriangleDown
+                        size={"32px"}
+                        tw={"text-yellow-500 absolute -top-3"}
+                        style={{
+                            left: `calc(-12px + ((${user.elo}/3200) * 98%)`,
+                        }}
+                    />
+                    {AllRanks.map((rank, index) => (
+                        <>
+                            <RankPoint rankName={rank} />
+                            {index + 1 !== AllRanks.length && (
+                                <RankConnection
+                                    rankName={rank}
+                                    basis={
+                                        (minScoreForRank(
+                                            nextRankFromRank(rank as Exclude<GlobalRank, "prodigy">)
+                                        ) -
+                                            minScoreForRank(rank)) /
+                                        3200
+                                    }
+                                />
+                            )}
+                        </>
+                    ))}
                 </div>
             </TitledSection>
         </div>

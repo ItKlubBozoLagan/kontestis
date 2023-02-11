@@ -14,10 +14,6 @@ type ProblemInfo = {
     maxPoints: number[];
 };
 
-// will return a number that will be added to users current ELO
-
-// first parameter is the target user for whom the ELO should be computed
-// second parameter is all the other contest member scores on the leaderboard
 const computePerformance = (
     userScores: number[],
     userRatings: number[],
