@@ -10,6 +10,8 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { grantPermission } from "permissio";
+import * as R from "remeda";
+import { eqIn } from "scyllo/lib/EqualityBuilder";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
@@ -173,7 +175,7 @@ ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), asyn
         user_id: targetId ?? user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
-        score: new Map(),
+        // score will default to {}
     });
 
     return respond(res, StatusCodes.OK);
@@ -213,23 +215,16 @@ ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
         contest_id: contest.id,
     });
 
-    const users = await Database.selectFrom("known_users", "*");
-
-    const userFullNames: Record<string, string> = {};
-
-    for (const u of users) userFullNames[u.user_id + ""] = u.full_name;
-
-    console.log(contestMembers);
+    const users = await Database.selectFrom("known_users", ["user_id", "full_name"], {
+        user_id: eqIn(...contestMembers.map((it) => it.user_id as unknown as number)), // we lie here
+    });
 
     return respond(
         res,
         StatusCodes.OK,
-        contestMembers.map((c) => {
-            return {
-                ...c,
-                full_name: userFullNames[c.user_id + ""],
-            };
-        })
+        contestMembers.map((it) =>
+            R.addProp(it, "full_name", users.find((user) => user.user_id === it.user_id)?.full_name)
+        )
     );
 });
 

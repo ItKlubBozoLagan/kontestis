@@ -7,7 +7,7 @@ export type ContestMemberV1 = {
     user_id: Snowflake;
     contest_id: Snowflake;
     contest_permissions: PermissionData;
-    score: Map<Snowflake, number>;
+    score: Record<string, number>;
 };
 
 export type ContestMember = ContestMemberV1;

@@ -13,7 +13,7 @@ export const migration_refractor_user: Migration<MigrationType> = async (databas
         true,
         {
             id: { type: "bigint" },
-            google_id: { type: "bigint" },
+            google_id: { type: "bigint" }, // TODO: please don't use this for anything, google is insane and it's ids are > 64bits
             permissions: { type: "bigint" },
         },
         "id",
