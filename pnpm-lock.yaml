@@ -51,7 +51,7 @@ importers:
       permissio: ^2.0.2
       redis: ^4.6.4
       remeda: ^1.6.0
-      scyllo: ^1.5.0
+      scyllo: ^1.7.1
       sunflake: ^0.6.0
       superjson: ^1.12.2
       ts-node: ^10.9.1
@@ -75,7 +75,7 @@ importers:
       permissio: 2.0.2
       redis: 4.6.4
       remeda: 1.6.1
-      scyllo: 1.7.0
+      scyllo: 1.7.1
       sunflake: 0.6.0
       superjson: 1.12.2
       ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
@@ -5237,6 +5237,13 @@ packages:
 
   /scyllo/1.7.0:
     resolution: {integrity: sha512-weJaJ3iFTRuNOreRSGBIUwShD+xJPooED5XyfxNmZOxIxe95ZpOJ7aLq9BfRKBU4eoCh0eGux0ofA+C56QSn5w==}
+    dependencies:
+      '@lvksh/logger': 1.6.4
+      cassandra-driver: 4.6.4
+    dev: false
+
+  /scyllo/1.7.1:
+    resolution: {integrity: sha512-XE5n7aqb3GC74LA1TsAElMguccaghuGZJNwEBqrssej3l+elXOoysPpxYEmnrXGWHqyKUmwhRAkzlLzTbdy4kA==}
     dependencies:
       '@lvksh/logger': 1.6.4
       cassandra-driver: 4.6.4

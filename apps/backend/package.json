@@ -28,7 +28,7 @@
         "permissio": "^2.0.2",
         "redis": "^4.6.4",
         "remeda": "^1.6.0",
-        "scyllo": "^1.5.0",
+        "scyllo": "^1.7.1",
         "sunflake": "^0.6.0",
         "superjson": "^1.12.2",
         "ts-node": "^10.9.1"

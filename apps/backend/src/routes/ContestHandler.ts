@@ -216,7 +216,7 @@ ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
     });
 
     const users = await Database.selectFrom("known_users", ["user_id", "full_name"], {
-        user_id: eqIn(...contestMembers.map((it) => it.user_id as unknown as number)), // we lie here
+        user_id: eqIn(...contestMembers.map((it) => it.user_id)),
     });
 
     return respond(
