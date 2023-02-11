@@ -58,6 +58,7 @@ ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, re
     return respond(res, StatusCodes.OK, problem);
 });
 
+// eslint-disable-next-line sonarjs/no-duplicate-string
 ProblemHandler.delete("/:problem_id", async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
@@ -138,7 +139,7 @@ ProblemHandler.patch("/cluster/:cluster_id", useValidation(clusterSchema), async
     return respond(res, StatusCodes.OK);
 });
 
-ProblemHandler.patch("/problem/:problem_id", useValidation(problemSchema), async (req, res) => {
+ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, res) => {
     const problem = await extractProblem(req);
 
     if (req.body.evaluation_variant != "plain" && !req.body.evaluation_script)
