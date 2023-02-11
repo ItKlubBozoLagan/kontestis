@@ -13,14 +13,17 @@ type Properties = {
 export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
     const { isSuccess, data } = useAllContestMembers(contest.id);
 
+    const maxScore = problems.reduce((accumulator, current) => accumulator + current.score, 0);
+
     return (
         <Table tw={"w-full"}>
             <thead>
                 <TableHeadRow>
-                    <TableHeadItem>User</TableHeadItem>
+                    <TableHeadItem>Leaderboard</TableHeadItem>
                     {problems.map((problem) => (
                         <TableHeadItem key={problem.id + ""}>{problem.title}</TableHeadItem>
                     ))}
+                    <TableHeadItem>Total</TableHeadItem>
                 </TableHeadRow>
             </thead>
             <tbody>
@@ -31,11 +34,38 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
                             {problems.map((problem) => (
                                 <TableItem key={problem.id + ""}>
                                     <ProblemScoreBox
-                                        score={member.score?.get(problem.id) ?? 0}
+                                        score={
+                                            member.score
+                                                ? (
+                                                      member.score as unknown as Record<
+                                                          string,
+                                                          number
+                                                      >
+                                                  )[problem.id + ""] ?? 0
+                                                : 0
+                                        }
                                         maxScore={problem.score}
                                     />
                                 </TableItem>
                             ))}
+                            <TableItem>
+                                <ProblemScoreBox
+                                    score={problems.reduce((accumulator, current) => {
+                                        return (
+                                            accumulator +
+                                            (member.score
+                                                ? (
+                                                      member.score as unknown as Record<
+                                                          string,
+                                                          number
+                                                      >
+                                                  )[current.id + ""] ?? 0
+                                                : 0)
+                                        );
+                                    }, 0)}
+                                    maxScore={maxScore}
+                                />
+                            </TableItem>
                         </TableRow>
                     ))}
             </tbody>
