@@ -19,9 +19,9 @@ export const useTokenStore = create<TokenState>()(
                         user: {} as any,
                     });
 
-                return set(() => ({
+                return set({
                     token: token,
-                }));
+                });
             },
         }),
         {
