@@ -1,5 +1,5 @@
 import { Contest, ProblemWithScore } from "@kontestis/models";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
@@ -15,6 +15,30 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
 
     const maxScore = problems.reduce((accumulator, current) => accumulator + current.score, 0);
 
+    const contestMembers = useMemo(
+        () =>
+            isSuccess
+                ? data
+                      .map((member) => {
+                          return {
+                              ...member,
+                              total_score: problems.reduce((accumulator, current) => {
+                                  return (
+                                      accumulator +
+                                      (member.score
+                                          ? (member.score as unknown as Record<string, number>)[
+                                                current.id + ""
+                                            ] ?? 0
+                                          : 0)
+                                  );
+                              }, 0),
+                          };
+                      })
+                      .sort((a, b) => b.total_score - a.total_score)
+                : [],
+        [data]
+    );
+
     return (
         <Table tw={"w-full"}>
             <thead>
@@ -28,7 +52,7 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
             </thead>
             <tbody>
                 {isSuccess &&
-                    data.map((member) => (
+                    contestMembers.map((member) => (
                         <TableRow key={member.id + ""}>
                             <TableItem>{member.full_name}</TableItem>
                             {problems.map((problem) => (
@@ -49,22 +73,7 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
                                 </TableItem>
                             ))}
                             <TableItem>
-                                <ProblemScoreBox
-                                    score={problems.reduce((accumulator, current) => {
-                                        return (
-                                            accumulator +
-                                            (member.score
-                                                ? (
-                                                      member.score as unknown as Record<
-                                                          string,
-                                                          number
-                                                      >
-                                                  )[current.id + ""] ?? 0
-                                                : 0)
-                                        );
-                                    }, 0)}
-                                    maxScore={maxScore}
-                                />
+                                <ProblemScoreBox score={member.total_score} maxScore={maxScore} />
                             </TableItem>
                         </TableRow>
                     ))}
