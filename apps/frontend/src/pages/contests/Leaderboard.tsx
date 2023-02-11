@@ -38,7 +38,9 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
                     <TableHeadRow>
                         <TableHeadItem>Contestant</TableHeadItem>
                         {problems.map((problem) => (
-                            <TableHeadItem key={problem.id + ""}>{problem.title}</TableHeadItem>
+                            <TableHeadItem key={problem.id.toString()}>
+                                {problem.title}
+                            </TableHeadItem>
                         ))}
                         <TableHeadItem>Total</TableHeadItem>
                     </TableHeadRow>
@@ -46,10 +48,10 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
                 <tbody>
                     {isSuccess &&
                         contestMembers.map((member) => (
-                            <TableRow key={member.id + ""}>
+                            <TableRow key={member.id.toString()}>
                                 <TableItem>{member.full_name}</TableItem>
                                 {problems.map((problem) => (
-                                    <TableItem key={problem.id + ""}>
+                                    <TableItem key={problem.id.toString()}>
                                         <ProblemScoreBox
                                             score={
                                                 member.score

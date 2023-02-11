@@ -229,9 +229,9 @@ ProblemHandler.get("/scores", async (req, res) => {
     const problemScores: Record<string, number> = {};
 
     for (const s of submissions) {
-        problemScores[s.problem_id + ""] = Math.max(
+        problemScores[s.problem_id.toString()] = Math.max(
             s.awarded_score,
-            problemScores[s.problem_id + ""] ?? 0
+            problemScores[s.problem_id.toString()] ?? 0
         );
     }
 

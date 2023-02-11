@@ -61,7 +61,7 @@ export const Problems: FC = () => {
                 </thead>
                 <tbody>
                     {problems.map((problem) => (
-                        <TableRow key={problem.id + ""}>
+                        <TableRow key={problem.id.toString()}>
                             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
                                 <Link to={"/problem/" + problem.id} tw={"flex items-center gap-2"}>
                                     <FiList tw={"text-xl"} /> {problem.title}
@@ -72,7 +72,7 @@ export const Problems: FC = () => {
                                 <ProblemScoreBox
                                     score={
                                         problemScores.data
-                                            ? problemScores.data[problem.id + ""] ?? 0
+                                            ? problemScores.data[problem.id.toString()] ?? 0
                                             : 0
                                     }
                                     maxScore={problem.score}

@@ -86,7 +86,7 @@ export const Problem: FC = () => {
                             <LimitBox
                                 icon={FiCheckSquare}
                                 title={"Points"}
-                                value={(problem?.score ?? 0) + ""}
+                                value={(problem?.score ?? 0).toString()}
                             />
                         </div>
                     </TitledSection>
@@ -150,7 +150,7 @@ export const Problem: FC = () => {
                             ?.sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
                             .slice(0, expanded || submissions.length <= 4 ? submissions.length : 3)
                             .map((s) => (
-                                <TableRow key={s.id + ""}>
+                                <TableRow key={s.id.toString()}>
                                     {s.completed ? (
                                         <>
                                             <TableItem

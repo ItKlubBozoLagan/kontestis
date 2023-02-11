@@ -81,7 +81,7 @@ export const Submission: FC = () => {
                         {submissionCluster
                             ?.sort((a, b) => Number(BigInt(a.cluster_id) - BigInt(b.cluster_id)))
                             .map((c, index) => (
-                                <TableRow key={c.id + ""}>
+                                <TableRow key={c.id.toString()}>
                                     <TableItem
                                         tw={"hover:(text-sky-800 cursor-pointer)"}
                                         onClick={() => {

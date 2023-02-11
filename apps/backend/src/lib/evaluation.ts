@@ -100,7 +100,7 @@ export const beginEvaluation = async (
 
     const testCasesById: Record<string, Testcase> = {};
 
-    for (const testcase of testcases) testCasesById[testcase.id + ""] = testcase;
+    for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
 
@@ -191,7 +191,7 @@ export const beginEvaluation = async (
             const clusterSubmissionsByClusterId: Record<string, ClusterSubmission> = {};
 
             for (const c of clusterSubmissions)
-                clusterSubmissionsByClusterId[c.cluster_id + ""] = c;
+                clusterSubmissionsByClusterId[c.cluster_id.toString()] = c;
 
             await Promise.all(
                 results.map((result) =>
@@ -201,7 +201,7 @@ export const beginEvaluation = async (
                         // TODO: Maybe do this better
                         cluster_submission_id:
                             clusterSubmissionsByClusterId[
-                                testCasesById[result.testCaseId].cluster_id + ""
+                                testCasesById[result.testCaseId].cluster_id.toString()
                             ].id,
                         verdict: result.verdict,
                         awarded_score: 0,

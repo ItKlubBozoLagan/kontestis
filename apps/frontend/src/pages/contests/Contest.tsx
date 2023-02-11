@@ -38,7 +38,7 @@ export const Contest: FC = () => {
                 </thead>
                 <tbody>
                     {problems?.map((p) => (
-                        <TableRow key={p.id + ""}>
+                        <TableRow key={p.id.toString()}>
                             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
                                 <Link to={"/problem/" + p.id} tw={"flex items-center gap-2"}>
                                     <FiList tw={"text-xl"} /> {p.title}
@@ -47,7 +47,9 @@ export const Contest: FC = () => {
                             <TableItem>
                                 <ProblemScoreBox
                                     score={
-                                        problemScores.data ? problemScores.data[p.id + ""] ?? 0 : 0
+                                        problemScores.data
+                                            ? problemScores.data[p.id.toString()] ?? 0
+                                            : 0
                                     }
                                     maxScore={p.score}
                                 />

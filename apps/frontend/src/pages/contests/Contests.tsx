@@ -67,7 +67,7 @@ export const Contests: FC = () => {
                 </thead>
                 <tbody>
                     {completeContests.map((c) => (
-                        <ContestListItem contest={c} key={c.id + ""} />
+                        <ContestListItem contest={c} key={c.id.toString()} />
                     ))}
                 </tbody>
             </Table>

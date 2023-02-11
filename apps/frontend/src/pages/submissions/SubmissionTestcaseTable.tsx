@@ -32,7 +32,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({ cluster_submission_id,
             {testcaseSubmissions
                 ?.sort((a, b) => Number(BigInt(a.testcase_id) - BigInt(b.testcase_id)))
                 .map((ts, index) => (
-                    <TableRow key={ts.id + ""}>
+                    <TableRow key={ts.id.toString()}>
                         <TableItem>Testcase #{index + 1}</TableItem>
                         <TableItem
                             css={ts.verdict === "accepted" ? tw`text-green-600` : tw`text-red-600`}
