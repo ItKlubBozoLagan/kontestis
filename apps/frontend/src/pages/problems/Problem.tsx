@@ -68,7 +68,7 @@ export const Problem: FC = () => {
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 py-10"}>
             <span tw={"text-neutral-800 text-3xl"}>{problem?.title}</span>
-            <div tw={"flex flex-col gap-4"}>
+            <div tw={"flex flex-col gap-4 w-full"}>
                 <div tw={"w-full flex gap-4"}>
                     <TitledSection title={"Limits"}>
                         <div tw={"flex flex-col items-center justify-between gap-4 w-full h-full"}>

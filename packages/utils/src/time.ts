@@ -1,3 +1,6 @@
+// will use a fixed hr_HR format for consistency
+export const toCroatianLocale = (date: Date) => date.toLocaleString("hr-HR", { timeZone: "CET" });
+
 export const parseTime = (timeInMillis: number) => {
     let timeLeft = Math.floor(timeInMillis / 1000);
     let timeString = "";

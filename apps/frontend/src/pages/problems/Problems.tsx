@@ -1,4 +1,5 @@
 import { ProblemWithScore } from "@kontestis/models";
+import { toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useQueries } from "react-query";
@@ -67,7 +68,6 @@ export const Problems: FC = () => {
                                 </Link>
                             </TableItem>
                             <TableItem>{problem.contest?.name}</TableItem>
-                            <TableItem>{problem.contest?.start_time.toLocaleString()}</TableItem>
                             <TableItem>
                                 <ProblemScoreBox
                                     score={
@@ -77,6 +77,9 @@ export const Problems: FC = () => {
                                     }
                                     maxScore={problem.score}
                                 />
+                            </TableItem>
+                            <TableItem>
+                                {problem.contest && toCroatianLocale(problem.contest.start_time)}
                             </TableItem>
                         </TableRow>
                     ))}

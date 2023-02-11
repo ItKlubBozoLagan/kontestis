@@ -2,7 +2,7 @@ import styled from "styled-components";
 import tw from "twin.macro";
 
 export const Table = tw.table`
-    table-fixed bg-neutral-100 border-collapse border-solid border-neutral-200 border-2 text-left
+    table-auto bg-neutral-100 border-collapse border-solid border-neutral-200 border-2 text-left
 `;
 
 export const TableHeadRow = tw.tr`

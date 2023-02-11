@@ -1,5 +1,5 @@
 import { Contest } from "@kontestis/models";
-import { cutText, parseTime } from "@kontestis/utils";
+import { cutText, parseTime, toCroatianLocale } from "@kontestis/utils";
 import { FC, useEffect, useState } from "react";
 import { FiCheck, FiList, FiX } from "react-icons/all";
 import { Link } from "react-router-dom";
@@ -38,7 +38,7 @@ export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
                     <FiList tw={"text-xl"} /> {cutText(contest.name, 32)}
                 </Link>
             </TableItem>
-            <TableItem>{contest.start_time.toLocaleString()}</TableItem>
+            <TableItem>{toCroatianLocale(contest.start_time)}</TableItem>
             <TableItem>
                 {state == "pending" ? (
                     parseTime(contest.start_time.getTime() - time)
