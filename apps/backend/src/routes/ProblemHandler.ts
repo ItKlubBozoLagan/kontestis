@@ -126,6 +126,40 @@ ProblemHandler.post("/cluster/:problem_id", useValidation(clusterSchema), async 
     return respond(res, StatusCodes.OK, cluster);
 });
 
+ProblemHandler.patch("/cluster/:cluster_id", useValidation(clusterSchema), async (req, res) => {
+    const cluster = await extractCluster(req);
+
+    await Database.update(
+        "clusters",
+        { awarded_score: req.body.awarded_score },
+        { id: cluster.id }
+    );
+
+    return respond(res, StatusCodes.OK);
+});
+
+ProblemHandler.patch("/problem/:problem_id", useValidation(problemSchema), async (req, res) => {
+    const problem = await extractProblem(req);
+
+    if (req.body.evaluation_variant != "plain" && !req.body.evaluation_script)
+        throw new SafeError(StatusCodes.BAD_REQUEST);
+
+    await Database.update(
+        "problems",
+        {
+            title: req.body.title,
+            description: req.body.description,
+            time_limit_millis: req.body.time_limit_millis,
+            memory_limit_megabytes: req.body.memory_limit_megabytes,
+            evaluation_variant: req.body.evaluation_variant,
+            evaluation_script: req.body.evaluation_script,
+        },
+        { id: problem.id }
+    );
+
+    return respond(res, StatusCodes.OK);
+});
+
 ProblemHandler.delete("/cluster/:cluster_id", async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
