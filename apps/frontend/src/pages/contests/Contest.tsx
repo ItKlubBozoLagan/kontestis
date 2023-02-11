@@ -8,6 +8,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
+import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
     contest_id: string;
@@ -55,6 +56,7 @@ export const Contest: FC = () => {
                     ))}
                 </tbody>
             </Table>
+            <Leaderboard contest={contest} problems={problems ?? []} />
         </div>
     );
 };

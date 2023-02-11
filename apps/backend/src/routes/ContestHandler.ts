@@ -173,6 +173,7 @@ ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), asyn
         user_id: targetId ?? user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
+        score: new Map(),
     });
 
     return respond(res, StatusCodes.OK);
@@ -203,6 +204,33 @@ ContestHandler.get("/members/:contest_id", async (req, res) => {
     );
 
     return respond(res, StatusCodes.OK, contestMembers);
+});
+
+ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
+    const contest = await extractContest(req);
+
+    const contestMembers = await Database.selectFrom("contest_members", "*", {
+        contest_id: contest.id,
+    });
+
+    const users = await Database.selectFrom("known_users", "*");
+
+    const userFullNames: Record<string, string> = {};
+
+    for (const u of users) userFullNames[u.user_id + ""] = u.full_name;
+
+    console.log(contestMembers);
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        contestMembers.map((c) => {
+            return {
+                ...c,
+                full_name: userFullNames[c.user_id + ""],
+            };
+        })
+    );
 });
 
 // eslint-disable-next-line sonarjs/no-duplicate-string
