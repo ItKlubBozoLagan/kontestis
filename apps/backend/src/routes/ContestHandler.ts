@@ -11,7 +11,7 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { grantPermission } from "permissio";
 import * as R from "remeda";
-import { eqIn } from "scyllo/lib/EqualityBuilder";
+import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
