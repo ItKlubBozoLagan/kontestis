@@ -3,6 +3,7 @@ import "./globals.scss";
 
 import { FullUser } from "@kontestis/models";
 import React, { useEffect } from "react";
+import { useQueryClient } from "react-query";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 
 import { http, wrapAxios } from "./api/http";
@@ -80,9 +81,12 @@ export const App = () => {
     const { isLoggedIn, setUser, setIsLoggedIn } = useAuthStore();
     const { token, setToken } = useTokenStore();
 
+    const queryClient = useQueryClient();
+
     useEffect(() => {
         if (token.length === 0) {
             setIsLoggedIn(false);
+            queryClient.clear();
 
             return;
         }

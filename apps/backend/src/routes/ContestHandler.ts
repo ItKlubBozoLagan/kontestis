@@ -222,9 +222,15 @@ ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
     return respond(
         res,
         StatusCodes.OK,
-        contestMembers.map((it) =>
-            R.addProp(it, "full_name", users.find((user) => user.user_id === it.user_id)?.full_name)
-        )
+        contestMembers
+            .map((it) =>
+                R.addProp(
+                    it,
+                    "full_name",
+                    users.find((user) => user.user_id === it.user_id)?.full_name ?? "Joe Biden"
+                )
+            )
+            .map((it) => ({ ...it, score: it.score ?? {} }))
     );
 });
 
