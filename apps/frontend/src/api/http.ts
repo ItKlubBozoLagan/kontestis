@@ -10,7 +10,7 @@ import {
 import superjson from "superjson";
 import { z } from "zod";
 
-import { useAuthStore } from "../state/auth";
+import { useTokenStore } from "../state/token";
 import { HttpError } from "./HttpError";
 
 export type ServerData<T> = { data: T };
@@ -59,7 +59,7 @@ export const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
-    const { token } = useAuthStore.getState();
+    const { token } = useTokenStore.getState();
 
     if (token.length > 0) config.headers.set("Authorization", `Bearer ${token}`);
 

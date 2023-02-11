@@ -26,7 +26,7 @@ export const Contest: FC = () => {
     if (!contest) return <div>Loading...</div>;
 
     return (
-        <div tw={"w-full flex flex-col justify-start items-center gap-4 mt-5"}>
+        <div tw={"w-full flex flex-col justify-start items-center gap-6 mt-5"}>
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
             <Table tw={"w-full"}>
                 <thead>

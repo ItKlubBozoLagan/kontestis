@@ -1,5 +1,6 @@
 import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
-import React, { FC } from "react";
+import { darkenHex, textToColor } from "@kontestis/utils";
+import React, { FC, useMemo } from "react";
 import { FcGoogle } from "react-icons/all";
 import { theme } from "twin.macro";
 
@@ -11,6 +12,9 @@ import { useAuthStore } from "../../state/auth";
 export const Account: FC = () => {
     const { user } = useAuthStore();
 
+    // idk, eye candy
+    const emailDomain = useMemo(() => user.email.split("@").at(-1), [user]);
+
     return (
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
             <TitledSection title={"Account information"}>
@@ -20,6 +24,7 @@ export const Account: FC = () => {
                             tw={"w-32 w-32 rounded-full"}
                             src={user.picture_url}
                             alt={"Profile avatar"}
+                            referrerPolicy={"no-referrer"}
                         />
                     </div>
                     <div tw={"flex flex-col gap-2"}>
@@ -31,12 +36,15 @@ export const Account: FC = () => {
                             >
                                 Google
                             </Breadcrumb>
-                            <Breadcrumb
-                                color={theme`colors.neutral.200`}
-                                borderColor={theme("colors.neutral.400")}
-                            >
-                                skole.hr
-                            </Breadcrumb>
+                            {emailDomain && (
+                                <Breadcrumb
+                                    color={textToColor(emailDomain)}
+                                    // color={theme`colors.neutral.200`}
+                                    borderColor={darkenHex(textToColor(emailDomain), 40)}
+                                >
+                                    {emailDomain}
+                                </Breadcrumb>
+                            )}
                             {hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && (
                                 <Breadcrumb
                                     color={theme`colors.red.400`}

@@ -16,6 +16,7 @@ import { Problems } from "./pages/problems/Problems";
 import { Root } from "./pages/Root";
 import { Submission } from "./pages/submissions/Submission";
 import { useAuthStore } from "./state/auth";
+import { useTokenStore } from "./state/token";
 
 BigInt.prototype.toJSON = function () {
     return this.toString();
@@ -68,10 +69,6 @@ const loginRouter = createBrowserRouter([
                 element: <LoginPage />,
             },
             {
-                path: "/oauth/callback",
-                element: <div>hi</div>,
-            },
-            {
                 path: "/*",
                 element: <Navigate to={"/"} />,
             },
@@ -80,7 +77,8 @@ const loginRouter = createBrowserRouter([
 ]);
 
 export const App = () => {
-    const { isLoggedIn, token, setUser, setToken, setIsLoggedIn } = useAuthStore();
+    const { isLoggedIn, setUser, setIsLoggedIn } = useAuthStore();
+    const { token, setToken } = useTokenStore();
 
     useEffect(() => {
         if (token.length === 0) {
@@ -97,9 +95,7 @@ export const App = () => {
             .catch(() => setToken(""));
     }, [token]);
 
-    if (token.length > 0 && !isLoggedIn)
-        // TODO: create spinner
-        return <>Loading...</>;
+    if (token.length > 0 && !isLoggedIn) return <></>;
 
-    return <RouterProvider router={token ? dashboardRouter : loginRouter} />;
+    return <RouterProvider router={isLoggedIn ? dashboardRouter : loginRouter} />;
 };

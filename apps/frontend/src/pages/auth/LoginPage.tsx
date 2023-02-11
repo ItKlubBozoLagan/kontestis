@@ -3,10 +3,10 @@ import React, { FC, useCallback } from "react";
 
 import { http } from "../../api/http";
 import { TitledSection } from "../../components/TitledSection";
-import { useAuthStore } from "../../state/auth";
+import { useTokenStore } from "../../state/token";
 
 const LoginBase: FC = () => {
-    const { setToken } = useAuthStore();
+    const { setToken } = useTokenStore();
 
     const onLoginSuccess = useCallback((credentialResponse: CredentialResponse) => {
         const { credential } = credentialResponse;
@@ -36,7 +36,6 @@ const LoginBase: FC = () => {
                     </span>
                     <GoogleLogin
                         onSuccess={onLoginSuccess}
-                        hosted_domain={"skole.hr"}
                         width={"256px"}
                         size={"large"}
                         text={"signin"}

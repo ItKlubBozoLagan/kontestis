@@ -66,7 +66,7 @@ export const Problem: FC = () => {
     }, 1000);
 
     return (
-        <div tw={"w-full flex flex-col justify-start items-center gap-6 py-10"}>
+        <div tw={"w-full flex flex-col justify-start items-center gap-6"}>
             <span tw={"text-neutral-800 text-3xl"}>{problem?.title}</span>
             <div tw={"flex flex-col gap-4 w-full"}>
                 <div tw={"w-full flex gap-4"}>
@@ -136,6 +136,16 @@ export const Problem: FC = () => {
                         </TableHeadRow>
                     </thead>
                     <tbody>
+                        {!submissions && (
+                            <TableItem colSpan={5} tw={"text-center"}>
+                                Loading submissions...
+                            </TableItem>
+                        )}
+                        {submissions?.length === 0 && (
+                            <TableItem colSpan={5} tw={"text-center"}>
+                                No submissions yet :(
+                            </TableItem>
+                        )}
                         {submissions
                             ?.sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
                             .slice(0, expanded || submissions.length <= 4 ? submissions.length : 3)

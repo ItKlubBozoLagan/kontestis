@@ -3,6 +3,7 @@ import { FiLogOut } from "react-icons/all";
 import tw from "twin.macro";
 
 import { useAuthStore } from "../state/auth";
+import { useTokenStore } from "../state/token";
 import { NavElement, NavItem } from "./NavElement";
 
 const items: NavItem[] = [
@@ -29,7 +30,8 @@ const items: NavItem[] = [
 ];
 
 export const NavBar: FC = () => {
-    const { user, setToken } = useAuthStore();
+    const { user } = useAuthStore();
+    const { setToken } = useTokenStore();
 
     return (
         <div
@@ -40,7 +42,12 @@ export const NavBar: FC = () => {
             ]}
         >
             <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
-                <img tw={"w-8 h-auto rounded-full"} src={user.picture_url} alt={"Profile avatar"} />
+                <img
+                    tw={"w-8 h-auto rounded-full"}
+                    src={user.picture_url}
+                    alt={"Profile avatar"}
+                    referrerPolicy={"no-referrer"}
+                />
                 <div tw={"flex flex-wrap justify-center gap-6"}>
                     {items.map((item) => (
                         <NavElement item={item} key={item.href} />
