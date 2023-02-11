@@ -20,6 +20,8 @@ import { migration_refractor_user } from "./migrations/0006_refractor_user";
 import { migration_known_user_data } from "./migrations/0007_known_user_data";
 import { migration_add_error_to_submission } from "./migrations/0008_add_error_to_submission";
 import { migration_add_elo_to_user } from "./migrations/0009_add_elo_to_user";
+import { migration_fix_contest_member_definition } from "./migrations/0010_fix_contest_member_definition";
+import { migration_contest_member_indices } from "./migrations/0011_contest_member_indices";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -55,6 +57,8 @@ const migrations: Migration<any>[] = [
     migration_known_user_data,
     migration_add_error_to_submission,
     migration_add_elo_to_user,
+    migration_fix_contest_member_definition,
+    migration_contest_member_indices,
 ];
 
 export const initDatabase = async () => {
