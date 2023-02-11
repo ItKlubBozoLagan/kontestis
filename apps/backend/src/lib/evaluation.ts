@@ -44,9 +44,13 @@ export const beginEvaluation = async (
         pendingSubmission
     );
 
-    const problem = await Database.selectOneFrom("problems", ["time_limit_millis"], {
-        id: problemDetails.problemId,
-    });
+    const problem = await Database.selectOneFrom(
+        "problems",
+        ["time_limit_millis", "memory_limit_megabytes"],
+        {
+            id: problemDetails.problemId,
+        }
+    );
 
     const clusters = await Database.selectFrom("clusters", "*", {
         problem_id: problemDetails.problemId,
@@ -76,6 +80,7 @@ export const beginEvaluation = async (
                     language: problemDetails.language,
                     code: problemDetails.code,
                     time_limit: problem.time_limit_millis,
+                    memory_limit: problem.memory_limit_megabytes,
                     testcases: testcases.map((testcase) => ({
                         id: testcase.id.toString(),
                         in: testcase.input,

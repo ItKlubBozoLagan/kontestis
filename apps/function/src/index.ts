@@ -19,6 +19,7 @@ const schema = Type.Object({
     language: LanguageSchema,
     code: Type.String(),
     time_limit: Type.Number(),
+    memory_limit: Type.Number(),
     testcases: Type.Array(
         Type.Object({
             id: Type.String(),
@@ -91,7 +92,8 @@ app.post("/", async (req, res) => {
                     getSimplePythonCheckerFunction(
                         Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
                     ),
-                    submission.time_limit
+                    submission.time_limit,
+                    submission.memory_limit
                 )
             );
     }
@@ -111,7 +113,8 @@ app.post("/", async (req, res) => {
                     getSimplePythonCheckerFunction(
                         Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
                     ),
-                    submission.time_limit
+                    submission.time_limit,
+                    submission.memory_limit
                 )
             );
     }

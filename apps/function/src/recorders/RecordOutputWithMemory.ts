@@ -4,7 +4,7 @@ import { recordMemory } from "./MemoryRecorder";
 import { OutputRecord, OutputRecorderFunction } from "./SimpleOutputRecorder";
 
 export type MemoryRecord = {
-    memory_usage_bytes: number;
+    memory_usage_megabytes: number;
 };
 
 export const recordOutputWithMemory: (
@@ -16,7 +16,7 @@ export const recordOutputWithMemory: (
     const output = await next(process, input);
 
     const memory: MemoryRecord = {
-        memory_usage_bytes: record(),
+        memory_usage_megabytes: record(),
     };
 
     return {

@@ -19,7 +19,8 @@ export const evaluateSimpleChecker = async (
     runnerFunction: RunnerFunction,
     testcases: Testcase[],
     checkerFunction: CheckerFunction,
-    timeLimit: number
+    timeLimit: number,
+    memoryLimit: number
 ) => {
     const evaluated: EvaluationResult[] = [];
 
@@ -44,7 +45,18 @@ export const evaluateSimpleChecker = async (
                 testCaseId: testcase.id,
                 verdict: "time_limit_exceeded",
                 time: timeMillis,
-                memory: result.memory_usage_bytes,
+                memory: result.memory_usage_megabytes,
+            });
+            continue;
+        }
+
+        if (result.memory_usage_megabytes >= memoryLimit) {
+            evaluated.push({
+                type: "success",
+                testCaseId: testcase.id,
+                verdict: "memory_limit_exceeded",
+                time: timeMillis,
+                memory: result.memory_usage_megabytes,
             });
             continue;
         }
@@ -72,7 +84,7 @@ export const evaluateSimpleChecker = async (
                 testCaseId: testcase.id,
                 verdict: "accepted",
                 time: timeMillis,
-                memory: result.memory_usage_bytes,
+                memory: result.memory_usage_megabytes,
             });
             continue;
         }
@@ -83,7 +95,7 @@ export const evaluateSimpleChecker = async (
                 testCaseId: testcase.id,
                 verdict: "wrong_answer",
                 time: timeMillis,
-                memory: result.memory_usage_bytes,
+                memory: result.memory_usage_megabytes,
             });
             continue;
         }
