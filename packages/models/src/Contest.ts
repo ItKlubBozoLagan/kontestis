@@ -10,3 +10,7 @@ export type ContestV1 = {
 };
 
 export type Contest = ContestV1;
+
+export type ContestWithRegistrationStatus = Contest & {
+    registered: boolean;
+};

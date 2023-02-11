@@ -1,20 +1,24 @@
-import { Contest } from "@kontestis/models";
+import { ContestWithRegistrationStatus } from "@kontestis/models";
 import { cutText, parseTime, toCroatianLocale } from "@kontestis/utils";
 import { FC, useEffect, useState } from "react";
 import { FiCheck, FiList, FiX } from "react-icons/all";
+import { useQueryClient } from "react-query";
 import { Link } from "react-router-dom";
 
 import { http } from "../../api/http";
 import { TableItem, TableRow } from "../../components/Table";
 
 type Properties = {
-    contest: Contest;
-    registered: boolean;
+    contest: ContestWithRegistrationStatus;
 };
 
-export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
+export const ContestListItem: FC<Properties> = ({ contest }) => {
     const [time, setTime] = useState(Date.now());
     const [state, setState] = useState<"pending" | "started" | "finished">("pending");
+
+    const [registered, setRegistered] = useState(contest.registered);
+
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const interval = setInterval(() => setTime(Date.now()), 1000);
@@ -61,9 +65,18 @@ export const ContestListItem: FC<Properties> = ({ contest, registered }) => {
                         <span tw={"text-green-700"}>Registered</span>
                     ) : (
                         <span
-                            tw={"text-red-500 hover:(text-red-700 cursor-pointer)"}
+                            tw={"text-yellow-600 hover:(text-yellow-700 cursor-pointer)"}
                             onClick={async () => {
-                                await http.post("/contest/register/" + contest.id);
+                                await http
+                                    .post("/contest/register/" + contest.id)
+                                    .then(() =>
+                                        queryClient.invalidateQueries([
+                                            "contests",
+                                            "members",
+                                            "self",
+                                        ])
+                                    )
+                                    .then(() => setRegistered(true));
                             }}
                         >
                             Register

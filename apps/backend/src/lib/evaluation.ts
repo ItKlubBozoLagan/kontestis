@@ -4,6 +4,7 @@ import {
     EvaluationLanguage,
     EvaluationResult,
     PendingSubmission,
+    Snowflake,
     SuccessfulEvaluationResult,
     Testcase,
     User,
@@ -12,8 +13,11 @@ import axios, { AxiosError } from "axios";
 
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
+import { isContestRunning } from "./contest";
 import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
+
+const ERR_UNEXPECTED_STATE = new Error("unexpected state");
 
 type ProblemDetails = {
     problemId: bigint;
@@ -22,6 +26,34 @@ type ProblemDetails = {
 };
 
 type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
+
+const updateContestMember = async (problemId: Snowflake, userId: Snowflake, score: number) => {
+    const problem = await Database.selectOneFrom("problems", ["contest_id"], { id: problemId });
+
+    if (!problem) throw ERR_UNEXPECTED_STATE;
+
+    const contest = await Database.selectOneFrom(
+        "contests",
+        ["id", "start_time", "duration_seconds"],
+        { id: problem.contest_id }
+    );
+
+    if (!contest) throw ERR_UNEXPECTED_STATE;
+
+    if (!isContestRunning(contest)) return;
+
+    // TODO: figure out how to do contest_id, user_id queries in scylla
+    const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
+        contest_id: contest.id,
+        user_id: userId,
+    });
+
+    if (!contestMember) return;
+
+    await Database.raw(
+        `UPDATE contest_members SET score[${problemId}]=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
+    );
+};
 
 export const beginEvaluation = async (
     user: User,
@@ -70,7 +102,7 @@ export const beginEvaluation = async (
 
     for (const testcase of testcases) testCasesById[testcase.id + ""] = testcase;
 
-    if (!problem) throw new Error("unexpected state");
+    if (!problem) throw ERR_UNEXPECTED_STATE;
 
     const _ = (async () => {
         const [results, error] = (await axios
@@ -180,29 +212,32 @@ export const beginEvaluation = async (
             );
         }
 
-        await Database.insertInto("submissions", {
-            ...pendingSubmission,
-            problem_id: problemDetails.problemId,
-            awarded_score: error
-                ? 0
-                : clusterSubmissions.reduce(
-                      (accumulator, current) => accumulator + current.awarded_score,
-                      0
-                  ),
-            verdict: verdict,
-            error:
-                verdict === "compilation_error"
-                    ? (
-                          results?.find(
-                              (result) => result.verdict === "compilation_error"
-                          ) as CompilationErrorResult
-                      ).error
-                    : undefined,
-            time_used_millis: time,
-            memory_used_megabytes: memory,
-        });
+        const score = error
+            ? 0
+            : clusterSubmissions.reduce(
+                  (accumulator, current) => accumulator + current.awarded_score,
+                  0
+              );
 
-        // TODO: Insert into contest member if contest is running
+        await Promise.all([
+            Database.insertInto("submissions", {
+                ...pendingSubmission,
+                problem_id: problemDetails.problemId,
+                awarded_score: score,
+                verdict: verdict,
+                error:
+                    verdict === "compilation_error"
+                        ? (
+                              results?.find(
+                                  (result) => result.verdict === "compilation_error"
+                              ) as CompilationErrorResult
+                          ).error
+                        : undefined,
+                time_used_millis: time,
+                memory_used_megabytes: memory,
+            }),
+            updateContestMember(problemDetails.problemId, user.id, score),
+        ]);
 
         // I know I can put this in Promise.all, but it needs to be removed
         // from redis after we have successfully stored it in the database

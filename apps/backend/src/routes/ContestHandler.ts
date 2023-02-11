@@ -114,6 +114,7 @@ ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async 
             user_id: databaseUser.id,
             contest_id: contest.id,
         },
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         "ALLOW FILTERING"
     );
 
@@ -130,7 +131,11 @@ ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async 
     return respond(res, StatusCodes.OK, allowedUser);
 });
 
-ContestHandler.post("/register/:contest_id", async (req, res) => {
+const RegisterSchema = Type.Object({
+    user_id: Type.Optional(Type.Number()),
+});
+
+ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), async (req, res) => {
     const contest = await extractContest(req);
     const user = await extractUser(req);
 
@@ -158,7 +163,8 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
         contest_id: contest.id,
     });
 
-    if (Date.now() > contest.start_time.getTime()) throw new SafeError(StatusCodes.CONFLICT);
+    if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
+        throw new SafeError(StatusCodes.CONFLICT);
 
     if (addedMember) throw new SafeError(StatusCodes.CONFLICT);
 
@@ -174,7 +180,12 @@ ContestHandler.post("/register/:contest_id", async (req, res) => {
 
 ContestHandler.get("/members/self", async (req, res) => {
     const user = await extractUser(req);
-    const contestMembers = await Database.selectFrom("contest_members", "*", { user_id: user.id });
+    const contestMembers = await Database.selectFrom(
+        "contest_members",
+        "*",
+        { user_id: user.id },
+        "ALLOW FILTERING"
+    );
 
     return respond(res, StatusCodes.OK, contestMembers);
 });
@@ -182,9 +193,14 @@ ContestHandler.get("/members/self", async (req, res) => {
 ContestHandler.get("/members/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
 
-    const contestMembers = await Database.selectFrom("contest_members", "*", {
-        contest_id: contest.id,
-    });
+    const contestMembers = await Database.selectFrom(
+        "contest_members",
+        "*",
+        {
+            contest_id: contest.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     return respond(res, StatusCodes.OK, contestMembers);
 });

@@ -1,5 +1,10 @@
-import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
+import {
+    ContestMemberPermissions,
+    ContestWithRegistrationStatus,
+    hasContestPermission,
+} from "@kontestis/models";
 import { FC, useMemo } from "react";
+import * as R from "remeda";
 
 import { PageTitle } from "../../components/PageTitle";
 import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
@@ -11,32 +16,12 @@ export const Contests: FC = () => {
     const { isSuccess, data: contests } = useAllContests();
     const { isSuccess: isSuccessMembers, data: contestMembers } = useSelfContestMembers();
 
-    const registeredContests = useMemo<Record<string, boolean>>(() => {
-        if (!isSuccessMembers) return {};
+    const completeContests = useMemo<ContestWithRegistrationStatus[]>(() => {
+        if (!isSuccess || !isSuccessMembers) return [];
 
-        const registeredContests: Record<string, boolean> = {};
-
-        for (const c of contestMembers) {
-            registeredContests[c.contest_id + ""] = hasContestPermission(
-                c.contest_permissions,
-                ContestMemberPermissions.VIEW
-            );
-        }
-
-        return registeredContests;
-    }, [isSuccessMembers, contestMembers]);
-
-    const sortedContests = useMemo(() => {
-        if (!isSuccess) return [];
-
-        return contests
-            .map((contest) => {
-                return {
-                    ...contest,
-                    start_time: new Date(contest.start_time),
-                };
-            })
-            .sort((a, b) => {
+        return R.pipe(
+            contests,
+            R.sort((a, b) => {
                 const firstDone = a.start_time.getTime() + a.duration_seconds * 1000 >= Date.now();
                 const secondDone = b.start_time.getTime() + b.duration_seconds * 1000 >= Date.now();
 
@@ -47,8 +32,23 @@ export const Contests: FC = () => {
                 if (a.start_time.getTime() == b.start_time.getTime()) return 0;
 
                 return a.start_time.getTime() > b.start_time.getTime() ? 1 : -1;
-            });
-    }, [isSuccess, contests]);
+            }),
+            R.map((contest) =>
+                R.addProp(
+                    contest,
+                    "registered",
+                    contestMembers.some(
+                        (it) =>
+                            contest.id === it.contest_id &&
+                            hasContestPermission(
+                                it.contest_permissions,
+                                ContestMemberPermissions.VIEW
+                            )
+                    )
+                )
+            )
+        );
+    }, [isSuccess, isSuccessMembers, contests, contestMembers]);
 
     if (!isSuccess) return <span>Loading...</span>;
 
@@ -66,12 +66,8 @@ export const Contests: FC = () => {
                     </TableHeadRow>
                 </thead>
                 <tbody>
-                    {sortedContests.map((c) => (
-                        <ContestListItem
-                            contest={c}
-                            key={c.id + ""}
-                            registered={registeredContests[c.id + ""] ?? false}
-                        />
+                    {completeContests.map((c) => (
+                        <ContestListItem contest={c} key={c.id + ""} />
                     ))}
                 </tbody>
             </Table>
