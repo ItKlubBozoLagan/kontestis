@@ -3,6 +3,7 @@ export * from "./Cluster";
 export * from "./ClusterSubmission";
 export * from "./Contest";
 export * from "./ContestMember";
+export * from "./ContestQuestion";
 export * from "./Evaluation";
 export * from "./KnownUserData";
 export * from "./permissions";
