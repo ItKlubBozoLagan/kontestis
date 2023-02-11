@@ -1,4 +1,10 @@
-import { AllowedUser, ContestMember, ContestQuestion, KnownUserData } from "@kontestis/models";
+import {
+    AllowedUser,
+    ContestAnnouncement,
+    ContestMember,
+    ContestQuestion,
+    KnownUserData,
+} from "@kontestis/models";
 import { Cluster } from "@kontestis/models";
 import { ClusterSubmission } from "@kontestis/models";
 import { Contest } from "@kontestis/models";
@@ -22,6 +28,7 @@ import { migration_add_error_to_submission } from "./migrations/0008_add_error_t
 import { migration_add_elo_to_user } from "./migrations/0009_add_elo_to_user";
 import { migration_fix_contest_member_definition } from "./migrations/0010_fix_contest_member_definition";
 import { migration_contest_questions } from "./migrations/0011_contest_questions";
+import { migration_contest_announcements } from "./migrations/0012_contest_announcements";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -36,6 +43,7 @@ export const Database = new ScylloClient<{
     testcase_submissions: TestcaseSubmission;
     contest_members: ContestMember;
     contest_questions: ContestQuestion;
+    contest_announcements: ContestAnnouncement;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -60,6 +68,7 @@ const migrations: Migration<any>[] = [
     migration_add_elo_to_user,
     migration_fix_contest_member_definition,
     migration_contest_questions,
+    migration_contest_announcements,
 ];
 
 export const initDatabase = async () => {

@@ -10,6 +10,7 @@ export enum ContestMemberPermissions {
     EDIT_USER_PERMISSIONS,
     VIEW_QUESTIONS,
     ANSWER_QUESTIONS,
+    CREATE_ANNOUNCEMENT,
 }
 
 export const hasContestPermission = (
