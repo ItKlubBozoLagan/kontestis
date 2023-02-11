@@ -16,6 +16,7 @@ import { eqIn } from "scyllo";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractContest } from "../extractors/extractContest";
+import { extractContestMember } from "../extractors/extractContestMember";
 import { extractModifiableContest } from "../extractors/extractModifiableContest";
 import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
@@ -234,6 +235,40 @@ ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
     );
 });
 
+const questionSchema = Type.Object({
+    question: Type.String(),
+});
+
+ContestHandler.post("/question/:contest_id", useValidation(questionSchema), async (req, res) => {
+    const member = await extractContestMember(req);
+
+    await Database.insertInto("contest_questions", {
+        id: generateSnowflake(),
+        contest_id: member.contest_id,
+        question: req.body.question,
+        contest_member_id: member.id,
+    });
+
+    return respond(res, StatusCodes.OK);
+});
+
+ContestHandler.get("/question/:contest_id", async (req, res) => {
+    const member = await extractContestMember(req);
+
+    const questions = await Database.selectFrom("contest_questions", "*", {
+        contest_id: member.contest_id,
+    });
+
+    if (hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS))
+        return respond(res, StatusCodes.OK, questions);
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        questions.filter((question) => question.contest_member_id === member.id)
+    );
+});
+
 // eslint-disable-next-line sonarjs/no-duplicate-string
 ContestHandler.get("/members/:contest_id/:user_id", async (req, res) => {
     const contest = await extractContest(req);
@@ -300,15 +335,10 @@ ContestHandler.patch("/members/:contest_id/:user_id", async (req, res) => {
 
 ContestHandler.delete("/members/:contest_id/:user_id", async (req, res) => {
     const contest = await extractContest(req);
-    const user = await extractUser(req);
     const targetId = BigInt(req.params.user_id);
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
-        user_id: user.id,
-        contest_id: contest.id,
-    });
+    const contestMember = await extractContestMember(req);
 
     if (
-        !contestMember ||
         !hasContestPermission(
             contestMember.contest_permissions,
             ContestMemberPermissions.REMOVE_USER

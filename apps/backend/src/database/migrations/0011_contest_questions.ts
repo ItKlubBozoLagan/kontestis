@@ -12,6 +12,7 @@ export const migration_contest_questions: Migration<MigrationType> = async (data
         {
             id: { type: "bigint" },
             contest_member_id: { type: "bigint" },
+            contest_id: { type: "bigint" },
             question: { type: "text" },
             response_author_id: { type: "bigint" },
             response: { type: "text" },
