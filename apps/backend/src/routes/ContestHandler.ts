@@ -21,6 +21,7 @@ import { extractModifiableContest } from "../extractors/extractModifiableContest
 import { extractUser } from "../extractors/extractUser";
 import { generateSnowflake } from "../lib/snowflake";
 import { useValidation } from "../middlewares/useValidation";
+import { extractIdFromParameters } from "../utils/extractorUtils";
 import { respond } from "../utils/response";
 
 const ContestHandler = Router();
@@ -268,6 +269,42 @@ ContestHandler.get("/question/:contest_id", async (req, res) => {
         questions.filter((question) => question.contest_member_id === member.id)
     );
 });
+
+const questionAnswerSchema = Type.Object({
+    response: Type.String(),
+});
+
+ContestHandler.patch(
+    "/question/:question_id",
+    useValidation(questionAnswerSchema),
+    async (req, res) => {
+        const questionId = extractIdFromParameters(req, "question_id");
+        const question = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
+
+        if (!question) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        const member = await extractContestMember(req, question.contest_id);
+
+        if (
+            !hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.ANSWER_QUESTIONS
+            )
+        )
+            throw new SafeError(StatusCodes.FORBIDDEN);
+
+        await Database.update(
+            "contest_questions",
+            {
+                response: req.body.response,
+                response_author_id: member.id,
+            },
+            { id: question.id }
+        );
+
+        return respond(res, StatusCodes.OK);
+    }
+);
 
 // eslint-disable-next-line sonarjs/no-duplicate-string
 ContestHandler.get("/members/:contest_id/:user_id", async (req, res) => {
