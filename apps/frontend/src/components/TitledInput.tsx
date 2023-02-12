@@ -11,9 +11,9 @@ export const TitledInput = React.forwardRef<
     React.InputHTMLAttributes<HTMLInputElement> & InputProperties
 >(({ name, label, className, bigLabel, ...properties }, reference) => {
     return (
-        <div tw={"w-full flex flex-col justify-start max-w-[256px]"} className={className}>
+        <div tw={"w-full flex flex-col pt-2 justify-start max-w-[256px]"} className={className}>
             {label && (
-                <label id={name} tw={"pt-2 pb-1"} css={bigLabel ? tw`text-base` : tw`text-sm pl-1`}>
+                <label id={name} tw={"pb-1"} css={bigLabel ? tw`text-base` : tw`text-sm pl-1`}>
                     {label}
                 </label>
             )}

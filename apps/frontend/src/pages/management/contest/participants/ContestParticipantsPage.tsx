@@ -1,12 +1,18 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ContestMemberWithInfo } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import tw, { theme } from "twin.macro";
+import { z } from "zod";
 
 import { Breadcrumb } from "../../../../components/Breadcrumb";
 import { DomainBreadcrumb } from "../../../../components/DomainBreadcrumb";
 import { RankBreadcrumb } from "../../../../components/RankBreadcrumb";
+import { SimpleButton } from "../../../../components/SimpleButton";
+import { TitledInput } from "../../../../components/TitledInput";
 import { useContestContext } from "../../../../context/constestContext";
+import { useAddParticipant } from "../../../../hooks/contest/participants/useAddParticipant";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useRemoveParticipant } from "../../../../hooks/contest/participants/useRemoveParticipant";
 
@@ -72,13 +78,63 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
     );
 };
 
+const AddParticipantSchema = z.object({
+    email: z.string().email(),
+});
+
 export const ContestParticipantsPage: FC = () => {
     const { contest, member } = useContestContext();
 
     const { data: members } = useAllContestMembers(contest.id);
 
+    const addMutation = useAddParticipant(contest.id);
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<z.infer<typeof AddParticipantSchema>>({
+        resolver: zodResolver(AddParticipantSchema),
+    });
+
+    const onSubmit = handleSubmit((data) => {
+        addMutation.reset();
+        setNetError(false);
+        addMutation.mutate(data.email);
+    });
+
+    const [netError, setNetError] = useState(false);
+
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (addMutation.isError) setNetError(true);
+
+        if (addMutation.isSuccess)
+            queryClient.invalidateQueries(["contests", contest.id, "members"]);
+    }, [addMutation.isSuccess, addMutation.isError]);
+
     return (
         <div tw={"w-full flex flex-col gap-4"}>
+            <form onSubmit={onSubmit}>
+                <div tw={"flex gap-4 items-end"}>
+                    <TitledInput
+                        label={"Add participant"}
+                        bigLabel
+                        tw={"pt-0 max-w-full"}
+                        placeholder={"example@skole.hr"}
+                        {...register("email")}
+                    />
+                    <SimpleButton>Add</SimpleButton>
+                </div>
+            </form>
+            <div tw={"text-red-500"}>
+                {Object.keys(errors).length > 0 ? (
+                    <span>Invalid email address!</span>
+                ) : (
+                    netError && <span>User doesn&apos;t exist or is already a participant</span>
+                )}
+            </div>
             {members && (
                 <>
                     <MemberBox member={members.find((it) => it.id === member.id)!} admin />

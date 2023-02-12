@@ -30,8 +30,8 @@ export const SimpleButton: FC<
 > = ({ color = theme`colors.neutral.300`!, children, prependIcon: PrependIcon, ...properties }) => {
     return (
         <ButtonStyle $color={color} {...properties}>
-            {PrependIcon && <PrependIcon size={14} />}
-            <span tw={"w-full text-center"}>{children}</span>
+            {PrependIcon && <PrependIcon size={16} />}
+            <span tw={"w-full text-center text-base"}>{children}</span>
         </ButtonStyle>
     );
 };

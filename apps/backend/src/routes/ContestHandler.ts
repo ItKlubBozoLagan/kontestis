@@ -168,7 +168,12 @@ ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), asyn
     const user = await extractUser(req);
 
     const targetUser = req.body.email
-        ? await Database.selectOneFrom("known_users", "*", { email: req.body.email })
+        ? await Database.selectOneFrom(
+              "known_users",
+              "*",
+              { email: req.body.email },
+              "ALLOW FILTERING"
+          )
         : undefined;
 
     if (req.body.email && !targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
