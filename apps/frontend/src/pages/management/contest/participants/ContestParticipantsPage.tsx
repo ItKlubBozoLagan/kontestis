@@ -16,7 +16,7 @@ export const ContestParticipantsPage: FC = () => {
                 ?.sort((a, b) => a.full_name.localeCompare(b.full_name))
                 .map((member) => (
                     <div
-                        key={member.id}
+                        key={member.id.toString()}
                         tw={
                             "p-4 bg-neutral-200 flex justify-between border border-solid border-black"
                         }
