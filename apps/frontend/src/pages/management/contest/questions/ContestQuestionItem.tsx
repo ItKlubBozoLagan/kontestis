@@ -52,14 +52,14 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
     }, [answerMutation.isSuccess]);
 
     return (
-        <TitledSection title={question.question}>
+        <TitledSection small title={question.question}>
             {hasContestPermission(
                 member.contest_permissions,
                 ContestMemberPermissions.ANSWER_QUESTIONS
             ) && (
-                <form onSubmit={onSubmit}>
+                <form onSubmit={onSubmit} tw={"flex flex-col gap-2"}>
                     <TitledInput label={"Answer:"} bigLabel {...register("response")} />
-                    <SimpleButton tw={"mt-2"}>
+                    <SimpleButton>
                         {currentResponse?.length ?? -1 > 0 ? "Change" : "Answer"}
                     </SimpleButton>
                 </form>

@@ -79,7 +79,7 @@ export const ContestViewPage: FC = () => {
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
                     <TitledSection title={"Announcements"}>
                         {(announcements ?? []).map((announcement) => (
-                            <span key={announcement.id + ""}>{announcement.message}</span>
+                            <span key={announcement.id.toString()}>{announcement.message}</span>
                         ))}
                     </TitledSection>
                     <TitledSection title={"Questions"} tw={"flex w-full flex-col gap-4"}>
@@ -99,18 +99,21 @@ export const ContestViewPage: FC = () => {
                             .slice(!questionsExpanded ? -1 : 0)
                             .reverse()
                             .map((question) => (
-                                <TitledSection title={question.question} key={question.id + ""}>
+                                <TitledSection
+                                    title={question.question}
+                                    key={question.id.toString()}
+                                >
                                     {question.response ?? "Waiting for response!"}
                                 </TitledSection>
                             ))}
-                        <span
-                            tw={"text-neutral-800 cursor-pointer"}
-                            onClick={() => setQuestionsExpanded((q) => !q)}
-                        >
-                            {!(questionsExpanded && (questions?.length ?? 0) > 2)
-                                ? "Show older"
-                                : "Collapse"}
-                        </span>
+                        {questions && questions.length > 1 && (
+                            <span
+                                tw={"text-neutral-800 cursor-pointer"}
+                                onClick={() => setQuestionsExpanded((q) => !q)}
+                            >
+                                {!questionsExpanded ? "Show older" : "Collapse"}
+                            </span>
+                        )}
                     </TitledSection>
                 </div>
             )}

@@ -2,17 +2,24 @@ import { FC, ReactNode } from "react";
 
 type Properties = {
     className?: string;
+    small?: boolean;
     title: string;
     children: ReactNode;
 };
 
-export const TitledSection: FC<Properties> = ({ className, title, children }) => {
+export const TitledSection: FC<Properties> = ({ className, small, title, children }) => {
     return (
-        <div tw={"w-full flex flex-col items-center border-solid border-2 border-neutral-200"}>
+        <div
+            tw={"w-full flex flex-col items-center border-solid border-2 border-neutral-200"}
+            css={small ? { width: "min-content" } : ""}
+        >
             <div tw={"w-full text-neutral-800 text-lg bg-neutral-100 text-center py-1"}>
                 {title}
             </div>
-            <div tw={"w-full h-full flex flex-col items-center gap-2 p-4"} className={className}>
+            <div
+                tw={"w-full h-full flex flex-col items-center gap-2 p-4 bg-white"}
+                className={className}
+            >
                 {children}
             </div>
         </div>

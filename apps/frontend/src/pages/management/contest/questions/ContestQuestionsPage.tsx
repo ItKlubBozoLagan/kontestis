@@ -5,17 +5,20 @@ import { useAllContestQuestions } from "../../../../hooks/contest/questions/useA
 import { ContestQuestionItem } from "./ContestQuestionItem";
 
 export const ContestQuestionsPage: FC = () => {
-    const { contest, member } = useContestContext();
+    const { contest } = useContestContext();
 
     const { data: questions } = useAllContestQuestions(contest.id);
 
     return (
-        <div tw={"w-full flex gap-2"}>
-            {(questions ?? [])
-                .sort((a, b) => Number(a.id - b.id))
-                .map((question) => (
-                    <ContestQuestionItem key={question.id + ""} question={question} />
-                ))}
+        <div tw={"w-full flex justify-center gap-2"}>
+            {questions?.length === 0 && <span tw={"w-full text-center"}>None so far</span>}
+            <div tw={"flex flex-wrap justify-center gap-4"}>
+                {(questions ?? [])
+                    .sort((a, b) => Number(a.id - b.id))
+                    .map((question) => (
+                        <ContestQuestionItem key={question.id.toString()} question={question} />
+                    ))}
+            </div>
         </div>
     );
 };

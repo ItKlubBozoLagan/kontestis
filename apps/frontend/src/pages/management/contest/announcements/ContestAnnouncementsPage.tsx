@@ -48,23 +48,30 @@ export const ContestAnnouncementsPage: FC = () => {
     }, [createMutation.isSuccess]);
 
     return (
-        <div tw={"flex flex-col gap-2 w-full items-center"}>
-            {(announcements ?? [])
-                .sort((a, b) => Number(a.id - b.id))
-                .map((announcement) => (
-                    <span key={announcement.id + ""}>{announcement.message}</span>
-                ))}
-            {hasContestPermission(
-                member.contest_permissions,
-                ContestMemberPermissions.CREATE_ANNOUNCEMENT
-            ) && (
-                <form onSubmit={onSubmit}>
-                    <div tw={"flex flex-col gap-2"}>
-                        <TitledInput label={"Announcement"} bigLabel {...register("message")} />
-                        <SimpleButton tw={"mt-2"}>Send</SimpleButton>
-                    </div>
-                </form>
-            )}
+        <div tw={"flex gap-2 w-full justify-center"}>
+            <div tw={"flex flex-col gap-4"}>
+                {(announcements ?? [])
+                    .sort((a, b) => Number(a.id - b.id))
+                    .map((announcement) => (
+                        <div
+                            tw={"bg-white p-2 w-full border border-solid border-black"}
+                            key={announcement.id.toString()}
+                        >
+                            {announcement.message}
+                        </div>
+                    ))}
+                {hasContestPermission(
+                    member.contest_permissions,
+                    ContestMemberPermissions.CREATE_ANNOUNCEMENT
+                ) && (
+                    <form onSubmit={onSubmit}>
+                        <div tw={"flex flex-col gap-2"}>
+                            <TitledInput label={"Announcement"} bigLabel {...register("message")} />
+                            <SimpleButton tw={"mt-2"}>Send</SimpleButton>
+                        </div>
+                    </form>
+                )}
+            </div>
         </div>
     );
 };
