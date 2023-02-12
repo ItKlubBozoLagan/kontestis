@@ -79,7 +79,9 @@ export const ContestViewPage: FC = () => {
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
                     <TitledSection title={"Announcements"}>
                         {(announcements ?? []).map((announcement) => (
-                            <span key={announcement.id.toString()}>{announcement.message}</span>
+                            <span tw={"text-lg"} key={announcement.id.toString()}>
+                                {announcement.message}
+                            </span>
                         ))}
                     </TitledSection>
                     <TitledSection title={"Questions"} tw={"flex w-full flex-col gap-4"}>
