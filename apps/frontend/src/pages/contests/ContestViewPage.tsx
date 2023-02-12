@@ -49,36 +49,6 @@ export const ContestViewPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 mt-5"}>
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
-            <Table tw={"w-full"}>
-                <thead>
-                    <TableHeadRow>
-                        <TableHeadItem>Problem</TableHeadItem>
-                        <TableHeadItem>Score</TableHeadItem>
-                    </TableHeadRow>
-                </thead>
-                <tbody>
-                    {problems?.map((p) => (
-                        <TableRow key={p.id.toString()}>
-                            <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                                <Link to={"/problem/" + p.id} tw={"flex items-center gap-2"}>
-                                    <FiList tw={"text-xl"} /> {p.title}
-                                </Link>
-                            </TableItem>
-                            <TableItem>
-                                <ProblemScoreBox
-                                    score={
-                                        problemScores.data
-                                            ? problemScores.data[p.id.toString()] ?? 0
-                                            : 0
-                                    }
-                                    maxScore={p.score}
-                                />
-                            </TableItem>
-                        </TableRow>
-                    ))}
-                </tbody>
-            </Table>
-            <Leaderboard contest={contest} problems={problems ?? []} />
             {contest && running && (
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
                     <TitledSection title={"Announcements"}>
@@ -114,6 +84,36 @@ export const ContestViewPage: FC = () => {
                     </TitledSection>
                 </div>
             )}
+            <Table tw={"w-full"}>
+                <thead>
+                    <TableHeadRow>
+                        <TableHeadItem>Problem</TableHeadItem>
+                        <TableHeadItem>Score</TableHeadItem>
+                    </TableHeadRow>
+                </thead>
+                <tbody>
+                    {problems?.map((p) => (
+                        <TableRow key={p.id.toString()}>
+                            <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
+                                <Link to={"/problem/" + p.id} tw={"flex items-center gap-2"}>
+                                    <FiList tw={"text-xl"} /> {p.title}
+                                </Link>
+                            </TableItem>
+                            <TableItem>
+                                <ProblemScoreBox
+                                    score={
+                                        problemScores.data
+                                            ? problemScores.data[p.id.toString()] ?? 0
+                                            : 0
+                                    }
+                                    maxScore={p.score}
+                                />
+                            </TableItem>
+                        </TableRow>
+                    ))}
+                </tbody>
+            </Table>
+            <Leaderboard contest={contest} problems={problems ?? []} />
         </div>
     );
 };
