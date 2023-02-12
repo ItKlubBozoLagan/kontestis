@@ -160,22 +160,21 @@ ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async 
 });
 
 const RegisterSchema = Type.Object({
-    user_id: Type.Optional(Type.Number()),
+    email: Type.Optional(Type.String()),
 });
 
 ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), async (req, res) => {
     const contest = await extractContest(req);
     const user = await extractUser(req);
 
-    const targetId = req.body.user_id ? BigInt(req.body.user_id) : undefined;
+    const targetUser = req.body.email
+        ? await Database.selectOneFrom("known_users", "*", { email: req.body.email })
+        : undefined;
 
-    if (targetId) {
-        const contestMember = await Database.selectOneFrom("contest_members", "*", {
-            user_id: user.id,
-            contest_id: contest.id,
-        });
+    if (req.body.email && !targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        if (!contestMember) throw new SafeError(StatusCodes.FORBIDDEN);
+    if (targetUser) {
+        const contestMember = await extractContestMember(req, contest.id);
 
         if (
             !hasContestPermission(
@@ -187,7 +186,7 @@ ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), asyn
     }
 
     const addedMember = await Database.selectOneFrom("contest_members", ["id"], {
-        user_id: targetId ?? user.id,
+        user_id: targetUser ? targetUser.user_id : user.id,
         contest_id: contest.id,
     });
 
@@ -198,7 +197,7 @@ ContestHandler.post("/register/:contest_id", useValidation(RegisterSchema), asyn
 
     await Database.insertInto("contest_members", {
         id: generateSnowflake(),
-        user_id: targetId ?? user.id,
+        user_id: targetUser ? targetUser.user_id : user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
         // score will default to {}
