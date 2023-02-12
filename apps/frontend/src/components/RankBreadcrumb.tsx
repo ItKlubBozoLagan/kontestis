@@ -17,7 +17,7 @@ export const RankBreadcrumb: FC<Properties> = ({ showExact }) => {
             color={colorFromRank(rankFromElo(user.elo))}
             borderColor={darkenHex(colorFromRank(rankFromElo(user.elo)), 40)}
         >
-            {capitalize(rankFromElo(user.elo))} {showExact ? `(${user.elo.toString()}` : ""}
+            {capitalize(rankFromElo(user.elo))} {showExact ? `(${user.elo.toString()})` : ""}
         </Breadcrumb>
     );
 };

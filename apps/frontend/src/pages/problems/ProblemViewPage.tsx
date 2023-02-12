@@ -12,7 +12,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
-import tw from "twin.macro";
+import tw, { theme } from "twin.macro";
 
 import { http } from "../../api/http";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
@@ -108,6 +108,7 @@ export const ProblemViewPage: FC = () => {
                             <option value="python">Python</option>
                         </select>
                         <SimpleButton
+                            color={theme`colors.red.300`}
                             onClick={() => {
                                 if (code.trim().length === 0) return;
 
