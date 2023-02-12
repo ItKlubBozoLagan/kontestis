@@ -96,8 +96,8 @@ export const AccountPage: FC = () => {
                             )}
                         </div>
                         <div tw={"flex flex-col justify-between gap-2 font-mono"}>
-                            <TitledInput name={"Full Name"} value={user.full_name} readOnly />
-                            <TitledInput name={"E-mail"} value={user.email} readOnly />
+                            <TitledInput label={"Full Name"} value={user.full_name} readOnly />
+                            <TitledInput label={"E-mail"} value={user.email} readOnly />
                         </div>
                     </div>
                 </div>

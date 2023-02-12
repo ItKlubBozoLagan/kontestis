@@ -1,15 +1,16 @@
 import React from "react";
 import tw from "twin.macro";
 
-export type InputProperties = {
-    label?: string;
-    bigLabel?: boolean;
+import { InputProperties } from "./TitledInput";
+
+type Properties = {
+    type: "date" | "datetime";
 };
 
-export const TitledInput = React.forwardRef<
+export const TitledDateInput = React.forwardRef<
     HTMLInputElement,
-    React.InputHTMLAttributes<HTMLInputElement> & InputProperties
->(({ name, label, className, bigLabel, ...properties }, reference) => {
+    React.InputHTMLAttributes<HTMLInputElement> & InputProperties & Properties
+>(({ name, className, label, bigLabel, type, ...properties }, reference) => {
     return (
         <div tw={"w-full flex flex-col justify-start max-w-[256px]"} className={className}>
             {label && (
@@ -20,6 +21,7 @@ export const TitledInput = React.forwardRef<
             <input
                 ref={reference}
                 name={name}
+                type={type === "date" ? "date" : "datetime-local"}
                 tw={
                     "py-1 px-2 bg-neutral-200 border border-solid border-neutral-300 text-base outline-none hover:bg-neutral-300"
                 }
@@ -29,4 +31,4 @@ export const TitledInput = React.forwardRef<
     );
 });
 
-TitledInput.displayName = "TitledInput";
+TitledDateInput.displayName = "TitledDateInput";
