@@ -42,7 +42,7 @@ export const ContestAnnouncementsPage: FC = () => {
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contest", contest.id, "announcements"]);
+        queryClient.invalidateQueries(["contests", contest.id, "announcements"]);
         createMutation.reset();
         reset();
     }, [createMutation.isSuccess]);
