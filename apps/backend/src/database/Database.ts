@@ -32,6 +32,7 @@ import { migration_contest_announcements } from "./migrations/0012_contest_annou
 import { migration_apply_elo_state } from "./migrations/0013_apply_elo_state";
 import { migration_index_by_elo_state } from "./migrations/0014_index_by_elo_state";
 import { migration_add_official_to_contest } from "./migrations/0015_add_official_to_contest";
+import { migration_fix_contest_entries } from "./migrations/0016_fix_contest_entries";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -75,6 +76,7 @@ const migrations: Migration<any>[] = [
     migration_apply_elo_state,
     migration_index_by_elo_state,
     migration_add_official_to_contest,
+    migration_fix_contest_entries,
 ];
 
 export const initDatabase = async () => {
