@@ -11,7 +11,6 @@ export const ContestParticipantsPage: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>
-            <pre>{JSON.stringify(member, null, 2)}</pre>
             {members
                 ?.sort((a, b) => a.full_name.localeCompare(b.full_name))
                 .map((member) => (

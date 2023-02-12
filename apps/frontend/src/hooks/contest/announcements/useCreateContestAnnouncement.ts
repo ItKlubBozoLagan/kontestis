@@ -1,7 +1,7 @@
 import { ContestAnnouncement, Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler } from "../../api/http";
+import { http, MutationHandler } from "../../../api/http";
 
 type CreateContestAnnouncementVariables = {
     message: string;

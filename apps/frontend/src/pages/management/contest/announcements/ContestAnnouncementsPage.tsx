@@ -7,15 +7,15 @@ import { z } from "zod";
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledInput } from "../../../../components/TitledInput";
 import { useContestContext } from "../../../../context/constestContext";
-import { useAllContestAnnouncements } from "../../../../hooks/contest/useAllContestAnnouncements";
-import { useCreateContestAnnouncement } from "../../../../hooks/contest/useCreateContestAnnouncement";
+import { useAllContestAnnouncements } from "../../../../hooks/contest/announcements/useAllContestAnnouncements";
+import { useCreateContestAnnouncement } from "../../../../hooks/contest/announcements/useCreateContestAnnouncement";
 
 const CreateAnnouncementSchema = z.object({
     message: z.string().min(1),
 });
 
 export const ContestAnnouncementsPage: FC = () => {
-    const contest = useContestContext();
+    const { contest } = useContestContext();
 
     const { register, handleSubmit, reset } = useForm<z.infer<typeof CreateAnnouncementSchema>>({
         resolver: zodResolver(CreateAnnouncementSchema),
