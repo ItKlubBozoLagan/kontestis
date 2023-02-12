@@ -17,19 +17,19 @@ import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
-    contest_id: string;
+    contestId: string;
 };
 
 export const ContestViewPage: FC = () => {
-    const { contest_id } = useParams<Properties>();
+    const { contestId } = useParams<Properties>();
 
-    const { data: contest } = useContest(BigInt(contest_id ?? 0n));
+    const { data: contest } = useContest(BigInt(contestId ?? 0n));
     const { data: problems } = useAllProblems(contest?.id, {
         enabled: !!contest?.id,
     });
 
-    const { data: announcements } = useAllContestAnnouncements(BigInt(contest_id ?? 0n));
-    const { data: questions } = useAllContestQuestions(BigInt(contest_id ?? 0n));
+    const { data: announcements } = useAllContestAnnouncements(BigInt(contestId ?? 0n));
+    const { data: questions } = useAllContestQuestions(BigInt(contestId ?? 0n));
 
     const running = useMemo(() => {
         if (!contest) return false;
@@ -72,7 +72,7 @@ export const ContestViewPage: FC = () => {
                             <SimpleButton
                                 tw={"w-1/3"}
                                 onClick={async () => {
-                                    await http.post("/contest/question/" + contest_id, {
+                                    await http.post("/contest/question/" + contestId, {
                                         question: newQuestion,
                                     });
                                     setNewQuestion("");

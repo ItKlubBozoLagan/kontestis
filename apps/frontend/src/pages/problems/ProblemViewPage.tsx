@@ -24,7 +24,7 @@ import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSu
 import { useInterval } from "../../hooks/useInterval";
 
 type Properties = {
-    problem_id: string;
+    problemId: string;
 };
 
 type LimitBoxProperties = {
@@ -50,16 +50,16 @@ const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value }) => {
 };
 
 export const ProblemViewPage: FC = () => {
-    const { problem_id } = useParams<Properties>();
+    const { problemId } = useParams<Properties>();
 
     const [expanded, setExpanded] = useState(false);
     const [language, setLanguage] = useState<EvaluationLanguage>("cpp");
 
     const [code, setCode] = useState("");
 
-    const { data: problem } = useProblem(BigInt(problem_id ?? 0));
+    const { data: problem } = useProblem(BigInt(problemId ?? 0));
 
-    const { data: submissions, refetch } = useAllProblemSubmissions(BigInt(problem_id ?? 0));
+    const { data: submissions, refetch } = useAllProblemSubmissions(BigInt(problemId ?? 0));
 
     useInterval(() => {
         const _ = refetch();
@@ -115,7 +115,7 @@ export const ProblemViewPage: FC = () => {
                                 setCode("");
 
                                 // TODO: react query mutations
-                                const _ = http.post("/submission/" + problem_id + "/", {
+                                const _ = http.post("/submission/" + problemId + "/", {
                                     code: btoa(code),
                                     language,
                                 });

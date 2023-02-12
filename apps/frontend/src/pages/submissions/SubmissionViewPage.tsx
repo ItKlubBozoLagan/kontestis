@@ -16,17 +16,17 @@ import { SubmissionTestcaseTable } from "./SubmissionTestcaseTable";
 Prism.manual = true;
 
 type Properties = {
-    submission_id: string;
+    submissionId: string;
 };
 
 export const SubmissionViewPage: FC = () => {
-    const { submission_id } = useParams<Properties>();
+    const { submissionId } = useParams<Properties>();
 
     // TODO: maybe verify submission_id
     const { isSuccess: isSubmissionSuccess, data: submission } = useSubmission(
-        BigInt(submission_id ?? 0)
+        BigInt(submissionId ?? 0)
     );
-    const { data: submissionCluster } = useSubmissionClusters(BigInt(submission_id ?? 0));
+    const { data: submissionCluster } = useSubmissionClusters(BigInt(submissionId ?? 0));
 
     useEffect(() => {
         if (!isSubmissionSuccess) return;

@@ -13,6 +13,12 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { ContestsPage } from "./pages/contests/ContestsPage";
 import { ContestViewPage } from "./pages/contests/ContestViewPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ContestAlertsPage } from "./pages/management/contest/alerts/ContestAlertsPage";
+import { ContestManagementLayout } from "./pages/management/contest/ContestManagementLayout";
+import { ContestOverviewPage } from "./pages/management/contest/ContestOverviewPage";
+import { ContestMessagesPage } from "./pages/management/contest/messages/ContestMessagesPage";
+import { ContestParticipantsPage } from "./pages/management/contest/participants/ContestParticipantsPage";
+import { ContestProblemsPage } from "./pages/management/contest/problems/ContestProblemsPage";
 import { ManagementPage } from "./pages/management/ManagementPage";
 import { ProblemsPage } from "./pages/problems/ProblemsPage";
 import { ProblemViewPage } from "./pages/problems/ProblemViewPage";
@@ -37,15 +43,15 @@ const dashboardRouter = createBrowserRouter([
                 element: <DashboardPage />,
             },
             {
-                path: "/submission/:submission_id",
+                path: "/submission/:submissionId",
                 element: <SubmissionViewPage />,
             },
             {
-                path: "/problem/:problem_id",
+                path: "/problem/:problemId",
                 element: <ProblemViewPage />,
             },
             {
-                path: "/contest/:contest_id",
+                path: "/contest/:contestId",
                 element: <ContestViewPage />,
             },
             {
@@ -64,6 +70,40 @@ const dashboardRouter = createBrowserRouter([
                 path: "/management",
                 element: <ManagementPage />,
             },
+            {
+                path: "/management/:contestId",
+                element: <ContestManagementLayout />,
+                children: [
+                    {
+                        path: "overview",
+                        element: <ContestOverviewPage />,
+                    },
+                    {
+                        path: "problems",
+                        element: <ContestProblemsPage />,
+                    },
+                    {
+                        path: "alerts",
+                        element: <ContestAlertsPage />,
+                    },
+                    {
+                        path: "messages",
+                        element: <ContestMessagesPage />,
+                    },
+                    {
+                        path: "participants",
+                        element: <ContestParticipantsPage />,
+                    },
+                    {
+                        index: true,
+                        element: <Navigate to={"problems"} replace />,
+                    },
+                ],
+            },
+            {
+                path: "/*",
+                element: <Navigate to={"/"} replace />,
+            },
         ],
     },
 ]);
@@ -79,7 +119,7 @@ const loginRouter = createBrowserRouter([
             },
             {
                 path: "/*",
-                element: <Navigate to={"/"} />,
+                element: <Navigate to={"/"} replace />,
             },
         ],
     },

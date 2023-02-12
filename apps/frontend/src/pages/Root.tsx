@@ -12,7 +12,7 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
         <div tw={"w-full flex flex-col items-center"}>
             {!hideNavbar && <NavBar />}
             {
-                <div tw={"flex flex-col w-1/2 max-w-[800px] items-center justify-start gap-5 py-6"}>
+                <div tw={"flex flex-col w-1/2 max-w-[900px] items-center justify-start gap-5 py-6"}>
                     <Outlet />
                 </div>
             }

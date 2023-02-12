@@ -39,7 +39,10 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
     return (
         <TableRow>
             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                <Link to={"/contest/" + contest.id} tw={"flex items-center gap-2"}>
+                <Link
+                    to={(!adminView ? "/contest/" : "") + contest.id}
+                    tw={"flex items-center gap-2"}
+                >
                     <FiList tw={"text-xl"} /> {cutText(contest.name, 32)}
                 </Link>
             </TableItem>
