@@ -29,8 +29,8 @@ const SubRoutes: NavItem[] = [
         icon: FiAlertTriangle,
     },
     {
-        display: "Messages",
-        href: "messages",
+        display: "Questions",
+        href: "questions",
         icon: FiMessageSquare,
     },
     {

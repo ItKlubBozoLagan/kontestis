@@ -16,9 +16,9 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { ContestAnnouncementsPage } from "./pages/management/contest/announcements/ContestAnnouncementsPage";
 import { ContestManagementLayout } from "./pages/management/contest/ContestManagementLayout";
 import { ContestOverviewPage } from "./pages/management/contest/ContestOverviewPage";
-import { ContestMessagesPage } from "./pages/management/contest/messages/ContestMessagesPage";
 import { ContestParticipantsPage } from "./pages/management/contest/participants/ContestParticipantsPage";
 import { ContestProblemsPage } from "./pages/management/contest/problems/ContestProblemsPage";
+import { ContestQuestionsPage } from "./pages/management/contest/questions/ContestQuestionsPage";
 import { ManagementPage } from "./pages/management/ManagementPage";
 import { ProblemsPage } from "./pages/problems/ProblemsPage";
 import { ProblemViewPage } from "./pages/problems/ProblemViewPage";
@@ -87,8 +87,8 @@ const dashboardRouter = createBrowserRouter([
                         element: <ContestAnnouncementsPage />,
                     },
                     {
-                        path: "messages",
-                        element: <ContestMessagesPage />,
+                        path: "questions",
+                        element: <ContestQuestionsPage />,
                     },
                     {
                         path: "participants",
