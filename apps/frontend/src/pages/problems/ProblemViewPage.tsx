@@ -138,14 +138,18 @@ export const ProblemViewPage: FC = () => {
                     </thead>
                     <tbody>
                         {!submissions && (
-                            <TableItem colSpan={5} tw={"text-center"}>
-                                Loading submissions...
-                            </TableItem>
+                            <TableRow>
+                                <TableItem colSpan={5} tw={"text-center"}>
+                                    Loading submissions...
+                                </TableItem>
+                            </TableRow>
                         )}
                         {submissions?.length === 0 && (
-                            <TableItem colSpan={5} tw={"text-center"}>
-                                No submissions yet :(
-                            </TableItem>
+                            <TableRow>
+                                <TableItem colSpan={5} tw={"text-center"}>
+                                    No submissions yet :(
+                                </TableItem>
+                            </TableRow>
                         )}
                         {submissions
                             ?.sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))

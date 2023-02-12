@@ -53,7 +53,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests"]);
+        queryClient.invalidateQueries(["contests", contest.id, "problems"]);
         createMutation.reset();
         reset();
         properties.onAfterClose?.();
