@@ -11,6 +11,7 @@ import { StatusCodes } from "http-status-codes";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
+import { extractContestMember } from "./extractContestMember";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
@@ -30,16 +31,9 @@ export const extractContest = (req: Request, optionalContestId?: Snowflake) => {
 
         if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return contest;
 
-        const contestMembers = await Database.selectOneFrom("contest_members", "*", {
-            contest_id: contest.id,
-            user_id: user.id,
-        });
+        const member = await extractContestMember(req, contest.id);
 
-        if (!contestMembers) throw new SafeError(StatusCodes.NOT_FOUND);
-
-        if (
-            !hasContestPermission(contestMembers.contest_permissions, ContestMemberPermissions.VIEW)
-        )
+        if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW))
             throw new SafeError(StatusCodes.NOT_FOUND);
 
         return contest;

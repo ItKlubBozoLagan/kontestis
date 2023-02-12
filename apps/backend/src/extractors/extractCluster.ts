@@ -1,4 +1,10 @@
-import { Snowflake } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    hasAdminPermission,
+    hasContestPermission,
+    Snowflake,
+} from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
@@ -6,8 +12,9 @@ import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractContest } from "./extractContest";
-import { extractModifiableProblem } from "./extractModifiableProblem";
+import { extractContestMember } from "./extractContestMember";
 import { extractProblem } from "./extractProblem";
+import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractCluster = async (req: Request, optionalClusterId?: Snowflake) => {
@@ -26,7 +33,15 @@ export const extractCluster = async (req: Request, optionalClusterId?: Snowflake
         if (Date.now() >= contest.start_time.getTime() + 1000 * contest.duration_seconds)
             return cluster;
 
-        await extractModifiableProblem(req, cluster.problem_id);
+        const user = await extractUser(req);
+        const member = await extractContestMember(req, contest.id);
+
+        if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return cluster;
+
+        if (
+            !hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE)
+        )
+            throw new SafeError(StatusCodes.FORBIDDEN);
 
         return cluster;
     });

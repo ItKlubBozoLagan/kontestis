@@ -8,9 +8,9 @@ import {
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractContest } from "./extractContest";
+import { extractContestMember } from "./extractContestMember";
 import { extractUser } from "./extractUser";
 
 export const extractModifiableContest = async (req: Request, contestId?: Snowflake) => {
@@ -18,14 +18,9 @@ export const extractModifiableContest = async (req: Request, contestId?: Snowfla
 
     if (hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)) return contest;
 
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
-        user_id: user.id,
-        contest_id: contest.id,
-    });
+    const member = await extractContestMember(req, contest.id);
 
-    if (!contestMember) throw new SafeError(StatusCodes.FORBIDDEN);
-
-    if (!hasContestPermission(contestMember.contest_permissions, ContestMemberPermissions.EDIT))
+    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     return contest;

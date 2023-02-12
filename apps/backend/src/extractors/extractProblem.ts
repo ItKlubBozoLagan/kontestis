@@ -1,4 +1,10 @@
-import { Snowflake } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    hasAdminPermission,
+    hasContestPermission,
+    Snowflake,
+} from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as R from "remeda";
@@ -7,7 +13,8 @@ import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractContest } from "./extractContest";
-import { extractModifiableContest } from "./extractModifiableContest";
+import { extractContestMember } from "./extractContestMember";
+import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractProblem = (req: Request, optionalProblemId?: Snowflake) => {
@@ -25,8 +32,15 @@ export const extractProblem = (req: Request, optionalProblemId?: Snowflake) => {
         if (Date.now() >= contest.start_time.getTime())
             return R.omit(problem, ["evaluation_script"]);
 
-        await extractModifiableContest(req, problem.contest_id);
+        const user = await extractUser(req);
 
-        return problem;
+        if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return problem;
+
+        const member = await extractContestMember(req, problem.contest_id);
+
+        if (hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
+            return problem;
+
+        throw new SafeError(StatusCodes.NOT_FOUND);
     });
 };
