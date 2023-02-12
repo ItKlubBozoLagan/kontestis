@@ -47,16 +47,16 @@ export const ContestAnnouncementsPage: FC = () => {
     }, [createMutation.isSuccess]);
 
     return (
-        <div tw={"flex flex-col gap-y-2"}>
+        <div tw={"flex flex-col gap-2 w-full items-center"}>
             {(announcements ?? [])
                 .sort((a, b) => Number(a.id - b.id))
                 .map((announcement) => (
                     <span key={announcement.id + ""}>{announcement.message}</span>
                 ))}
             <form onSubmit={onSubmit}>
-                <div tw={"flex flex-col gap-y-2 w-full"}>
-                    <TitledInput bigLabel {...register("message")} />
-                    <SimpleButton tw={"mt-2"}>Send announcement!</SimpleButton>
+                <div tw={"flex flex-col gap-2"}>
+                    <TitledInput label={"Announcement"} bigLabel {...register("message")} />
+                    <SimpleButton tw={"mt-2"}>Send</SimpleButton>
                 </div>
             </form>
         </div>
