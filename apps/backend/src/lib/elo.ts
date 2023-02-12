@@ -1,17 +1,9 @@
-type ContestMemberLeaderboardInfo = {
+export type ContestMemberLeaderboardInfo = {
     currentGlobalElo: number;
 
     // this field represents the points of all problems
-    // assume this is the same length as the `count` of problems
+    // assume this is the same length as the number of problems
     problemPoints: number[];
-};
-
-type ProblemInfo = {
-    count: number;
-
-    // array of max points for `count` problems
-    // assume this array is always `count` long
-    maxPoints: number[];
 };
 
 const computePerformance = (
@@ -50,7 +42,7 @@ const computePerformance = (
 
 export const computeELODifference = (
     targetMember: ContestMemberLeaderboardInfo,
-    problems: ProblemInfo,
+    problemMaxPoints: number[],
     leaderboard: ContestMemberLeaderboardInfo[] // does not include targetMember
 ) => {
     const userScores = leaderboard.map((mem) => {
@@ -61,7 +53,7 @@ export const computeELODifference = (
         return mem.currentGlobalElo;
     });
 
-    const maxScore = problems.maxPoints.reduce((sum, p) => sum + p);
+    const maxScore = problemMaxPoints.reduce((sum, p) => sum + p);
 
     const score = targetMember.problemPoints.reduce((sum, p) => sum + p);
 

@@ -9,7 +9,11 @@ export type ContestV1 = {
     public: boolean;
 };
 
-export type Contest = ContestV1;
+export type ContestV2 = ContestV1 & {
+    elo_applied: boolean;
+};
+
+export type Contest = ContestV2;
 
 export type ContestWithRegistrationStatus = Contest & {
     registered: boolean;

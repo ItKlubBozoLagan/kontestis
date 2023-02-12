@@ -55,6 +55,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
         start_time: date,
         duration_seconds: req.body.duration_seconds,
         public: req.body.public,
+        elo_applied: false,
     };
 
     await Database.insertInto("contests", contest);

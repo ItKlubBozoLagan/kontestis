@@ -1,10 +1,4 @@
-import axios, { AxiosResponse } from "axios";
-
-import { Globals } from "../globals";
-
-export const httpEvaluatorInstance = axios.create({
-    baseURL: Globals.evaluatorEndpoint,
-});
+import { AxiosResponse } from "axios";
 
 export const wrapAxios = <T>(request: Promise<AxiosResponse<T>>): Promise<T> =>
     request.then((data) => data.data);
