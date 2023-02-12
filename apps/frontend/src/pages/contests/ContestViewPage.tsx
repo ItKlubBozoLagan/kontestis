@@ -1,10 +1,16 @@
-import { FC } from "react";
+import { FC, useMemo, useState } from "react";
 import { FiList } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 
+import { http } from "../../api/http";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
+import { SimpleButton } from "../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
+import { TitledInput } from "../../components/TitledInput";
+import { TitledSection } from "../../components/TitledSection";
+import { useAllContestAnnouncements } from "../../hooks/contest/useAllContestAnnouncements";
+import { useAllContestQuestions } from "../../hooks/contest/useAllContestQuestions";
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
@@ -21,6 +27,20 @@ export const ContestViewPage: FC = () => {
     const { data: problems } = useAllProblems(contest?.id, {
         enabled: !!contest?.id,
     });
+
+    const { data: announcements } = useAllContestAnnouncements(BigInt(contest_id ?? 0n));
+    const { data: questions } = useAllContestQuestions(BigInt(contest_id ?? 0n));
+
+    const running = useMemo(() => {
+        if (!contest) return false;
+
+        return (
+            Date.now() > contest.start_time.getTime() &&
+            Date.now() < contest.start_time.getTime() + 1000 * contest.duration_seconds
+        );
+    }, [contest]);
+
+    const [newQuestion, setNewQuestion] = useState("");
 
     const problemScores = useAllProblemScores();
 
@@ -59,6 +79,41 @@ export const ContestViewPage: FC = () => {
                 </tbody>
             </Table>
             <Leaderboard contest={contest} problems={problems ?? []} />
+            {contest && running && (
+                <div tw={"w-full flex flex-row justify-between gap-x-3"}>
+                    <TitledSection title={"Announcements"}>
+                        {(announcements ?? []).map((announcement) => (
+                            <span key={announcement.id + ""}>{announcement.message}</span>
+                        ))}
+                    </TitledSection>
+                    <TitledSection title={"Questions"} tw={"flex w-full flex-col"}>
+                        {(questions ?? []).map((question) => (
+                            <TitledSection title={question.question} key={question.id + ""}>
+                                {question.response ?? "Waiting for response!"}
+                            </TitledSection>
+                        ))}
+                        <div tw={"flex flex-col gap-y-2"}>
+                            <TitledInput
+                                value={newQuestion}
+                                name={"Ask a question: "}
+                                tw={"w-full"}
+                                onChange={(event) => setNewQuestion(event.target.value)}
+                            ></TitledInput>
+                            <SimpleButton
+                                tw={"w-1/3"}
+                                onClick={async () => {
+                                    await http.post("/contest/question/" + contest_id, {
+                                        question: newQuestion,
+                                    });
+                                    setNewQuestion("");
+                                }}
+                            >
+                                Submit
+                            </SimpleButton>
+                        </div>
+                    </TitledSection>
+                </div>
+            )}
         </div>
     );
 };
