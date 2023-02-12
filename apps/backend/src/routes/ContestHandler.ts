@@ -2,7 +2,9 @@ import {
     AdminPermissions,
     AllowedUser,
     Contest,
+    ContestAnnouncement,
     ContestMemberPermissions,
+    ContestQuestion,
     hasAdminPermission,
     hasContestPermission,
 } from "@kontestis/models";
@@ -268,13 +270,15 @@ ContestHandler.post(
         )
             throw new SafeError(StatusCodes.FORBIDDEN);
 
-        await Database.insertInto("contest_announcements", {
+        const contestAnnouncement: ContestAnnouncement = {
             id: generateSnowflake(),
             contest_id: member.contest_id,
             message: req.body.message,
-        });
+        };
 
-        return respond(res, StatusCodes.OK);
+        await Database.insertInto("contest_announcements", contestAnnouncement);
+
+        return respond(res, StatusCodes.OK, contestAnnouncement);
     }
 );
 
@@ -295,14 +299,16 @@ const questionSchema = Type.Object({
 ContestHandler.post("/question/:contest_id", useValidation(questionSchema), async (req, res) => {
     const member = await extractContestMember(req);
 
-    await Database.insertInto("contest_questions", {
+    const question: ContestQuestion = {
         id: generateSnowflake(),
         contest_id: member.contest_id,
         question: req.body.question,
         contest_member_id: member.id,
-    });
+    };
 
-    return respond(res, StatusCodes.OK);
+    await Database.insertInto("contest_questions", question);
+
+    return respond(res, StatusCodes.OK, question);
 });
 
 ContestHandler.get("/question/:contest_id", async (req, res) => {
