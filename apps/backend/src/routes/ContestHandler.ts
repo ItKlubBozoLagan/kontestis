@@ -35,6 +35,7 @@ const contestSchema = Type.Object({
         maximum: 7 * 24 * 60 * 60,
     }),
     public: Type.Boolean(),
+    official: Type.Boolean(),
 });
 
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
@@ -48,12 +49,16 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     if (!date || (!req.body.past_contest && req.body.start_time_millis < Date.now()))
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
+    if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && req.body.official)
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
     const contest: Contest = {
         id: generateSnowflake(),
         name: req.body.name,
         admin_id: user.id,
         start_time: date,
         duration_seconds: req.body.duration_seconds,
+        official: req.body.official,
         public: req.body.public,
         elo_applied: false,
     };
@@ -65,10 +70,17 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
 
 ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, res) => {
     const contest = await extractModifiableContest(req);
+    const user = await extractUser(req);
 
     const date = new Date(req.body.start_time_millis);
 
     if (!date) throw new SafeError(StatusCodes.BAD_REQUEST);
+
+    if (
+        !hasAdminPermission(user.permissions, AdminPermissions.ADMIN) &&
+        contest.official !== req.body.official
+    )
+        throw new SafeError(StatusCodes.FORBIDDEN);
 
     await Database.update(
         "contests",
@@ -77,6 +89,7 @@ ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, r
             start_time: date,
             duration_seconds: req.body.duration_seconds,
             public: req.body.public,
+            official: req.body.official,
         },
         { id: contest.id }
     );
