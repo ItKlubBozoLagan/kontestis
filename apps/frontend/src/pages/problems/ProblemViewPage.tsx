@@ -49,7 +49,7 @@ const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value }) => {
     );
 };
 
-export const Problem: FC = () => {
+export const ProblemViewPage: FC = () => {
     const { problem_id } = useParams<Properties>();
 
     const [expanded, setExpanded] = useState(false);

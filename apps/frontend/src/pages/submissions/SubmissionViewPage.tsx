@@ -19,7 +19,7 @@ type Properties = {
     submission_id: string;
 };
 
-export const Submission: FC = () => {
+export const SubmissionViewPage: FC = () => {
     const { submission_id } = useParams<Properties>();
 
     // TODO: maybe verify submission_id

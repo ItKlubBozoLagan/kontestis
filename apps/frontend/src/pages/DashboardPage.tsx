@@ -10,7 +10,7 @@ import { useAllContests } from "../hooks/contest/useAllContests";
 import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
 import { useAuthStore } from "../state/auth";
 
-export const Dashboard: FC = () => {
+export const DashboardPage: FC = () => {
     const { user } = useAuthStore();
 
     const { data: contests } = useAllContests();

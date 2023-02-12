@@ -7,16 +7,16 @@ import { useQueryClient } from "react-query";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 
 import { http, wrapAxios } from "./api/http";
-import { Account } from "./pages/account/Account";
+import { AccountPage } from "./pages/account/AccountPage";
 import { LoginPage } from "./pages/auth/LoginPage";
-import { Contest } from "./pages/contests/Contest";
-import { Contests } from "./pages/contests/Contests";
-import { Dashboard } from "./pages/Dashboard";
+import { ContestsPage } from "./pages/contests/ContestsPage";
+import { ContestViewPage } from "./pages/contests/ContestViewPage";
+import { DashboardPage } from "./pages/DashboardPage";
 import { ManagementPage } from "./pages/management/ManagementPage";
-import { Problem } from "./pages/problems/Problem";
-import { Problems } from "./pages/problems/Problems";
+import { ProblemsPage } from "./pages/problems/ProblemsPage";
+import { ProblemViewPage } from "./pages/problems/ProblemViewPage";
 import { Root } from "./pages/Root";
-import { Submission } from "./pages/submissions/Submission";
+import { SubmissionViewPage } from "./pages/submissions/SubmissionViewPage";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
 
@@ -31,31 +31,31 @@ const dashboardRouter = createBrowserRouter([
         children: [
             {
                 path: "/",
-                element: <Dashboard />,
+                element: <DashboardPage />,
             },
             {
                 path: "/submission/:submission_id",
-                element: <Submission />,
+                element: <SubmissionViewPage />,
             },
             {
                 path: "/problem/:problem_id",
-                element: <Problem />,
+                element: <ProblemViewPage />,
             },
             {
                 path: "/contest/:contest_id",
-                element: <Contest />,
+                element: <ContestViewPage />,
             },
             {
                 path: "/problems",
-                element: <Problems />,
+                element: <ProblemsPage />,
             },
             {
                 path: "/contests",
-                element: <Contests />,
+                element: <ContestsPage />,
             },
             {
                 path: "/account",
-                element: <Account />,
+                element: <AccountPage />,
             },
             {
                 path: "/management",

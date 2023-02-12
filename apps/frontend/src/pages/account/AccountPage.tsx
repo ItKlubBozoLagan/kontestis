@@ -50,7 +50,7 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
     );
 };
 
-export const Account: FC = () => {
+export const AccountPage: FC = () => {
     const { user } = useAuthStore();
 
     // idk, eye candy

@@ -14,7 +14,7 @@ type Properties = {
     contest_id: string;
 };
 
-export const Contest: FC = () => {
+export const ContestViewPage: FC = () => {
     const { contest_id } = useParams<Properties>();
 
     const { data: contest } = useContest(BigInt(contest_id ?? 0n));

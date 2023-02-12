@@ -13,7 +13,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 
-export const Problems: FC = () => {
+export const ProblemsPage: FC = () => {
     const { data: contests } = useAllContests();
 
     // TODO: extract to hook

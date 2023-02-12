@@ -12,7 +12,7 @@ import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
 import { ContestListItem } from "./ContestListItem";
 
-export const Contests: FC = () => {
+export const ContestsPage: FC = () => {
     const { isSuccess, data: contests } = useAllContests();
     const { isSuccess: isSuccessMembers, data: contestMembers } = useSelfContestMembers();
 
