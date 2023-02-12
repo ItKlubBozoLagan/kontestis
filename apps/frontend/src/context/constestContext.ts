@@ -1,7 +1,9 @@
-import { Contest } from "@kontestis/models";
+import { Contest, ContestMember } from "@kontestis/models";
 import { createContext, useContext } from "react";
 
-export const ContestContext = createContext<Contest | null>(null);
+export const ContestContext = createContext<{ contest: Contest; member: ContestMember } | null>(
+    null
+);
 
 export const useContestContext = () => {
     const value = useContext(ContestContext);

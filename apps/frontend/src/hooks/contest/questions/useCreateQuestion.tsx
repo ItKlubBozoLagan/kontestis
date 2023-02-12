@@ -1,7 +1,7 @@
 import { Contest, Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../api/http";
+import { http, MutationHandler, wrapAxios } from "../../../api/http";
 
 type CreateQuestionVariables = {
     question: string;

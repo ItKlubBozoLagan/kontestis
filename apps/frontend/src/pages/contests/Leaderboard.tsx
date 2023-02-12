@@ -5,7 +5,7 @@ import tw from "twin.macro";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
-import { useAllContestMembers } from "../../hooks/contest/useAllContestMembers";
+import { useAllContestMembers } from "../../hooks/contest/participants/useAllContestMembers";
 import { useAuthStore } from "../../state/auth";
 
 type Properties = {

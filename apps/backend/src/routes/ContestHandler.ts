@@ -215,7 +215,11 @@ ContestHandler.get("/members/self", async (req, res) => {
         "ALLOW FILTERING"
     );
 
-    return respond(res, StatusCodes.OK, contestMembers);
+    return respond(
+        res,
+        StatusCodes.OK,
+        contestMembers.map((it) => ({ ...it, score: it.score ?? {} }))
+    );
 });
 
 ContestHandler.get("/members/:contest_id", async (req, res) => {
@@ -230,7 +234,11 @@ ContestHandler.get("/members/:contest_id", async (req, res) => {
         "ALLOW FILTERING"
     );
 
-    return respond(res, StatusCodes.OK, contestMembers);
+    return respond(
+        res,
+        StatusCodes.OK,
+        contestMembers.map((it) => ({ ...it, score: it.score ?? {} }))
+    );
 });
 
 ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {

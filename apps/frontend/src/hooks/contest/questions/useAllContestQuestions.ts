@@ -1,7 +1,7 @@
 import { ContestQuestion, Snowflake } from "@kontestis/models";
 import { useQuery } from "react-query";
 
-import { http, QueryHandler, wrapAxios } from "../../api/http";
+import { http, QueryHandler, wrapAxios } from "../../../api/http";
 
 export const useAllContestQuestions: QueryHandler<ContestQuestion[], Snowflake> = (
     contest_id,

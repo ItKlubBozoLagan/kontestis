@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { NavItem } from "../../../components/NavElement";
 import { ContestContext } from "../../../context/constestContext";
 import { useContest } from "../../../hooks/contest/useContest";
+import { useSelfContestMembers } from "../../../hooks/contest/useSelfContestMembers";
 
 type PathParameters = {
     contestId: string;
@@ -50,18 +51,26 @@ export const ContestManagementLayout: FC = () => {
         data: contest,
     } = useContest(BigInt(/\d+/g.test(contestId) ? contestId : "0"));
 
+    const {
+        isSuccess: isMemberSuccess,
+        isError: isMemberError,
+        data: members,
+    } = useSelfContestMembers();
+
     useEffect(() => {
-        if (!isError) return;
+        if (!isError || !isMemberError) return;
 
         navigate("..");
     }, [isError, navigate]);
 
-    if (!isSuccess) return <div>Loading...</div>;
+    if (!isSuccess || !isMemberSuccess) return <div>Loading...</div>;
 
     return (
         <div tw={"flex justify-center w-full"}>
             <div tw={"max-w-[1100px] w-full pt-12 rounded flex flex-col gap-12"}>
-                <ContestContext.Provider value={contest}>
+                <ContestContext.Provider
+                    value={{ contest, member: members.find((it) => it.contest_id === contest.id)! }}
+                >
                     <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
                     <div tw={"flex flex-col w-full"}>
                         <div tw={"flex w-full bg-neutral-200"}>
