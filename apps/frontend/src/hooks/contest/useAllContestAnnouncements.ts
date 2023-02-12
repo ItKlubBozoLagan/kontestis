@@ -8,7 +8,7 @@ export const useAllContestAnnouncements: QueryHandler<ContestAnnouncement[], Sno
     ...options
 ) =>
     useQuery({
-        queryKey: ["contest", contest_id, "announcements"],
+        queryKey: ["contests", contest_id, "announcements"],
         queryFn: () => wrapAxios(http.get("/contest/announcement/" + contest_id)),
         ...options,
     });

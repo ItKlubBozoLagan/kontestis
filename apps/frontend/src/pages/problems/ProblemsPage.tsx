@@ -19,7 +19,7 @@ export const ProblemsPage: FC = () => {
     // TODO: extract to hook
     const rawProblems = useQueries(
         (contests ?? []).map((contest) => ({
-            queryKey: ["contest", contest.id, "problem"],
+            queryKey: ["contests", contest.id, "problem"],
             queryFn: () =>
                 wrapAxios<ProblemWithScore[]>(
                     http.get("/problem", { params: { contest_id: contest.id } })

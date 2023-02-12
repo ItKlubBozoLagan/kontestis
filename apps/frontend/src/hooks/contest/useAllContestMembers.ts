@@ -10,7 +10,7 @@ export const useAllContestMembers: QueryHandler<
     Snowflake
 > = (contest_id, ...options) =>
     useQuery({
-        queryKey: ["contest", contest_id, "members"],
+        queryKey: ["contests", contest_id, "members"],
         queryFn: () => wrapAxios(http.get("/contest/leaderboard/" + contest_id)),
         ...options,
     });
