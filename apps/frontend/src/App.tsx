@@ -3,6 +3,7 @@ import "./globals.scss";
 
 import { FullUser } from "@kontestis/models";
 import React, { useEffect } from "react";
+import Modal from "react-modal";
 import { useQueryClient } from "react-query";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 
@@ -19,6 +20,8 @@ import { Root } from "./pages/Root";
 import { SubmissionViewPage } from "./pages/submissions/SubmissionViewPage";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
+
+Modal.setAppElement("#root");
 
 BigInt.prototype.toJSON = function () {
     return this.toString();
