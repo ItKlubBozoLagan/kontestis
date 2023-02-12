@@ -23,8 +23,8 @@ const SubRoutes: NavItem[] = [
         icon: FiGrid,
     },
     {
-        display: "Alerts",
-        href: "alerts",
+        display: "Announcements",
+        href: "announcements",
         icon: FiAlertTriangle,
     },
     {

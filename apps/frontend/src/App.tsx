@@ -13,7 +13,7 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { ContestsPage } from "./pages/contests/ContestsPage";
 import { ContestViewPage } from "./pages/contests/ContestViewPage";
 import { DashboardPage } from "./pages/DashboardPage";
-import { ContestAlertsPage } from "./pages/management/contest/alerts/ContestAlertsPage";
+import { ContestAnnouncementsPage } from "./pages/management/contest/alerts/ContestAnnouncementsPage";
 import { ContestManagementLayout } from "./pages/management/contest/ContestManagementLayout";
 import { ContestOverviewPage } from "./pages/management/contest/ContestOverviewPage";
 import { ContestMessagesPage } from "./pages/management/contest/messages/ContestMessagesPage";
@@ -83,8 +83,8 @@ const dashboardRouter = createBrowserRouter([
                         element: <ContestProblemsPage />,
                     },
                     {
-                        path: "alerts",
-                        element: <ContestAlertsPage />,
+                        path: "announcements",
+                        element: <ContestAnnouncementsPage />,
                     },
                     {
                         path: "messages",
