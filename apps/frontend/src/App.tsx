@@ -12,6 +12,7 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { Contest } from "./pages/contests/Contest";
 import { Contests } from "./pages/contests/Contests";
 import { Dashboard } from "./pages/Dashboard";
+import { ManagementPage } from "./pages/management/ManagementPage";
 import { Problem } from "./pages/problems/Problem";
 import { Problems } from "./pages/problems/Problems";
 import { Root } from "./pages/Root";
@@ -55,6 +56,10 @@ const dashboardRouter = createBrowserRouter([
             {
                 path: "/account",
                 element: <Account />,
+            },
+            {
+                path: "/management",
+                element: <ManagementPage />,
             },
         ],
     },

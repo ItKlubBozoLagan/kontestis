@@ -35,7 +35,7 @@ export const Dashboard: FC = () => {
     return (
         <div>
             <Header />
-            <Table tw={"w-full"}>
+            <Table tw={"w-full table-fixed"}>
                 <thead>
                     <TableHeadRow>
                         <TableHeadItem>Total Contests</TableHeadItem>

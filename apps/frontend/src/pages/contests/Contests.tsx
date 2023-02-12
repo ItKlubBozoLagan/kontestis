@@ -4,11 +4,9 @@ import {
     hasContestPermission,
 } from "@kontestis/models";
 import { FC, useMemo } from "react";
-import { FiPlus } from "react-icons/all";
 import * as R from "remeda";
 
 import { PageTitle } from "../../components/PageTitle";
-import { SimpleButton } from "../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
@@ -56,10 +54,7 @@ export const Contests: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col"}>
-            <PageTitle>
-                Contests
-                <SimpleButton prependIcon={FiPlus}>Create new</SimpleButton>
-            </PageTitle>
+            <PageTitle>Contests</PageTitle>
             <Table>
                 <thead>
                     <TableHeadRow>

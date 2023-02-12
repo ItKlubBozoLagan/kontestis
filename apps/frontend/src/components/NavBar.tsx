@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { FiLogOut } from "react-icons/all";
+import { FiClock, FiCpu, FiLayers, FiLogOut, FiSettings, FiUser } from "react-icons/all";
 import tw from "twin.macro";
 
 import { useAuthStore } from "../state/auth";
@@ -10,22 +10,22 @@ const items: NavItem[] = [
     {
         display: "Dashboard",
         href: "",
-        icon: "dashboard",
+        icon: FiCpu,
     },
     {
         display: "Contests",
         href: "contests",
-        icon: "contests",
+        icon: FiClock,
     },
     {
         display: "Problems",
         href: "problems",
-        icon: "problems",
+        icon: FiLayers,
     },
     {
         display: "Account",
         href: "account",
-        icon: "account",
+        icon: FiUser,
     },
 ];
 
@@ -54,7 +54,14 @@ export const NavBar: FC = () => {
                     ))}
                 </div>
             </div>
-            <div>
+            <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
+                <NavElement
+                    item={{
+                        display: "Management",
+                        href: "management",
+                        icon: FiSettings,
+                    }}
+                />
                 <div
                     tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
                     onClick={() => setToken("")}
