@@ -1,3 +1,5 @@
+import { PermissionData } from "permissio";
+
 import { Snowflake } from "./Snowflake";
 
 export type ContestV1 = {
@@ -19,6 +21,7 @@ export type ContestV3 = ContestV2 & {
 
 export type Contest = ContestV3;
 
-export type ContestWithRegistrationStatus = Contest & {
+export type ContestWithPermissions = Contest & {
     registered: boolean;
+    permissions: PermissionData;
 };

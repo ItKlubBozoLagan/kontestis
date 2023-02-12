@@ -91,6 +91,7 @@ importers:
 
   apps/frontend:
     specifiers:
+      '@hookform/resolvers': ^2.9.11
       '@kontestis/models': workspace:^1.0.0
       '@kontestis/utils': workspace:^1.0.0
       '@react-oauth/google': ^0.7.0
@@ -135,6 +136,7 @@ importers:
       zod: ^3.20.2
       zustand: ^4.3.2
     dependencies:
+      '@hookform/resolvers': 2.9.11_react-hook-form@7.43.1
       '@kontestis/models': link:../../packages/models
       '@kontestis/utils': link:../../packages/utils
       '@react-oauth/google': 0.7.0_biqbaboplfbrettd7655fr4n2y
@@ -755,6 +757,14 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /@hookform/resolvers/2.9.11_react-hook-form@7.43.1:
+    resolution: {integrity: sha512-bA3aZ79UgcHj7tFV7RlgThzwSSHZgvfbt2wprldRkYBcMopdMvHyO17Wwp/twcJasNFischFfS7oz8Katz8DdQ==}
+    peerDependencies:
+      react-hook-form: ^7.0.0
+    dependencies:
+      react-hook-form: 7.43.1_react@18.2.0
+    dev: false
 
   /@humanwhocodes/config-array/0.11.8:
     resolution: {integrity: sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==}

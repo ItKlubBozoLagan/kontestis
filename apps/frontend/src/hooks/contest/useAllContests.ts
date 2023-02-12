@@ -5,7 +5,7 @@ import { http, QueryHandler, wrapAxios } from "../../api/http";
 
 export const useAllContests: QueryHandler<Contest[]> = (options) =>
     useQuery({
-        queryKey: ["contest"],
+        queryKey: ["contests"],
         queryFn: () => wrapAxios(http.get("/contest")),
         ...options,
     });

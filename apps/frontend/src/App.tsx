@@ -117,7 +117,7 @@ export const App = () => {
                     setIsLoggedIn(true);
                 })
                 .catch(() => setToken(""));
-        }, 2000);
+        }, 20_000);
 
         return () => clearInterval(interval);
     }, []);

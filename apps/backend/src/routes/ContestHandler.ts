@@ -11,7 +11,7 @@ import {
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { grantPermission } from "permissio";
+import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import * as R from "remeda";
 import { eqIn } from "scyllo";
 
@@ -30,7 +30,7 @@ const ContestHandler = Router();
 
 const contestSchema = Type.Object({
     name: Type.String(),
-    past_contest: Type.Boolean({ default: false }),
+    past_contest: Type.Optional(Type.Boolean({ default: false })),
     start_time_millis: Type.Number(),
     duration_seconds: Type.Number({
         minimum: 10 * 60,
@@ -57,7 +57,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const contest: Contest = {
         id: generateSnowflake(),
         name: req.body.name,
-        admin_id: user.id,
+        admin_id: user.id, // legacy
         start_time: date,
         duration_seconds: req.body.duration_seconds,
         official: req.body.official,
@@ -65,7 +65,15 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
         elo_applied: false,
     };
 
-    await Database.insertInto("contests", contest);
+    await Promise.all([
+        Database.insertInto("contests", contest),
+        Database.insertInto("contest_members", {
+            id: generateSnowflake(),
+            user_id: user.id,
+            contest_id: contest.id,
+            contest_permissions: grantPermission(EMPTY_PERMISSIONS, ContestMemberPermissions.ADMIN),
+        }),
+    ]);
 
     return respond(res, StatusCodes.OK, contest);
 });

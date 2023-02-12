@@ -1,4 +1,4 @@
-import { ContestWithRegistrationStatus } from "@kontestis/models";
+import { ContestWithPermissions } from "@kontestis/models";
 import { cutText, parseTime, toCroatianLocale } from "@kontestis/utils";
 import { FC, useEffect, useState } from "react";
 import { FiCheck, FiList, FiX } from "react-icons/all";
@@ -9,10 +9,11 @@ import { http } from "../../api/http";
 import { TableItem, TableRow } from "../../components/Table";
 
 type Properties = {
-    contest: ContestWithRegistrationStatus;
+    contest: ContestWithPermissions;
+    adminView?: boolean;
 };
 
-export const ContestListItem: FC<Properties> = ({ contest }) => {
+export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
     const [time, setTime] = useState(Date.now());
     const [state, setState] = useState<"pending" | "started" | "finished">("pending");
 
@@ -59,39 +60,41 @@ export const ContestListItem: FC<Properties> = ({ contest }) => {
                       )
                     : parseTime(contest.duration_seconds * 1000)}
             </TableItem>
-            <TableItem>
-                {state != "finished" ? (
-                    registered ? (
-                        <span tw={"text-green-700"}>Registered</span>
-                    ) : (
-                        <span
-                            tw={"text-yellow-600 hover:(text-yellow-700 cursor-pointer)"}
-                            onClick={async () => {
-                                await http
-                                    .post("/contest/register/" + contest.id)
-                                    .then(() =>
-                                        queryClient.invalidateQueries([
-                                            "contests",
-                                            "members",
-                                            "self",
-                                        ])
-                                    )
-                                    .then(() => setRegistered(true));
-                            }}
-                        >
-                            Register
-                        </span>
-                    )
-                ) : (
-                    <div tw={"flex items-center"}>
-                        {registered ? (
-                            <FiCheck tw={"text-green-600"} size={"16px"} />
+            {!adminView && (
+                <TableItem>
+                    {state != "finished" ? (
+                        registered ? (
+                            <span tw={"text-green-700"}>Registered</span>
                         ) : (
-                            <FiX tw={"text-red-400"} size={"18px"} />
-                        )}
-                    </div>
-                )}
-            </TableItem>
+                            <span
+                                tw={"text-yellow-600 hover:(text-yellow-700 cursor-pointer)"}
+                                onClick={async () => {
+                                    await http
+                                        .post("/contest/register/" + contest.id)
+                                        .then(() =>
+                                            queryClient.invalidateQueries([
+                                                "contests",
+                                                "members",
+                                                "self",
+                                            ])
+                                        )
+                                        .then(() => setRegistered(true));
+                                }}
+                            >
+                                Register
+                            </span>
+                        )
+                    ) : (
+                        <div tw={"flex items-center"}>
+                            {registered ? (
+                                <FiCheck tw={"text-green-600"} size={"16px"} />
+                            ) : (
+                                <FiX tw={"text-red-400"} size={"18px"} />
+                            )}
+                        </div>
+                    )}
+                </TableItem>
+            )}
         </TableRow>
     );
 };
