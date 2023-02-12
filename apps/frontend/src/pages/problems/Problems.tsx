@@ -49,7 +49,7 @@ export const Problems: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col"}>
-            <PageTitle tw={"w-full"}>Problems:</PageTitle>
+            <PageTitle tw={"w-full"}>Problems</PageTitle>
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>

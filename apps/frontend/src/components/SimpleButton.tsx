@@ -1,16 +1,26 @@
 import { ButtonHTMLAttributes, FC } from "react";
+import { IconType } from "react-icons";
+import tw from "twin.macro";
 
-export const SimpleButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
+type Properties = {
+    prependIcon?: IconType;
+};
+
+export const SimpleButton: FC<ButtonHTMLAttributes<HTMLButtonElement> & Properties> = ({
     children,
+    prependIcon: PrependIcon,
     ...properties
 }) => {
     return (
         <button
-            tw={
-                "w-auto bg-red-300 text-neutral-800 border-neutral-500 font-mono border hover:(bg-red-400 text-neutral-900) p-1.5 cursor-pointer"
-            }
+            css={[
+                tw`w-auto bg-neutral-300 text-black font-mono px-2 py-1 cursor-pointer h-[max-content]`,
+                tw`border border-neutral-500 hover:bg-neutral-400/70 active:(bg-neutral-400/80 pt-1.5 pb-0.5)`,
+                tw`flex gap-1 items-center`,
+            ]}
             {...properties}
         >
+            {PrependIcon && <PrependIcon size={14} />}
             {children}
         </button>
     );
