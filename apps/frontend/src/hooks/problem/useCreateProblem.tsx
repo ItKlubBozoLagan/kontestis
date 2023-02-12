@@ -1,10 +1,15 @@
-import { Problem, Snowflake } from "@kontestis/models";
+import { EvaluationVariant, Problem, Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
 import { http, MutationHandler, wrapAxios } from "../../api/http";
 
 type CreateProblemVariables = {
-    name: string;
+    title: string;
+    description: string;
+    evaluation_variant: EvaluationVariant;
+    evaluation_script?: string;
+    time_limit_millis: number;
+    memory_limit_megabytes: number;
 };
 
 export const useCreateProblem: MutationHandler<CreateProblemVariables, Problem, Snowflake> = (

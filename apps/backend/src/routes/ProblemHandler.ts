@@ -33,7 +33,7 @@ const problemSchema = Type.Object({
     evaluation_variant: Type.Enum(EvaluationSchema),
     evaluation_script: Type.Optional(Type.String()),
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10_000 }),
-    memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 1024 }),
+    memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 10_240 }),
 });
 
 ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, res) => {

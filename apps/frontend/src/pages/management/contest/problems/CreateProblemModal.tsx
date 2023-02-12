@@ -12,11 +12,11 @@ import { useCreateProblem } from "../../../../hooks/problem/useCreateProblem";
 import { ModalStyles } from "../../../../util/ModalStyles";
 
 const CreateProblemSchema = z.object({
-    name: z.string().min(1),
+    title: z.string().min(1),
     description: z.string().min(1),
-    evaluation_script: z.string().min(1).optional(),
-    time_limit_millis: z.number(),
-    memory_limit_megabytes: z.number(),
+    evaluation_script: z.string(),
+    time_limit_millis: z.coerce.number(),
+    memory_limit_megabytes: z.coerce.number(),
 });
 
 export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
@@ -38,8 +38,17 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
 
-        createMutation.mutate(data);
+        createMutation.mutate({
+            ...data,
+            evaluation_script:
+                data.evaluation_script.trim().length > 0 ? data.evaluation_script : undefined,
+            evaluation_variant: data.evaluation_script.trim().length > 0 ? "script" : "plain",
+        });
     });
+
+    useEffect(() => {
+        console.log(errors);
+    }, [errors]);
 
     useEffect(() => {
         if (!createMutation.isSuccess) return;
@@ -67,7 +76,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
             </div>
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col items-stretch gap-2"}>
-                    <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("name")} />
+                    <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("title")} />
                     <TitledInput
                         bigLabel
                         label={"Description"}
