@@ -12,7 +12,7 @@ export const Breadcrumb: FC<Properties> = ({ prependIcon: Icon, color, borderCol
     return (
         <div
             tw={
-                "rounded px-1.5 text-sm flex justify-center items-center gap-2 border border-solid select-none w-[max-content]"
+                "rounded px-1.5 text-sm flex justify-center items-center gap-2 border border-solid select-none w-[max-content] text-black"
             }
             style={{ backgroundColor: color, borderColor }}
         >

@@ -1,5 +1,5 @@
 import { Contest, ProblemWithScore } from "@kontestis/models";
-import { FC, useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import * as R from "remeda";
 import tw from "twin.macro";
 

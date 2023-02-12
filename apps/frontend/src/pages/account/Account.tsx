@@ -5,6 +5,7 @@ import { FcGoogle, RxTriangleDown } from "react-icons/all";
 import { theme } from "twin.macro";
 
 import { Breadcrumb } from "../../components/Breadcrumb";
+import { RankBreadcrumb } from "../../components/RankBreadcrumb";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
 import { useAuthStore } from "../../state/auth";
@@ -14,7 +15,6 @@ import {
     GlobalRank,
     minScoreForRank,
     nextRankFromRank,
-    rankFromElo,
 } from "../../util/rank";
 
 type RankComponentProperties = {
@@ -67,12 +67,7 @@ export const Account: FC = () => {
                             alt={"Profile avatar"}
                             referrerPolicy={"no-referrer"}
                         />
-                        <Breadcrumb
-                            color={colorFromRank(rankFromElo(user.elo))}
-                            borderColor={darkenHex(colorFromRank(rankFromElo(user.elo)), 40)}
-                        >
-                            {capitalize(rankFromElo(user.elo))} ({user.elo.toString()})
-                        </Breadcrumb>
+                        <RankBreadcrumb showExact />
                     </div>
                     <div tw={"flex flex-col gap-2"}>
                         <div tw={"flex gap-2"}>
