@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useEffect } from "react";
+import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
+import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import { z } from "zod";
@@ -15,7 +16,7 @@ const CreateAnnouncementSchema = z.object({
 });
 
 export const ContestAnnouncementsPage: FC = () => {
-    const { contest } = useContestContext();
+    const { contest, member } = useContestContext();
 
     const { register, handleSubmit, reset } = useForm<z.infer<typeof CreateAnnouncementSchema>>({
         resolver: zodResolver(CreateAnnouncementSchema),
@@ -53,12 +54,17 @@ export const ContestAnnouncementsPage: FC = () => {
                 .map((announcement) => (
                     <span key={announcement.id + ""}>{announcement.message}</span>
                 ))}
-            <form onSubmit={onSubmit}>
-                <div tw={"flex flex-col gap-2"}>
-                    <TitledInput label={"Announcement"} bigLabel {...register("message")} />
-                    <SimpleButton tw={"mt-2"}>Send</SimpleButton>
-                </div>
-            </form>
+            {hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.CREATE_ANNOUNCEMENT
+            ) && (
+                <form onSubmit={onSubmit}>
+                    <div tw={"flex flex-col gap-2"}>
+                        <TitledInput label={"Announcement"} bigLabel {...register("message")} />
+                        <SimpleButton tw={"mt-2"}>Send</SimpleButton>
+                    </div>
+                </form>
+            )}
         </div>
     );
 };
