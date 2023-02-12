@@ -4,7 +4,7 @@ import { FiPlus } from "react-icons/all";
 
 import { PageTitle } from "../../components/PageTitle";
 import { SimpleButton } from "../../components/SimpleButton";
-import { Table, TableHeadItem, TableHeadRow, TableItem } from "../../components/Table";
+import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useMappedContests } from "../../hooks/contest/useMappedContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
@@ -52,11 +52,13 @@ export const ManagementPage: FC = () => {
                     </TableHeadRow>
                 </thead>
                 <tbody>
-                    {myContests.length === 0 && (
-                        <TableItem colSpan={4} tw={"text-center"}>
-                            None so far
-                        </TableItem>
-                    )}
+                    <TableRow>
+                        {myContests.length === 0 && (
+                            <TableItem colSpan={4} tw={"text-center"}>
+                                None so far
+                            </TableItem>
+                        )}
+                    </TableRow>
                     {myContests.map((c) => (
                         <ContestListItem adminView contest={c} key={c.id.toString()} />
                     ))}
