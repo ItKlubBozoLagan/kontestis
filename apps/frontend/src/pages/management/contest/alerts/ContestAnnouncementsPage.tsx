@@ -56,7 +56,7 @@ export const ContestAnnouncementsPage: FC = () => {
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col gap-y-2 w-full"}>
                     <TitledInput bigLabel {...register("message")} />
-                    <SimpleButton tw={"mt-2"}>Send alert</SimpleButton>
+                    <SimpleButton tw={"mt-2"}>Send announcement!</SimpleButton>
                 </div>
             </form>
         </div>
