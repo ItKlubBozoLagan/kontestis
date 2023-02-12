@@ -85,7 +85,8 @@ export const startEloTask = () => {
 
         const toDo = potentiallyPending.filter(
             (contest) =>
-                Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000
+                Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000 &&
+                contest.official
         );
 
         Logger.debug(

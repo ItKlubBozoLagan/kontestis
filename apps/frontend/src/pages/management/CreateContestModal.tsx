@@ -37,6 +37,8 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
         defaultValues: {
             duration_hours: 3,
             duration_minutes: 0,
+            official: false,
+            public: false,
         },
     });
 
@@ -122,7 +124,7 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
                             <div tw={"w-full"}>
                                 <TitledSwitch
                                     label={"Scoring"}
-                                    choice={["Official", "Unofficial"]}
+                                    choice={["Unofficial", "Official"]}
                                     onChange={(value) => setValue("official", value === "Official")}
                                 />
                             </div>
