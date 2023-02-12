@@ -1,7 +1,8 @@
+import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
 import { FC, useEffect } from "react";
 import { FiActivity, FiAlertTriangle, FiGrid, FiMessageSquare, FiUsers } from "react-icons/all";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import { NavItem } from "../../../components/NavElement";
 import { ContestContext } from "../../../context/constestContext";
@@ -65,12 +66,18 @@ export const ContestManagementLayout: FC = () => {
 
     if (!isSuccess || !isMemberSuccess) return <div>Loading...</div>;
 
+    const member = members.find((it) => it.contest_id === contest.id);
+
+    if (
+        !member ||
+        !hasContestPermission(member.contest_permissions, ContestMemberPermissions.ADMIN)
+    )
+        return <Navigate to={".."} />;
+
     return (
         <div tw={"flex justify-center w-full"}>
             <div tw={"max-w-[1100px] w-full pt-12 rounded flex flex-col gap-12"}>
-                <ContestContext.Provider
-                    value={{ contest, member: members.find((it) => it.contest_id === contest.id)! }}
-                >
+                <ContestContext.Provider value={{ contest, member }}>
                     <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
                     <div tw={"flex flex-col w-full"}>
                         <div tw={"flex w-full bg-neutral-200"}>

@@ -1,14 +1,20 @@
+import { darkenHex } from "@kontestis/utils";
 import { FC } from "react";
 import { IconType } from "react-icons";
 
 type Properties = {
     prependIcon?: IconType;
     color: string;
-    borderColor: string;
+    borderColor?: string;
     children: string | string[];
 };
 
-export const Breadcrumb: FC<Properties> = ({ prependIcon: Icon, color, borderColor, children }) => {
+export const Breadcrumb: FC<Properties> = ({
+    prependIcon: Icon,
+    color,
+    borderColor = darkenHex(color, 60),
+    children,
+}) => {
     return (
         <div
             tw={

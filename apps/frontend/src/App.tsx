@@ -164,5 +164,9 @@ export const App = () => {
 
     if (token.length > 0 && !isLoggedIn) return <></>;
 
-    return <RouterProvider router={isLoggedIn ? dashboardRouter : loginRouter} />;
+    return isLoggedIn ? (
+        <RouterProvider router={dashboardRouter} />
+    ) : (
+        <RouterProvider router={loginRouter} />
+    );
 };

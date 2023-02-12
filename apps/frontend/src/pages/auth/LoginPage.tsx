@@ -36,7 +36,6 @@ const LoginBase: FC = () => {
                     </span>
                     <GoogleLogin
                         onSuccess={onLoginSuccess}
-                        hosted_domain={"skole.hr"}
                         width={"256px"}
                         size={"large"}
                         text={"signin"}

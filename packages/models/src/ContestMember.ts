@@ -11,3 +11,9 @@ export type ContestMemberV1 = {
 };
 
 export type ContestMember = ContestMemberV1;
+
+export type ContestMemberWithInfo = ContestMember & {
+    full_name: string;
+    email: string;
+    elo: number;
+};

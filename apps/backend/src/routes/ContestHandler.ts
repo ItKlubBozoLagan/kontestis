@@ -248,21 +248,26 @@ ContestHandler.get("/leaderboard/:contest_id", async (req, res) => {
         contest_id: contest.id,
     });
 
-    const users = await Database.selectFrom("known_users", ["user_id", "full_name"], {
+    const users = await Database.selectFrom("known_users", "*", {
         user_id: eqIn(...contestMembers.map((it) => it.user_id)),
+    });
+
+    const databaseUsers = await Database.selectFrom("users", "*", {
+        id: eqIn(...contestMembers.map((it) => it.user_id)),
     });
 
     return respond(
         res,
         StatusCodes.OK,
         contestMembers
-            .map((it) =>
-                R.addProp(
-                    it,
+            .map((it) => ({
+                ...it,
+                ...R.pick(users.find((user) => user.user_id === it.user_id)!, [
+                    "email",
                     "full_name",
-                    users.find((user) => user.user_id === it.user_id)?.full_name ?? "Joe Biden"
-                )
-            )
+                ]),
+                ...R.pick(databaseUsers.find((user) => user.id === it.user_id)!, ["elo"]),
+            }))
             .map((it) => ({ ...it, score: it.score ?? {} }))
     );
 });
@@ -464,6 +469,7 @@ ContestHandler.delete("/members/:contest_id/:user_id", async (req, res) => {
     if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
 
     await Database.deleteFrom("contest_members", "*", {
+        id: targetMember.id,
         user_id: targetId,
         contest_id: contest.id,
     });

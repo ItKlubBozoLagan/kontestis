@@ -19,8 +19,6 @@ export const ManagementPage: FC = () => {
 
     const completeContests = useMappedContests(contests, contestMembers);
 
-    // useEffect(() => console.log(completeContests), [completeContests]);
-
     const myContests = useMemo(
         () =>
             completeContests.filter((it) =>

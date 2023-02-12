@@ -1,10 +1,11 @@
 import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
-import { capitalize, darkenHex, textToColor } from "@kontestis/utils";
-import React, { FC, useMemo } from "react";
+import { capitalize } from "@kontestis/utils";
+import React, { FC } from "react";
 import { FcGoogle, RxTriangleDown } from "react-icons/all";
 import { theme } from "twin.macro";
 
 import { Breadcrumb } from "../../components/Breadcrumb";
+import { DomainBreadcrumb } from "../../components/DomainBreadcrumb";
 import { RankBreadcrumb } from "../../components/RankBreadcrumb";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
@@ -53,9 +54,6 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 export const AccountPage: FC = () => {
     const { user } = useAuthStore();
 
-    // idk, eye candy
-    const emailDomain = useMemo(() => user.email.split("@").at(-1), [user]);
-
     return (
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
             <TitledSection title={"Account information"}>
@@ -78,14 +76,7 @@ export const AccountPage: FC = () => {
                             >
                                 Google
                             </Breadcrumb>
-                            {emailDomain && (
-                                <Breadcrumb
-                                    color={textToColor(emailDomain)}
-                                    borderColor={darkenHex(textToColor(emailDomain), 40)}
-                                >
-                                    {emailDomain}
-                                </Breadcrumb>
-                            )}
+                            <DomainBreadcrumb />
                             {hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && (
                                 <Breadcrumb
                                     color={theme`colors.red.400`}
