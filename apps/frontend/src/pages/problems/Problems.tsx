@@ -69,6 +69,9 @@ export const Problems: FC = () => {
                             </TableItem>
                             <TableItem>{problem.contest?.name}</TableItem>
                             <TableItem>
+                                {problem.contest && toCroatianLocale(problem.contest.start_time)}
+                            </TableItem>
+                            <TableItem>
                                 <ProblemScoreBox
                                     score={
                                         problemScores.data
@@ -77,9 +80,6 @@ export const Problems: FC = () => {
                                     }
                                     maxScore={problem.score}
                                 />
-                            </TableItem>
-                            <TableItem>
-                                {problem.contest && toCroatianLocale(problem.contest.start_time)}
                             </TableItem>
                         </TableRow>
                     ))}
