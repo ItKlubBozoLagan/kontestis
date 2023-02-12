@@ -45,13 +45,11 @@ export const computeELODifference = (
     problemMaxPoints: number[],
     leaderboard: ContestMemberLeaderboardInfo[] // does not include targetMember
 ) => {
-    const userScores = leaderboard.map((mem) => {
-        return mem.problemPoints.reduce((sum, p) => sum + p);
-    });
+    if (leaderboard.length === 0) return 0;
 
-    const userRatings = leaderboard.map((mem) => {
-        return mem.currentGlobalElo;
-    });
+    const userScores = leaderboard.map((mem) => mem.problemPoints.reduce((sum, p) => sum + p));
+
+    const userRatings = leaderboard.map((mem) => mem.currentGlobalElo);
 
     const maxScore = problemMaxPoints.reduce((sum, p) => sum + p);
 
@@ -61,5 +59,7 @@ export const computeELODifference = (
 
     const percentage = performance / targetMember.currentGlobalElo;
 
-    return (Math.sqrt(percentage) - 1) * targetMember.currentGlobalElo;
+    const result = (Math.sqrt(percentage) - 1) * targetMember.currentGlobalElo;
+
+    return Number.isNaN(result) ? 0 : result;
 };

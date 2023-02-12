@@ -66,5 +66,14 @@ http.interceptors.request.use((config) => {
     return config;
 });
 
+http.interceptors.response.use((resp) => {
+    if (resp.status === 401 || resp.status === 403)
+        useTokenStore.setState({
+            token: "",
+        });
+
+    return resp;
+});
+
 export const wrapAxios = <T>(request: Promise<AxiosResponse<ServerData<T>>>): Promise<T> =>
     request.then((data) => data.data.data);

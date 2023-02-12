@@ -16,7 +16,7 @@ const rankColorMap: Record<GlobalRank, string> = {
     proficient: theme`colors.blue.600`,
     phenom: theme`colors.pink.500`,
     maestro: theme`colors.yellow.600`,
-    prodigy: theme`colors.red.600`,
+    prodigy: theme`colors.red.500`,
 };
 
 export const AllRanks = Object.keys(rankColorMap) as (keyof typeof rankColorMap)[];

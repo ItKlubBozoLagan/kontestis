@@ -21,6 +21,7 @@ import SubmissionHandler from "./routes/SubmissionHandler";
 import { reject, respond } from "./utils/response";
 import { Redis } from "./redis/Redis";
 import { Globals } from "./globals";
+import { startEloTask } from "./tasks/eloTask";
 
 declare global {
     interface BigInt {
@@ -87,5 +88,8 @@ Promise.allSettled([
 
     const _PORT = process.env.PORT || 8080;
 
-    app.listen(_PORT, () => Logger.info("Listening on " + _PORT));
+    app.listen(_PORT, () => {
+        Logger.info("Listening on " + _PORT);
+        startEloTask();
+    });
 });

@@ -14,6 +14,7 @@ import {
     GlobalRank,
     minScoreForRank,
     nextRankFromRank,
+    rankFromElo,
 } from "../../util/rank";
 
 type RankComponentProperties = {
@@ -40,8 +41,6 @@ const RankPoint: FC<RankComponentProperties> = ({ rankName }) => {
 };
 
 const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankName, basis }) => {
-    console.log(rankName, basis);
-
     return (
         <div
             tw={"flex-grow h-1"}
@@ -61,13 +60,19 @@ export const Account: FC = () => {
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
             <TitledSection title={"Account information"}>
                 <div tw={"w-full flex items-center justify-center gap-10 py-10"}>
-                    <div tw={"flex flex-col justify-start gap-2 font-mono"}>
+                    <div tw={"flex flex-col items-center justify-start gap-4 font-mono"}>
                         <img
                             tw={"w-32 w-32 rounded-full"}
                             src={user.picture_url}
                             alt={"Profile avatar"}
                             referrerPolicy={"no-referrer"}
                         />
+                        <Breadcrumb
+                            color={colorFromRank(rankFromElo(user.elo))}
+                            borderColor={darkenHex(colorFromRank(rankFromElo(user.elo)), 40)}
+                        >
+                            {capitalize(rankFromElo(user.elo))} ({user.elo.toString()})
+                        </Breadcrumb>
                     </div>
                     <div tw={"flex flex-col gap-2"}>
                         <div tw={"flex gap-2"}>
@@ -106,11 +111,11 @@ export const Account: FC = () => {
                         size={"32px"}
                         tw={"text-yellow-500 absolute -top-3"}
                         style={{
-                            left: `calc(-12px + ((${user.elo}/3200) * 98%)`,
+                            left: `min(96%, calc(-12px + ((${user.elo}/3200) * 98%))`,
                         }}
                     />
                     {AllRanks.map((rank, index) => (
-                        <>
+                        <React.Fragment key={rank}>
                             <RankPoint rankName={rank} />
                             {index + 1 !== AllRanks.length && (
                                 <RankConnection
@@ -124,7 +129,7 @@ export const Account: FC = () => {
                                     }
                                 />
                             )}
-                        </>
+                        </React.Fragment>
                     ))}
                 </div>
             </TitledSection>

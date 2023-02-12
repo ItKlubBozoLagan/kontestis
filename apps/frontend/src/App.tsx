@@ -99,6 +99,21 @@ export const App = () => {
             .catch(() => setToken(""));
     }, [token]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (token.length === 0) return;
+
+            wrapAxios<FullUser>(http.get("/auth/info"))
+                .then((data) => {
+                    setUser(data);
+                    setIsLoggedIn(true);
+                })
+                .catch(() => setToken(""));
+        }, 2000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     if (token.length > 0 && !isLoggedIn) return <></>;
 
     return <RouterProvider router={isLoggedIn ? dashboardRouter : loginRouter} />;
