@@ -60,7 +60,7 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
         permissions:
             numberUsers === 0n
                 ? grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADMIN)
-                : EMPTY_PERMISSIONS,
+                : grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADD_CONTEST),
     };
 
     if (!potentialEntry) await Database.insertInto("users", user);

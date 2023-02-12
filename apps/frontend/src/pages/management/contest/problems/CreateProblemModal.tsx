@@ -13,16 +13,18 @@ import { ModalStyles } from "../../../../util/ModalStyles";
 
 const CreateProblemSchema = z.object({
     name: z.string().min(1),
+    description: z.string().min(1),
+    evaluation_script: z.string().min(1).optional(),
+    time_limit_millis: z.number(),
+    memory_limit_megabytes: z.number(),
 });
 
-export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
+export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     const { contest } = useContestContext();
 
     const {
         register,
         handleSubmit,
-        setValue,
-        setError,
         reset,
         formState: { errors },
     } = useForm<z.infer<typeof CreateProblemSchema>>({
@@ -56,7 +58,9 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
             contentLabel={"Create problem Modal"}
             style={ModalStyles}
         >
-            <div tw={"text-xl"}>Create problem for {contest.name}</div>
+            <div tw={"text-xl"}>
+                Create problem for <span tw={"font-bold"}>{contest.name}</span>
+            </div>
             <div tw={"text-sm text-red-500"}>
                 {Object.keys(errors).length > 0 && <span>Validation error! Check your input!</span>}
                 {createMutation.error && <span>Error! {createMutation.error.message}</span>}
@@ -64,6 +68,30 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col items-stretch gap-2"}>
                     <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("name")} />
+                    <TitledInput
+                        bigLabel
+                        label={"Description"}
+                        tw={"max-w-full"}
+                        {...register("description")}
+                    />
+                    <div tw={"flex gap-2"}>
+                        <TitledInput
+                            bigLabel
+                            label={"Time limit (ms)"}
+                            {...register("time_limit_millis")}
+                        />
+                        <TitledInput
+                            bigLabel
+                            label={"Memory limit (MiB)"}
+                            {...register("memory_limit_megabytes")}
+                        />
+                    </div>
+
+                    <span tw={"mt-2"}>Evaluation script (optional)</span>
+                    <textarea
+                        tw={"w-full h-32 resize-none font-mono text-sm"}
+                        {...register("evaluation_script")}
+                    ></textarea>
                     <SimpleButton tw={"mt-2"}>Create</SimpleButton>
                 </div>
             </form>
