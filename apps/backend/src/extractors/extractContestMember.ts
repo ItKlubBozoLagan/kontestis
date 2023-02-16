@@ -5,7 +5,6 @@ import { StatusCodes } from "http-status-codes";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
-import { extractContest } from "./extractContest";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
@@ -14,11 +13,9 @@ export const extractContestMember = (req: Request, optionalContestId?: Snowflake
 
     return memoizedRequestExtractor(req, `__contest_member_${contestId}`, async () => {
         const user = await extractUser(req);
-        const contest = await extractContest(req, contestId);
-
         const member = await Database.selectOneFrom("contest_members", "*", {
             user_id: user.id,
-            contest_id: contest.id,
+            contest_id: contestId,
         });
 
         if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
