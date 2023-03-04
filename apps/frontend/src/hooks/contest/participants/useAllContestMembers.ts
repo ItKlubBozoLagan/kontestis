@@ -9,6 +9,6 @@ export const useAllContestMembers: QueryHandler<ContestMemberWithInfo[], Snowfla
 ) =>
     useQuery({
         queryKey: ["contests", contest_id, "members"],
-        queryFn: () => wrapAxios(http.get("/contest/leaderboard/" + contest_id)),
+        queryFn: () => wrapAxios(http.get(`/contest/${contest_id}/leaderboard`)),
         ...options,
     });

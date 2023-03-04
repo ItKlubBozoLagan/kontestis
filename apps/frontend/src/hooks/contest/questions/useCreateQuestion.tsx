@@ -13,6 +13,6 @@ export const useCreateQuestion: MutationHandler<
     Snowflake
 > = (contestId, options) =>
     useMutation(
-        (variables) => wrapAxios(http.post("/contest/question/" + contestId, variables)),
+        (variables) => wrapAxios(http.post(`/contest/${contestId}/question/`, variables)),
         options
     );

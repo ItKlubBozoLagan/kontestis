@@ -10,9 +10,10 @@ type AnswerQuestionVariables = {
 export const useAnswerQuestion: MutationHandler<
     AnswerQuestionVariables,
     ContestQuestion,
-    Snowflake
-> = (questionId, options) =>
+    [Snowflake, Snowflake]
+> = ([contestId, questionId], options) =>
     useMutation(
-        (variables) => wrapAxios(http.patch("/contest/question/" + questionId, variables)),
+        (variables) =>
+            wrapAxios(http.patch(`/contest/${contestId}/question/${questionId}`, variables)),
         options
     );

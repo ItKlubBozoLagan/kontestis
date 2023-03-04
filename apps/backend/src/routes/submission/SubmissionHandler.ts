@@ -3,19 +3,19 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as R from "remeda";
 
-import { Database } from "../database/Database";
-import { SafeError } from "../errors/SafeError";
-import { extractClusterSubmission } from "../extractors/extractClusterSubmission";
-import { extractContest } from "../extractors/extractContest";
-import { extractModifiableContest } from "../extractors/extractModifiableContest";
-import { extractOptionalUser } from "../extractors/extractOptionalUser";
-import { extractProblem } from "../extractors/extractProblem";
-import { extractSubmission } from "../extractors/extractSubmission";
-import { extractUser } from "../extractors/extractUser";
-import { beginEvaluation } from "../lib/evaluation";
-import { getAllPendingSubmissions } from "../lib/pendingSubmission";
-import { useValidation } from "../middlewares/useValidation";
-import { respond } from "../utils/response";
+import { Database } from "../../database/Database";
+import { SafeError } from "../../errors/SafeError";
+import { extractClusterSubmission } from "../../extractors/extractClusterSubmission";
+import { extractContest } from "../../extractors/extractContest";
+import { extractModifiableContest } from "../../extractors/extractModifiableContest";
+import { extractOptionalUser } from "../../extractors/extractOptionalUser";
+import { extractProblem } from "../../extractors/extractProblem";
+import { extractSubmission } from "../../extractors/extractSubmission";
+import { extractUser } from "../../extractors/extractUser";
+import { beginEvaluation } from "../../lib/evaluation";
+import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
+import { useValidation } from "../../middlewares/useValidation";
+import { respond } from "../../utils/response";
 
 const SubmissionHandler = Router();
 

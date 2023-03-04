@@ -9,6 +9,6 @@ export const useAllContestQuestions: QueryHandler<ContestQuestion[], Snowflake> 
 ) =>
     useQuery({
         queryKey: ["contests", contest_id, "questions"],
-        queryFn: () => wrapAxios(http.get("/contest/question/" + contest_id)),
+        queryFn: () => wrapAxios(http.get(`/contest/${contest_id}/question/`)),
         ...options,
     });

@@ -3,12 +3,12 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../database/Database";
-import { SafeError } from "../errors/SafeError";
-import { extractUser } from "../extractors/extractUser";
-import { processUserFromTokenData, verifyToken } from "../lib/google";
-import { useValidation } from "../middlewares/useValidation";
-import { respond } from "../utils/response";
+import { Database } from "../../database/Database";
+import { SafeError } from "../../errors/SafeError";
+import { extractUser } from "../../extractors/extractUser";
+import { processUserFromTokenData, verifyToken } from "../../lib/google";
+import { useValidation } from "../../middlewares/useValidation";
+import { respond } from "../../utils/response";
 
 const AuthHandler = Router();
 

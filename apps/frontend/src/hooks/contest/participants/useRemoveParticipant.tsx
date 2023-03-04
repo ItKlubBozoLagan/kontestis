@@ -8,6 +8,6 @@ export const useRemoveParticipant: MutationHandler<Snowflake, undefined, Snowfla
     options
 ) =>
     useMutation(
-        (userId) => wrapAxios(http.delete("/contest/members/" + contestId + "/" + userId)),
+        (userId) => wrapAxios(http.delete(`/contest/${contestId}/members/${userId}`)),
         options
     );

@@ -9,6 +9,6 @@ export const useAllContestAnnouncements: QueryHandler<ContestAnnouncement[], Sno
 ) =>
     useQuery({
         queryKey: ["contests", contestId, "announcements"],
-        queryFn: () => wrapAxios(http.get("/contest/announcement/" + contestId)),
+        queryFn: () => wrapAxios(http.get(`/contest/${contestId}/announcement/`)),
         ...options,
     });

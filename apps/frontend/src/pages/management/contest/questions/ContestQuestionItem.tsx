@@ -33,7 +33,7 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
 
     const queryClient = useQueryClient();
 
-    const answerMutation = useAnswerQuestion(question.id);
+    const answerMutation = useAnswerQuestion([contest.id, question.id]);
 
     const onSubmit = handleSubmit((data) => {
         answerMutation.reset();

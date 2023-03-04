@@ -5,19 +5,19 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as R from "remeda";
 
-import { Database } from "../database/Database";
-import { SafeError } from "../errors/SafeError";
-import { extractCluster } from "../extractors/extractCluster";
-import { extractContest } from "../extractors/extractContest";
-import { extractModifiableCluster } from "../extractors/extractModifiableCluster";
-import { extractModifiableContest } from "../extractors/extractModifiableContest";
-import { extractModifiableProblem } from "../extractors/extractModifiableProblem";
-import { extractModifiableTestcase } from "../extractors/extractModifiableTestcase";
-import { extractProblem } from "../extractors/extractProblem";
-import { extractUser } from "../extractors/extractUser";
-import { generateSnowflake } from "../lib/snowflake";
-import { useValidation } from "../middlewares/useValidation";
-import { respond } from "../utils/response";
+import { Database } from "../../database/Database";
+import { SafeError } from "../../errors/SafeError";
+import { extractCluster } from "../../extractors/extractCluster";
+import { extractContest } from "../../extractors/extractContest";
+import { extractModifiableCluster } from "../../extractors/extractModifiableCluster";
+import { extractModifiableContest } from "../../extractors/extractModifiableContest";
+import { extractModifiableProblem } from "../../extractors/extractModifiableProblem";
+import { extractModifiableTestcase } from "../../extractors/extractModifiableTestcase";
+import { extractProblem } from "../../extractors/extractProblem";
+import { extractUser } from "../../extractors/extractUser";
+import { generateSnowflake } from "../../lib/snowflake";
+import { useValidation } from "../../middlewares/useValidation";
+import { respond } from "../../utils/response";
 
 const ProblemHandler = Router();
 

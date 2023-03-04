@@ -10,7 +10,7 @@ export const useAddParticipant: MutationHandler<string, undefined, Snowflake> = 
     useMutation(
         (email) =>
             wrapAxios(
-                http.post("/contest/register/" + contestId, {
+                http.post(`/contest/${contestId}/members/register`, {
                     email,
                 })
             ),

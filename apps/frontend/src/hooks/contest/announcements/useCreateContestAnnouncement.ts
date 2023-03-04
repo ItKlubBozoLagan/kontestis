@@ -13,6 +13,6 @@ export const useCreateContestAnnouncement: MutationHandler<
     Snowflake
 > = (contest_id, options) =>
     useMutation(
-        (variables) => http.post("/contest/announcement/" + contest_id, variables),
+        (variables) => http.post(`/contest/${contest_id}/announcement/`, variables),
         options
     );
