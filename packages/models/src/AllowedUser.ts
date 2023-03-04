@@ -5,5 +5,3 @@ export type AllowedUserV1 = {
     user_id: Snowflake;
     contest_id: Snowflake;
 };
-
-export type AllowedUser = AllowedUserV1;

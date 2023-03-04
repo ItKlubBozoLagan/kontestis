@@ -1,6 +1,5 @@
 import {
     AdminPermissions,
-    AllowedUser,
     Contest,
     ContestMemberPermissions,
     hasAdminPermission,
@@ -122,43 +121,6 @@ ContestHandler.get("/", async (req, res) => {
     }
 
     return respond(res, StatusCodes.OK, contests);
-});
-
-const allowUserSchema = Type.Object({
-    user_id: Type.Number(),
-});
-
-ContestHandler.post("/allow/:contest_id", useValidation(allowUserSchema), async (req, res) => {
-    const contest = await extractModifiableContest(req);
-
-    const databaseUser = await Database.selectOneFrom("users", "*", {
-        id: BigInt(req.body.user_id),
-    });
-
-    if (!databaseUser) throw new SafeError(StatusCodes.NOT_FOUND);
-
-    const allowedDatabaseUser = await Database.selectOneFrom(
-        "allowed_users",
-        "*",
-        {
-            user_id: databaseUser.id,
-            contest_id: contest.id,
-        },
-        // eslint-disable-next-line sonarjs/no-duplicate-string
-        "ALLOW FILTERING"
-    );
-
-    if (allowedDatabaseUser) throw new SafeError(StatusCodes.CONFLICT);
-
-    const allowedUser: AllowedUser = {
-        id: generateSnowflake(),
-        user_id: databaseUser.id,
-        contest_id: contest.id,
-    };
-
-    await Database.insertInto("allowed_users", allowedUser);
-
-    return respond(res, StatusCodes.OK, allowedUser);
 });
 
 ContestHandler.get("/members/self", async (req, res) => {

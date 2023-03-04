@@ -1,5 +1,4 @@
 import {
-    AllowedUser,
     Cluster,
     ContestAnnouncement,
     ContestMember,
@@ -35,12 +34,12 @@ import { migration_add_official_to_contest } from "./migrations/0015_add_officia
 import { migration_fix_contest_entries } from "./migrations/0016_fix_contest_entries";
 import { migration_contest_questions_index } from "./migrations/0017_contest_questions_index";
 import { migration_remove_contest_member_indices } from "./migrations/0018_remove_contest_member_indices";
+import { migration_remove_allowed_users } from "./migrations/0019_remove_allowed_users";
 
 export const Database = new ScylloClient<{
     users: User;
     known_users: KnownUserData;
     contests: Contest;
-    allowed_users: AllowedUser;
     problems: Problem;
     clusters: Cluster;
     testcases: Testcase;
@@ -81,6 +80,7 @@ const migrations: Migration<any>[] = [
     migration_fix_contest_entries,
     migration_contest_questions_index,
     migration_remove_contest_member_indices,
+    migration_remove_allowed_users,
 ];
 
 export const initDatabase = async () => {
