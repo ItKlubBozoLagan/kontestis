@@ -56,19 +56,12 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
     );
 };
 
-const evaluateCluster = async (
+const evaluateTestcases = async (
     problemDetails: ProblemDetails,
-    cluster: Cluster,
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
-    pendingSubmission: PendingSubmission
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+    testcases: Testcase[],
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
-    const testcases = await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
-    const testCasesById: Record<string, Testcase> = {};
-
-    for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
-
-    const [results, error] = (await axios
+    return (await axios
         .post<EvaluationResult>(
             Globals.evaluatorEndpoint,
             {
@@ -88,6 +81,62 @@ const evaluateCluster = async (
         )
         .then((data) => [data.data, undefined])
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
+};
+
+const GROUP_SIZE_LIMIT = 2 << 20;
+
+const splitAndEvaluateTestcases = async (
+    problemDetails: ProblemDetails,
+    testcases: Testcase[],
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+) => {
+    const groups: Testcase[][] = [];
+
+    let currentSize = 0;
+    let groupId = 0;
+
+    for (const testcase of testcases) {
+        if (
+            currentSize + testcase.input.length + (testcase.correct_output?.length ?? 0) >
+            GROUP_SIZE_LIMIT
+        ) {
+            groupId++;
+            currentSize = 0;
+        }
+
+        currentSize += testcase.input.length + (testcase.correct_output?.length ?? 0);
+
+        if (groups.length <= groupId) groups.push([]);
+
+        groups[groupId].push(testcase);
+    }
+
+    const data: EvaluationResult[] = [];
+
+    for (const groupTestcases of groups) {
+        const [results, error] = await evaluateTestcases(problemDetails, groupTestcases, problem);
+
+        if (error) return [undefined, error] as AxiosEvaluationResponse;
+
+        data.push(...results);
+    }
+
+    return [data, undefined] as AxiosEvaluationResponse;
+};
+
+const evaluateCluster = async (
+    problemDetails: ProblemDetails,
+    cluster: Cluster,
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    pendingSubmission: PendingSubmission
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+) => {
+    const testcases = await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
+    const testCasesById: Record<string, Testcase> = {};
+
+    for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
+
+    const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
 
     if (error || !results) return;
 
