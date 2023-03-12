@@ -1,11 +1,12 @@
 import {
+    Cluster,
     ClusterSubmission,
     CompilationErrorResult,
     EvaluationLanguage,
     EvaluationResult,
     PendingSubmission,
+    Problem,
     Snowflake,
-    SuccessfulEvaluationResult,
     Testcase,
     User,
 } from "@kontestis/models";
@@ -53,6 +54,97 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
     await Database.raw(
         `UPDATE contest_members SET score[${problemId}]=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
     );
+};
+
+const evaluateCluster = async (
+    problemDetails: ProblemDetails,
+    cluster: Cluster,
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    pendingSubmission: PendingSubmission
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+) => {
+    const testcases = await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
+    const testCasesById: Record<string, Testcase> = {};
+
+    for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
+
+    const [results, error] = (await axios
+        .post<EvaluationResult>(
+            Globals.evaluatorEndpoint,
+            {
+                language: problemDetails.language,
+                code: problemDetails.code,
+                time_limit: problem.time_limit_millis,
+                memory_limit: problem.memory_limit_megabytes,
+                testcases: testcases.map((testcase) => ({
+                    id: testcase.id.toString(),
+                    in: testcase.input,
+                    out: testcase.correct_output,
+                })),
+            },
+            {
+                timeout: 60_000,
+            }
+        )
+        .then((data) => [data.data, undefined])
+        .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
+
+    if (error || !results) return;
+
+    const clusterTestcases = testcases.map((it) => ({
+        ...it,
+        evaluationResult: results.find((response) => response.testCaseId === it.id.toString())!,
+    }));
+
+    const clusterSubmission: ClusterSubmission = {
+        id: generateSnowflake(),
+        cluster_id: cluster.id,
+        submission_id: pendingSubmission.id,
+        verdict:
+            clusterTestcases.find((it) => it.evaluationResult.verdict !== "accepted")
+                ?.evaluationResult.verdict ?? "accepted",
+        awarded_score: clusterTestcases.every((it) => it.evaluationResult.verdict === "accepted")
+            ? cluster.awarded_score
+            : 0,
+        memory_used_megabytes: Math.max(
+            0,
+            ...clusterTestcases.map((it) =>
+                it.evaluationResult.type === "success" ? it.evaluationResult.memory : 0
+            )
+        ),
+        time_used_millis: Math.max(
+            0,
+            ...clusterTestcases.map((it) =>
+                it.evaluationResult.type === "success" ? it.evaluationResult.time : 0
+            )
+        ),
+    };
+
+    await Database.insertInto("cluster_submissions", clusterSubmission);
+
+    await Promise.all(
+        results.map((result) =>
+            Database.insertInto("testcase_submissions", {
+                id: generateSnowflake(),
+                testcase_id: BigInt(result.testCaseId),
+                cluster_submission_id: clusterSubmission.id,
+                verdict: result.verdict,
+                awarded_score: 0,
+                memory_used_megabytes: result.type === "success" ? result.memory : 0,
+                time_used_millis: result.type === "success" ? result.time : 0,
+            })
+        )
+    );
+
+    return {
+        ...clusterSubmission,
+        compilationError: clusterTestcases.some(
+            (it) => it.evaluationResult.verdict === "compilation_error"
+        )
+            ? (results.find((it) => it.verdict === "compilation_error") as CompilationErrorResult)
+                  .error
+            : undefined,
+    };
 };
 
 export const beginEvaluation = async (
@@ -105,117 +197,24 @@ export const beginEvaluation = async (
     if (!problem) throw ERR_UNEXPECTED_STATE;
 
     const _ = (async () => {
-        const [results, error] = (await axios
-            .post<EvaluationResult>(
-                Globals.evaluatorEndpoint,
-                {
-                    language: problemDetails.language,
-                    code: problemDetails.code,
-                    time_limit: problem.time_limit_millis,
-                    memory_limit: problem.memory_limit_megabytes,
-                    testcases: testcases.map((testcase) => ({
-                        id: testcase.id.toString(),
-                        in: testcase.input,
-                        out: testcase.correct_output,
-                    })),
-                },
-                {
-                    timeout: 60_000,
-                }
-            )
-            .then((data) => [data.data, undefined])
-            .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
+        const clusterSubmissions = await Promise.all(
+            clusters.map((c) => evaluateCluster(problemDetails, c, problem, pendingSubmission))
+        );
+
+        // eslint-disable-next-line unicorn/prefer-includes
+        const error = clusterSubmissions.some((c) => c === undefined);
 
         const verdict = error
             ? "evaluation_error"
-            : results.find((it) => it.verdict !== "accepted")?.verdict ?? "accepted";
+            : clusterSubmissions.find((it) => it!.verdict !== "accepted")?.verdict ?? "accepted";
 
-        const successfulResults = (results ?? [])
-            .filter((result) => result.type === "success")
-            .map((result) => result as SuccessfulEvaluationResult);
-
-        const time = Math.max(0, ...successfulResults.map((it) => it.time));
-        const memory = Math.max(0, ...successfulResults.map((it) => it.memory));
-
-        let clusterSubmissions: ClusterSubmission[] = [];
-
-        if (!error && results) {
-            clusterSubmissions = await Promise.all(
-                clusters.map(async (cluster) => {
-                    const clusterTestcases = testcases
-                        .filter((testcase) => testcase.cluster_id === cluster.id)
-                        .map((it) => ({
-                            ...it,
-                            evaluationResult: results.find(
-                                (response) => response.testCaseId === it.id.toString()
-                            )!,
-                        }));
-
-                    const clusterSubmission: ClusterSubmission = {
-                        id: generateSnowflake(),
-                        cluster_id: cluster.id,
-                        submission_id: pendingSubmission.id,
-                        verdict:
-                            clusterTestcases.find(
-                                (it) => it.evaluationResult.verdict !== "accepted"
-                            )?.evaluationResult.verdict ?? "accepted",
-                        awarded_score: clusterTestcases.every(
-                            (it) => it.evaluationResult.verdict === "accepted"
-                        )
-                            ? cluster.awarded_score
-                            : 0,
-                        memory_used_megabytes: Math.max(
-                            0,
-                            ...clusterTestcases.map((it) =>
-                                it.evaluationResult.type === "success"
-                                    ? it.evaluationResult.memory
-                                    : 0
-                            )
-                        ),
-                        time_used_millis: Math.max(
-                            0,
-                            ...clusterTestcases.map((it) =>
-                                it.evaluationResult.type === "success"
-                                    ? it.evaluationResult.time
-                                    : 0
-                            )
-                        ),
-                    };
-
-                    await Database.insertInto("cluster_submissions", clusterSubmission);
-
-                    return clusterSubmission;
-                })
-            );
-
-            const clusterSubmissionsByClusterId: Record<string, ClusterSubmission> = {};
-
-            for (const c of clusterSubmissions)
-                clusterSubmissionsByClusterId[c.cluster_id.toString()] = c;
-
-            await Promise.all(
-                results.map((result) =>
-                    Database.insertInto("testcase_submissions", {
-                        id: generateSnowflake(),
-                        testcase_id: BigInt(result.testCaseId),
-                        // TODO: Maybe do this better
-                        cluster_submission_id:
-                            clusterSubmissionsByClusterId[
-                                testCasesById[result.testCaseId].cluster_id.toString()
-                            ].id,
-                        verdict: result.verdict,
-                        awarded_score: 0,
-                        memory_used_megabytes: result.type === "success" ? result.memory : 0,
-                        time_used_millis: result.type === "success" ? result.time : 0,
-                    })
-                )
-            );
-        }
+        const time = Math.max(0, ...clusterSubmissions.map((it) => it!.time_used_millis));
+        const memory = Math.max(0, ...clusterSubmissions.map((it) => it!.memory_used_megabytes));
 
         const score = error
             ? 0
             : clusterSubmissions.reduce(
-                  (accumulator, current) => accumulator + current.awarded_score,
+                  (accumulator, current) => accumulator + current!.awarded_score,
                   0
               );
 
@@ -227,11 +226,8 @@ export const beginEvaluation = async (
                 verdict: verdict,
                 error:
                     verdict === "compilation_error"
-                        ? (
-                              results?.find(
-                                  (result) => result.verdict === "compilation_error"
-                              ) as CompilationErrorResult
-                          ).error
+                        ? clusterSubmissions.find((cs) => cs?.verdict === "compilation_error")
+                              ?.compilationError
                         : undefined,
                 time_used_millis: time,
                 memory_used_megabytes: memory,
