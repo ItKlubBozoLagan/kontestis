@@ -83,7 +83,7 @@ const evaluateTestcases = async (
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 };
 
-const GROUP_SIZE_LIMIT = 2 << 20;
+const GROUP_SIZE_LIMIT = 1 << 22;
 
 const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
@@ -257,13 +257,16 @@ export const beginEvaluation = async (
             ? "evaluation_error"
             : clusterSubmissions.find((it) => it!.verdict !== "accepted")?.verdict ?? "accepted";
 
-        const time = Math.max(0, ...clusterSubmissions.map((it) => it!.time_used_millis));
-        const memory = Math.max(0, ...clusterSubmissions.map((it) => it!.memory_used_megabytes));
+        const time = Math.max(0, ...clusterSubmissions.map((it) => it?.time_used_millis ?? 0));
+        const memory = Math.max(
+            0,
+            ...clusterSubmissions.map((it) => it?.memory_used_megabytes ?? 0)
+        );
 
         const score = error
             ? 0
             : clusterSubmissions.reduce(
-                  (accumulator, current) => accumulator + current!.awarded_score,
+                  (accumulator, current) => accumulator + (current?.awarded_score ?? 0),
                   0
               );
 
