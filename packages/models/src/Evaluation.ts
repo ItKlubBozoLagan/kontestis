@@ -29,6 +29,10 @@ export type EvaluationResult = {
           type: "error";
           verdict: "evaluation_error" | "system_error";
       }
+    | {
+          type: "skipped";
+          verdict: "skipped";
+      }
 );
 
 export type EvaluationVerdict = EvaluationResult["verdict"];

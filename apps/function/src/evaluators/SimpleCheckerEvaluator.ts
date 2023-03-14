@@ -21,10 +21,24 @@ export const evaluateSimpleChecker = async (
     checkerFunction: CheckerFunction,
     timeLimit: number,
     memoryLimit: number
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const evaluated: EvaluationResult[] = [];
 
-    for (const testcase of testcases) {
+    let continueEvaluation = true;
+
+    for (const testcase of testcases.sort((a, b) => Number(a.id) - Number(b.id))) {
+        if (!continueEvaluation) {
+            evaluated.push({
+                testCaseId: testcase.id,
+                type: "skipped",
+                verdict: "skipped",
+            });
+            continue;
+        }
+
+        continueEvaluation = false;
+
         const { timeMillis, value: result } = await timeFunction(
             async () => await runnerFunction(Buffer.from(testcase.in, "utf8"))
         );
@@ -86,6 +100,7 @@ export const evaluateSimpleChecker = async (
                 time: timeMillis,
                 memory: result.memory_usage_megabytes,
             });
+            continueEvaluation = true;
             continue;
         }
 

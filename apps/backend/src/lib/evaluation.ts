@@ -131,7 +131,9 @@ const evaluateCluster = async (
     pendingSubmission: PendingSubmission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const testcases = await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
+    const testcases = (
+        await Database.selectFrom("testcases", "*", { cluster_id: cluster.id })
+    ).sort((a, b) => Number(a.id) - Number(b.id));
     const testCasesById: Record<string, Testcase> = {};
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
