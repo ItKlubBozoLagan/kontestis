@@ -28,6 +28,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({ cluster_submission_id,
                 <TableHeadItem>Verdict</TableHeadItem>
                 <TableHeadItem>Time</TableHeadItem>
                 <TableHeadItem>Memory</TableHeadItem>
+                <TableHeadItem>Points</TableHeadItem>
             </TableHeadRow>
             {testcaseSubmissions
                 ?.sort((a, b) => Number(BigInt(a.testcase_id) - BigInt(b.testcase_id)))

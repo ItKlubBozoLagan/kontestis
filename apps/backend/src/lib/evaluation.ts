@@ -180,7 +180,7 @@ const evaluateCluster = async (
                 testcase_id: BigInt(result.testCaseId),
                 cluster_submission_id: clusterSubmission.id,
                 verdict: result.verdict,
-                awarded_score: 0,
+                awarded_score: result.verdict === "accepted" ? cluster.awarded_score : 0,
                 memory_used_megabytes: result.type === "success" ? result.memory : 0,
                 time_used_millis: result.type === "success" ? result.time : 0,
             })
