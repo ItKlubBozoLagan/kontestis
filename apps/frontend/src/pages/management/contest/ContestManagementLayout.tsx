@@ -76,29 +76,36 @@ export const ContestManagementLayout: FC = () => {
 
     return (
         <div tw={"flex justify-center w-full"}>
-            <div tw={"max-w-[1100px] w-full pt-12 rounded flex flex-col gap-12"}>
+            <div tw={"w-[50vw] pt-12 rounded flex flex-col gap-12"}>
                 <ContestContext.Provider value={{ contest, member }}>
                     <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
                     <div tw={"flex flex-col w-full"}>
                         <div tw={"flex w-full bg-neutral-200"}>
-                            {SubRoutes.map((route) => (
-                                <Link key={route.href} to={route.href}>
-                                    <div
-                                        tw={
-                                            "bg-neutral-200 hover:bg-neutral-300 cursor-pointer p-3 relative"
-                                        }
-                                    >
-                                        {route.display}
-                                        {current.pathname.endsWith(route.href) && (
-                                            <span
-                                                tw={
-                                                    "absolute w-full h-0.5 bg-neutral-600 left-0 bottom-0"
-                                                }
-                                            ></span>
-                                        )}
-                                    </div>
-                                </Link>
-                            ))}
+                            {SubRoutes.map((route) => {
+                                const Icon = route.icon;
+
+                                return (
+                                    <Link to={route.href} key={route.href} tw={"w-full"}>
+                                        <div
+                                            tw={
+                                                "flex w-full bg-neutral-200 hover:bg-neutral-300 cursor-pointer p-3 relative gap-2"
+                                            }
+                                        >
+                                            <Icon />
+                                            <span>
+                                                {route.display}
+                                                {current.pathname.endsWith(route.href) && (
+                                                    <span
+                                                        tw={
+                                                            "absolute w-full h-0.5 bg-neutral-600 left-0 bottom-0"
+                                                        }
+                                                    ></span>
+                                                )}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
                         </div>
                         <div tw={"w-full p-6 bg-neutral-100 flex items-center justify-between"}>
                             <Outlet />
