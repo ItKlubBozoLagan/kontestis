@@ -33,12 +33,13 @@ type LimitBoxProperties = {
     value: string;
 };
 
-const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value }) => {
+export const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value, ...properties }) => {
     return (
         <div
             tw={
                 "w-full bg-neutral-100 border-2 border-solid border-neutral-200 p-4 flex justify-between gap-4"
             }
+            {...properties}
         >
             <div tw={"flex items-center gap-4 text-lg"}>
                 <Icon size={"18px"} />
