@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminPermissions } from "@kontestis/models";
-import { parseTime } from "@kontestis/utils";
+import { parseTime, toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
@@ -118,7 +118,7 @@ export const ContestOverviewPage: FC = () => {
                             </EditableDisplayBox>
                             <EditableDisplayBox
                                 title={"Start time"}
-                                value={contest.start_time.toString()}
+                                value={toCroatianLocale(contest.start_time)}
                                 submitFunction={submitForm}
                             >
                                 <TitledDateInput
