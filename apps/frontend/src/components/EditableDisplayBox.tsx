@@ -23,6 +23,7 @@ export const EditableDisplayBox: FC<Properties> = ({ title, value, submitFunctio
                     <div tw={"w-full"}>{children}</div>
                     <FiCheck
                         onClick={() => {
+                            console.log("Submitting");
                             setEditMode(false);
                             submitFunction();
                         }}

@@ -3,17 +3,19 @@ import tw from "twin.macro";
 
 type SwitchProperties<T extends string> = {
     label?: string;
+    defaultIndex?: number;
     choice: [T, T];
     onChange: (value: T) => void;
 };
 
 export const TitledSwitch = <T extends string>({
     label,
+    defaultIndex,
     choice,
     onChange,
     ...properties
 }: SwitchProperties<T> & React.HTMLAttributes<HTMLDivElement>) => {
-    const [selected, setSelected] = useState(choice[0]);
+    const [selected, setSelected] = useState(choice[defaultIndex ?? 0]);
 
     useEffect(() => onChange(selected), [selected]);
 

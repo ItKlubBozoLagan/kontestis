@@ -15,7 +15,7 @@ import { ContestViewPage } from "./pages/contests/ContestViewPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ContestAnnouncementsPage } from "./pages/management/contest/announcements/ContestAnnouncementsPage";
 import { ContestManagementLayout } from "./pages/management/contest/ContestManagementLayout";
-import { ContestOverviewPage } from "./pages/management/contest/ContestOverviewPage";
+import { ContestOverviewPage } from "./pages/management/contest/overview/ContestOverviewPage";
 import { ContestParticipantsPage } from "./pages/management/contest/participants/ContestParticipantsPage";
 import { ContestProblemsPage } from "./pages/management/contest/problems/ContestProblemsPage";
 import { ContestQuestionsPage } from "./pages/management/contest/questions/ContestQuestionsPage";
