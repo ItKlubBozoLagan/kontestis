@@ -33,7 +33,6 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
 
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
-
         createMutation.mutate(data);
     });
 

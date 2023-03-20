@@ -15,3 +15,14 @@ export const useCreateCluster: MutationHandler<CreateClusterVariables, Cluster, 
         (variables) => wrapAxios(http.post(`/problem/${problemId}/cluster/`, variables)),
         options
     );
+
+export const useModifyCluster: MutationHandler<
+    CreateClusterVariables,
+    Cluster,
+    [Snowflake, Snowflake]
+> = ([problemId, clusterId], options) =>
+    useMutation(
+        (variables) =>
+            wrapAxios(http.patch(`/problem/${problemId}/cluster/${clusterId}`, variables)),
+        options
+    );
