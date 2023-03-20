@@ -8,11 +8,13 @@ type CreateTestcaseVariables = {
     correctOutput: string;
 };
 
-export const useCreateTestcase: MutationHandler<CreateTestcaseVariables, Testcase, Snowflake> = (
-    clusterId,
-    options
-) =>
+export const useCreateTestcase: MutationHandler<
+    CreateTestcaseVariables,
+    Testcase,
+    [Snowflake, Snowflake]
+> = ([problemId, clusterId], options) =>
     useMutation(
-        (variables) => wrapAxios(http.post("/problem/testcase/" + clusterId, variables)),
+        (variables) =>
+            wrapAxios(http.post(`/problem/${problemId}/cluster/${clusterId}/testcase/`, variables)),
         options
     );

@@ -12,6 +12,6 @@ export const useCreateCluster: MutationHandler<CreateClusterVariables, Cluster, 
     options
 ) =>
     useMutation(
-        (variables) => wrapAxios(http.post("/problem/cluster/" + problemId, variables)),
+        (variables) => wrapAxios(http.post(`/problem/${problemId}/cluster/`, variables)),
         options
     );

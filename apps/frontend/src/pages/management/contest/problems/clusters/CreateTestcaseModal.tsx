@@ -29,7 +29,7 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
         resolver: zodResolver(CreateTestcaseSchema),
     });
 
-    const createMutation = useCreateTestcase(cluster.id);
+    const createMutation = useCreateTestcase([cluster.problem_id, cluster.id]);
 
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();

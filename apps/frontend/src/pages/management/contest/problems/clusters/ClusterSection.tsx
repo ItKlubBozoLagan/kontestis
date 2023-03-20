@@ -13,7 +13,7 @@ type Properties = {
 };
 
 export const ClusterSection: FC<Properties> = ({ index, cluster }) => {
-    const { data: testcases } = useAllTestcases(cluster.id);
+    const { data: testcases } = useAllTestcases([cluster.problem_id, cluster.id]);
 
     const [modalOpen, setModalOpen] = useState(false);
 

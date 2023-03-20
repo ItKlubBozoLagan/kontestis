@@ -79,14 +79,14 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             <TitledSection title={"Info"}>
                 <EditableDisplayBox
                     title={"Name"}
-                    value={problem?.title ?? "Loading"}
+                    value={problem.title}
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("title")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
                     title={"Description"}
-                    value={problem?.description ?? "Loading"}
+                    value={problem.description}
                     submitFunction={submitForm}
                     textValue
                 >
@@ -94,27 +94,27 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                 </EditableDisplayBox>
                 <EditableDisplayBox
                     title={"Time Limit (ms)"}
-                    value={(problem?.time_limit_millis ?? 0) + ""}
+                    value={problem.time_limit_millis + ""}
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("time_limit_millis")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
                     title={"Memory Limit (MiB)"}
-                    value={(problem?.memory_limit_megabytes ?? 0) + ""}
+                    value={problem.memory_limit_megabytes + ""}
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("memory_limit_megabytes")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
                     title={"Evaluation Script (Python)"}
-                    value={problem?.evaluation_script ?? "None"}
+                    value={problem.evaluation_script ?? "None"}
                     submitFunction={submitForm}
                     textValue
                 >
                     <textarea {...register("evaluation_script")} />
                 </EditableDisplayBox>
-                <LimitBox icon={FiCheckSquare} title={"Score"} value={(problem?.score ?? 0) + ""} />
+                <LimitBox icon={FiCheckSquare} title={"Score"} value={problem.score + ""} />
                 <div tw={"text-sm text-red-500"}>
                     {Object.keys(errors).length > 0 && (
                         <span>Validation error! Check your input!</span>

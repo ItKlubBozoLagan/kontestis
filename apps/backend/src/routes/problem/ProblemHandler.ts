@@ -1,4 +1,4 @@
-import { Cluster, Problem, Testcase } from "@kontestis/models";
+import { Problem } from "@kontestis/models";
 import { filterAsync } from "@kontestis/utils";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
@@ -7,19 +7,19 @@ import * as R from "remeda";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
-import { extractCluster } from "../../extractors/extractCluster";
 import { extractContest } from "../../extractors/extractContest";
-import { extractModifiableCluster } from "../../extractors/extractModifiableCluster";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractModifiableProblem } from "../../extractors/extractModifiableProblem";
-import { extractModifiableTestcase } from "../../extractors/extractModifiableTestcase";
 import { extractProblem } from "../../extractors/extractProblem";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
+import ClusterHandler from "./cluster/ClusterHandler";
 
 const ProblemHandler = Router();
+
+ProblemHandler.use("/:problem_id/cluster", ClusterHandler);
 
 enum EvaluationSchema {
     plain = "plain",
@@ -109,36 +109,6 @@ ProblemHandler.delete("/:problem_id", async (req, res) => {
     return respond(res, StatusCodes.OK);
 });
 
-const clusterSchema = Type.Object({
-    awarded_score: Type.Number({ minimum: 1, maximum: 1000 }),
-});
-
-ProblemHandler.post("/cluster/:problem_id", useValidation(clusterSchema), async (req, res) => {
-    const problem = await extractModifiableProblem(req);
-
-    const cluster: Cluster = {
-        id: generateSnowflake(),
-        problem_id: problem.id,
-        awarded_score: req.body.awarded_score,
-    };
-
-    await Database.insertInto("clusters", cluster);
-
-    return respond(res, StatusCodes.OK, cluster);
-});
-
-ProblemHandler.patch("/cluster/:cluster_id", useValidation(clusterSchema), async (req, res) => {
-    const cluster = await extractModifiableCluster(req);
-
-    await Database.update(
-        "clusters",
-        { awarded_score: req.body.awarded_score },
-        { id: cluster.id }
-    );
-
-    return respond(res, StatusCodes.OK);
-});
-
 ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
@@ -157,61 +127,6 @@ ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, r
         },
         { id: problem.id }
     );
-
-    return respond(res, StatusCodes.OK);
-});
-
-ProblemHandler.delete("/cluster/:cluster_id", async (req, res) => {
-    const cluster = await extractModifiableCluster(req);
-
-    await Database.deleteFrom("clusters", "*", { id: cluster.id });
-    const testcases = await Database.selectFrom("testcases", "*", {
-        cluster_id: cluster.id,
-    });
-
-    await Database.deleteFrom("testcases", "*", { cluster_id: cluster.id });
-    await Database.deleteFrom("cluster_submissions", "*", {
-        cluster_id: cluster.id,
-    });
-
-    await Promise.all(
-        testcases.map((testcase) =>
-            Database.deleteFrom("testcase_submissions", "*", {
-                testcase_id: testcase.id,
-            })
-        )
-    );
-
-    return respond(res, StatusCodes.OK);
-});
-
-const testcaseSchema = Type.Object({
-    input: Type.String(),
-    correctOutput: Type.String({ default: "" }),
-});
-
-ProblemHandler.post("/testcase/:cluster_id", useValidation(testcaseSchema), async (req, res) => {
-    const cluster = await extractModifiableCluster(req);
-
-    const testcase: Testcase = {
-        id: generateSnowflake(),
-        cluster_id: cluster.id,
-        input: req.body.input,
-        correct_output: req.body.correctOutput,
-    };
-
-    await Database.insertInto("testcases", testcase);
-
-    return respond(res, StatusCodes.OK, testcase);
-});
-
-ProblemHandler.delete("/testcase/:testcase_id", async (req, res) => {
-    const testcase = await extractModifiableTestcase(req);
-
-    await Database.deleteFrom("testcases", "*", { id: testcase.id });
-    await Database.deleteFrom("testcase_submissions", "*", {
-        testcase_id: testcase.id,
-    });
 
     return respond(res, StatusCodes.OK);
 });
@@ -300,26 +215,6 @@ ProblemHandler.get("/:problem_id", async (req, res) => {
     const score = clusters.reduce((accumulator, current) => accumulator + current.awarded_score, 0);
 
     return respond(res, StatusCodes.OK, R.addProp(problem, "score", score));
-});
-
-ProblemHandler.get("/cluster/:problem_id", async (req, res) => {
-    const problem = await extractProblem(req);
-
-    const clusters = await Database.selectFrom("clusters", "*", {
-        problem_id: problem.id,
-    });
-
-    return respond(res, StatusCodes.OK, clusters);
-});
-
-ProblemHandler.get("/testcase/:cluster_id", async (req, res) => {
-    const cluster = await extractCluster(req);
-
-    const testcases = await Database.selectFrom("testcases", "*", {
-        cluster_id: cluster.id,
-    });
-
-    return respond(res, StatusCodes.OK, testcases);
 });
 
 export default ProblemHandler;

@@ -35,12 +35,14 @@ export const ContestProblemManagePage: FC = () => {
                     </TableHeadRow>
                 </thead>
                 <tbody>
-                    {(clusters ?? []).map((cluster, id) => (
-                        <TableRow key={cluster.id + ""}>
-                            <TableItem>Cluster #{id + 1}</TableItem>
-                            <TableItem>{cluster.awarded_score}</TableItem>
-                        </TableRow>
-                    ))}
+                    {(clusters ?? [])
+                        .sort((a, b) => Number(b.id) - Number(a.id))
+                        .map((cluster, id) => (
+                            <TableRow key={cluster.id + ""}>
+                                <TableItem>Cluster #{id + 1}</TableItem>
+                                <TableItem>{cluster.awarded_score}</TableItem>
+                            </TableRow>
+                        ))}
                 </tbody>
             </Table>
         </div>

@@ -7,6 +7,6 @@ import { http, QueryHandler, wrapAxios } from "../../api/http";
 export const useAllClusters: QueryHandler<Cluster[], Snowflake> = (problemId, options) =>
     useQuery({
         queryKey: ["clusters", problemId],
-        queryFn: () => wrapAxios(http.get("/problem/cluster/" + problemId)),
+        queryFn: () => wrapAxios(http.get(`/problem/${problemId}/cluster/`)),
         ...options,
     });

@@ -24,7 +24,9 @@ export const ProblemListItem: FC<Properties> = ({ problem }) => {
     return (
         <TableRow>
             <TableItem>
-                <Link to={problem.id + ""}>{problem.title}</Link>
+                <Link to={problem.id + ""} tw={"hover:(text-sky-800 cursor-pointer)"}>
+                    {problem.title}
+                </Link>
             </TableItem>
             <TableItem>{problem.score}</TableItem>
             <TableItem>{unique.size}</TableItem>
