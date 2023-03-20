@@ -75,14 +75,13 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                 {createMutation.error && <span>Error! {createMutation.error.message}</span>}
             </div>
             <form onSubmit={onSubmit}>
-                <div tw={"flex flex-col items-stretch gap-2"}>
+                <div tw={"flex flex-col items-stretch gap-2 p-1"}>
                     <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("title")} />
-                    <TitledInput
-                        bigLabel
-                        label={"Description"}
-                        tw={"max-w-full"}
+                    <span tw={"mt-2"}>Description</span>
+                    <textarea
+                        tw={"w-full h-32 resize-none font-mono text-sm"}
                         {...register("description")}
-                    />
+                    ></textarea>
                     <div tw={"flex gap-2"}>
                         <TitledInput
                             bigLabel
