@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 import { useParams } from "react-router";
+import { Link } from "react-router-dom";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import {
@@ -13,7 +14,7 @@ import {
 import { useAllTestcases } from "../../../../../hooks/problem/cluster/testcase/useAllTestcases";
 import { useCluster } from "../../../../../hooks/problem/cluster/useCluster";
 import { ClusterInfoSection } from "./ClusterInfoSection";
-import { CreateTestcaseModal } from "./CreateTestcaseModal";
+import { CreateTestcaseModal } from "./testcases/CreateTestcaseModal";
 
 type Properties = {
     problemId: string;
@@ -57,7 +58,14 @@ export const ContestClusterManagePage: FC = () => {
                         .sort((a, b) => Number(a.id) - Number(b.id))
                         .map((testcase, id) => (
                             <TableRow key={testcase.id + ""}>
-                                <TableItem>Testcase #{id + 1}</TableItem>
+                                <TableItem>
+                                    <Link
+                                        to={testcase.id + ""}
+                                        tw={"hover:(text-sky-800 cursor-pointer)"}
+                                    >
+                                        Testcase #{id + 1}
+                                    </Link>
+                                </TableItem>
                             </TableRow>
                         ))}
                 </tbody>

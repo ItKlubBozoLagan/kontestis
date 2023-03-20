@@ -6,9 +6,9 @@ import Modal from "react-modal";
 import { useQueryClient } from "react-query";
 import { z } from "zod";
 
-import { SimpleButton } from "../../../../../components/SimpleButton";
-import { useCreateTestcase } from "../../../../../hooks/problem/cluster/testcase/useCreateTestcase";
-import { ModalStyles } from "../../../../../util/ModalStyles";
+import { SimpleButton } from "../../../../../../components/SimpleButton";
+import { useCreateTestcase } from "../../../../../../hooks/problem/cluster/testcase/useCreateTestcase";
+import { ModalStyles } from "../../../../../../util/ModalStyles";
 
 const CreateTestcaseSchema = z.object({
     input: z.string().min(1),

@@ -18,6 +18,7 @@ import { ContestManagementLayout } from "./pages/management/contest/ContestManag
 import { ContestOverviewPage } from "./pages/management/contest/overview/ContestOverviewPage";
 import { ContestParticipantsPage } from "./pages/management/contest/participants/ContestParticipantsPage";
 import { ContestClusterManagePage } from "./pages/management/contest/problems/clusters/ContestClusterManagePage";
+import { ContestTestcaseManagePage } from "./pages/management/contest/problems/clusters/testcases/ContestTestcaseManagePage";
 import { ContestProblemManagePage } from "./pages/management/contest/problems/ContestProblemManagePage";
 import { ContestProblemsPage } from "./pages/management/contest/problems/ContestProblemsPage";
 import { ContestQuestionsPage } from "./pages/management/contest/questions/ContestQuestionsPage";
@@ -91,6 +92,10 @@ const dashboardRouter = createBrowserRouter([
                     {
                         path: "problems/:problemId/:clusterId",
                         element: <ContestClusterManagePage />,
+                    },
+                    {
+                        path: "problems/:problemId/:clusterId/:testcaseId",
+                        element: <ContestTestcaseManagePage />,
                     },
                     {
                         path: "announcements",
