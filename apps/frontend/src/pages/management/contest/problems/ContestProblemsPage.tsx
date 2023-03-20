@@ -7,7 +7,6 @@ import { useContestContext } from "../../../../context/constestContext";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
 import { CreateProblemModal } from "./CreateProblemModal";
 import { ProblemListItem } from "./ProblemListItem";
-import { ProblemSection } from "./ProblemSection";
 
 export const ContestProblemsPage: FC = () => {
     const { contest } = useContestContext();
@@ -42,12 +41,6 @@ export const ContestProblemsPage: FC = () => {
                     ))}
                 </tbody>
             </Table>
-
-            {problems
-                ?.sort((a, b) => Number(a.id - b.id))
-                .map((problem) => (
-                    <ProblemSection key={problem.id.toString()} problem={problem} />
-                ))}
         </div>
     );
 };
