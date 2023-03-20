@@ -44,10 +44,26 @@ TestcaseHandler.get("/", async (req, res) => {
     return respond(res, StatusCodes.OK, testcases);
 });
 
+// eslint-disable-next-line sonarjs/no-duplicate-string
 TestcaseHandler.get("/:testcase_id", async (req, res) => {
     const testcase = await extractTestcase(req);
 
     return respond(res, StatusCodes.OK, testcase);
+});
+
+TestcaseHandler.patch("/:testcase_id", useValidation(testcaseSchema), async (req, res) => {
+    const testcase = await extractModifiableTestcase(req);
+
+    await Database.update(
+        "testcases",
+        {
+            input: req.body.input,
+            correct_output: req.body.correctOutput,
+        },
+        { id: testcase.id }
+    );
+
+    return respond(res, StatusCodes.OK);
 });
 
 TestcaseHandler.delete("/:testcase_id", async (req, res) => {
