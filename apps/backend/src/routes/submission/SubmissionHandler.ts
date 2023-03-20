@@ -1,3 +1,4 @@
+import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -7,6 +8,7 @@ import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractClusterSubmission } from "../../extractors/extractClusterSubmission";
 import { extractContest } from "../../extractors/extractContest";
+import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractOptionalUser } from "../../extractors/extractOptionalUser";
 import { extractProblem } from "../../extractors/extractProblem";
@@ -49,6 +51,22 @@ SubmissionHandler.get("/", useValidation(getSchema, { query: true }), async (req
     });
 
     return respond(res, StatusCodes.OK, submissions);
+});
+
+SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
+    const problem = await extractProblem(req);
+    const contest = await extractContest(req, problem.contest_id);
+    const member = await extractContestMember(req, problem.contest_id);
+
+    const submissions = await Database.selectFrom("submissions", "*", { problem_id: problem.id });
+
+    if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
+        return respond(res, StatusCodes.OK, submissions);
+
+    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    respond(res, StatusCodes.OK, submissions);
 });
 
 SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {

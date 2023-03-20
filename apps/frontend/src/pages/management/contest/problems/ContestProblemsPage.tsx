@@ -2,16 +2,11 @@ import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
-import {
-    Table,
-    TableHeadItem,
-    TableHeadRow,
-    TableItem,
-    TableRow,
-} from "../../../../components/Table";
+import { Table, TableHeadItem, TableHeadRow } from "../../../../components/Table";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
 import { CreateProblemModal } from "./CreateProblemModal";
+import { ProblemListItem } from "./ProblemListItem";
 import { ProblemSection } from "./ProblemSection";
 
 export const ContestProblemsPage: FC = () => {
@@ -37,18 +32,13 @@ export const ContestProblemsPage: FC = () => {
                     <TableHeadRow>
                         <TableHeadItem>Name</TableHeadItem>
                         <TableHeadItem>Score</TableHeadItem>
-                        <TableHeadItem>Attempts</TableHeadItem>
-                        <TableHeadItem>Solve %</TableHeadItem>
+                        <TableHeadItem>Users</TableHeadItem>
+                        <TableHeadItem>Solves</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
                     {(problems ?? []).map((p) => (
-                        <TableRow key={p.id + ""}>
-                            <TableItem>{p.title}</TableItem>
-                            <TableItem>{p.score}</TableItem>
-                            <TableItem>{0}</TableItem>
-                            <TableItem>{0}</TableItem>
-                        </TableRow>
+                        <ProblemListItem problem={p} key={p.id + ""} />
                     ))}
                 </tbody>
             </Table>
