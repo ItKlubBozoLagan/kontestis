@@ -4,7 +4,7 @@ import { FiPlus } from "react-icons/all";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import { TitledSection } from "../../../../../components/TitledSection";
-import { useAllTestcases } from "../../../../../hooks/problem/useAllTestcases";
+import { useAllTestcases } from "../../../../../hooks/problem/cluster/testcase/useAllTestcases";
 import { CreateTestcaseModal } from "./CreateTestcaseModal";
 
 type Properties = {

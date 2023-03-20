@@ -8,7 +8,7 @@ import {
     TableItem,
     TableRow,
 } from "../../../../components/Table";
-import { useAllClusters } from "../../../../hooks/problem/useAllClusters";
+import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters";
 import { useProblem } from "../../../../hooks/problem/useProblem";
 import { ProblemInfoSection } from "./ProblemInfoSection";
 

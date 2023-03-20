@@ -7,7 +7,7 @@ import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
-import { useCreateTestcase } from "../../../../../hooks/problem/useCreateTestcase";
+import { useCreateTestcase } from "../../../../../hooks/problem/cluster/testcase/useCreateTestcase";
 import { ModalStyles } from "../../../../../util/ModalStyles";
 
 const CreateTestcaseSchema = z.object({

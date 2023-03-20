@@ -1,8 +1,7 @@
-import { Testcase } from "@kontestis/models";
-import { Snowflake } from "@kontestis/models";
+import { Snowflake, Testcase } from "@kontestis/models";
 import { useQuery } from "react-query";
 
-import { http, QueryHandler, wrapAxios } from "../../api/http";
+import { http, QueryHandler, wrapAxios } from "../../../../api/http";
 
 export const useAllTestcases: QueryHandler<Testcase[], [Snowflake, Snowflake]> = (
     [problemId, clusterId],

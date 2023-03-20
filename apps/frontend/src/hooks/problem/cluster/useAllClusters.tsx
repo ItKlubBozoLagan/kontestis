@@ -1,8 +1,7 @@
-import { Cluster } from "@kontestis/models";
-import { Snowflake } from "@kontestis/models";
+import { Cluster, Snowflake } from "@kontestis/models";
 import { useQuery } from "react-query";
 
-import { http, QueryHandler, wrapAxios } from "../../api/http";
+import { http, QueryHandler, wrapAxios } from "../../../api/http";
 
 export const useAllClusters: QueryHandler<Cluster[], Snowflake> = (problemId, options) =>
     useQuery({

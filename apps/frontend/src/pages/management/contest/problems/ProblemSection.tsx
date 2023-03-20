@@ -4,7 +4,7 @@ import { FiPlus } from "react-icons/all";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledSection } from "../../../../components/TitledSection";
-import { useAllClusters } from "../../../../hooks/problem/useAllClusters";
+import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters";
 import { ClusterSection } from "./clusters/ClusterSection";
 import { CreateClusterModal } from "./clusters/CreateClusterModal";
 

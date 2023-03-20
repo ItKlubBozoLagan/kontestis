@@ -1,7 +1,7 @@
 import { Snowflake, Testcase } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../api/http";
+import { http, MutationHandler, wrapAxios } from "../../../../api/http";
 
 type CreateTestcaseVariables = {
     input: string;

@@ -8,7 +8,7 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import { TitledInput } from "../../../../../components/TitledInput";
-import { useCreateCluster } from "../../../../../hooks/problem/useCreateCluster";
+import { useCreateCluster } from "../../../../../hooks/problem/cluster/useCreateCluster";
 import { ModalStyles } from "../../../../../util/ModalStyles";
 
 const CreateClusterSchema = z.object({
