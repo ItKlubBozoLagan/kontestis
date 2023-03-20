@@ -62,7 +62,7 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
                 {createMutation.error && <span>Error! {createMutation.error.message}</span>}
             </div>
             <form onSubmit={onSubmit}>
-                <div tw={"flex flex-col items-stretch gap-2"}>
+                <div tw={"flex flex-col items-stretch gap-2 p-1"}>
                     <span tw={"mt-2"}>Input</span>
                     <textarea
                         tw={"w-full h-16 resize-none font-mono text-sm"}
