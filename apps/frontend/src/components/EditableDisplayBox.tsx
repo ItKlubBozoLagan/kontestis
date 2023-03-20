@@ -30,7 +30,6 @@ export const EditableDisplayBox: FC<Properties> = ({
                     <div tw={"w-full"}>{children}</div>
                     <FiCheck
                         onClick={() => {
-                            console.log("Submitting");
                             setEditMode(false);
                             submitFunction();
                         }}
@@ -45,7 +44,7 @@ export const EditableDisplayBox: FC<Properties> = ({
                 </div>
             ) : (
                 <div tw={"flex w-full gap-2 items-center text-xl justify-end"}>
-                    {textValue ? <pre>{value}</pre> : <span>{value}</span>}
+                    {textValue ? <pre tw={"text-sm"}>{value}</pre> : <span>{value}</span>}
                     <FiEdit
                         onClick={() => setEditMode(true)}
                         tw={"min-w-[20px] hover:(cursor-pointer text-blue-700)"}

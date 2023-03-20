@@ -23,20 +23,22 @@ export const ContestQuestionsPage: FC = () => {
     return (
         <div tw={"w-full flex justify-center gap-2"}>
             {questions?.length === 0 && <span tw={"w-full text-center"}>None so far</span>}
-            <div tw={"w-full flex flex-col justify-center gap-4"}>
-                <PageTitle>Not answered</PageTitle>
-                {(notAnswered ?? [])
-                    .sort((a, b) => Number(a.id - b.id))
-                    .map((question) => (
-                        <ContestQuestionItem key={question.id.toString()} question={question} />
-                    ))}
-                <PageTitle>Answered</PageTitle>
-                {(answered ?? [])
-                    .sort((a, b) => Number(b.id - a.id))
-                    .map((question) => (
-                        <ContestQuestionItem key={question.id.toString()} question={question} />
-                    ))}
-            </div>
+            {questions?.length !== 0 && (
+                <div tw={"w-full flex flex-col justify-center gap-4"}>
+                    <PageTitle>Not answered</PageTitle>
+                    {(notAnswered ?? [])
+                        .sort((a, b) => Number(a.id - b.id))
+                        .map((question) => (
+                            <ContestQuestionItem key={question.id.toString()} question={question} />
+                        ))}
+                    <PageTitle>Answered</PageTitle>
+                    {(answered ?? [])
+                        .sort((a, b) => Number(b.id - a.id))
+                        .map((question) => (
+                            <ContestQuestionItem key={question.id.toString()} question={question} />
+                        ))}
+                </div>
+            )}
         </div>
     );
 };

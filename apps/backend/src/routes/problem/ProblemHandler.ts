@@ -128,7 +128,7 @@ ProblemHandler.post("/cluster/:problem_id", useValidation(clusterSchema), async 
 });
 
 ProblemHandler.patch("/cluster/:cluster_id", useValidation(clusterSchema), async (req, res) => {
-    const cluster = await extractCluster(req);
+    const cluster = await extractModifiableCluster(req);
 
     await Database.update(
         "clusters",
@@ -140,7 +140,7 @@ ProblemHandler.patch("/cluster/:cluster_id", useValidation(clusterSchema), async
 });
 
 ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, res) => {
-    const problem = await extractProblem(req);
+    const problem = await extractModifiableProblem(req);
 
     if (req.body.evaluation_variant != "plain" && !req.body.evaluation_script)
         throw new SafeError(StatusCodes.BAD_REQUEST);
