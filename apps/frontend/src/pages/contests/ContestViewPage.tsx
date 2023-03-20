@@ -77,11 +77,16 @@ export const ContestViewPage: FC = () => {
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
             {contest && running && (
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
-                    <TitledSection title={"Announcements"}>
+                    <TitledSection title={"Announcements"} tw={"gap-y-0"}>
                         {(announcements ?? []).map((announcement) => (
-                            <span tw={"text-lg"} key={announcement.id.toString()}>
+                            <pre
+                                tw={
+                                    "w-full text-lg border-solid border-neutral-300 border-[2px] p-2"
+                                }
+                                key={announcement.id.toString()}
+                            >
                                 {announcement.message}
-                            </span>
+                            </pre>
                         ))}
                     </TitledSection>
                     <TitledSection title={"Questions"} tw={"flex w-full flex-col gap-4"}>
@@ -105,7 +110,7 @@ export const ContestViewPage: FC = () => {
                                     title={question.question}
                                     key={question.id.toString()}
                                 >
-                                    {question.response ?? "Waiting for response!"}
+                                    <pre>{question.response ?? "Waiting for response!"}</pre>
                                 </TitledSection>
                             ))}
                         {questions && questions.length > 1 && (
