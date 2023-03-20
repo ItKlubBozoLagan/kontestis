@@ -4,11 +4,18 @@ import { FiCheck, FiEdit, FiX } from "react-icons/all";
 type Properties = {
     title: string;
     value: string;
+    textValue?: boolean;
     submitFunction: () => void;
     children: ReactNode;
 };
 
-export const EditableDisplayBox: FC<Properties> = ({ title, value, submitFunction, children }) => {
+export const EditableDisplayBox: FC<Properties> = ({
+    title,
+    value,
+    submitFunction,
+    children,
+    textValue = false,
+}) => {
     const [editMode, setEditMode] = useState(false);
 
     return (
@@ -38,7 +45,7 @@ export const EditableDisplayBox: FC<Properties> = ({ title, value, submitFunctio
                 </div>
             ) : (
                 <div tw={"flex w-full gap-2 items-center text-xl justify-end"}>
-                    <span>{value}</span>
+                    {textValue ? <pre>{value}</pre> : <span>{value}</span>}
                     <FiEdit
                         onClick={() => setEditMode(true)}
                         tw={"min-w-[20px] hover:(cursor-pointer text-blue-700)"}

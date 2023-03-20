@@ -5,8 +5,7 @@ import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import { z } from "zod";
 
-import { SimpleButton } from "../../../../components/SimpleButton";
-import { TitledInput } from "../../../../components/TitledInput";
+import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
 import { TitledSection } from "../../../../components/TitledSection";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAnswerQuestion } from "../../../../hooks/contest/questions/useAnswerQuestion";
@@ -24,7 +23,7 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
 
     const [currentResponse, setCurrentResponse] = useState(question.response);
 
-    const { register, handleSubmit, reset } = useForm<z.infer<typeof AnswerQuestionSchema>>({
+    const { register, handleSubmit } = useForm<z.infer<typeof AnswerQuestionSchema>>({
         resolver: zodResolver(AnswerQuestionSchema),
         defaultValues: {
             response: currentResponse,
@@ -51,17 +50,29 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
         answerMutation.reset();
     }, [answerMutation.isSuccess]);
 
+    const formReference = React.useRef<HTMLFormElement>(null);
+
+    const submitForm = () => {
+        formReference.current?.dispatchEvent(
+            new Event("submit", { cancelable: true, bubbles: true })
+        );
+    };
+
     return (
-        <TitledSection small title={question.question}>
+        <TitledSection title={question.question} tw={"w-full"}>
             {hasContestPermission(
                 member.contest_permissions,
                 ContestMemberPermissions.ANSWER_QUESTIONS
             ) && (
-                <form onSubmit={onSubmit} tw={"flex flex-col gap-2"}>
-                    <TitledInput label={"Answer:"} bigLabel {...register("response")} />
-                    <SimpleButton>
-                        {currentResponse?.length ?? -1 > 0 ? "Change" : "Answer"}
-                    </SimpleButton>
+                <form onSubmit={onSubmit} tw={"w-full"} ref={formReference}>
+                    <EditableDisplayBox
+                        title={"Answer"}
+                        value={question?.response ?? ""}
+                        submitFunction={submitForm}
+                        textValue
+                    >
+                        <textarea {...register("response")} tw={"w-full"} />
+                    </EditableDisplayBox>
                 </form>
             )}
         </TitledSection>
