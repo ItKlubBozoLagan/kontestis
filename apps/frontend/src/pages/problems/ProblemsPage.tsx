@@ -42,7 +42,7 @@ export const ProblemsPage: FC = () => {
                         (contest) => BigInt(contest.id) === BigInt(it.contest_id)
                     ),
                 })),
-                R.sort((a, b) => a.title.localeCompare(b.title))
+                R.sort((a, b) => Number(b.id) - Number(a.id))
             ),
         [rawProblems, problemScores]
     );
