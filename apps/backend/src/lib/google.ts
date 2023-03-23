@@ -56,7 +56,7 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
     const user: User = potentialEntry ?? {
         id: generateSnowflake(),
         elo: DEFAULT_ELO,
-        google_id: BigInt(googleId),
+        google_id: googleId,
         permissions:
             numberUsers === 0n
                 ? grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADMIN)

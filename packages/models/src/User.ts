@@ -26,7 +26,11 @@ export type UserV3 = {
     elo: number;
 };
 
-export type User = UserV3;
+export type UserV4 = Omit<UserV3, "google_id"> & {
+    google_id: string;
+};
+
+export type User = UserV4;
 
 export type FullUser = User & {
     full_name: string;

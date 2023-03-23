@@ -1,20 +1,24 @@
-import { UserV2 } from "@kontestis/models";
+import { UserV3, UserV4 } from "@kontestis/models";
 import { Migration } from "scyllo";
 
 type MigrationType = {
-    users: UserV2;
+    users: UserV4 & UserV3;
 };
 
-export const migration_refractor_user: Migration<MigrationType> = async (database, log) => {
+export const migration_change_user_google_id_type: Migration<MigrationType> = async (
+    database,
+    log
+) => {
     await database.dropTable("users");
 
     await database.createTable(
         "users",
-        true,
+        false,
         {
             id: { type: "bigint" },
-            google_id: { type: "bigint" },
+            google_id: { type: "text" },
             permissions: { type: "bigint" },
+            elo: { type: "int" },
         },
         "id",
         ["google_id"]
