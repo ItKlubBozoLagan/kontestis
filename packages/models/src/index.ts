@@ -7,6 +7,8 @@ export * from "./ContestMember";
 export * from "./ContestQuestion";
 export * from "./Evaluation";
 export * from "./KnownUserData";
+export * from "./Organisation";
+export * from "./OrganisationMember";
 export * from "./permissions";
 export * from "./Problem";
 export * from "./Snowflake";
