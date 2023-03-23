@@ -12,6 +12,9 @@ export enum AdminPermissions {
     ADD_ALERTS,
     EDIT_ALERTS,
     DELETE_ALERTS,
+    VIEW_ORGANISATIONS,
+    EDIT_ORGANISATIONS,
+    DELETE_ORGANISATIONS,
 }
 
 export const hasAdminPermission = (data: PermissionData, permission: AdminPermissions) => {

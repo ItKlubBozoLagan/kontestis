@@ -19,6 +19,10 @@ export type ContestV3 = ContestV2 & {
     official: boolean;
 };
 
+export type ContestV4 = ContestV3 & {
+    organisation_id: Snowflake;
+};
+
 export type Contest = ContestV3;
 
 export type ContestWithPermissions = Contest & {

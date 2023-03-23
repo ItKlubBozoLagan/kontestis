@@ -4,6 +4,8 @@ import {
     ContestMember,
     ContestQuestion,
     KnownUserData,
+    Organisation,
+    OrganisationMember,
     Problem,
 } from "@kontestis/models";
 import { ClusterSubmission } from "@kontestis/models";
@@ -51,6 +53,8 @@ export const Database = new ScylloClient<{
     contest_members: ContestMember;
     contest_questions: ContestQuestion;
     contest_announcements: ContestAnnouncement;
+    organisations: Organisation;
+    organisation_members: OrganisationMember;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],

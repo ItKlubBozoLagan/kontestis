@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { StatusCodes } from "http-status-codes";
+import { getReasonPhrase, StatusCodes } from "http-status-codes";
 import superjson from "superjson";
 
 import { Globals } from "../globals";
@@ -21,7 +21,11 @@ export const respond = (
     });
 };
 
-export const reject = (response: Response, status: StatusCodes, error: string | string[]) => {
+export const reject = (
+    response: Response,
+    status: StatusCodes,
+    error: string | string[] = getReasonPhrase(status)
+) => {
     response.status(status).json({
         status,
         ...(Globals.mode === "development"
