@@ -43,6 +43,35 @@ OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res
     return respond(res, StatusCodes.OK, organisation);
 });
 
+OrganisationHandler.patch(
+    "/:organisation_id",
+    useValidation(organisationSchema),
+    async (req, res) => {
+        const user = await extractUser(req);
+
+        const organisation = await extractOrganisation(
+            req,
+            extractIdFromParameters(req, "organisation_id")
+        );
+
+        if (
+            !hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) &&
+            user.id !== organisation.owner
+        )
+            throw new SafeError(StatusCodes.FORBIDDEN);
+
+        const exists = await Database.selectOneFrom("organisations", ["id"], {
+            name: req.body.name,
+        });
+
+        if (exists) throw new SafeError(StatusCodes.CONFLICT);
+
+        await Database.update("organisations", { name: req.body.name }, { id: organisation.id });
+
+        return respond(res, StatusCodes.OK);
+    }
+);
+
 OrganisationHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
 
@@ -87,7 +116,11 @@ OrganisationHandler.post("/members/:user_id", async (req, res) => {
 
     const targetUserId = extractIdFromParameters(req, "user_id");
 
-    if (user.id !== organisation.owner) throw new SafeError(StatusCodes.FORBIDDEN);
+    if (
+        !hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) &&
+        user.id !== organisation.owner
+    )
+        throw new SafeError(StatusCodes.FORBIDDEN);
 
     const exists = await Database.selectOneFrom(
         "organisation_members",
@@ -118,11 +151,15 @@ OrganisationHandler.delete("/members/:user_id", async (req, res) => {
 
     const targetUserId = extractIdFromParameters(req, "user_id");
 
-    if (user.id !== organisation.owner) throw new SafeError(StatusCodes.FORBIDDEN);
+    if (
+        !hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) &&
+        user.id !== organisation.owner
+    )
+        throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const exists = await Database.selectOneFrom(
+    const member = await Database.selectOneFrom(
         "organisation_members",
-        ["id"],
+        "*",
         {
             organisation_id: organisation.id,
             user_id: targetUserId,
@@ -130,13 +167,13 @@ OrganisationHandler.delete("/members/:user_id", async (req, res) => {
         "ALLOW FILTERING"
     );
 
-    if (!exists) throw new SafeError(StatusCodes.CONFLICT);
+    if (!member) throw new SafeError(StatusCodes.CONFLICT);
 
     await Database.deleteFrom("organisation_members", "*", {
-        id: exists.id,
+        id: member.id,
     });
 
-    return respond(res, StatusCodes.OK);
+    return respond(res, StatusCodes.OK, member);
 });
 
 export default OrganisationHandler;
