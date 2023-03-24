@@ -8,7 +8,7 @@ import { Globals } from "../globals";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-const DEFAULT_ORGANISATION: Organisation = {
+export const DEFAULT_ORGANISATION: Organisation = {
     id: 1n,
     owner: 1n,
     name: Globals.defaultOrganisationName,

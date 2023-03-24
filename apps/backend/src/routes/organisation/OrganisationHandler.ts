@@ -10,7 +10,7 @@ import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
-import { extractOrganisation } from "../../extractors/extractOrganisation";
+import { DEFAULT_ORGANISATION, extractOrganisation } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
@@ -49,17 +49,16 @@ OrganisationHandler.get("/", async (req, res) => {
     const organisations = await Database.selectFrom("organisations", "*", {});
 
     if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_ORGANISATIONS))
-        return respond(res, StatusCodes.OK, organisations);
+        return respond(res, StatusCodes.OK, [DEFAULT_ORGANISATION, ...organisations]);
 
     const organisationIds = await Database.selectFrom("organisation_members", ["organisation_id"], {
         user_id: user.id,
     });
 
-    return respond(
-        res,
-        StatusCodes.OK,
-        organisations.filter((o) => organisationIds.some((oid) => oid.organisation_id === o.id))
-    );
+    return respond(res, StatusCodes.OK, [
+        DEFAULT_ORGANISATION,
+        ...organisations.filter((o) => organisationIds.some((oid) => oid.organisation_id === o.id)),
+    ]);
 });
 
 OrganisationHandler.get("/:organisation_id", async (req, res) => {

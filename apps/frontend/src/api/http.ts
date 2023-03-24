@@ -10,6 +10,7 @@ import {
 import superjson from "superjson";
 import { z } from "zod";
 
+import { useOrganisationStore } from "../state/organisation";
 import { useTokenStore } from "../state/token";
 import { HttpError } from "./HttpError";
 
@@ -65,10 +66,12 @@ http.interceptors.request.use((config) => {
 
     return config;
 });
-
-// TODO: Use proper id
 http.interceptors.request.use((config) => {
-    config.headers.set("X-Kontestis-Org-Id", "1");
+    const { isSelected, organisationId } = useOrganisationStore.getState();
+
+    if (!isSelected) return config;
+
+    config.headers.set("X-Kontestis-Org-Id", organisationId.toString());
 
     return config;
 });

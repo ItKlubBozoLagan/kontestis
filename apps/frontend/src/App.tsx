@@ -23,11 +23,13 @@ import { ContestProblemManagePage } from "./pages/management/contest/problems/Co
 import { ContestProblemsPage } from "./pages/management/contest/problems/ContestProblemsPage";
 import { ContestQuestionsPage } from "./pages/management/contest/questions/ContestQuestionsPage";
 import { ManagementPage } from "./pages/management/ManagementPage";
+import { OrganisationPage } from "./pages/organisation/OrganisationPage";
 import { ProblemsPage } from "./pages/problems/ProblemsPage";
 import { ProblemViewPage } from "./pages/problems/ProblemViewPage";
 import { Root } from "./pages/Root";
 import { SubmissionViewPage } from "./pages/submissions/SubmissionViewPage";
 import { useAuthStore } from "./state/auth";
+import { useOrganisationStore } from "./state/organisation";
 import { useTokenStore } from "./state/token";
 
 Modal.setAppElement("#root");
@@ -140,9 +142,27 @@ const loginRouter = createBrowserRouter([
     },
 ]);
 
+const organisationRouter = createBrowserRouter([
+    {
+        path: "/",
+        element: <Root hideNavbar />,
+        children: [
+            {
+                path: "/",
+                element: <OrganisationPage />,
+            },
+            {
+                path: "/*",
+                element: <Navigate to={"/"} replace />,
+            },
+        ],
+    },
+]);
+
 export const App = () => {
     const { isLoggedIn, setUser, setIsLoggedIn } = useAuthStore();
     const { token, setToken } = useTokenStore();
+    const { isSelected } = useOrganisationStore();
 
     const queryClient = useQueryClient();
 
@@ -180,7 +200,11 @@ export const App = () => {
     if (token.length > 0 && !isLoggedIn) return <></>;
 
     return isLoggedIn ? (
-        <RouterProvider router={dashboardRouter} />
+        isSelected ? (
+            <RouterProvider router={dashboardRouter} />
+        ) : (
+            <RouterProvider router={organisationRouter} />
+        )
     ) : (
         <RouterProvider router={loginRouter} />
     );
