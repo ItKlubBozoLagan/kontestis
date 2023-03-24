@@ -6,14 +6,16 @@ import { useAllOrganisations } from "../../hooks/organisation/useAllOrganisation
 import { useOrganisationStore } from "../../state/organisation";
 
 export const OrganisationPage: FC = () => {
-    const { setIsSelected, setOrganisationId } = useOrganisationStore();
+    const { setIsSelected, setOrganisationId, isInitialSelect, setIsInitialSelected } =
+        useOrganisationStore();
 
     const { data: organisations } = useAllOrganisations();
 
     useEffect(() => {
-        if ((organisations ?? []).length !== 1) return;
+        if (!isInitialSelect || (organisations ?? []).length !== 1) return;
 
         setIsSelected(true);
+        setIsInitialSelected(false);
         setOrganisationId(organisations![0].id);
     }, [organisations]);
 
@@ -33,6 +35,7 @@ export const OrganisationPage: FC = () => {
                                 tw={"hover:(text-sky-800 cursor-pointer)"}
                                 onClick={() => {
                                     setIsSelected(true);
+                                    setIsInitialSelected(false);
                                     setOrganisationId(organisation.id);
                                 }}
                             >

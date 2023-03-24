@@ -1,8 +1,17 @@
 import { FC } from "react";
-import { FiClock, FiCpu, FiLayers, FiLogOut, FiSettings, FiUser } from "react-icons/all";
+import {
+    FiArrowLeft,
+    FiClock,
+    FiCpu,
+    FiLayers,
+    FiLogOut,
+    FiSettings,
+    FiUser,
+} from "react-icons/all";
 import tw from "twin.macro";
 
 import { useAuthStore } from "../state/auth";
+import { useOrganisationStore } from "../state/organisation";
 import { useTokenStore } from "../state/token";
 import { NavElement, NavItem } from "./NavElement";
 
@@ -32,6 +41,7 @@ const items: NavItem[] = [
 export const NavBar: FC = () => {
     const { user } = useAuthStore();
     const { setToken } = useTokenStore();
+    const { setIsSelected } = useOrganisationStore();
 
     return (
         <div
@@ -62,6 +72,12 @@ export const NavBar: FC = () => {
                         icon: FiSettings,
                     }}
                 />
+                <div
+                    tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
+                    onClick={() => setIsSelected(false)}
+                >
+                    <FiArrowLeft size={"16px"} />
+                </div>
                 <div
                     tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
                     onClick={() => setToken("")}
