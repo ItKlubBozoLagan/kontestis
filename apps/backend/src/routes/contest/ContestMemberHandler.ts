@@ -22,7 +22,6 @@ const RegisterSchema = Type.Object({
 ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req, res) => {
     const contest = await extractContest(req);
     const user = await extractUser(req);
-
     const targetUser = req.body.email
         ? await Database.selectOneFrom(
               "known_users",

@@ -15,6 +15,7 @@ import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
+import { extractOrganisation } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
@@ -44,6 +45,8 @@ ContestHandler.use("/:contest_id/announcement", ContestAnnouncementHandler);
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const user = await extractUser(req);
 
+    const organisation = await extractOrganisation(req);
+
     if (!hasAdminPermission(user.permissions, AdminPermissions.ADD_CONTEST))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
@@ -57,6 +60,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
 
     const contest: Contest = {
         id: generateSnowflake(),
+        organisation_id: organisation.id,
         name: req.body.name,
         admin_id: user.id, // legacy
         start_time: date,
@@ -109,10 +113,14 @@ ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, r
 });
 
 ContestHandler.get("/", async (req, res) => {
-    const contestIds = await Database.selectFrom("contests", ["id"]);
+    const contestIds = await Database.selectFrom("contests", ["id", "organisation_id"]);
     const contests = [];
 
+    const organisation = await extractOrganisation(req);
+
     for (const id of contestIds) {
+        if (id.organisation_id !== organisation.id) continue;
+
         try {
             contests.push(await extractContest(req, id.id));
         } catch {

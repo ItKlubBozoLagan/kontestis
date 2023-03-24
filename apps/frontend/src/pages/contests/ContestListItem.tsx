@@ -73,7 +73,7 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                                 tw={"text-yellow-600 hover:(text-yellow-700 cursor-pointer)"}
                                 onClick={async () => {
                                     await http
-                                        .post("/contest/register/" + contest.id)
+                                        .post("/contest/" + contest.id + "/members/register/")
                                         .then(() =>
                                             queryClient.invalidateQueries([
                                                 "contests",

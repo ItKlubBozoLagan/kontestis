@@ -66,6 +66,13 @@ http.interceptors.request.use((config) => {
     return config;
 });
 
+// TODO: Use proper id
+http.interceptors.request.use((config) => {
+    config.headers.set("X-Kontestis-Org-Id", "1");
+
+    return config;
+});
+
 http.interceptors.response.use((resp) => {
     if (resp.status === 401 || resp.status === 403)
         useTokenStore.setState({

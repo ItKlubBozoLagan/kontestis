@@ -23,7 +23,7 @@ export type ContestV4 = ContestV3 & {
     organisation_id: Snowflake;
 };
 
-export type Contest = ContestV3;
+export type Contest = ContestV4;
 
 export type ContestWithPermissions = Contest & {
     registered: boolean;

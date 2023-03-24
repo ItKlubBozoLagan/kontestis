@@ -20,6 +20,7 @@ import { reject, respond } from "./utils/response";
 import { Redis } from "./redis/Redis";
 import { Globals } from "./globals";
 import { startEloTask } from "./tasks/eloTask";
+import OrganisationHandler from "./routes/organisation/OrganisationHandler";
 
 declare global {
     interface BigInt {
@@ -42,6 +43,7 @@ app.use(json());
 app.use(cors());
 
 app.use("/api/auth", AuthHandler);
+app.use("/api/organisation", OrganisationHandler);
 app.use("/api/contest", ContestHandler);
 app.use("/api/problem", ProblemHandler);
 app.use("/api/submission", SubmissionHandler);
