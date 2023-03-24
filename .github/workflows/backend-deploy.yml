@@ -57,7 +57,7 @@ jobs:
     needs: [ "build" ]
     steps:
       - name: "Set up kubectl"
-        uses: azure/setup-kubectl@v1
+        uses: azure/setup-kubectl@v3
 
       - name: "Copy kubernetes config"
         run: "mkdir ~/.kube && echo '${{ secrets.KUBE_CONFIG }}' | base64 -d > ~/.kube/config && KUBECONFIG=~/.kube/config"
