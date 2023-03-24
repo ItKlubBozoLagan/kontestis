@@ -1,21 +1,18 @@
-import {
-    AdminPermissions,
-    hasAdminPermission,
-    Organisation,
-    OrganisationMember,
-} from "@kontestis/models";
+import { AdminPermissions, hasAdminPermission, Organisation } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
+import { extractModifiableOrganisation } from "../../extractors/extractModifiableOrganisation";
 import { DEFAULT_ORGANISATION, extractOrganisation } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
+import OrganisationMemberHandler from "./OrganisationMemberHandler";
 
 const OrganisationHandler = Router();
 
@@ -23,54 +20,7 @@ const organisationSchema = Type.Object({
     name: Type.String({ minLength: 1 }),
 });
 
-OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res) => {
-    const user = await extractUser(req);
-
-    const exists = await Database.selectOneFrom("organisations", ["id"], { name: req.body.name });
-
-    if (exists) throw new SafeError(StatusCodes.CONFLICT);
-
-    const organisation: Organisation = {
-        id: generateSnowflake(),
-        name: req.body.name,
-        owner: user.id,
-        // TODO: Make a way to add this and also store it... pain
-        avatar_url: "",
-    };
-
-    await Database.insertInto("organisations", organisation);
-
-    return respond(res, StatusCodes.OK, organisation);
-});
-
-OrganisationHandler.patch(
-    "/:organisation_id",
-    useValidation(organisationSchema),
-    async (req, res) => {
-        const user = await extractUser(req);
-
-        const organisation = await extractOrganisation(
-            req,
-            extractIdFromParameters(req, "organisation_id")
-        );
-
-        if (
-            !hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) &&
-            user.id !== organisation.owner
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
-
-        const exists = await Database.selectOneFrom("organisations", ["id"], {
-            name: req.body.name,
-        });
-
-        if (exists) throw new SafeError(StatusCodes.CONFLICT);
-
-        await Database.update("organisations", { name: req.body.name }, { id: organisation.id });
-
-        return respond(res, StatusCodes.OK);
-    }
-);
+OrganisationHandler.use("/:organisation_id/member", OrganisationMemberHandler);
 
 OrganisationHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
@@ -99,81 +49,45 @@ OrganisationHandler.get("/:organisation_id", async (req, res) => {
     return respond(res, StatusCodes.OK, organisation);
 });
 
-OrganisationHandler.get("/members", async (req, res) => {
-    const organisation = await extractOrganisation(req);
-
-    const organisationMembers = await Database.selectFrom("organisation_members", "*", {
-        organisation_id: organisation.id,
-    });
-
-    return respond(res, StatusCodes.OK, organisationMembers);
-});
-
-// TODO: Make this more robust
-OrganisationHandler.post("/members/:user_id", async (req, res) => {
-    const organisation = await extractOrganisation(req);
+OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res) => {
     const user = await extractUser(req);
 
-    const targetUserId = extractIdFromParameters(req, "user_id");
-
-    if (
-        !hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) &&
-        user.id !== organisation.owner
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
-
-    const exists = await Database.selectOneFrom(
-        "organisation_members",
-        ["id"],
-        {
-            organisation_id: organisation.id,
-            user_id: targetUserId,
-        },
-        "ALLOW FILTERING"
-    );
+    const exists = await Database.selectOneFrom("organisations", ["id"], { name: req.body.name });
 
     if (exists) throw new SafeError(StatusCodes.CONFLICT);
 
-    const member: OrganisationMember = {
+    const organisation: Organisation = {
         id: generateSnowflake(),
-        organisation_id: organisation.id,
-        user_id: user.id,
+        name: req.body.name,
+        owner: user.id,
+        // TODO: Make a way to add this and also store it... pain
+        avatar_url: "",
     };
 
-    await Database.insertInto("organisation_members", member);
+    await Database.insertInto("organisations", organisation);
 
-    return respond(res, StatusCodes.OK, member);
+    return respond(res, StatusCodes.OK, organisation);
 });
 
-OrganisationHandler.delete("/members/:user_id", async (req, res) => {
-    const organisation = await extractOrganisation(req);
-    const user = await extractUser(req);
+OrganisationHandler.patch(
+    "/:organisation_id",
+    useValidation(organisationSchema),
+    async (req, res) => {
+        const organisation = await extractModifiableOrganisation(
+            req,
+            extractIdFromParameters(req, "organisation_id")
+        );
 
-    const targetUserId = extractIdFromParameters(req, "user_id");
+        const exists = await Database.selectOneFrom("organisations", ["id"], {
+            name: req.body.name,
+        });
 
-    if (
-        !hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) &&
-        user.id !== organisation.owner
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
+        if (exists) throw new SafeError(StatusCodes.CONFLICT);
 
-    const member = await Database.selectOneFrom(
-        "organisation_members",
-        "*",
-        {
-            organisation_id: organisation.id,
-            user_id: targetUserId,
-        },
-        "ALLOW FILTERING"
-    );
+        await Database.update("organisations", { name: req.body.name }, { id: organisation.id });
 
-    if (!member) throw new SafeError(StatusCodes.CONFLICT);
-
-    await Database.deleteFrom("organisation_members", "*", {
-        id: member.id,
-    });
-
-    return respond(res, StatusCodes.OK, member);
-});
+        return respond(res, StatusCodes.OK);
+    }
+);
 
 export default OrganisationHandler;

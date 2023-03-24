@@ -15,6 +15,7 @@ export const DEFAULT_ORGANISATION: Organisation = {
     avatar_url: "",
 };
 
+// TODO: Refactor this
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const extractOrganisation = (req: Request, optionalOrganisationId?: Snowflake) => {
     const organisationId =
