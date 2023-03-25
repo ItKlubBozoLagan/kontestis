@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as R from "remeda";
+import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
@@ -60,13 +61,22 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
 
     const submissions = await Database.selectFrom("submissions", "*", { problem_id: problem.id });
 
+    const users = await Database.selectFrom("known_users", "*", {
+        user_id: eqIn(...submissions.map((s) => s.user_id)),
+    });
+
+    const submissionsWithInfo = submissions.map((it) => ({
+        ...it,
+        ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["email", "full_name"]),
+    }));
+
     if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
-        return respond(res, StatusCodes.OK, submissions);
+        return respond(res, StatusCodes.OK, submissionsWithInfo);
 
     if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    respond(res, StatusCodes.OK, submissions);
+    respond(res, StatusCodes.OK, submissionsWithInfo);
 });
 
 SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {

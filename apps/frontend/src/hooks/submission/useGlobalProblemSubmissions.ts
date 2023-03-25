@@ -1,9 +1,9 @@
-import { Snowflake, Submission } from "@kontestis/models";
+import { Snowflake, SubmissionWithUserInfo } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
 
-export const useGlobalProblemSubmissions: QueryHandler<Submission[], Snowflake> = (
+export const useGlobalProblemSubmissions: QueryHandler<SubmissionWithUserInfo[], Snowflake> = (
     problemId,
     options
 ) =>

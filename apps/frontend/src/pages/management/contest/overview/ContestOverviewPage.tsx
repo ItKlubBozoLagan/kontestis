@@ -19,6 +19,8 @@ import { useAllContestAnnouncements } from "../../../../hooks/contest/announceme
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useAllContestQuestions } from "../../../../hooks/contest/questions/useAllContestQuestions";
 import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
+import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { Leaderboard } from "../../../contests/Leaderboard";
 import { LimitBox } from "../../../problems/ProblemViewPage";
 import { ContestStatusIndicator } from "./ContestStatusIndicator";
 
@@ -55,6 +57,8 @@ export const ContestOverviewPage: FC = () => {
     });
 
     const modifyMutation = useModifyContest(contest.id);
+
+    const { data: problems } = useAllProblems(contest.id);
 
     const queryClient = useQueryClient();
 
@@ -200,6 +204,7 @@ export const ContestOverviewPage: FC = () => {
                     </TitledSection>
                 </div>
             </div>
+            {problems && <Leaderboard contest={contest} problems={problems} />}
         </div>
     );
 };

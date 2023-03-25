@@ -13,6 +13,8 @@ import {
 } from "../../../../components/Table";
 import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters";
 import { useProblem } from "../../../../hooks/problem/useProblem";
+import { useGlobalProblemSubmissions } from "../../../../hooks/submission/useGlobalProblemSubmissions";
+import { SubmissionListTable } from "../../../submissions/SubmissionListTable";
 import { CreateClusterModal } from "./clusters/CreateClusterModal";
 import { ProblemInfoSection } from "./ProblemInfoSection";
 
@@ -25,6 +27,8 @@ export const ContestProblemManagePage: FC = () => {
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
 
     const { data: clusters } = useAllClusters(BigInt(problemId ?? 0));
+
+    const { data: submissions } = useGlobalProblemSubmissions(BigInt(problemId ?? 0));
 
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -69,6 +73,7 @@ export const ContestProblemManagePage: FC = () => {
                         ))}
                 </tbody>
             </Table>
+            <SubmissionListTable submissions={submissions} adminView={true} />
         </div>
     );
 };

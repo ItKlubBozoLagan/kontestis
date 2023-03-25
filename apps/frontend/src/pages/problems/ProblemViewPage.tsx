@@ -1,27 +1,18 @@
 import { EvaluationLanguage } from "@kontestis/models";
 import { FC, useState } from "react";
 import { IconType } from "react-icons";
-import {
-    AiFillCaretDown,
-    AiFillCaretUp,
-    FiCheckSquare,
-    FiClock,
-    FiCode,
-    FiDatabase,
-} from "react-icons/all";
+import { FiCheckSquare, FiClock, FiCode, FiDatabase } from "react-icons/all";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router";
-import { Link } from "react-router-dom";
-import tw, { theme } from "twin.macro";
+import { theme } from "twin.macro";
 
 import { http } from "../../api/http";
-import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { SimpleButton } from "../../components/SimpleButton";
-import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
 import { useInterval } from "../../hooks/useInterval";
+import { SubmissionListTable } from "../submissions/SubmissionListTable";
 
 type Properties = {
     problemId: string;
@@ -53,7 +44,6 @@ export const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value, ...
 export const ProblemViewPage: FC = () => {
     const { problemId } = useParams<Properties>();
 
-    const [expanded, setExpanded] = useState(false);
     const [language, setLanguage] = useState<EvaluationLanguage>("cpp");
 
     const [code, setCode] = useState("");
@@ -127,93 +117,7 @@ export const ProblemViewPage: FC = () => {
                     </TitledSection>
                 </div>
 
-                <Table tw={"w-full"}>
-                    <thead>
-                        <TableHeadRow>
-                            <TableHeadItem>Verdict</TableHeadItem>
-                            <TableHeadItem>Time</TableHeadItem>
-                            <TableHeadItem>Memory</TableHeadItem>
-                            <TableHeadItem>Language</TableHeadItem>
-                            <TableHeadItem>Points</TableHeadItem>
-                        </TableHeadRow>
-                    </thead>
-                    <tbody>
-                        {!submissions && (
-                            <TableRow>
-                                <TableItem colSpan={5} tw={"text-center"}>
-                                    Loading submissions...
-                                </TableItem>
-                            </TableRow>
-                        )}
-                        {submissions?.length === 0 && (
-                            <TableRow>
-                                <TableItem colSpan={5} tw={"text-center"}>
-                                    No submissions yet :(
-                                </TableItem>
-                            </TableRow>
-                        )}
-                        {submissions
-                            ?.sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
-                            .slice(0, expanded || submissions.length <= 4 ? submissions.length : 3)
-                            .map((s) => (
-                                <TableRow key={s.id.toString()}>
-                                    {s.completed ? (
-                                        <>
-                                            <TableItem
-                                                css={
-                                                    s.verdict === "accepted"
-                                                        ? tw`text-green-600`
-                                                        : tw`text-red-600`
-                                                }
-                                            >
-                                                <Link to={"/submission/" + s.id}>{s.verdict}</Link>
-                                            </TableItem>
-                                            <TableItem>{`${s.time_used_millis} ms`}</TableItem>
-                                            <TableItem>
-                                                {`${s.memory_used_megabytes} MiB`}
-                                            </TableItem>
-                                            <TableItem>{s.language}</TableItem>
-                                            <TableItem>
-                                                <ProblemScoreBox
-                                                    score={s.awarded_score}
-                                                    maxScore={problem?.score ?? 0}
-                                                />
-                                            </TableItem>
-                                        </>
-                                    ) : (
-                                        <TableItem colSpan={5} tw={"text-center text-yellow-800"}>
-                                            Processing
-                                        </TableItem>
-                                    )}
-                                </TableRow>
-                            ))}
-                    </tbody>
-                    {submissions && submissions.length > 4 && (
-                        <tfoot>
-                            <TableRow>
-                                <TableItem
-                                    colSpan={5}
-                                    onClick={() => setExpanded((current) => !current)}
-                                    tw={"cursor-pointer"}
-                                >
-                                    <div tw={"flex gap-2 items-center justify-center"}>
-                                        {expanded ? (
-                                            <>
-                                                <AiFillCaretUp />
-                                                Collapse
-                                            </>
-                                        ) : (
-                                            <>
-                                                <AiFillCaretDown />
-                                                Expand
-                                            </>
-                                        )}
-                                    </div>
-                                </TableItem>
-                            </TableRow>
-                        </tfoot>
-                    )}
-                </Table>
+                <SubmissionListTable submissions={submissions} adminView={false} />
             </div>
             <div
                 tw={

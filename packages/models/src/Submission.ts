@@ -41,6 +41,11 @@ export type SubmissionV5 = Omit<SubmissionV4, "verdict"> &
 
 export type Submission = SubmissionV5;
 
+export type SubmissionWithUserInfo = Submission & {
+    full_name: string;
+    email: string;
+};
+
 export type PendingSubmission = Omit<
     Submission,
     "verdict" | "awarded_score" | "problem_id" | "time_used_millis" | "memory_used_megabytes"
