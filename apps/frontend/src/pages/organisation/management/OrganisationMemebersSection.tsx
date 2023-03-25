@@ -37,13 +37,10 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
         }
 
         deleteMutation.mutate(member.user_id);
-        deleteMutation.reset();
     };
 
     useEffect(() => {
         if (!deleteMutation.isSuccess) return;
-
-        deleteMutation.reset();
 
         queryClient.invalidateQueries(["organisations", organisation.id, "members"]);
     }, [deleteMutation]);
@@ -63,7 +60,7 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
             {!(member.user_id === organisation.owner) && (
                 <div tw={"flex items-center"}>
                     <span
-                        tw={"text-red-600 cursor-pointer"}
+                        tw={"text-red-600 cursor-pointer select-none"}
                         css={
                             deleteMutation.isLoading || deleteMutation.isSuccess
                                 ? tw`text-neutral-600`

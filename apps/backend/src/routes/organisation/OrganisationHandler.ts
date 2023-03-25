@@ -61,7 +61,7 @@ OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res
         id: generateSnowflake(),
         name: req.body.name,
         owner: user.id,
-        // TODO: Make a way to add this and also store it... pain
+        // TODO: Make a way to add this and also store it
         avatar_url: "",
     };
 

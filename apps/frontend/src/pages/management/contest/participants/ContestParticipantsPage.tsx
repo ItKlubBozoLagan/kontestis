@@ -62,7 +62,7 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
             {!admin && (
                 <div tw={"flex items-center"}>
                     <span
-                        tw={"text-red-600 cursor-pointer"}
+                        tw={"text-red-600 cursor-pointer select-none"}
                         css={
                             deleteMutation.isLoading || deleteMutation.isSuccess
                                 ? tw`text-neutral-600`
