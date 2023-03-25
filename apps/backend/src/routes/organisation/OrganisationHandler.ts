@@ -65,6 +65,11 @@ OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res
     };
 
     await Database.insertInto("organisations", organisation);
+    await Database.insertInto("organisation_members", {
+        id: generateSnowflake(),
+        organisation_id: organisation.id,
+        user_id: user.id,
+    });
 
     return respond(res, StatusCodes.OK, organisation);
 });
