@@ -13,13 +13,13 @@ import { TitledInput } from "../../../components/TitledInput";
 import { useAddOrganisationMember } from "../../../hooks/organisation/useAddOrganisationMemeber";
 import { useAllOrganisationMembers } from "../../../hooks/organisation/useAllOrganisationMembers";
 import { useRemoveOrganisationMember } from "../../../hooks/organisation/useRemoveOrganisationMember";
-import { useAuthStore } from "../../../state/auth";
 
 type MemberBoxProperties = {
     member: OrganisationMemberWithInfo;
     organisation: Organisation;
 };
 
+// TODO: Refactor shared parts from contest management
 const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -84,13 +84,11 @@ const AddMemberSchema = z.object({
     email: z.string().email(),
 });
 
+// TODO: Refactor shared parts with contest management
 export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => {
     const { data: members } = useAllOrganisationMembers(organisation.id);
 
     const addMutation = useAddOrganisationMember(organisation.id);
-
-    const { user } = useAuthStore();
-
     const {
         register,
         handleSubmit,
