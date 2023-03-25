@@ -1,9 +1,9 @@
-import { Organisation, Snowflake } from "@kontestis/models";
+import { OrganisationMemberWithInfo, Snowflake } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
 
-export const useAllOrganisationMembers: QueryHandler<Organisation[], Snowflake> = (
+export const useAllOrganisationMembers: QueryHandler<OrganisationMemberWithInfo[], Snowflake> = (
     organisationId,
     options
 ) =>

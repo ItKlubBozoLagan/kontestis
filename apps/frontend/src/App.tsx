@@ -23,6 +23,7 @@ import { ContestProblemManagePage } from "./pages/management/contest/problems/Co
 import { ContestProblemsPage } from "./pages/management/contest/problems/ContestProblemsPage";
 import { ContestQuestionsPage } from "./pages/management/contest/questions/ContestQuestionsPage";
 import { ManagementPage } from "./pages/management/ManagementPage";
+import { OrganisationManagementPage } from "./pages/organisation/management/OrganisationManagementPage";
 import { OrganisationPage } from "./pages/organisation/OrganisationPage";
 import { ProblemsPage } from "./pages/problems/ProblemsPage";
 import { ProblemViewPage } from "./pages/problems/ProblemViewPage";
@@ -150,6 +151,10 @@ const organisationRouter = createBrowserRouter([
             {
                 path: "/",
                 element: <OrganisationPage />,
+            },
+            {
+                path: "/manage/:organisationId",
+                element: <OrganisationManagementPage />,
             },
             {
                 path: "/*",

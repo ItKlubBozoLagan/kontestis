@@ -7,3 +7,8 @@ export type OrganisationMemberV1 = {
 };
 
 export type OrganisationMember = OrganisationMemberV1;
+
+export type OrganisationMemberWithInfo = OrganisationMember & {
+    full_name: string;
+    email: string;
+};
