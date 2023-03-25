@@ -39,15 +39,10 @@ export const extractOrganisation = (
         if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_ORGANISATIONS))
             return organisation;
 
-        const organisationMember = await Database.selectOneFrom(
-            "organisation_members",
-            ["id"],
-            {
-                organisation_id: organisation.id,
-                user_id: user.id,
-            },
-            "ALLOW FILTERING"
-        );
+        const organisationMember = await Database.selectOneFrom("organisation_members", ["id"], {
+            organisation_id: organisation.id,
+            user_id: user.id,
+        });
 
         if (!organisationMember)
             throw new SafeError(organisationId ? StatusCodes.NOT_FOUND : StatusCodes.BAD_REQUEST);

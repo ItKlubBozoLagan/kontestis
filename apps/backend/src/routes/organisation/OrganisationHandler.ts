@@ -29,9 +29,14 @@ OrganisationHandler.get("/", async (req, res) => {
     if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_ORGANISATIONS))
         return respond(res, StatusCodes.OK, [DEFAULT_ORGANISATION, ...organisations]);
 
-    const organisationIds = await Database.selectFrom("organisation_members", ["organisation_id"], {
-        user_id: user.id,
-    });
+    const organisationIds = await Database.selectFrom(
+        "organisation_members",
+        ["organisation_id"],
+        {
+            user_id: user.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     return respond(res, StatusCodes.OK, [
         DEFAULT_ORGANISATION,

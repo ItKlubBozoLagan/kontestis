@@ -19,9 +19,14 @@ const OrganisationMemberHandler = Router({ mergeParams: true });
 OrganisationMemberHandler.get("/", async (req, res) => {
     const organisation = await extractOrganisation(req);
 
-    const organisationMembers = await Database.selectFrom("organisation_members", "*", {
-        organisation_id: organisation.id,
-    });
+    const organisationMembers = await Database.selectFrom(
+        "organisation_members",
+        "*",
+        {
+            organisation_id: organisation.id,
+        },
+        "ALLOW FILTERING"
+    );
 
     const users = await Database.selectFrom("known_users", "*", {
         user_id: eqIn(
@@ -63,15 +68,10 @@ OrganisationMemberHandler.post("/", useValidation(memberSchema), async (req, res
 
     if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const exists = await Database.selectOneFrom(
-        "organisation_members",
-        ["id"],
-        {
-            organisation_id: organisation.id,
-            user_id: targetUser.user_id,
-        },
-        "ALLOW FILTERING"
-    );
+    const exists = await Database.selectOneFrom("organisation_members", ["id"], {
+        organisation_id: organisation.id,
+        user_id: targetUser.user_id,
+    });
 
     if (exists) throw new SafeError(StatusCodes.CONFLICT);
 
@@ -94,15 +94,10 @@ OrganisationMemberHandler.delete("/:user_id", async (req, res) => {
 
     const targetUserId = extractIdFromParameters(req, "user_id");
 
-    const member = await Database.selectOneFrom(
-        "organisation_members",
-        "*",
-        {
-            organisation_id: organisation.id,
-            user_id: targetUserId,
-        },
-        "ALLOW FILTERING"
-    );
+    const member = await Database.selectOneFrom("organisation_members", "*", {
+        organisation_id: organisation.id,
+        user_id: targetUserId,
+    });
 
     if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
 
