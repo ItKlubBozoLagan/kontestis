@@ -54,9 +54,15 @@ OrganisationMemberHandler.post("/", useValidation(memberSchema), async (req, res
         extractIdFromParameters(req, "organisation_id")
     );
 
-    const targetUser = await Database.selectOneFrom("known_users", ["user_id"], {
-        email: req.body.email,
-    });
+    const targetUser = await Database.selectOneFrom(
+        "known_users",
+        ["user_id"],
+        {
+            email: req.body.email,
+        },
+        // eslint-disable-next-line sonarjs/no-duplicate-string
+        "ALLOW FILTERING"
+    );
 
     if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
