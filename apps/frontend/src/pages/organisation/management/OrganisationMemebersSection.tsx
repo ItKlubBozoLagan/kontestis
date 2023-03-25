@@ -37,10 +37,13 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
         }
 
         deleteMutation.mutate(member.user_id);
+        deleteMutation.reset();
     };
 
     useEffect(() => {
         if (!deleteMutation.isSuccess) return;
+
+        deleteMutation.reset();
 
         queryClient.invalidateQueries(["organisations", organisation.id, "members"]);
     }, [deleteMutation]);
