@@ -104,12 +104,12 @@ export const ContestOverviewPage: FC = () => {
     };
 
     return (
-        <div tw={"w-full flex flex-col gap-20"}>
+        <div tw={"w-full flex flex-col gap-4"}>
             <ContestStatusIndicator contest={contest} />
-            <div tw={"w-full flex"}>
-                <div tw={"w-1/2 pr-10"}>
+            <div tw={"w-full flex gap-8"}>
+                <div tw={"w-1/2"}>
                     <form onSubmit={onSubmit} ref={formReference}>
-                        <TitledSection title={"Contest information"}>
+                        <TitledSection title={"Contest information"} tw={"gap-4"}>
                             <EditableDisplayBox
                                 title={"Name"}
                                 value={contest.name}
@@ -181,8 +181,8 @@ export const ContestOverviewPage: FC = () => {
                         {modifyMutation.error && <span>Error! {modifyMutation.error.message}</span>}
                     </div>
                 </div>
-                <div tw={"flex flex-col w-1/2 pr-10 gap-2"}>
-                    <TitledSection title={"Statistics"}>
+                <div tw={"flex flex-col w-1/2 gap-2"}>
+                    <TitledSection title={"Statistics"} tw={"gap-4"}>
                         <LimitBox
                             icon={FiUsers}
                             title={"Registered participants"}

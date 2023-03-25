@@ -1,12 +1,12 @@
 import { darkenHex } from "@kontestis/utils";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import { IconType } from "react-icons";
 
 type Properties = {
     prependIcon?: IconType;
     color: string;
     borderColor?: string;
-    children: string | string[];
+    children: ReactNode;
 };
 
 export const Breadcrumb: FC<Properties> = ({

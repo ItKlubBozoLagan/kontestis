@@ -81,31 +81,27 @@ export const ContestManagementLayout: FC = () => {
                     <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
                     <div tw={"flex flex-col w-full"}>
                         <div tw={"flex w-full bg-neutral-200"}>
-                            {SubRoutes.map((route) => {
-                                const Icon = route.icon;
-
-                                return (
-                                    <Link to={route.href} key={route.href} tw={"w-full"}>
-                                        <div
-                                            tw={
-                                                "flex w-full bg-neutral-200 hover:bg-neutral-300 cursor-pointer p-3 relative gap-2"
-                                            }
-                                        >
-                                            <Icon />
-                                            <span>
-                                                {route.display}
-                                                {current.pathname.endsWith(route.href) && (
-                                                    <span
-                                                        tw={
-                                                            "absolute w-full h-0.5 bg-neutral-600 left-0 bottom-0"
-                                                        }
-                                                    ></span>
-                                                )}
-                                            </span>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
+                            {SubRoutes.map(({ icon: Icon, ...route }) => (
+                                <Link to={route.href} key={route.href} tw={"w-full"}>
+                                    <div
+                                        tw={
+                                            "flex items-center w-full bg-neutral-200 hover:bg-neutral-300 cursor-pointer p-3 relative gap-2"
+                                        }
+                                    >
+                                        <Icon size={"16px"} />
+                                        <span>
+                                            {route.display}
+                                            {current.pathname.endsWith(route.href) && (
+                                                <span
+                                                    tw={
+                                                        "absolute w-full h-0.5 bg-neutral-600 left-0 bottom-0"
+                                                    }
+                                                ></span>
+                                            )}
+                                        </span>
+                                    </div>
+                                </Link>
+                            ))}
                         </div>
                         <div tw={"w-full p-6 bg-neutral-100 flex items-center justify-between"}>
                             <Outlet />

@@ -45,39 +45,39 @@ const dashboardRouter = createBrowserRouter([
         element: <Root />,
         children: [
             {
-                path: "/",
+                index: true,
                 element: <DashboardPage />,
             },
             {
-                path: "/submission/:submissionId",
+                path: "submission/:submissionId",
                 element: <SubmissionViewPage />,
             },
             {
-                path: "/problem/:problemId",
+                path: "problem/:problemId",
                 element: <ProblemViewPage />,
             },
             {
-                path: "/contest/:contestId",
+                path: "contest/:contestId",
                 element: <ContestViewPage />,
             },
             {
-                path: "/problems",
+                path: "problems",
                 element: <ProblemsPage />,
             },
             {
-                path: "/contests",
+                path: "contests",
                 element: <ContestsPage />,
             },
             {
-                path: "/account",
+                path: "account",
                 element: <AccountPage />,
             },
             {
-                path: "/management",
+                path: "management",
                 element: <ManagementPage />,
             },
             {
-                path: "/management/:contestId",
+                path: "management/:contestId",
                 element: <ContestManagementLayout />,
                 children: [
                     {
@@ -119,7 +119,7 @@ const dashboardRouter = createBrowserRouter([
                 ],
             },
             {
-                path: "/*",
+                path: "*",
                 element: <Navigate to={"/"} replace />,
             },
         ],
@@ -132,11 +132,11 @@ const loginRouter = createBrowserRouter([
         element: <Root hideNavbar />,
         children: [
             {
-                path: "/",
+                index: true,
                 element: <LoginPage />,
             },
             {
-                path: "/*",
+                path: "*",
                 element: <Navigate to={"/"} replace />,
             },
         ],
@@ -149,18 +149,18 @@ const organisationRouter = createBrowserRouter([
         element: <Root hideNavbar />,
         children: [
             {
-                path: "/",
+                index: true,
                 element: <OrganisationPage />,
             },
             {
-                path: "/manage/:organisationId",
+                path: "manage/:organisationId",
                 element: <OrganisationManagementPage />,
             },
-            {
-                path: "/*",
-                element: <Navigate to={"/"} replace />,
-            },
         ],
+    },
+    {
+        path: "*",
+        element: <Navigate to={"/"} replace />,
     },
 ]);
 
@@ -204,13 +204,9 @@ export const App = () => {
 
     if (token.length > 0 && !isLoggedIn) return <></>;
 
-    return isLoggedIn ? (
-        isSelected ? (
-            <RouterProvider router={dashboardRouter} />
-        ) : (
-            <RouterProvider router={organisationRouter} />
-        )
-    ) : (
-        <RouterProvider router={loginRouter} />
+    return (
+        <RouterProvider
+            router={isLoggedIn ? (isSelected ? dashboardRouter : organisationRouter) : loginRouter}
+        />
     );
 };

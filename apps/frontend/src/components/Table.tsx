@@ -3,7 +3,6 @@ import tw from "twin.macro";
 
 export const Table = tw.table`
     table-auto bg-[#efefef] border-collapse border-solid border-neutral-200 border-2 text-left
-    
 `;
 
 export const TableHeadRow = tw.tr`

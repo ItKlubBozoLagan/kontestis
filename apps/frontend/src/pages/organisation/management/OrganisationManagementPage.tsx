@@ -20,11 +20,11 @@ export const OrganisationManagementPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col"}>
             <div tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}>
-                <Link to={"/"} tw={"flex items-center"}>
+                <Link to={"/"} tw={"flex gap-2 items-center text-lg"}>
                     <FiArrowLeft size={"16px"} /> Back
                 </Link>
             </div>
-            <PageTitle>Manage organisation {organisation?.name ?? ""}</PageTitle>
+            <PageTitle>Organisation » {organisation?.name}</PageTitle>
             {organisation && (
                 <div tw={"w-1/2 self-center"}>
                     <OrganisationInfoSection organisation={organisation} />

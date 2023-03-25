@@ -1,5 +1,6 @@
-import { FC, ReactNode, useState } from "react";
-import { FiCheck, FiEdit, FiX } from "react-icons/all";
+import React, { FC, ReactNode, useState } from "react";
+import { FiEdit, FiX } from "react-icons/fi";
+import { FiCheck } from "react-icons/fi";
 
 type Properties = {
     title: string;
@@ -21,32 +22,34 @@ export const EditableDisplayBox: FC<Properties> = ({
     return (
         <div
             tw={
-                "w-full bg-neutral-100 border-2 border-solid border-neutral-200 p-4 flex justify-between gap-4"
+                "w-full h-14 bg-neutral-100 border-2 border-solid border-neutral-200 px-3 py-2 flex items-center justify-between gap-4"
             }
         >
-            <div tw={"flex items-center gap-4 text-lg w-full"}>{title}</div>
+            <span tw={"text-lg whitespace-nowrap"}>{title}</span>
             {editMode ? (
-                <div tw={"w-1/2 flex gap-1 items-center text-xl justify-end"}>
-                    <div tw={"w-full"}>{children}</div>
+                <div tw={"flex gap-2 items-center text-xl justify-end [& input]:max-w-[128px]"}>
+                    <div>{children}</div>
+                    <FiX
+                        onClick={() => {
+                            setEditMode(false);
+                        }}
+                        tw={"cursor-pointer text-red-500 hover:text-red-700"}
+                    />
                     <FiCheck
                         onClick={() => {
                             setEditMode(false);
                             submitFunction();
                         }}
-                        tw={"min-w-[20px] text-lg hover:(cursor-pointer text-green-700)"}
-                    />
-                    <FiX
-                        onClick={() => {
-                            setEditMode(false);
-                        }}
-                        tw={"min-w-[20px] hover:(cursor-pointer text-red-700)"}
+                        tw={"cursor-pointer text-green-600 hover:text-green-700"}
                     />
                 </div>
             ) : (
-                <div tw={"flex w-full gap-2 items-center text-xl justify-end"}>
+                <div tw={"flex w-full gap-2 items-center text-lg justify-end"}>
                     {textValue ? <pre tw={"text-sm"}>{value}</pre> : <span>{value}</span>}
                     <FiEdit
-                        onClick={() => setEditMode(true)}
+                        onClick={() => {
+                            setEditMode(true);
+                        }}
                         tw={"min-w-[20px] hover:(cursor-pointer text-blue-700)"}
                     />
                 </div>

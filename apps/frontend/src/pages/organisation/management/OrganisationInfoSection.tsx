@@ -63,7 +63,7 @@ export const OrganisationInfoSection: FC<Properties> = ({ organisation }) => {
                     value={organisation.name}
                     submitFunction={submitForm}
                 >
-                    <TitledInput {...register("name")} />
+                    <TitledInput focusOnLoad {...register("name")} />
                 </EditableDisplayBox>
                 <div tw={"text-sm text-red-500"}>
                     {Object.keys(errors).length > 0 && (

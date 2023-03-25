@@ -28,6 +28,5 @@ export const Globals: GlobalsType = {
     oauthAllowedDomains: process.env.OAUTH_ALLOWED_DOMAINS
         ? process.env.OAUTH_ALLOWED_DOMAINS.split(",").filter(Boolean)
         : [],
-    // TODO: Put this in the env example
     defaultOrganisationName: process.env.DEFAULT_ORGANISATION_NAME ?? "Kontestis",
 };

@@ -47,10 +47,6 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     });
 
     useEffect(() => {
-        console.log(errors);
-    }, [errors]);
-
-    useEffect(() => {
         if (!createMutation.isSuccess) return;
 
         queryClient.invalidateQueries(["contests", contest.id, "problems"]);

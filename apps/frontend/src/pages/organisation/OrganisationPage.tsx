@@ -52,7 +52,7 @@ export const OrganisationPage: FC = () => {
                         .map((organisation) => (
                             <TableRow key={organisation.id + ""}>
                                 <TableItem
-                                    tw={"hover:(text-sky-800 cursor-pointer)"}
+                                    tw={"hover:(text-sky-800 cursor-pointer) w-full"}
                                     onClick={() => {
                                         setIsSelected(true);
                                         setSkipOrganisationSelect(false);
@@ -61,12 +61,15 @@ export const OrganisationPage: FC = () => {
                                 >
                                     {organisation.name}
                                 </TableItem>
-                                <TableItem tw={"text-xl hover:(text-sky-800 cursor-pointer)"}>
+                                <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
                                     {organisation.owner !== user.id ? (
                                         <></>
                                     ) : (
-                                        <Link to={"/manage/" + organisation.id}>
-                                            <FiEdit />
+                                        <Link
+                                            to={"/manage/" + organisation.id}
+                                            tw={"flex items-center"}
+                                        >
+                                            <FiEdit size={"18px"} />
                                         </Link>
                                     )}
                                 </TableItem>

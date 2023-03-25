@@ -10,9 +10,11 @@ import {
 } from "react-icons/all";
 import tw from "twin.macro";
 
+import { useOrganisation } from "../hooks/organisation/useOrganisation";
 import { useAuthStore } from "../state/auth";
 import { useOrganisationStore } from "../state/organisation";
 import { useTokenStore } from "../state/token";
+import { Breadcrumb } from "./Breadcrumb";
 import { NavElement, NavItem } from "./NavElement";
 
 const items: NavItem[] = [
@@ -41,7 +43,9 @@ const items: NavItem[] = [
 export const NavBar: FC = () => {
     const { user } = useAuthStore();
     const { setToken } = useTokenStore();
-    const { setIsSelected } = useOrganisationStore();
+    const { setIsSelected, organisationId } = useOrganisationStore();
+
+    const { data, isSuccess } = useOrganisation(organisationId);
 
     return (
         <div
@@ -72,12 +76,20 @@ export const NavBar: FC = () => {
                         icon: FiSettings,
                     }}
                 />
-                <div
-                    tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
-                    onClick={() => setIsSelected(false)}
-                >
-                    <FiArrowLeft size={"16px"} />
-                </div>
+                {isSuccess && (
+                    <div
+                        tw={"cursor-pointer"}
+                        className={"group"}
+                        onClick={() => setIsSelected(false)}
+                    >
+                        <Breadcrumb color={"#f0f0f0"}>
+                            {data.name}
+                            <div tw={"flex items-center group-hover:text-red-800 transition-all"}>
+                                <FiArrowLeft size={"14px"} />
+                            </div>
+                        </Breadcrumb>
+                    </div>
+                )}
                 <div
                     tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
                     onClick={() => setToken("")}
