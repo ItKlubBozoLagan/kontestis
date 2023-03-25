@@ -111,7 +111,7 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
         if (addMutation.isError) setNetError(true);
 
         if (addMutation.isSuccess)
-            queryClient.invalidateQueries(["organisation", organisation.id, "members"]);
+            queryClient.invalidateQueries(["organisations", organisation.id, "members"]);
     }, [addMutation.isSuccess, addMutation.isError]);
 
     return (
