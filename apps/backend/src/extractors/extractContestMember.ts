@@ -8,10 +8,11 @@ import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractContestMember = (req: Request, optionalContestId?: Snowflake) => {
-    const contestId = optionalContestId ?? extractIdFromParameters(req, "contest_id");
-
-    return memoizedRequestExtractor(req, `__contest_member_${contestId}`, async () => {
+export const extractContestMember = (
+    req: Request,
+    contestId: Snowflake = extractIdFromParameters(req, "contest_id")
+) =>
+    memoizedRequestExtractor(req, `__contest_member_${contestId}`, async () => {
         const user = await extractUser(req);
         const member = await Database.selectOneFrom("contest_members", "*", {
             user_id: user.id,
@@ -25,4 +26,3 @@ export const extractContestMember = (req: Request, optionalContestId?: Snowflake
 
         return member;
     });
-};

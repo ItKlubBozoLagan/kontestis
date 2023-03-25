@@ -8,10 +8,11 @@ import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractCluster } from "./extractCluster";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractTestcase = (req: Request, optionalTestcaseId?: Snowflake) => {
-    const testcaseId = optionalTestcaseId ?? extractIdFromParameters(req, "testcase_id");
-
-    return memoizedRequestExtractor(req, "__testcase_" + testcaseId, async () => {
+export const extractTestcase = (
+    req: Request,
+    testcaseId: Snowflake = extractIdFromParameters(req, "testcase_id")
+) =>
+    memoizedRequestExtractor(req, "__testcase_" + testcaseId, async () => {
         const testcase = await Database.selectOneFrom("testcases", "*", {
             id: testcaseId,
         });
@@ -22,4 +23,3 @@ export const extractTestcase = (req: Request, optionalTestcaseId?: Snowflake) =>
 
         return testcase;
     });
-};

@@ -11,7 +11,7 @@ import { useOrganisationStore } from "../../state/organisation";
 import { CreateOrganisationModal } from "./CreateOrganisationModal";
 
 export const OrganisationPage: FC = () => {
-    const { setIsSelected, setOrganisationId, isInitialSelect, setIsInitialSelected } =
+    const { setIsSelected, setOrganisationId, skipOrganisationSelect, setSkipOrganisationSelect } =
         useOrganisationStore();
 
     const { user } = useAuthStore();
@@ -19,10 +19,10 @@ export const OrganisationPage: FC = () => {
     const { data: organisations } = useAllOrganisations();
 
     useEffect(() => {
-        if (!isInitialSelect || (organisations ?? []).length !== 1) return;
+        if (!skipOrganisationSelect || (organisations ?? []).length !== 1) return;
 
         setIsSelected(true);
-        setIsInitialSelected(false);
+        setSkipOrganisationSelect(false);
         setOrganisationId(organisations![0].id);
     }, [organisations]);
 
@@ -55,7 +55,7 @@ export const OrganisationPage: FC = () => {
                                     tw={"hover:(text-sky-800 cursor-pointer)"}
                                     onClick={() => {
                                         setIsSelected(true);
-                                        setIsInitialSelected(false);
+                                        setSkipOrganisationSelect(false);
                                         setOrganisationId(organisation.id);
                                     }}
                                 >

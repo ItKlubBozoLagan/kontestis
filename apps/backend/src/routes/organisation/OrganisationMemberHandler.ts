@@ -17,10 +17,7 @@ import { respond } from "../../utils/response";
 const OrganisationMemberHandler = Router({ mergeParams: true });
 
 OrganisationMemberHandler.get("/", async (req, res) => {
-    const organisation = await extractOrganisation(
-        req,
-        extractIdFromParameters(req, "organisation_id")
-    );
+    const organisation = await extractOrganisation(req);
 
     const organisationMembers = await Database.selectFrom("organisation_members", "*", {
         organisation_id: organisation.id,
@@ -107,7 +104,7 @@ OrganisationMemberHandler.delete("/:user_id", async (req, res) => {
         "ALLOW FILTERING"
     );
 
-    if (!member) throw new SafeError(StatusCodes.CONFLICT);
+    if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
 
     await Database.deleteFrom("organisation_members", "*", {
         id: member.id,

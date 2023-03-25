@@ -17,10 +17,11 @@ import { extractProblem } from "./extractProblem";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractCluster = async (req: Request, optionalClusterId?: Snowflake) => {
-    const clusterId = optionalClusterId ?? extractIdFromParameters(req, "cluster_id");
-
-    return memoizedRequestExtractor(req, `__cluster_${clusterId}`, async () => {
+export const extractCluster = async (
+    req: Request,
+    clusterId: Snowflake = extractIdFromParameters(req, "cluster_id")
+) =>
+    memoizedRequestExtractor(req, `__cluster_${clusterId}`, async () => {
         const cluster = await Database.selectOneFrom("clusters", "*", {
             id: clusterId,
         });
@@ -45,4 +46,3 @@ export const extractCluster = async (req: Request, optionalClusterId?: Snowflake
 
         return cluster;
     });
-};

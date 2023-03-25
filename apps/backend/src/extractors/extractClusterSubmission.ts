@@ -8,23 +8,18 @@ import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractSubmission } from "./extractSubmission";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractClusterSubmission = (req: Request, optionalClusterSubmissionId?: Snowflake) => {
-    const cluster_submission_id =
-        optionalClusterSubmissionId ?? extractIdFromParameters(req, "cluster_submission_id");
+export const extractClusterSubmission = (
+    req: Request,
+    clusterSubmissionId: Snowflake = extractIdFromParameters(req, "cluster_submission_id")
+) =>
+    memoizedRequestExtractor(req, `__cluster_submission_${clusterSubmissionId}`, async () => {
+        const clusterSubmission = await Database.selectOneFrom("cluster_submissions", "*", {
+            id: clusterSubmissionId,
+        });
 
-    return memoizedRequestExtractor(
-        req,
-        `__cluster_submission_${cluster_submission_id}`,
-        async () => {
-            const clusterSubmission = await Database.selectOneFrom("cluster_submissions", "*", {
-                id: cluster_submission_id,
-            });
+        if (!clusterSubmission) throw new SafeError(StatusCodes.NOT_FOUND);
 
-            if (!clusterSubmission) throw new SafeError(StatusCodes.NOT_FOUND);
+        await extractSubmission(req, clusterSubmission.submission_id);
 
-            await extractSubmission(req, clusterSubmission.submission_id);
-
-            return clusterSubmission;
-        }
-    );
-};
+        return clusterSubmission;
+    });

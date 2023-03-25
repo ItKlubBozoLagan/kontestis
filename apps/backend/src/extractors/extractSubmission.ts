@@ -17,10 +17,11 @@ import { extractProblem } from "./extractProblem";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractSubmission = (req: Request, optionalSubmissionId?: Snowflake) => {
-    const submissionId = optionalSubmissionId ?? extractIdFromParameters(req, "submission_id");
-
-    return memoizedRequestExtractor(req, "__submission", async () => {
+export const extractSubmission = (
+    req: Request,
+    submissionId: Snowflake = extractIdFromParameters(req, "submission_id")
+) =>
+    memoizedRequestExtractor(req, "__submission", async () => {
         const submission = await Database.selectOneFrom("submissions", "*", {
             id: submissionId,
         });
@@ -49,4 +50,3 @@ export const extractSubmission = (req: Request, optionalSubmissionId?: Snowflake
 
         return submission;
     });
-};

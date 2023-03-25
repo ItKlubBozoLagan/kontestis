@@ -5,8 +5,11 @@ import { StatusCodes } from "http-status-codes";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Globals } from "../globals";
+import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
+
+const ORG_HEADER = "X-Kontestis-Org-Id".toLowerCase();
 
 export const DEFAULT_ORGANISATION: Organisation = {
     id: 1n,
@@ -15,21 +18,11 @@ export const DEFAULT_ORGANISATION: Organisation = {
     avatar_url: "",
 };
 
-// TODO: Refactor this
-// eslint-disable-next-line sonarjs/cognitive-complexity
-export const extractOrganisation = (req: Request, optionalOrganisationId?: Snowflake) => {
-    const organisationId =
-        optionalOrganisationId ??
-        (() => {
-            const organisationId = req.headers["x-kontestis-org-id"];
-
-            if (!organisationId || typeof organisationId !== "string")
-                throw new SafeError(StatusCodes.BAD_REQUEST);
-
-            return BigInt(organisationId);
-        })();
-
-    if (organisationId === 1n) return DEFAULT_ORGANISATION;
+export const extractOrganisation = (
+    req: Request,
+    organisationId: Snowflake = extractIdFromParameters(req, "organisation_id")
+) => {
+    if (organisationId === DEFAULT_ORGANISATION.id) return DEFAULT_ORGANISATION;
 
     return memoizedRequestExtractor(req, "__organisation_" + organisationId, async () => {
         const organisation = await Database.selectOneFrom("organisations", "*", {
@@ -38,9 +31,7 @@ export const extractOrganisation = (req: Request, optionalOrganisationId?: Snowf
 
         if (!organisation) {
             // Don`t question it
-            throw new SafeError(
-                optionalOrganisationId ? StatusCodes.NOT_FOUND : StatusCodes.BAD_REQUEST
-            );
+            throw new SafeError(organisationId ? StatusCodes.NOT_FOUND : StatusCodes.BAD_REQUEST);
         }
 
         const user = await extractUser(req);
@@ -59,10 +50,17 @@ export const extractOrganisation = (req: Request, optionalOrganisationId?: Snowf
         );
 
         if (!organisationMember)
-            throw new SafeError(
-                optionalOrganisationId ? StatusCodes.NOT_FOUND : StatusCodes.BAD_REQUEST
-            );
+            throw new SafeError(organisationId ? StatusCodes.NOT_FOUND : StatusCodes.BAD_REQUEST);
 
         return organisation;
     });
+};
+
+export const extractCurrentOrganisation = (req: Request) => {
+    const organisationId = req.headers[ORG_HEADER];
+
+    if (!organisationId || typeof organisationId !== "string" || !/\d+/.test(organisationId))
+        throw new SafeError(StatusCodes.BAD_REQUEST);
+
+    return extractOrganisation(req, BigInt(organisationId));
 };

@@ -6,12 +6,9 @@ import { SafeError } from "../errors/SafeError";
 import { extractOrganisation } from "./extractOrganisation";
 import { extractUser } from "./extractUser";
 
-export const extractModifiableOrganisation = async (
-    req: Request,
-    optionalOrganisationId?: Snowflake
-) => {
+export const extractModifiableOrganisation = async (req: Request, organisationId?: Snowflake) => {
     const user = await extractUser(req);
-    const organisation = await extractOrganisation(req, optionalOrganisationId);
+    const organisation = await extractOrganisation(req, organisationId);
 
     if (
         hasAdminPermission(user.permissions, AdminPermissions.EDIT_ORGANISATIONS) ||

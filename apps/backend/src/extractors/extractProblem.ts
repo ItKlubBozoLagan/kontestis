@@ -17,10 +17,11 @@ import { extractContestMember } from "./extractContestMember";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractProblem = (req: Request, optionalProblemId?: Snowflake) => {
-    const problemId = optionalProblemId ?? extractIdFromParameters(req, "problem_id");
-
-    return memoizedRequestExtractor(req, "__problem_" + problemId, async () => {
+export const extractProblem = (
+    req: Request,
+    problemId: Snowflake = extractIdFromParameters(req, "problem_id")
+) =>
+    memoizedRequestExtractor(req, "__problem_" + problemId, async () => {
         const problem = await Database.selectOneFrom("problems", "*", {
             id: problemId,
         });
@@ -43,4 +44,3 @@ export const extractProblem = (req: Request, optionalProblemId?: Snowflake) => {
 
         throw new SafeError(StatusCodes.NOT_FOUND);
     });
-};

@@ -10,7 +10,6 @@ import { DEFAULT_ORGANISATION, extractOrganisation } from "../../extractors/extr
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
-import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
 import OrganisationMemberHandler from "./OrganisationMemberHandler";
 
@@ -41,10 +40,7 @@ OrganisationHandler.get("/", async (req, res) => {
 });
 
 OrganisationHandler.get("/:organisation_id", async (req, res) => {
-    const organisation = await extractOrganisation(
-        req,
-        extractIdFromParameters(req, "organisation_id")
-    );
+    const organisation = await extractOrganisation(req);
 
     return respond(res, StatusCodes.OK, organisation);
 });
@@ -78,10 +74,7 @@ OrganisationHandler.patch(
     "/:organisation_id",
     useValidation(organisationSchema),
     async (req, res) => {
-        const organisation = await extractModifiableOrganisation(
-            req,
-            extractIdFromParameters(req, "organisation_id")
-        );
+        const organisation = await extractModifiableOrganisation(req);
 
         const exists = await Database.selectOneFrom("organisations", ["id"], {
             name: req.body.name,
