@@ -88,7 +88,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     title={"Description"}
                     value={problem.description}
                     submitFunction={submitForm}
-                    textValue
+                    largeTextValue
                 >
                     <textarea {...register("description")} />
                 </EditableDisplayBox>
@@ -110,7 +110,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     title={"Evaluation Script (Python)"}
                     value={problem.evaluation_script ?? "None"}
                     submitFunction={submitForm}
-                    textValue
+                    largeTextValue
                 >
                     <textarea {...register("evaluation_script")} />
                 </EditableDisplayBox>

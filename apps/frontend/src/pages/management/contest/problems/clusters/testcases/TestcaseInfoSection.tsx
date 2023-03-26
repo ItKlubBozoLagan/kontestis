@@ -72,7 +72,7 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                     title={"Input"}
                     value={cutText(testcase.input, 100)}
                     submitFunction={submitForm}
-                    textValue
+                    largeTextValue
                 >
                     <textarea {...register("input")} />
                 </EditableDisplayBox>
@@ -80,7 +80,7 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                     title={"Correct output"}
                     value={cutText(testcase.correct_output ?? "", 100)}
                     submitFunction={submitForm}
-                    textValue
+                    largeTextValue
                 >
                     <textarea {...register("correctOutput")} />
                 </EditableDisplayBox>

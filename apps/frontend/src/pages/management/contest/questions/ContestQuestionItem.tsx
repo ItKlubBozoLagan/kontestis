@@ -69,7 +69,7 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
                         title={"Answer"}
                         value={question?.response ?? ""}
                         submitFunction={submitForm}
-                        textValue
+                        largeTextValue
                     >
                         <textarea {...register("response")} tw={"w-full"} />
                     </EditableDisplayBox>
