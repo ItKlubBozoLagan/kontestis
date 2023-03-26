@@ -42,7 +42,7 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["testcases", cluster.id]);
+        queryClient.invalidateQueries(["testcases", cluster.problem_id, cluster.id]);
         createMutation.reset();
         reset();
         properties.onAfterClose?.();
