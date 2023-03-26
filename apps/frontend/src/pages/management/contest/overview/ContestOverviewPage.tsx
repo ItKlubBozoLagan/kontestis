@@ -20,6 +20,7 @@ import { useAllContestMembers } from "../../../../hooks/contest/participants/use
 import { useAllContestQuestions } from "../../../../hooks/contest/questions/useAllContestQuestions";
 import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { useOrganisationStore } from "../../../../state/organisation";
 import { Leaderboard } from "../../../contests/Leaderboard";
 import { LimitBox } from "../../../problems/ProblemViewPage";
 import { ContestStatusIndicator } from "./ContestStatusIndicator";
@@ -57,6 +58,8 @@ export const ContestOverviewPage: FC = () => {
         resolver: zodResolver(ModifyContestSchema),
         defaultValues: defaultValues,
     });
+
+    const { organisationId } = useOrganisationStore();
 
     const modifyMutation = useModifyContest(contest.id);
 
@@ -174,18 +177,20 @@ export const ContestOverviewPage: FC = () => {
                                     />
                                 </div>
                             </CanAdmin>
-                            <div tw={"w-full"}>
-                                <TitledSwitch
-                                    label={"Style"}
-                                    choice={["Contest", "Exam"]}
-                                    defaultIndex={contest.exam ? 1 : 0}
-                                    onChange={(value) => {
-                                        setValue("exam", value === "Exam");
+                            {Number(organisationId) !== 1 && (
+                                <div tw={"w-full"}>
+                                    <TitledSwitch
+                                        label={"Style"}
+                                        choice={["Contest", "Exam"]}
+                                        defaultIndex={contest.exam ? 1 : 0}
+                                        onChange={(value) => {
+                                            setValue("exam", value === "Exam");
 
-                                        if ((value === "Exam") !== contest.exam) submitForm();
-                                    }}
-                                />
-                            </div>
+                                            if ((value === "Exam") !== contest.exam) submitForm();
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </TitledSection>
                     </form>
                     <div tw={"text-sm text-red-500"}>

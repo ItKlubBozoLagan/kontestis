@@ -13,6 +13,7 @@ import { TitledDateInput } from "../../components/TitledDateInput";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSwitch } from "../../components/TitledSwitch";
 import { useCreateContest } from "../../hooks/contest/useCreateContest";
+import { useOrganisationStore } from "../../state/organisation";
 import { ModalStyles } from "../../util/ModalStyles";
 
 const CreateContestSchema = z.object({
@@ -40,8 +41,11 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
             duration_minutes: 0,
             official: false,
             public: false,
+            exam: false,
         },
     });
+
+    const { organisationId } = useOrganisationStore();
 
     const createMutation = useCreateContest();
 
@@ -121,13 +125,15 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
                                 onChange={(value) => setValue("public", value === "Public")}
                             />
                         </div>
-                        <div tw={"w-full"}>
-                            <TitledSwitch
-                                label={"Style"}
-                                choice={["Contest", "Exam"]}
-                                onChange={(value) => setValue("exam", value === "Exam")}
-                            />
-                        </div>
+                        {Number(organisationId) !== 1 && (
+                            <div tw={"w-full"}>
+                                <TitledSwitch
+                                    label={"Style"}
+                                    choice={["Contest", "Exam"]}
+                                    onChange={(value) => setValue("exam", value === "Exam")}
+                                />
+                            </div>
+                        )}
                         <CanAdmin permission={AdminPermissions.ADMIN}>
                             <div tw={"w-full"}>
                                 <TitledSwitch
