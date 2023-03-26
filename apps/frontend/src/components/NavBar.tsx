@@ -13,6 +13,7 @@ import tw from "twin.macro";
 import { useOrganisation } from "../hooks/organisation/useOrganisation";
 import { useAuthStore } from "../state/auth";
 import { useOrganisationStore } from "../state/organisation";
+import { useProcessingLoader } from "../state/processing";
 import { useTokenStore } from "../state/token";
 import { Breadcrumb } from "./Breadcrumb";
 import { NavElement, NavItem } from "./NavElement";
@@ -44,6 +45,7 @@ export const NavBar: FC = () => {
     const { user } = useAuthStore();
     const { setToken } = useTokenStore();
     const { setIsSelected, organisationId } = useOrganisationStore();
+    const { isProcessing } = useProcessingLoader();
 
     const { data, isSuccess } = useOrganisation(organisationId);
 
@@ -69,6 +71,13 @@ export const NavBar: FC = () => {
                 </div>
             </div>
             <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
+                <div tw={"opacity-0 transition-opacity"} css={isProcessing ? tw`opacity-100` : ""}>
+                    <div
+                        tw={
+                            "h-6 w-6 border-2 border-solid border-neutral-800 border-r-neutral-400 border-b-neutral-400 border-l-neutral-400 rounded-full animate-spin"
+                        }
+                    ></div>
+                </div>
                 <NavElement
                     item={{
                         display: "Management",

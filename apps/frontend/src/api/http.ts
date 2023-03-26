@@ -11,6 +11,7 @@ import superjson from "superjson";
 import { z } from "zod";
 
 import { useOrganisationStore } from "../state/organisation";
+import { useProcessingLoader } from "../state/processing";
 import { useTokenStore } from "../state/token";
 import { HttpError } from "./HttpError";
 
@@ -60,23 +61,26 @@ export const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
+    const { setIsProcessing } = useProcessingLoader.getState();
+
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(config.method?.toUpperCase() ?? ""))
+        setIsProcessing(true);
+
     const { token } = useTokenStore.getState();
+    const { isSelected, organisationId } = useOrganisationStore.getState();
 
     if (token.length > 0) config.headers.set("Authorization", `Bearer ${token}`);
 
-    return config;
-});
-http.interceptors.request.use((config) => {
-    const { isSelected, organisationId } = useOrganisationStore.getState();
-
-    if (!isSelected) return config;
-
-    config.headers.set("X-Kontestis-Org-Id", organisationId.toString());
+    if (isSelected) config.headers.set("X-Kontestis-Org-Id", organisationId.toString());
 
     return config;
 });
 
 http.interceptors.response.use((resp) => {
+    const { setIsProcessing } = useProcessingLoader.getState();
+
+    setIsProcessing(false);
+
     if (resp.status === 401 || resp.status === 403)
         useTokenStore.setState({
             token: "",
