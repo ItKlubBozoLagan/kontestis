@@ -6,7 +6,6 @@ import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
-import { TitledInput } from "../../../../components/TitledInput";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestAnnouncements } from "../../../../hooks/contest/announcements/useAllContestAnnouncements";
 import { useCreateContestAnnouncement } from "../../../../hooks/contest/announcements/useCreateContestAnnouncement";
@@ -49,28 +48,36 @@ export const ContestAnnouncementsPage: FC = () => {
 
     return (
         <div tw={"flex gap-2 w-full justify-center"}>
-            <div tw={"flex flex-col gap-4"}>
-                {(announcements ?? [])
-                    .sort((a, b) => Number(a.id - b.id))
-                    .map((announcement) => (
-                        <div
-                            tw={"bg-white p-2 w-full border border-solid border-black"}
-                            key={announcement.id.toString()}
-                        >
-                            {announcement.message}
-                        </div>
-                    ))}
+            <div tw={"flex flex-col items-center gap-6 w-full"}>
                 {hasContestPermission(
                     member.contest_permissions,
                     ContestMemberPermissions.CREATE_ANNOUNCEMENT
                 ) && (
                     <form onSubmit={onSubmit}>
-                        <div tw={"flex flex-col gap-2"}>
-                            <TitledInput label={"Announcement"} bigLabel {...register("message")} />
+                        <div tw={"flex flex-col gap-2 w-96"}>
+                            <label htmlFor={"message"}>Announcement:</label>
+                            <textarea
+                                {...register("message")}
+                                tw={"resize-y min-h-[8rem] text-base"}
+                            />
                             <SimpleButton tw={"mt-2"}>Send</SimpleButton>
                         </div>
                     </form>
                 )}
+                <div tw={"w-full flex flex-wrap justify-center gap-4"}>
+                    {(announcements ?? [])
+                        .sort((a, b) => Number(b.id - a.id))
+                        .map((announcement) => (
+                            <div
+                                tw={
+                                    "bg-white p-2 w-full border border-solid border-black w-56 text-base whitespace-pre-line"
+                                }
+                                key={announcement.id.toString()}
+                            >
+                                {announcement.message}
+                            </div>
+                        ))}
+                </div>
             </div>
         </div>
     );
