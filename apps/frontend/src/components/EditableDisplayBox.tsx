@@ -48,7 +48,7 @@ export const EditableDisplayBox: FC<Properties> = ({
                     {textValue ? (
                         <pre tw={"text-sm"}>{value}</pre>
                     ) : (
-                        <span tw={" text-right"}>{value}</span>
+                        <span tw={"text-right"}>{value}</span>
                     )}
                     <FiEdit
                         onClick={() => {
