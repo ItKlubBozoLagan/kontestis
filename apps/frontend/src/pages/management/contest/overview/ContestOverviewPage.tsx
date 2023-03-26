@@ -31,6 +31,7 @@ const ModifyContestSchema = z.object({
     duration_minutes: z.coerce.number(),
     public: z.boolean(),
     official: z.boolean(),
+    exam: z.boolean(),
 });
 
 export const ContestOverviewPage: FC = () => {
@@ -43,6 +44,7 @@ export const ContestOverviewPage: FC = () => {
         start_time: contest.start_time,
         official: contest.official,
         public: contest.public,
+        exam: contest.exam,
     };
 
     const {
@@ -172,6 +174,18 @@ export const ContestOverviewPage: FC = () => {
                                     />
                                 </div>
                             </CanAdmin>
+                            <div tw={"w-full"}>
+                                <TitledSwitch
+                                    label={"Style"}
+                                    choice={["Contest", "Exam"]}
+                                    defaultIndex={contest.exam ? 1 : 0}
+                                    onChange={(value) => {
+                                        setValue("exam", value === "Exam");
+
+                                        if ((value === "Exam") !== contest.exam) submitForm();
+                                    }}
+                                />
+                            </div>
                         </TitledSection>
                     </form>
                     <div tw={"text-sm text-red-500"}>

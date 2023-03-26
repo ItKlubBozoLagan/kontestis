@@ -9,6 +9,7 @@ export type ContestVariables = {
     duration_seconds: number;
     public: boolean;
     official: boolean;
+    exam: boolean;
 };
 
 export const useCreateContest: MutationHandler<ContestVariables, Contest> = (options) =>

@@ -36,6 +36,7 @@ const contestSchema = Type.Object({
     }),
     public: Type.Boolean(),
     official: Type.Boolean(),
+    exam: Type.Boolean(),
 });
 
 ContestHandler.use("/:contest_id/members", ContestMemberHandler);
@@ -68,6 +69,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
         official: req.body.official,
         public: req.body.public,
         elo_applied: false,
+        exam: req.body.exam,
     };
 
     await Promise.all([
@@ -105,6 +107,7 @@ ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, r
             duration_seconds: req.body.duration_seconds,
             public: req.body.public,
             official: req.body.official,
+            exam: req.body.exam,
         },
         { id: contest.id }
     );

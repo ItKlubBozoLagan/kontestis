@@ -42,6 +42,7 @@ import { migration_change_user_google_id_type } from "./migrations/0021_change_u
 import { migration_add_organisation_id_to_contest } from "./migrations/0022_add_organisation_id_to_contest";
 import { migration_organisation_indexes } from "./migrations/0023_organisation_indexes";
 import { migration_fix_organisation_member_definition } from "./migrations/0024_fix_organisation_member_definition";
+import { migration_add_contests_exam_properties } from "./migrations/0025_add_contests_exam_properties";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -95,6 +96,7 @@ const migrations: Migration<any>[] = [
     migration_add_organisation_id_to_contest,
     migration_organisation_indexes,
     migration_fix_organisation_member_definition,
+    migration_add_contests_exam_properties,
 ];
 
 export const initDatabase = async () => {

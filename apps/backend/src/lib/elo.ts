@@ -47,13 +47,13 @@ export const computeELODifference = (
 ) => {
     if (leaderboard.length === 0) return 0;
 
-    const userScores = leaderboard.map((mem) => mem.problemPoints.reduce((sum, p) => sum + p));
+    const userScores = leaderboard.map((mem) => mem.problemPoints.reduce((sum, p) => sum + p, 0));
 
     const userRatings = leaderboard.map((mem) => mem.currentGlobalElo);
 
-    const maxScore = problemMaxPoints.reduce((sum, p) => sum + p);
+    const maxScore = problemMaxPoints.reduce((sum, p) => sum + p, 0);
 
-    const score = targetMember.problemPoints.reduce((sum, p) => sum + p);
+    const score = targetMember.problemPoints.reduce((sum, p) => sum + p, 0);
 
     const performance = computePerformance(userScores, userRatings, score, maxScore);
 

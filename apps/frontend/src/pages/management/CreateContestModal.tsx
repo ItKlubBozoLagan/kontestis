@@ -22,6 +22,7 @@ const CreateContestSchema = z.object({
     duration_minutes: z.coerce.number(),
     public: z.boolean(),
     official: z.boolean(),
+    exam: z.boolean(),
 });
 
 export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
@@ -118,6 +119,13 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
                                 label={"Visibility"}
                                 choice={["Private", "Public"]}
                                 onChange={(value) => setValue("public", value === "Public")}
+                            />
+                        </div>
+                        <div tw={"w-full"}>
+                            <TitledSwitch
+                                label={"Style"}
+                                choice={["Contest", "Exam"]}
+                                onChange={(value) => setValue("exam", value === "Exam")}
                             />
                         </div>
                         <CanAdmin permission={AdminPermissions.ADMIN}>
