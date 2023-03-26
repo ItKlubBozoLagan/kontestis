@@ -1,8 +1,9 @@
-import { UserV3, UserV4 } from "@kontestis/models";
+import { KnownUserDataV1, UserV3, UserV4 } from "@kontestis/models";
 import { Migration } from "scyllo";
 
 type MigrationType = {
     users: UserV4 & UserV3;
+    known_users: KnownUserDataV1;
 };
 
 export const migration_change_user_google_id_type: Migration<MigrationType> = async (
@@ -10,6 +11,7 @@ export const migration_change_user_google_id_type: Migration<MigrationType> = as
     log
 ) => {
     await database.dropTable("users");
+    await database.dropTable("known_users");
 
     await database.createTable(
         "users",

@@ -1,4 +1,4 @@
-import { DEFAULT_ELO, FullUser, User } from "@kontestis/models";
+import { DEFAULT_ELO, FullUser, KnownUserData, User } from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
@@ -41,6 +41,29 @@ export const verifyToken = async (token: string): Promise<NiceTokenResponse> => 
     return niceGoogleResponse;
 };
 
+// a bit hacky way of processing pre-inserted user entries
+export const fixExistingKnownUser = async (
+    knownUserData: KnownUserData,
+    tokenData: NiceTokenResponse
+): Promise<User | undefined> => {
+    const potentialEntry = await Database.selectOneFrom("users", "*", {
+        id: knownUserData.user_id,
+    });
+
+    if (!potentialEntry) return;
+
+    await Database.deleteFrom("users", "*", { id: potentialEntry.id });
+
+    const updatedUser: User = {
+        ...potentialEntry,
+        google_id: tokenData.id,
+    };
+
+    await Database.insertInto("users", updatedUser);
+
+    return updatedUser;
+};
+
 export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Promise<FullUser> => {
     const { id: googleId } = tokenData;
 
@@ -53,7 +76,21 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
         }),
     ]);
 
-    const user: User = potentialEntry ?? {
+    let existingUser: User | undefined = potentialEntry;
+
+    if (!potentialEntry) {
+        const potentialKnownUser = await Database.selectOneFrom(
+            "known_users",
+            "*",
+            { email: tokenData.email },
+            "ALLOW FILTERING"
+        );
+
+        if (potentialKnownUser)
+            existingUser = await fixExistingKnownUser(potentialKnownUser, tokenData);
+    }
+
+    const user: User = existingUser ?? {
         id: generateSnowflake(),
         elo: DEFAULT_ELO,
         google_id: googleId,
@@ -63,7 +100,7 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
                 : grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADD_CONTEST),
     };
 
-    if (!potentialEntry) await Database.insertInto("users", user);
+    if (!existingUser) await Database.insertInto("users", user);
 
     return {
         ...user,
