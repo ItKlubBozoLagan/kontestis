@@ -127,7 +127,7 @@ export const ContestViewPage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Problem</TableHeadItem>
+                        <TableHeadItem>{contest?.exam ? "Task" : "Problem"}</TableHeadItem>
                         <TableHeadItem>Score</TableHeadItem>
                     </TableHeadRow>
                 </thead>
