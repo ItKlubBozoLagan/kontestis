@@ -45,7 +45,11 @@ export const EditableDisplayBox: FC<Properties> = ({
                 </div>
             ) : (
                 <div tw={"flex w-full gap-2 items-center text-lg justify-end"}>
-                    {textValue ? <pre tw={"text-sm"}>{value}</pre> : <span>{value}</span>}
+                    {textValue ? (
+                        <pre tw={"text-sm"}>{value}</pre>
+                    ) : (
+                        <span tw={" text-right"}>{value}</span>
+                    )}
                     <FiEdit
                         onClick={() => {
                             setEditMode(true);

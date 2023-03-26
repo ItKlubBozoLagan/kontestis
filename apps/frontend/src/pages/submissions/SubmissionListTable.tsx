@@ -13,7 +13,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 
 type Properties = {
     submissions?: SubmissionByProblemResponse[] | SubmissionWithUserInfo[];
-    problem?: ProblemWithScore;
+    problem: ProblemWithScore;
     adminView: boolean;
 };
 
@@ -76,7 +76,7 @@ export const SubmissionListTable: FC<Properties> = ({
                                     <TableItem>
                                         <ProblemScoreBox
                                             score={s.awarded_score}
-                                            maxScore={problem?.score ?? 0}
+                                            maxScore={problem.score}
                                         />
                                     </TableItem>
                                 </>

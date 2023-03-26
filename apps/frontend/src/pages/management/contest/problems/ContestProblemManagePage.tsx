@@ -73,7 +73,9 @@ export const ContestProblemManagePage: FC = () => {
                         ))}
                 </tbody>
             </Table>
-            <SubmissionListTable submissions={submissions} adminView={true} />
+            {problem && (
+                <SubmissionListTable submissions={submissions} problem={problem} adminView={true} />
+            )}
         </div>
     );
 };

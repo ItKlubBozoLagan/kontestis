@@ -76,7 +76,7 @@ export const ContestManagementLayout: FC = () => {
 
     return (
         <div tw={"flex justify-center w-full"}>
-            <div tw={"w-[50vw] pt-12 rounded flex flex-col gap-12"}>
+            <div tw={"w-full max-w-[1000px] pt-12 rounded flex flex-col gap-12"}>
                 <ContestContext.Provider value={{ contest, member }}>
                     <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
                     <div tw={"flex flex-col w-full"}>

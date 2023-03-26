@@ -117,7 +117,13 @@ export const ProblemViewPage: FC = () => {
                     </TitledSection>
                 </div>
 
-                <SubmissionListTable submissions={submissions} adminView={false} />
+                {problem && (
+                    <SubmissionListTable
+                        submissions={submissions}
+                        problem={problem}
+                        adminView={false}
+                    />
+                )}
             </div>
             <div
                 tw={
