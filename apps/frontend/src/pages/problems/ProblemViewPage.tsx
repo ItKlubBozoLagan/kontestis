@@ -1,9 +1,13 @@
+import "./problem-markdown.scss";
+
 import { EvaluationLanguage } from "@kontestis/models";
 import { FC, useState } from "react";
 import { IconType } from "react-icons";
 import { FiCheckSquare, FiClock, FiCode, FiDatabase } from "react-icons/all";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 import { theme } from "twin.macro";
 
 import { http } from "../../api/http";
@@ -127,11 +131,14 @@ export const ProblemViewPage: FC = () => {
                 )}
             </div>
             <div
+                className={"problem-markdown-container"}
                 tw={
                     "p-4 bg-neutral-100 text-neutral-900 text-lg border-2 border-solid border-neutral-200 w-full"
                 }
             >
-                <ReactMarkdown>{problem ? problem.description : "Loading"}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    {problem ? problem.description : "Loading"}
+                </ReactMarkdown>
             </div>
         </div>
     );

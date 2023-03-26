@@ -1,0 +1,136 @@
+// TODO: most of these are copied from my blog (https://github.com/Antony1060/blog)
+//  make more appropriate for Kontestis'
+
+.problem-markdown-container {
+    & p {
+        margin: 1rem 0;
+    }
+
+    & hr {
+        margin: 1rem -0.2rem 0rem -0.2rem;
+    }
+
+    & :is(h1, h2, h3, h4, h5, h6) {
+        margin-top: 1rem;
+        margin-bottom: 0;
+    }
+
+    & h1 {
+        font-size: 2rem;
+
+        &::before {
+            content: "# ";
+        }
+    }
+
+    & h2 {
+        font-size: 1.66rem;
+    }
+
+    & h3 {
+        font-size: 1.33rem;
+    }
+
+    & pre {
+        border: 2px solid #e5e5e5;
+        margin: 0.5rem 0;
+        padding: 0.4rem 0.8rem;
+        background-color: #fafafa;
+        width: max-content;
+        min-width: 256px;
+        font-size: 1rem;
+    }
+
+    & pre code {
+        margin-right: 1rem;
+        box-decoration-break: clone;
+    }
+
+    & blockquote {
+        border-left: 3px solid #424752;
+        padding: 0.6rem 1rem;
+        background-color: #16191f;
+    }
+
+    & p {
+        line-height: 1.5rem;
+        font-size: 1.1rem;
+        color: rgba($color: black, $alpha: 0.9);
+        margin-bottom: 0.4rem;
+    }
+
+    & p code {
+        background-color: #0d1117;
+        padding: 0.2rem 0.4rem;
+        border-radius: 2px;
+        font-size: 1rem;
+        border: 1px solid black;
+    }
+
+    & :is(ul, ol) {
+        list-style-position: inside;
+        margin-top: 0;
+
+        &::marker {
+            color: gray;
+        }
+    }
+
+    & a:not(.md-style-reset) {
+        text-decoration: none;
+        color: #5b91fc;
+
+        &:hover {
+            text-decoration: underline;
+            color: #7aa7ff;
+        }
+    }
+
+    & .table-container {
+        overflow-x: auto;
+    }
+
+    & table {
+        border: 1px solid black;
+        border-collapse: collapse;
+        width: max-content;
+        max-width: calc(100% - 2rem);
+    }
+
+    & th {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 0.4rem 1rem;
+        background-color: #16191f;
+        background-color: rgba($color: black, $alpha: 0.05);
+    }
+
+    & td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 0.4rem 1rem;
+        text-align: center;
+        background-color: #0d1117;
+    }
+
+    & img:not(.md-style-reset) {
+        width: calc(100vw - 2rem);
+        max-width: 400px;
+        height: auto;
+        border: 1px solid black;
+        border-radius: 4px;
+    }
+
+    & .math.math-inline {
+        font-size: 1.1rem;
+    }
+
+    & .katex-display {
+        display: inline-block;
+        width: fit-content;
+    }
+
+    & .katex-html {
+        display: none;
+    }
+}
