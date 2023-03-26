@@ -127,7 +127,7 @@ export const ProblemViewPage: FC = () => {
             </div>
             <div
                 tw={
-                    "p-4 bg-neutral-100 text-neutral-900 text-lg whitespace-pre-line border-2 border-solid border-neutral-200 w-full"
+                    "p-4 bg-neutral-100 text-neutral-900 text-lg border-2 border-solid border-neutral-200 w-full"
                 }
             >
                 <ReactMarkdown>{problem ? problem.description : "Loading"}</ReactMarkdown>
