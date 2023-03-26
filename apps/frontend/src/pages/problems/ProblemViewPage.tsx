@@ -12,6 +12,7 @@ import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
 import { useInterval } from "../../hooks/useInterval";
+import { convertToBase64 } from "../../util/base";
 import { SubmissionListTable } from "../submissions/SubmissionListTable";
 
 type Properties = {
@@ -107,7 +108,7 @@ export const ProblemViewPage: FC = () => {
 
                                 // TODO: react query mutations
                                 const _ = http.post("/submission/" + problemId + "/", {
-                                    code: btoa(code),
+                                    code: convertToBase64(code),
                                     language,
                                 });
                             }}

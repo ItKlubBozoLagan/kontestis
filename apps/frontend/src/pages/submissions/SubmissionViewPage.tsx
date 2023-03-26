@@ -11,6 +11,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { TitledSection } from "../../components/TitledSection";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
+import { convertFromBase64 } from "../../util/base";
 import { SubmissionTestcaseTable } from "./SubmissionTestcaseTable";
 
 Prism.manual = true;
@@ -46,15 +47,16 @@ export const SubmissionViewPage: FC = () => {
                             <code
                                 className={`line-numbers match-braces rainbow-braces language-${submission.language}`}
                             >
-                                {atob(submission.code)}
+                                {convertFromBase64(submission.code)}
                             </code>
                         </pre>
-                        <div tw={"absolute top-4 right-2 p-2 "}>
-                            <FiCopy
-                                tw={"cursor-pointer hover:opacity-75"}
-                                size={"24px"}
-                                onClick={() => navigator.clipboard.writeText(atob(submission.code))}
-                            />
+                        <div
+                            tw={"absolute top-4 right-2 p-2"}
+                            onClick={() =>
+                                navigator.clipboard.writeText(convertFromBase64(submission.code))
+                            }
+                        >
+                            <FiCopy tw={"cursor-pointer hover:opacity-75"} size={"24px"} />
                         </div>
                     </div>
                 )}
