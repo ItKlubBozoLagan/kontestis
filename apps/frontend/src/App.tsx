@@ -114,7 +114,7 @@ const dashboardRouter = createBrowserRouter([
                     },
                     {
                         index: true,
-                        element: <Navigate to={"problems"} replace />,
+                        element: <Navigate to={"overview"} replace />,
                     },
                 ],
             },

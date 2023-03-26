@@ -141,16 +141,28 @@ export const ContestOverviewPage: FC = () => {
                                 value={parseTime(contest.duration_seconds * 1000)}
                                 submitFunction={submitForm}
                             >
-                                <TitledInput
-                                    defaultValue={Math.round(contest.duration_seconds / 3600)}
-                                    {...register("duration_hours")}
-                                />
-                                <TitledInput
-                                    defaultValue={Math.round(
-                                        (contest.duration_seconds % 3600) / 60
-                                    )}
-                                    {...register("duration_minutes")}
-                                />
+                                <div tw={"flex gap-4"}>
+                                    <div tw={"flex gap-1 items-end"}>
+                                        <TitledInput
+                                            defaultValue={Math.round(
+                                                contest.duration_seconds / 3600
+                                            )}
+                                            tw={"w-12"}
+                                            {...register("duration_hours")}
+                                        />
+                                        <span>h</span>
+                                    </div>
+                                    <div tw={"flex gap-1 items-end"}>
+                                        <TitledInput
+                                            defaultValue={Math.round(
+                                                (contest.duration_seconds % 3600) / 60
+                                            )}
+                                            tw={"w-12"}
+                                            {...register("duration_minutes")}
+                                        />
+                                        <span>s</span>
+                                    </div>
+                                </div>
                             </EditableDisplayBox>
                             <TitledSwitch
                                 label={"Visibility"}
