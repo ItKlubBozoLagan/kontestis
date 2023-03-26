@@ -9,7 +9,10 @@ type OrganisationState = {
     setIsSelected: (_: boolean) => void;
     setSkipOrganisationSelect: (_: boolean) => void;
     setOrganisationId: (_: Snowflake) => void;
+    reset: () => void;
 };
+
+export const ORGANISATION_STORE_KEY = "@kontestis/organisation";
 
 export const useOrganisationStore = create<OrganisationState>()(
     persist(
@@ -25,7 +28,9 @@ export const useOrganisationStore = create<OrganisationState>()(
             setIsSelected: (newSelected) => set({ isSelected: newSelected }),
             setSkipOrganisationSelect: (setSkipOrganisationSelect) =>
                 set({ skipOrganisationSelect: setSkipOrganisationSelect }),
+            reset: () =>
+                set({ isSelected: false, skipOrganisationSelect: true, organisationId: 0n }),
         }),
-        { name: "@kontestis/organisation" }
+        { name: ORGANISATION_STORE_KEY }
     )
 );

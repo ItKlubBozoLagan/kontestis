@@ -167,13 +167,18 @@ const organisationRouter = createBrowserRouter([
 export const App = () => {
     const { isLoggedIn, setUser, setIsLoggedIn } = useAuthStore();
     const { token, setToken } = useTokenStore();
-    const { isSelected } = useOrganisationStore();
+    const { isSelected, organisationId, reset: resetOrganisationStore } = useOrganisationStore();
 
     const queryClient = useQueryClient();
 
     useEffect(() => {
+        queryClient.clear();
+    }, [organisationId]);
+
+    useEffect(() => {
         if (token.length === 0) {
             setIsLoggedIn(false);
+            resetOrganisationStore();
             queryClient.clear();
 
             return;
