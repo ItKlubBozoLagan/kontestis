@@ -7,6 +7,7 @@ type Properties = {
     title: string;
     value: string;
     largeTextValue?: boolean;
+    smallTextBox?: boolean;
     submitFunction: () => void;
     children: ReactNode;
 };
@@ -17,6 +18,7 @@ export const EditableDisplayBox: FC<Properties> = ({
     submitFunction,
     children,
     largeTextValue = false,
+    smallTextBox = false,
 }) => {
     const [editMode, setEditMode] = useState(false);
 
@@ -28,7 +30,7 @@ export const EditableDisplayBox: FC<Properties> = ({
         >
             <div
                 tw={"w-full flex items-center justify-between gap-4"}
-                css={!largeTextValue ? tw`flex-grow` : ""}
+                css={!largeTextValue || !value ? tw`flex-grow` : ""}
             >
                 <span tw={"text-lg whitespace-nowrap"}>{title}</span>
                 {editMode ? (
@@ -62,17 +64,22 @@ export const EditableDisplayBox: FC<Properties> = ({
             </div>
             {largeTextValue &&
                 (editMode ? (
-                    <div tw={"w-full [& textarea]:(w-full h-64 max-h-64 resize-none)"}>
+                    <div
+                        tw={"w-full [& textarea]:(w-full h-64 max-h-64 resize-none)"}
+                        css={smallTextBox ? tw`[& textarea]:(h-16 max-h-16)` : ""}
+                    >
                         {children}
                     </div>
                 ) : (
-                    <div
-                        tw={
-                            "px-2 overflow-x-scroll border-2 border-solid border-neutral-300 max-h-96"
-                        }
-                    >
-                        <pre tw={"text-sm"}>{value}</pre>
-                    </div>
+                    value && (
+                        <div
+                            tw={
+                                "px-2 overflow-x-scroll border-2 border-solid border-neutral-300 max-h-96"
+                            }
+                        >
+                            <pre tw={"text-sm"}>{value}</pre>
+                        </div>
+                    )
                 ))}
         </div>
     );

@@ -58,8 +58,9 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
         );
     };
 
+    // TODO: width part here is terrible, figure out a better way sometime maybe
     return (
-        <TitledSection title={question.question} tw={"w-full"}>
+        <TitledSection title={question.question} parentStyle={{ maxWidth: "282px" }}>
             {hasContestPermission(
                 member.contest_permissions,
                 ContestMemberPermissions.ANSWER_QUESTIONS
@@ -70,6 +71,7 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
                         value={question?.response ?? ""}
                         submitFunction={submitForm}
                         largeTextValue
+                        smallTextBox
                     >
                         <textarea {...register("response")} tw={"w-full"} />
                     </EditableDisplayBox>
