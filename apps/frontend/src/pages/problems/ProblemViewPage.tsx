@@ -99,9 +99,9 @@ export const ProblemViewPage: FC = () => {
                                 setLanguage(event.target.value as EvaluationLanguage)
                             }
                         >
+                            <option value="python">Python</option>
                             <option value="cpp">C++</option>
                             <option value="c">C</option>
-                            <option value="python">Python</option>
                         </select>
                         <SimpleButton
                             color={theme`colors.red.300`}
