@@ -160,7 +160,7 @@ export const ContestOverviewPage: FC = () => {
                                             tw={"w-12"}
                                             {...register("duration_minutes")}
                                         />
-                                        <span>s</span>
+                                        <span>m</span>
                                     </div>
                                 </div>
                             </EditableDisplayBox>
