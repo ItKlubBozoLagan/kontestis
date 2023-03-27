@@ -49,7 +49,7 @@ export const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value, ...
 export const ProblemViewPage: FC = () => {
     const { problemId } = useParams<Properties>();
 
-    const [language, setLanguage] = useState<EvaluationLanguage>("cpp");
+    const [language, setLanguage] = useState<EvaluationLanguage>("python");
 
     const [code, setCode] = useState("");
 
