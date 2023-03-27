@@ -6,38 +6,31 @@ export type ContestMemberLeaderboardInfo = {
     problemPoints: number[];
 };
 
-const computePerformance = (
-    userScores: number[],
+const computePlace = (
     userRatings: number[],
     score: number,
-    maxScore: number
 ) => {
-    // edge case for when score is 0
-    if (score === 0) return 0;
 
-    //function works like weighted arithmetic mean such that
+    const expectedPlace = userRatings.reduce((ep = 1, mem) => ep + 1/(1+10**((score-mem)/400)));
+    return expectedPlace;
+}
 
-    let sum = 0;
-    let weight = 0;
-
-    for (const [index, userScore] of userScores.entries()) {
-        if (userScore === 0) continue;
-
-        const ratio = score / userScore;
-        const howClose = Math.min(score, userScore) / Math.max(score, userScore);
-        const rto = userRatings[index] * ratio * Math.sqrt(ratio) * howClose;
-
-        sum += rto;
-        weight += howClose;
+const computePerformance = (
+    userRatings: number[],
+    place: number,
+) => {
+    var low = 0;
+    var high = 10000;
+    while (high-low>0.5){
+        const mid = low+(high-low)/2;
+        if (computePlace(userRatings, mid) < place){
+            low = mid;
+        }else{
+            high = mid;
+        }
     }
 
-    const result = sum / weight;
-
-    if (score === maxScore) {
-        return Math.max(result, score);
-    }
-
-    return sum / weight;
+    return high;
 };
 
 export const computeELODifference = (
@@ -51,15 +44,17 @@ export const computeELODifference = (
 
     const userRatings = leaderboard.map((mem) => mem.currentGlobalElo);
 
-    const maxScore = problemMaxPoints.reduce((sum, p) => sum + p, 0);
-
     const score = targetMember.problemPoints.reduce((sum, p) => sum + p, 0);
 
-    const performance = computePerformance(userScores, userRatings, score, maxScore);
+    const expectedPlace = userRatings.reduce((ep, mem) => ep + 1/(1+10**((score-mem)/400)), 0);
 
-    const percentage = performance / targetMember.currentGlobalElo;
+    const place = userRatings.reduce((p, mem) => p + (mem > score ? 1 : 0) + (mem === score ? 0.5 : 0), 0);
 
-    const result = (Math.sqrt(percentage) - 1) * targetMember.currentGlobalElo;
+    const newPlace = Math.sqrt(expectedPlace*place);
+
+    const performanceRating = computePerformance(userScores, newPlace);
+
+    const result = Math.round((targetMember.currentGlobalElo-performanceRating)/2)
 
     return Number.isNaN(result) ? 0 : result;
 };
