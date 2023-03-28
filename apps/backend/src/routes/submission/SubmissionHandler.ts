@@ -40,7 +40,7 @@ SubmissionHandler.post("/:problem_id", useValidation(submissionSchema), async (r
     return respond(res, StatusCodes.CREATED, { submission: submissionId });
 });
 
-// TODO: Permissions return full res!
+// TODO: Permissions return full response
 
 const getSchema = Type.Object({
     user_id: Type.String(),
