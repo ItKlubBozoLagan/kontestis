@@ -6,6 +6,7 @@ export * from "./ContestAnnouncement";
 export * from "./ContestMember";
 export * from "./ContestQuestion";
 export * from "./Evaluation";
+export * from "./ExamFinalSubmission";
 export * from "./KnownUserData";
 export * from "./Organisation";
 export * from "./OrganisationMember";

@@ -3,6 +3,7 @@ import {
     ContestAnnouncement,
     ContestMember,
     ContestQuestion,
+    ExamFinalSubmission,
     KnownUserData,
     Organisation,
     OrganisationMember,
@@ -43,6 +44,8 @@ import { migration_add_organisation_id_to_contest } from "./migrations/0022_add_
 import { migration_organisation_indexes } from "./migrations/0023_organisation_indexes";
 import { migration_fix_organisation_member_definition } from "./migrations/0024_fix_organisation_member_definition";
 import { migration_add_contests_exam_properties } from "./migrations/0025_add_contests_exam_properties";
+import { migration_add_exam_final_submissions } from "./migrations/0026_add_exam_final_submissions";
+import { migration_add_exam_final_submissions_index } from "./migrations/0027_add_exam_final_submissions_index";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -59,6 +62,7 @@ export const Database = new ScylloClient<{
     contest_announcements: ContestAnnouncement;
     organisations: Organisation;
     organisation_members: OrganisationMember;
+    exam_final_submissions: ExamFinalSubmission;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -97,6 +101,8 @@ const migrations: Migration<any>[] = [
     migration_organisation_indexes,
     migration_fix_organisation_member_definition,
     migration_add_contests_exam_properties,
+    migration_add_exam_final_submissions,
+    migration_add_exam_final_submissions_index,
 ];
 
 export const initDatabase = async () => {
