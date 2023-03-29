@@ -24,17 +24,19 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
     useEffect(() => {
         const interval = setInterval(() => setTime(Date.now()), 1000);
 
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
+
+    useEffect(() => {
         if (Date.now() < contest.start_time.getTime()) setState("pending");
 
         if (Date.now() > contest.start_time.getTime()) setState("started");
 
         if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
             setState("finished");
-
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
+    }, [time]);
 
     return (
         <TableRow>
