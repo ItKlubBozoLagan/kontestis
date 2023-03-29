@@ -87,13 +87,35 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
 });
 
 SubmissionHandler.post("/final/:submission_id", async (req, res) => {
+    const user = await extractUser(req);
     const submission = await extractSubmission(req);
     const problem = await extractProblem(req, submission.problem_id);
     const contest = await extractContest(req, problem.contest_id);
 
     if (!contest.exam) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    await Database.deleteFrom("exam_final_submissions", "*", { submission_id: submission.id });
+    // TODO: See if there is a better way to structure this data to make the updates simpler but also allow for the needed queries
+
+    const finalSubmissionsRecords = await Database.selectFrom("exam_final_submissions", "*", {
+        contest_id: contest.id,
+        user_id: user.id,
+    });
+
+    const finalSubmissions = await Database.selectFrom("submissions", "*", {
+        id: eqIn(...finalSubmissionsRecords.map((r) => r.submission_id)),
+    });
+
+    const existingSubmission = finalSubmissions.find((s) => s.problem_id === submission.problem_id);
+
+    if (existingSubmission) {
+        const existingFinalSubmissionRecord = finalSubmissionsRecords.find(
+            (r) => r.submission_id === existingSubmission.id
+        );
+
+        await Database.deleteFrom("exam_final_submissions", "*", {
+            id: existingFinalSubmissionRecord!.id,
+        });
+    }
 
     const finalSubmission: ExamFinalSubmission = {
         id: generateSnowflake(),
@@ -117,7 +139,7 @@ SubmissionHandler.get(
     useValidation(getFinalSubmissionSchema, { query: true }),
     async (req, res) => {
         const user = await extractUser(req);
-        const contest = await extractContest(req, req.body.contest_id);
+        const contest = await extractContest(req, BigInt(req.query.contest_id));
 
         if (!contest.exam) throw new SafeError(StatusCodes.BAD_REQUEST);
 

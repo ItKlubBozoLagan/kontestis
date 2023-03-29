@@ -3,13 +3,18 @@ import {
     SubmissionByProblemResponse,
     SubmissionWithUserInfo,
 } from "@kontestis/models";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { AiFillCaretDown, AiFillCaretUp } from "react-icons/all";
+import { useQueryClient } from "react-query";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
+import { useContest } from "../../hooks/contest/useContest";
+import { useAllFinalSubmissions } from "../../hooks/submission/useAllFinalSubmissions";
+import { useSetFinalSubmission } from "../../hooks/submission/useSetFinalSubmission";
+import { useAuthStore } from "../../state/auth";
 
 type Properties = {
     submissions?: SubmissionByProblemResponse[] | SubmissionWithUserInfo[];
@@ -24,6 +29,26 @@ export const SubmissionListTable: FC<Properties> = ({
 }) => {
     const [expanded, setExpanded] = useState(false);
 
+    const { user } = useAuthStore();
+
+    const { data: contest } = useContest(problem?.contest_id ?? 0n, { enabled: !!problem });
+
+    const { data: finalSubmissions } = useAllFinalSubmissions([contest?.id ?? 0n, user.id], {
+        enabled: !!contest && contest.exam && !adminView,
+    });
+
+    const setFinalSubmission = useSetFinalSubmission();
+
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (!setFinalSubmission.isSuccess) return;
+
+        queryClient.invalidateQueries(["submission", "final", contest!.id, user.id]);
+
+        setFinalSubmission.reset();
+    }, [setFinalSubmission.isSuccess]);
+
     return (
         <Table tw={"w-full"}>
             <thead>
@@ -34,6 +59,7 @@ export const SubmissionListTable: FC<Properties> = ({
                     <TableHeadItem>Memory</TableHeadItem>
                     <TableHeadItem>Language</TableHeadItem>
                     <TableHeadItem>Points</TableHeadItem>
+                    {!adminView && contest && contest.exam && <TableHeadItem>Final</TableHeadItem>}
                 </TableHeadRow>
             </thead>
             <tbody>
@@ -79,6 +105,29 @@ export const SubmissionListTable: FC<Properties> = ({
                                             maxScore={problem.score}
                                         />
                                     </TableItem>
+                                    {!adminView && contest && contest.exam && (
+                                        <TableItem>
+                                            {(finalSubmissions ?? []).some(
+                                                (fs) => fs.submission_id === s.id
+                                            ) ? (
+                                                <span tw={"text-green-600"}>Final</span>
+                                            ) : contest.start_time.getTime() <= Date.now() &&
+                                              contest.start_time.getTime() +
+                                                  contest.duration_seconds * 1000 >=
+                                                  Date.now() ? (
+                                                <span
+                                                    tw={"text-red-500 cursor-pointer"}
+                                                    onClick={() => {
+                                                        setFinalSubmission.mutate(s.id);
+                                                    }}
+                                                >
+                                                    Set Final
+                                                </span>
+                                            ) : (
+                                                <span tw={"text-neutral-600"}>Ignored</span>
+                                            )}
+                                        </TableItem>
+                                    )}
                                 </>
                             ) : (
                                 <TableItem colSpan={5} tw={"text-center text-yellow-800"}>
