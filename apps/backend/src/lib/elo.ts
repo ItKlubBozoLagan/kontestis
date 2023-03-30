@@ -6,8 +6,8 @@ export type ContestMemberLeaderboardInfo = {
     problemPoints: number[];
 };
 
-const computePlace = (userRatings: number[], score: number) => {
-    return userRatings.reduce((ep = 1, mem) => ep + 1 / (1 + 10 ** ((score - mem) / 400)));
+const computePlace = (userRatings: number[], rating: number) => {
+    return userRatings.reduce((ep = 1, mem) => ep + 1 / (1 + 10 ** ((rating - mem) / 400)));
 };
 
 const computePerformance = (userRatings: number[], place: number) => {
@@ -39,9 +39,10 @@ export const computeELODifference = (
     const userRatings = leaderboard.map((mem) => mem.currentGlobalElo);
 
     const score = targetMember.problemPoints.reduce((sum, p) => sum + p, 0);
+    const currentRating = targetMember.currentGlobalElo;
 
     const expectedPlace = userRatings.reduce(
-        (ep, mem) => ep + 1 / (1 + 10 ** ((score - mem) / 400)),
+        (ep, mem) => ep + 1 / (1 + 10 ** ((currentRating - mem) / 400)),
         0
     );
 
@@ -52,9 +53,9 @@ export const computeELODifference = (
 
     const newPlace = Math.sqrt(expectedPlace * place);
 
-    const performanceRating = computePerformance(userScores, newPlace);
+    const performanceRating = computePerformance(userRatings, newPlace);
 
-    const result = Math.round((targetMember.currentGlobalElo - performanceRating) / 2);
+    const result = Math.round((currentRating - performanceRating) / 2);
 
     return Number.isNaN(result) ? 0 : result;
 };
