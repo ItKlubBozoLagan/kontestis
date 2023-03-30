@@ -1,8 +1,11 @@
+import stream from "node:stream";
+
 import {
     AdminPermissions,
     Contest,
     ContestMemberPermissions,
     hasAdminPermission,
+    hasContestPermission,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
@@ -14,9 +17,11 @@ import { eqIn } from "scyllo";
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
+import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractCurrentOrganisation } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
+import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
@@ -132,6 +137,43 @@ ContestHandler.get("/", async (req, res) => {
     }
 
     return respond(res, StatusCodes.OK, contests);
+});
+ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
+    const contest = await extractContest(req);
+
+    const member = await extractContestMember(req);
+
+    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const targetUser = await Database.selectOneFrom("users", ["id"], { id: req.params.user_id });
+
+    if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    const buffer = await generateDocument(contest.id, targetUser.id);
+
+    const readStream = new stream.PassThrough();
+
+    const userData = await Database.selectOneFrom("known_users", ["full_name"], {
+        user_id: targetUser.id,
+    });
+
+    if (!userData) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    readStream.end(buffer);
+
+    const filename = contest.name + " " + userData.full_name;
+
+    res.set(
+        "Content-Disposition",
+        "attachment; filename=" + filename.replace(/[^\dA-Za-z]/g, "_") + ".docx"
+    );
+    res.set(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+
+    readStream.pipe(res);
 });
 
 ContestHandler.get("/members/self", async (req, res) => {

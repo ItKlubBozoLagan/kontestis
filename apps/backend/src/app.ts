@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 });
 
 app.use(json());
-app.use(cors());
+app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
 
 app.use("/api/auth", AuthHandler);
 app.use("/api/organisation", OrganisationHandler);
