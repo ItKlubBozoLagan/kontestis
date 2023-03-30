@@ -1,6 +1,13 @@
 import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
 import { FC, useEffect } from "react";
-import { FiActivity, FiAlertTriangle, FiGrid, FiMessageSquare, FiUsers } from "react-icons/all";
+import {
+    FiActivity,
+    FiAlertTriangle,
+    FiBarChart2,
+    FiGrid,
+    FiMessageSquare,
+    FiUsers,
+} from "react-icons/all";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { Link, Navigate } from "react-router-dom";
 
@@ -38,6 +45,11 @@ const SubRoutes: NavItem[] = [
         display: "Participants",
         href: "participants",
         icon: FiUsers,
+    },
+    {
+        display: "Results",
+        href: "results",
+        icon: FiBarChart2,
     },
 ];
 
@@ -81,7 +93,14 @@ export const ContestManagementLayout: FC = () => {
                     <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
                     <div tw={"flex flex-col w-full"}>
                         <div tw={"flex w-full bg-neutral-200"}>
-                            {SubRoutes.map(({ icon: Icon, ...route }) => (
+                            {SubRoutes.filter(
+                                (r) =>
+                                    r.href !== "results" ||
+                                    (contest.exam &&
+                                        contest.start_time.getTime() +
+                                            contest.duration_seconds * 1000 <=
+                                            Date.now())
+                            ).map(({ icon: Icon, ...route }) => (
                                 <Link to={route.href} key={route.href} tw={"w-full"}>
                                     <div
                                         tw={
