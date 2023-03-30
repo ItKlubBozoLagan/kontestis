@@ -1,7 +1,7 @@
 import "./problem-markdown.scss";
 
 import { EvaluationLanguage } from "@kontestis/models";
-import { FC, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import { FiCheckSquare, FiClock, FiCode, FiDatabase } from "react-icons/all";
 import ReactMarkdown from "react-markdown";
@@ -15,9 +15,12 @@ import { SimpleButton } from "../../components/SimpleButton";
 import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
+import { useDocumentEvent } from "../../hooks/useDocumentEvent";
 import { useInterval } from "../../hooks/useInterval";
 import { convertToBase64 } from "../../util/base";
 import { SubmissionListTable } from "../submissions/SubmissionListTable";
+
+const TAB_CHAR = "    ";
 
 type Properties = {
     problemId: string;
@@ -49,6 +52,8 @@ export const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value, ...
 export const ProblemViewPage: FC = () => {
     const { problemId } = useParams<Properties>();
 
+    const textAreaReference = useRef<HTMLTextAreaElement | null>(null);
+
     const [language, setLanguage] = useState<EvaluationLanguage>("python");
 
     const [code, setCode] = useState("");
@@ -56,6 +61,46 @@ export const ProblemViewPage: FC = () => {
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
 
     const { data: submissions, refetch } = useAllProblemSubmissions(BigInt(problemId ?? 0));
+
+    useEffect(() => {
+        const textArea = textAreaReference.current;
+
+        if (textArea) textArea.value = code;
+    }, [code]);
+
+    useDocumentEvent("keydown", (event) => {
+        const textArea = textAreaReference.current;
+        const { target } = event;
+
+        if (!textArea || !target || !(target instanceof Node)) return;
+
+        const targetNode = event.target as Node;
+
+        if (!textArea.isEqualNode(targetNode)) return;
+
+        if (event.key !== "Tab") return;
+
+        event.preventDefault();
+
+        if (!textArea.selectionStart && textArea.selectionStart != 0) {
+            textArea.value += TAB_CHAR;
+            textArea.focus();
+        } else {
+            const startPos = textArea.selectionStart;
+            const endPos = textArea.selectionEnd;
+            const { scrollTop } = textArea;
+
+            textArea.value =
+                textArea.value.slice(0, Math.max(0, startPos)) +
+                TAB_CHAR +
+                textArea.value.slice(endPos, textArea.value.length);
+
+            textArea.focus();
+            textArea.selectionStart = startPos + TAB_CHAR.length;
+            textArea.selectionEnd = startPos + TAB_CHAR.length;
+            textArea.scrollTop = scrollTop;
+        }
+    });
 
     useInterval(() => {
         const _ = refetch();
@@ -90,8 +135,9 @@ export const ProblemViewPage: FC = () => {
                         <span tw={"text-lg w-full text-left"}>Code:</span>
                         <textarea
                             tw={"w-full h-48 resize-none font-mono text-sm"}
-                            value={code}
+                            style={{ tabSize: 4 }}
                             onChange={(event) => setCode(event.target.value)}
+                            ref={textAreaReference}
                         />
                         <select
                             name="languages"
@@ -108,13 +154,13 @@ export const ProblemViewPage: FC = () => {
                             onClick={() => {
                                 if (code.trim().length === 0) return;
 
-                                setCode("");
-
                                 // TODO: react query mutations
                                 const _ = http.post("/submission/" + problemId + "/", {
                                     code: convertToBase64(code),
                                     language,
                                 });
+
+                                setCode("");
                             }}
                         >
                             Submit
