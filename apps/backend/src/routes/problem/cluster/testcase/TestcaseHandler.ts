@@ -14,9 +14,12 @@ import { respond } from "../../../../utils/response";
 
 const TestcaseHandler = Router({ mergeParams: true });
 
+// Around 8MB
+const TESTCASE_MAX_SIZE = 1 << 23;
+
 const testcaseSchema = Type.Object({
-    input: Type.String(),
-    correctOutput: Type.String({ default: "" }),
+    input: Type.String({ maxLength: TESTCASE_MAX_SIZE }),
+    correctOutput: Type.String({ default: "", maxLength: TESTCASE_MAX_SIZE }),
 });
 
 TestcaseHandler.post("/", useValidation(testcaseSchema), async (req, res) => {
