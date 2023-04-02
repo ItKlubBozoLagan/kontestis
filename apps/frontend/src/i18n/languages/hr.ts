@@ -9,5 +9,6 @@ export default {
         contests: "Natjecanja",
         problems: "Zadatci",
         account: "Korisnik",
+        management: "Upravljanje",
     },
 } as const satisfies DefaultLanguageSpec;

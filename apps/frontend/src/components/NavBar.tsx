@@ -86,7 +86,7 @@ export const NavBar: FC = () => {
                 </div>
                 <NavElement
                     item={{
-                        display: "Management",
+                        display: t("navbar.management"),
                         href: "management",
                         icon: FiSettings,
                     }}
