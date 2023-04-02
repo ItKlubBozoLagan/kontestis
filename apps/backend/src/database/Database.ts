@@ -4,6 +4,7 @@ import {
     ContestMember,
     ContestQuestion,
     ExamFinalSubmission,
+    ExamGradingScale,
     KnownUserData,
     Organisation,
     OrganisationMember,
@@ -46,6 +47,7 @@ import { migration_fix_organisation_member_definition } from "./migrations/0024_
 import { migration_add_contests_exam_properties } from "./migrations/0025_add_contests_exam_properties";
 import { migration_add_exam_final_submissions } from "./migrations/0026_add_exam_final_submissions";
 import { migration_add_exam_final_submissions_index } from "./migrations/0027_add_exam_final_submissions_index";
+import { migration_add_exam_grading_scale } from "./migrations/0028_add_exam_grading_scale";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -63,6 +65,7 @@ export const Database = new ScylloClient<{
     organisations: Organisation;
     organisation_members: OrganisationMember;
     exam_final_submissions: ExamFinalSubmission;
+    exam_grading_scales: ExamGradingScale;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -103,6 +106,7 @@ const migrations: Migration<any>[] = [
     migration_add_contests_exam_properties,
     migration_add_exam_final_submissions,
     migration_add_exam_final_submissions_index,
+    migration_add_exam_grading_scale,
 ];
 
 export const initDatabase = async () => {
