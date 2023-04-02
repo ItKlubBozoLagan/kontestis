@@ -26,6 +26,7 @@ import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
 import ContestAnnouncementHandler from "./ContestAnnouncementHandler";
+import ContestGradingHandler from "./ContestGradingHandler";
 import ContestMemberHandler from "./ContestMemberHandler";
 import ContestQuestionHandler from "./ContestQuestionHandler";
 
@@ -47,6 +48,7 @@ const contestSchema = Type.Object({
 ContestHandler.use("/:contest_id/members", ContestMemberHandler);
 ContestHandler.use("/:contest_id/question", ContestQuestionHandler);
 ContestHandler.use("/:contest_id/announcement", ContestAnnouncementHandler);
+ContestHandler.use("/:contest_id/grade", ContestGradingHandler);
 
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const user = await extractUser(req);
