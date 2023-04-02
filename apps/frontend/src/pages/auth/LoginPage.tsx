@@ -3,6 +3,7 @@ import React, { FC, useCallback } from "react";
 
 import { http } from "../../api/http";
 import { TitledSection } from "../../components/TitledSection";
+import { Translated } from "../../components/Translated";
 import { useTokenStore } from "../../state/token";
 
 const LoginBase: FC = () => {
@@ -20,8 +21,7 @@ const LoginBase: FC = () => {
         <div tw={"w-full md:max-w-[500px] mt-20"}>
             <TitledSection title={"Log in"}>
                 <div tw={"flex flex-col gap-6 items-center"}>
-                    <span>
-                        Login is currently only limited to{" "}
+                    <Translated translationKey={"login.siteRestriction"}>
                         <a
                             tw={
                                 "font-mono rounded bg-neutral-100 border border-solid border-neutral-300 px-1 no-underline hover:bg-neutral-200"
@@ -31,9 +31,9 @@ const LoginBase: FC = () => {
                             rel="noreferrer"
                         >
                             skole.hr
-                        </a>{" "}
-                        accounts
-                    </span>
+                        </a>
+                    </Translated>
+
                     <GoogleLogin
                         onSuccess={onLoginSuccess}
                         width={"256px"}

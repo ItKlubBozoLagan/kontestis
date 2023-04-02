@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import {
     FiArrowLeft,
     FiClock,
@@ -11,35 +11,13 @@ import {
 import tw from "twin.macro";
 
 import { useOrganisation } from "../hooks/organisation/useOrganisation";
+import { useTranslation } from "../hooks/useTranslation";
 import { useAuthStore } from "../state/auth";
 import { useOrganisationStore } from "../state/organisation";
 import { useProcessingLoader } from "../state/processing";
 import { useTokenStore } from "../state/token";
 import { Breadcrumb } from "./Breadcrumb";
-import { NavElement, NavItem } from "./NavElement";
-
-const items: NavItem[] = [
-    {
-        display: "Dashboard",
-        href: "",
-        icon: FiCpu,
-    },
-    {
-        display: "Contests",
-        href: "contests",
-        icon: FiClock,
-    },
-    {
-        display: "Problems",
-        href: "problems",
-        icon: FiLayers,
-    },
-    {
-        display: "Account",
-        href: "account",
-        icon: FiUser,
-    },
-];
+import { NavElement } from "./NavElement";
 
 export const NavBar: FC = () => {
     const { user } = useAuthStore();
@@ -48,6 +26,34 @@ export const NavBar: FC = () => {
     const { isProcessing } = useProcessingLoader();
 
     const { data, isSuccess } = useOrganisation(organisationId);
+
+    const { t } = useTranslation();
+
+    const navbarItems = useMemo(
+        () => [
+            {
+                display: t("navbar.dashboard"),
+                href: "",
+                icon: FiCpu,
+            },
+            {
+                display: t("navbar.contests"),
+                href: "contests",
+                icon: FiClock,
+            },
+            {
+                display: t("navbar.problems"),
+                href: "problems",
+                icon: FiLayers,
+            },
+            {
+                display: t("navbar.account"),
+                href: "account",
+                icon: FiUser,
+            },
+        ],
+        [t]
+    );
 
     return (
         <div
@@ -65,7 +71,7 @@ export const NavBar: FC = () => {
                     referrerPolicy={"no-referrer"}
                 />
                 <div tw={"flex flex-wrap justify-center gap-6"}>
-                    {items.map((item) => (
+                    {navbarItems.map((item) => (
                         <NavElement item={item} key={item.href} />
                     ))}
                 </div>
