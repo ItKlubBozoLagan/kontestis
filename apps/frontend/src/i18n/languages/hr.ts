@@ -107,7 +107,7 @@ export default {
                     },
                 },
                 problems: {
-                    createButton: "Kreiraj novi",
+                    createButton: "Stvori novi",
                     table: {
                         head: {
                             name: "Naziv",
@@ -116,8 +116,89 @@ export default {
                             solves: "Rješenja",
                         },
                     },
+                    individual: {
+                        info: {
+                            label: "Informacije",
+                            name: "Naziv",
+                            description: "Opis",
+                            timeLimit: "Vremensko ograničenje",
+                            memoryLimit: "Ograničenje memorije",
+                            evaluationScript: "Skripta za evaluaciju",
+                            score: "Bodovi",
+                        },
+                    },
+                    cluster: {
+                        createButton: "Stvori grupu",
+                        table: {
+                            head: {
+                                cluster: "Grupa",
+                                awardedScore: "Dodijeljeni bodovi",
+                            },
+                        },
+                    },
+                    submissions: {
+                        empty: "Još nema prijava :(",
+                        table: {
+                            head: {
+                                user: "Korisnik",
+                                verdict: "Verdict",
+                                time: "Vrijeme",
+                                memory: "Memorija",
+                                language: "Jezik",
+                                points: "Bodovi",
+                            },
+                        },
+                    },
+                },
+                announcements: {
+                    label: "Obavijest:",
+                    sendButton: "Pošalji",
+                },
+                questions: {
+                    empty: "Nema pitanja za sada",
+                    unAnswered: {
+                        label: "Nije odgovoreno",
+                        answerButton: "Odgovori",
+                    },
+                    answered: {
+                        label: "Odgovoreno",
+                        answerButton: "Odgovori",
+                    },
+                },
+                participants: {
+                    addParticipant: {
+                        label: "Dodaj sudionika",
+                        addButton: "Dodaj",
+                        placeholder: "primjer@skola.hr",
+                        errorMessages: {
+                            invalid: "Neispravna adresa e-pošte",
+                            double: "Korisnik ne postoji ili je već sudionik",
+                        },
+                    },
                 },
             },
+        },
+    },
+    problems: {
+        page: {
+            title: "Problemi",
+            table: {
+                head: {
+                    name: "Naziv",
+                    contestName: "Naziv natjecanja",
+                    added: "Vrijeme dodavanja",
+                    score: "Bodovi",
+                },
+            },
+        },
+    },
+    account: {
+        label: "Informacije računa",
+        fullName: "Puno ime",
+        email: "E-pošta",
+        breadcrumbs: {
+            creator: "Tvorac",
+            admin: "Administrator",
         },
     },
 } as const satisfies DefaultLanguageSpec;
