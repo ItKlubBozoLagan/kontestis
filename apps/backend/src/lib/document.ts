@@ -24,6 +24,10 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
 
     if (!contest) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
+    const gradingScale = await Database.selectFrom("exam_grading_scales", "*", {
+        contest_id: contest.id,
+    });
+
     const problems = (await Database.selectFrom("problems", "*", { contest_id: contest.id })).sort(
         (a, b) => Number(a.id) - Number(b.id)
     );
@@ -58,6 +62,16 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
     const submissionsByProblemId: Record<string, Submission> = {};
 
     for (const s of submissions) submissionsByProblemId[s.problem_id.toString()] = s;
+
+    const score = submissions.reduce((a, s) => a + s.awarded_score, 0);
+
+    const totalScore = problemsWithScore.reduce((a, p) => a + p.score, 0);
+
+    const percentage = (score / totalScore) * 100;
+
+    const grade = gradingScale
+        .sort((a, b) => b.percentage - a.percentage)
+        .find((s) => percentage ?? 0 >= s.percentage);
 
     const problemData = problemsWithScore.flatMap((p) => [
         new Paragraph({
@@ -95,15 +109,17 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
                         heading: HeadingLevel.HEADING_2,
                     }),
                     new Paragraph({
-                        text:
-                            submissions.reduce((a, s) => a + s.awarded_score, 0) +
-                            "/" +
-                            problemsWithScore.reduce((a, p) => a + p.score, 0),
+                        text: score + "/" + totalScore,
+                        heading: HeadingLevel.HEADING_2,
+                    }),
+                    new Paragraph({
+                        text: grade?.grade ?? "",
                         heading: HeadingLevel.HEADING_2,
                     }),
                     ...problemData,
                     new Paragraph({
-                        text: "________________________",
+                        // TODO: Internationalisation
+                        text: "Potpis: ________________________",
                         alignment: AlignmentType.RIGHT,
                     }),
                 ],
