@@ -80,10 +80,14 @@ export const GradingScaleListItem: FC<Properties> = ({ gradingScale }) => {
                     <TitledInput {...register("percentage")} />
                 </EditableDisplayBox>
             </div>
-            <div tw={"text-sm text-red-500"}>
-                {Object.keys(errors).length > 0 && <span>Validation error! Check your input!</span>}
-                {modifyMutation.error && <span>Error! {modifyMutation.error.message}</span>}
-            </div>
+            {(Object.keys(errors).length > 0 || modifyMutation.error) && (
+                <div tw={"text-sm text-red-500"}>
+                    {Object.keys(errors).length > 0 && (
+                        <span>Validation error! Check your input!</span>
+                    )}
+                    {modifyMutation.error && <span>Error! {modifyMutation.error.message}</span>}
+                </div>
+            )}
         </form>
     );
 };

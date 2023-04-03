@@ -25,7 +25,7 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                     <Outlet />
                 </div>
             }
-            <div tw={"absolute p-4 right-6 bottom-6 flex gap-2"}>
+            <div tw={"fixed p-4 right-6 bottom-6 flex gap-2"}>
                 {I18N_AVAILABLE_LANGUAGES.map((language) => (
                     <SimpleButton key={language} onClick={() => setLanguage(language)}>
                         {language}

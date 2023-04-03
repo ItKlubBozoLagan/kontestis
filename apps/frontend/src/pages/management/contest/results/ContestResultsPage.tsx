@@ -1,6 +1,7 @@
-import { Snowflake } from "@kontestis/models";
-import { FC, useState } from "react";
+import { ExamGradingScale, Snowflake } from "@kontestis/models";
+import { FC, useEffect, useMemo, useState } from "react";
 import { FiFilePlus, FiPlus } from "react-icons/all";
+import * as R from "remeda";
 
 import { http } from "../../../../api/http";
 import { ProblemScoreBox } from "../../../../components/ProblemScoreBox";
@@ -20,6 +21,15 @@ import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
 import { CreateGradingScaleModal } from "./CreateGradingScaleModal";
 import { GradingScaleListItem } from "./GradingScaleListItem";
 
+const calculateGradeFromScale = (
+    scale: ExamGradingScale[],
+    [score, totalScore]: [number, number]
+) => {
+    return scale
+        .sort((a, b) => b.percentage - a.percentage)
+        .find((s) => score >= Math.floor((s.percentage / 100) * totalScore))?.grade;
+};
+
 export const ContestResultsPage: FC = () => {
     const { contest } = useContestContext();
 
@@ -28,6 +38,42 @@ export const ContestResultsPage: FC = () => {
     const { data: gradingScales } = useAllContestGradingScales(contest.id);
 
     const [modalOpen, setModalOpen] = useState(false);
+
+    const maxScore = useMemo(() => (problems ?? []).reduce((a, it) => a + it.score, 0), [problems]);
+
+    const memberScores = useMemo(
+        () =>
+            R.fromPairs(
+                (members ?? []).map((member) => [
+                    member.id.toString(),
+                    Object.values(member.score).reduce(
+                        (accumulator, current) => accumulator + current,
+                        0
+                    ),
+                ])
+            ),
+        [members, problems]
+    );
+
+    const memberGrades = useMemo(
+        () =>
+            R.fromPairs(
+                !gradingScales || gradingScales.length === 0
+                    ? []
+                    : (members ?? []).map((member) => [
+                          member.id.toString(),
+                          calculateGradeFromScale(gradingScales, [
+                              memberScores[member.id.toString()],
+                              maxScore,
+                          ]),
+                      ])
+            ),
+        [members, gradingScales, memberScores]
+    );
+
+    useEffect(() => {
+        console.log(memberGrades);
+    }, [memberGrades]);
 
     const downloadClickHandler = async (userId: Snowflake) => {
         const response = await http
@@ -89,16 +135,17 @@ export const ContestResultsPage: FC = () => {
                             <TableRow key={member.id.toString()}>
                                 <TableItem>{member.full_name}</TableItem>
                                 <TableItem>
-                                    <ProblemScoreBox
-                                        score={Object.values(member.score).reduce(
-                                            (accumulator, current) => accumulator + current,
-                                            0
+                                    <div tw={"flex gap-2"}>
+                                        <ProblemScoreBox
+                                            score={memberScores[member.id.toString()]}
+                                            maxScore={maxScore}
+                                        />
+                                        {memberGrades[member.id.toString()] && (
+                                            <span>{` (${
+                                                memberGrades[member.id.toString()]
+                                            })`}</span>
                                         )}
-                                        maxScore={(problems ?? []).reduce(
-                                            (a, it) => a + it.score,
-                                            0
-                                        )}
-                                    />
+                                    </div>
                                 </TableItem>
                                 <TableItem
                                     tw={"text-xl"}

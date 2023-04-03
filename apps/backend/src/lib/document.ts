@@ -67,11 +67,9 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
 
     const totalScore = problemsWithScore.reduce((a, p) => a + p.score, 0);
 
-    const percentage = (score / totalScore) * 100;
-
     const grade = gradingScale
         .sort((a, b) => b.percentage - a.percentage)
-        .find((s) => percentage ?? 0 >= s.percentage);
+        .find((s) => score >= Math.floor((s.percentage / 100) * totalScore));
 
     const problemData = problemsWithScore.flatMap((p) => [
         new Paragraph({
