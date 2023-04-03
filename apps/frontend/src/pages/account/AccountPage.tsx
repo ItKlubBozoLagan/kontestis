@@ -19,8 +19,6 @@ import {
     nextRankFromRank,
 } from "../../util/rank";
 
-const { t } = useTranslation();
-
 type RankComponentProperties = {
     rankName: GlobalRank;
 };
@@ -56,6 +54,8 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 
 export const AccountPage: FC = () => {
     const { user } = useAuthStore();
+
+    const { t } = useTranslation();
 
     return (
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
