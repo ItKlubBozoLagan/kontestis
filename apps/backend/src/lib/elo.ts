@@ -7,7 +7,7 @@ export type ContestMemberLeaderboardInfo = {
 };
 
 const computePlace = (userRatings: number[], rating: number) => {
-    return userRatings.reduce((ep, mem) => ep + 1 / (1 + 10 ** ((rating - mem) / 400)), 1);
+    return userRatings.reduce((ep, mem) => ep + 1 / (1 + 10 ** ((mem - rating) / 400)), 1);
 };
 
 const computePerformance = (userRatings: number[], place: number) => {
