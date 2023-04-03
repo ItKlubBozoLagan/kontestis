@@ -48,7 +48,7 @@ const I18nEn = {
                 score: "Score",
             },
             leaderboard: {
-                running: "Leaderboard",
+                running: "Live leaderboard",
                 finished: "Final standings",
                 table: {
                     contestant: "Contestant",
@@ -94,6 +94,9 @@ const I18nEn = {
                             contest: "Contest",
                             exam: "Exam",
                         },
+                        errorMessage: {
+                            invalid: "Validation error! Check your input",
+                        },
                         createButton: "Create",
                     },
                     statistics: {
@@ -133,6 +136,45 @@ const I18nEn = {
                             },
                         },
                     },
+                    submissions: {
+                        empty: "No submissions yet :(",
+                        table: {
+                            head: {
+                                user: "User",
+                                verdict: "Verdict",
+                                time: "Time",
+                                memory: "Memory",
+                                language: "Language",
+                                points: "Points",
+                            },
+                        },
+                    },
+                },
+                announcements: {
+                    label: "Announcement:",
+                    sendButton: "Send",
+                },
+                questions: {
+                    empty: "None so far",
+                    unAnswered: {
+                        label: "Not answered",
+                        answerButton: "Answer",
+                    },
+                    answered: {
+                        label: "Answered",
+                        answerButton: "Answer",
+                    },
+                },
+                participants: {
+                    addParticipant: {
+                        label: "Add participant",
+                        addButton: "Add",
+                        placeholder: "example@skole.hr",
+                        errorMessages: {
+                            invalid: "Invalid email address",
+                            double: "User doesn't exist or is already a participant",
+                        },
+                    },
                 },
             },
         },
@@ -154,6 +196,10 @@ const I18nEn = {
         label: "Account information",
         fullName: "Full Name",
         email: "E-mail",
+        breadcrumbs: {
+            creator: "Creator",
+            admin: "Admin",
+        },
     },
 } as const satisfies LanguageSpec;
 
