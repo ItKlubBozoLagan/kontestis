@@ -7,10 +7,7 @@ export type ContestMemberLeaderboardInfo = {
 };
 
 const computePlace = (userRatings: number[], rating: number) => {
-    return userRatings.reduce(
-        (ep, mem) => ep + 1 / (1 + 10 ** ((rating - mem) / 400)), 
-        1
-    );
+    return userRatings.reduce((ep, mem) => ep + 1 / (1 + 10 ** ((rating - mem) / 400)), 1);
 };
 
 const computePerformance = (userRatings: number[], place: number) => {
@@ -20,7 +17,7 @@ const computePerformance = (userRatings: number[], place: number) => {
     while (high - low > 0.5) {
         const mid = low + (high - low) / 2;
 
-        if (computePlace(userRatings, mid) < place) {
+        if (computePlace(userRatings, mid) > place) {
             low = mid;
         } else {
             high = mid;
