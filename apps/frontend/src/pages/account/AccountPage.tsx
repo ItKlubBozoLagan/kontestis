@@ -9,6 +9,7 @@ import { DomainBreadcrumb } from "../../components/DomainBreadcrumb";
 import { RankBreadcrumb } from "../../components/RankBreadcrumb";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 import {
     AllRanks,
@@ -17,6 +18,8 @@ import {
     minScoreForRank,
     nextRankFromRank,
 } from "../../util/rank";
+
+const { t } = useTranslation();
 
 type RankComponentProperties = {
     rankName: GlobalRank;
@@ -56,7 +59,7 @@ export const AccountPage: FC = () => {
 
     return (
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
-            <TitledSection title={"Account information"}>
+            <TitledSection title={t("account.label")}>
                 <div tw={"w-full flex items-center justify-center gap-10 py-10"}>
                     <div tw={"flex flex-col items-center justify-start gap-4 font-mono"}>
                         <img
@@ -82,13 +85,17 @@ export const AccountPage: FC = () => {
                                     color={theme`colors.red.400`}
                                     borderColor={theme`colors.red.500`}
                                 >
-                                    Admin
+                                    {t("account.breadcrumbs.admin")}
                                 </Breadcrumb>
                             )}
                         </div>
                         <div tw={"flex flex-col justify-between gap-2 font-mono"}>
-                            <TitledInput label={"Full Name"} value={user.full_name} readOnly />
-                            <TitledInput label={"E-mail"} value={user.email} readOnly />
+                            <TitledInput
+                                label={t("account.fullName")}
+                                value={user.full_name}
+                                readOnly
+                            />
+                            <TitledInput label={t("account.email")} value={user.email} readOnly />
                         </div>
                     </div>
                 </div>
