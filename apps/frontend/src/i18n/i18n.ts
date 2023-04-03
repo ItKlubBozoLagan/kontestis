@@ -7,7 +7,7 @@ import type { I18nEn_Type } from "./languages/en";
 export const I18N_DEFAULT_LANGUAGE = "en" as const;
 type DefaultLanguageType = I18nEn_Type;
 
-export const I18N_AVAILABLE_LANGUAGES = ["en", "hr", "rs"] as const;
+export const I18N_AVAILABLE_LANGUAGES = ["en", "hr"] as const;
 export type I18N_POSSIBLE_LANGUAGES = (typeof I18N_AVAILABLE_LANGUAGES)[number];
 
 type GenerifyStringProperties<T> = {
