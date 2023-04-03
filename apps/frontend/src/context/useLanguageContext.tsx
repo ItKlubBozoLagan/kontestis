@@ -21,9 +21,21 @@ export const useLanguageContext = () => {
 
     const setLanguage = useLanguageStore((state) => state.setCurrentLanguage);
 
-    if (context === null) throw new Error("useLanguageContext used outside of provider");
+    if (context === null) {
+        console.warn("useLanguageContext used outside of provider, using global default");
+
+        return { currentLanguage: "en", translationResources: {}, setLanguage };
+    }
 
     return { ...context, setLanguage };
+};
+
+const DummyLanguageProvider: FC<{ children: ReactNode }> = ({ children }) => {
+    return (
+        <LanguageContext.Provider value={{ currentLanguage: "en", translationResources: {} }}>
+            {children}
+        </LanguageContext.Provider>
+    );
 };
 
 export const LocalStorageLanguageProvider: FC<{ children: ReactNode }> = ({ children }) => {
@@ -50,7 +62,8 @@ export const LocalStorageLanguageProvider: FC<{ children: ReactNode }> = ({ chil
         loadLanguage("en").then(() => setDefaultLoaded(true));
     }, []);
 
-    if (!languageState || !defaultLoaded) return <></>;
+    if (!languageState || !defaultLoaded)
+        return <DummyLanguageProvider>{children}</DummyLanguageProvider>;
 
     return <LanguageContext.Provider value={languageState}>{children}</LanguageContext.Provider>;
 };
