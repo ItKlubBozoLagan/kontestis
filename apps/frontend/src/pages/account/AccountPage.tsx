@@ -54,6 +54,7 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 
 export const AccountPage: FC = () => {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
 
     const { t } = useTranslation();
 
