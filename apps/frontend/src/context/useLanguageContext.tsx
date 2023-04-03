@@ -24,7 +24,7 @@ export const useLanguageContext = () => {
     if (context === null) {
         console.warn("useLanguageContext used outside of provider, using global default");
 
-        return { currentLanguage: "en", translationResources: {}, setLanguage };
+        return { currentLanguage: "en" as const, translationResources: {}, setLanguage };
     }
 
     return { ...context, setLanguage };
