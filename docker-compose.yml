@@ -78,3 +78,17 @@ services:
     ports:
       - "6379:6379"
 
+
+  influxdb:
+    image: influxdb:2.6-alpine
+    volumes:
+      - "./tools/influx:/var/lib/influxdb2"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=root
+      - DOCKER_INFLUXDB_INIT_PASSWORD=root1234
+      - DOCKER_INFLUXDB_INIT_ORG=kontestis-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=kontestis
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=devtoken
+    ports:
+      - "8086:8086"
