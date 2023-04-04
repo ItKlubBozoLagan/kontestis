@@ -1,4 +1,4 @@
-import { EvaluationVariant } from "./Evaluation";
+import { EvaluationLanguage, EvaluationVariant } from "./Evaluation";
 import { Snowflake } from "./Snowflake";
 
 export type ProblemV1 = {
@@ -14,8 +14,13 @@ export type ProblemV1 = {
     memory_limit_megabytes: number;
 };
 
+export type ProblemV2 = ProblemV1 & {
+    solution_language: EvaluationLanguage;
+    solution_code: string;
+};
+
 export type ProblemWithScore = Problem & {
     score: number;
 };
 
-export type Problem = ProblemV1;
+export type Problem = ProblemV2;

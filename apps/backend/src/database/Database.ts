@@ -48,6 +48,7 @@ import { migration_add_contests_exam_properties } from "./migrations/0025_add_co
 import { migration_add_exam_final_submissions } from "./migrations/0026_add_exam_final_submissions";
 import { migration_add_exam_final_submissions_index } from "./migrations/0027_add_exam_final_submissions_index";
 import { migration_add_exam_grading_scale } from "./migrations/0028_add_exam_grading_scale";
+import { migration_add_testcase_generators } from "./migrations/0029_add_testcase_generators";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -107,6 +108,7 @@ const migrations: Migration<any>[] = [
     migration_add_exam_final_submissions,
     migration_add_exam_final_submissions_index,
     migration_add_exam_grading_scale,
+    migration_add_testcase_generators,
 ];
 
 export const initDatabase = async () => {

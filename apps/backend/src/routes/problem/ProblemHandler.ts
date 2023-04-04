@@ -1,9 +1,9 @@
 import { Problem } from "@kontestis/models";
-import { filterAsync } from "@kontestis/utils";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as R from "remeda";
+import { isTruthy } from "remeda";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
@@ -34,6 +34,8 @@ const problemSchema = Type.Object({
     evaluation_script: Type.Optional(Type.String()),
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10_000 }),
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 10_240 }),
+    solution_language: Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")]),
+    solution_code: Type.String(),
 });
 
 ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, res) => {
@@ -51,6 +53,8 @@ ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, re
         evaluation_script: req.body.evaluation_script,
         time_limit_millis: req.body.time_limit_millis,
         memory_limit_megabytes: req.body.memory_limit_megabytes,
+        solution_language: req.body.solution_language,
+        solution_code: req.body.solution_code,
     };
 
     await Database.insertInto("problems", problem);
@@ -124,6 +128,8 @@ ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, r
             memory_limit_megabytes: req.body.memory_limit_megabytes,
             evaluation_variant: req.body.evaluation_variant,
             evaluation_script: req.body.evaluation_script,
+            solution_language: req.body.solution_language,
+            solution_code: req.body.solution_code,
         },
         { id: problem.id }
     );
@@ -140,14 +146,15 @@ ProblemHandler.get("/", useValidation(getSchema, { query: true }), async (req, r
 
     await extractContest(req, contestId);
 
-    const problems = await Database.selectFrom("problems", "*", {
+    const problems = await Database.selectFrom("problems", ["id"], {
         contest_id: contestId,
     });
 
-    const allowedProblems = await filterAsync(problems, ({ id }) =>
-        extractProblem(req, id)
-            .then(() => true)
-            .catch(() => false)
+    const allowedProblems = R.filter(
+        await Promise.all(
+            problems.map(({ id }) => extractProblem(req, id).catch(() => false as const))
+        ),
+        isTruthy
     );
 
     return respond(

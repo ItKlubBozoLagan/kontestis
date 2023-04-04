@@ -4,6 +4,7 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../../database/Database";
+import { SafeError } from "../../../errors/SafeError";
 import { extractCluster } from "../../../extractors/extractCluster";
 import { extractModifiableCluster } from "../../../extractors/extractModifiableCluster";
 import { extractModifiableProblem } from "../../../extractors/extractModifiableProblem";
@@ -19,6 +20,11 @@ ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 
 const clusterSchema = Type.Object({
     awarded_score: Type.Number({ minimum: 1, maximum: 1000 }),
+    generator: Type.Boolean(),
+    generator_language: Type.Optional(
+        Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")])
+    ),
+    generator_code: Type.Optional(Type.String()),
 });
 
 ClusterHandler.get("/", async (req, res) => {
@@ -34,10 +40,16 @@ ClusterHandler.get("/", async (req, res) => {
 ClusterHandler.post("/", useValidation(clusterSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
+    if (req.body.generator && (!req.body.generator_language || !req.body.generator_code))
+        throw new SafeError(StatusCodes.BAD_REQUEST);
+
     const cluster: Cluster = {
         id: generateSnowflake(),
         problem_id: problem.id,
         awarded_score: req.body.awarded_score,
+        generator: req.body.generator,
+        generator_code: req.body.generator_code,
+        generator_language: req.body.generator_language,
     };
 
     await Database.insertInto("clusters", cluster);
@@ -55,9 +67,17 @@ ClusterHandler.get("/:cluster_id", async (req, res) => {
 ClusterHandler.patch("/:cluster_id", useValidation(clusterSchema), async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
+    if (req.body.generator && (!req.body.generator_language || !req.body.generator_code))
+        throw new SafeError(StatusCodes.BAD_REQUEST);
+
     await Database.update(
         "clusters",
-        { awarded_score: req.body.awarded_score },
+        {
+            awarded_score: req.body.awarded_score,
+            generator: req.body.generator,
+            generator_language: req.body.generator_language,
+            generator_code: req.body.generator_code,
+        },
         { id: cluster.id }
     );
 

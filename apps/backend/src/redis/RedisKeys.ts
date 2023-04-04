@@ -6,4 +6,8 @@ export const RedisKeys = {
         `${userId}:problems:${problemId}:submissions:*`,
     PENDING_SUBMISSION: (userId: Snowflake, problemId: Snowflake, submissionId: Snowflake) =>
         `${userId}:problems:${problemId}:submissions:${submissionId}`,
+    CACHED_TESTCASE_INPUT: (clusterId: Snowflake, testcase: number) =>
+        `cluster:${clusterId}:testcase:${testcase}:data-input`,
+    CACHED_TESTCASE_OUTPUT: (clusterId: Snowflake, testcase: number) =>
+        `cluster:${clusterId}:testcase:${testcase}:data-output`,
 };

@@ -5,7 +5,7 @@ import { EvaluationResult } from "@kontestis/models";
 import { MemoryRecord } from "../recorders/RecordOutputWithMemory";
 import { OutputRecord } from "../recorders/SimpleOutputRecorder";
 import { timeFunction } from "../recorders/TimeRecorder";
-import { Testcase } from "../types/Testcase";
+import { TestcaseV1 } from "../types/TestcaseV1";
 
 export type RunnerFunction = (testcaseInput: Buffer) => Promise<OutputRecord & MemoryRecord>;
 
@@ -17,7 +17,7 @@ export type CheckerFunction = (
 
 export const evaluateSimpleChecker = async (
     runnerFunction: RunnerFunction,
-    testcases: Testcase[],
+    testcases: TestcaseV1[],
     checkerFunction: CheckerFunction,
     timeLimit: number,
     memoryLimit: number

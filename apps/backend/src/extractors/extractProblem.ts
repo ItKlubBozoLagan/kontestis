@@ -31,7 +31,7 @@ export const extractProblem = (
         const contest = await extractContest(req, problem.contest_id);
 
         if (Date.now() >= contest.start_time.getTime())
-            return R.omit(problem, ["evaluation_script"]);
+            return R.omit(problem, ["evaluation_script", "solution_code", "solution_language"]);
 
         const user = await extractUser(req);
 

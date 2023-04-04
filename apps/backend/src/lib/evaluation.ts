@@ -17,6 +17,7 @@ import { Globals } from "../globals";
 import { isContestRunning } from "./contest";
 import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
+import { getAllTestcases } from "./testcase";
 
 const ERR_UNEXPECTED_STATE = new Error("unexpected state");
 
@@ -26,7 +27,7 @@ type ProblemDetails = {
     code: string;
 };
 
-type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
+export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
 
 const updateContestMember = async (problemId: Snowflake, userId: Snowflake, score: number) => {
     const problem = await Database.selectOneFrom("problems", ["contest_id"], { id: problemId });
@@ -131,9 +132,11 @@ const evaluateCluster = async (
     pendingSubmission: PendingSubmission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const testcases = (
-        await Database.selectFrom("testcases", "*", { cluster_id: cluster.id })
-    ).sort((a, b) => Number(a.id) - Number(b.id));
+    const testcases = cluster.generator
+        ? await getAllTestcases(cluster)
+        : (await Database.selectFrom("testcases", "*", { cluster_id: cluster.id })).sort(
+              (a, b) => Number(a.id) - Number(b.id)
+          );
     const testCasesById: Record<string, Testcase> = {};
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;

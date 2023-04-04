@@ -9,13 +9,15 @@ export type SuccessfulEvaluationResult =
           time: number;
           memory: number;
       }
-    | {
-          type: "success";
-          verdict: "custom";
-          time: number;
-          memory: number;
-          extra: string;
-      };
+    | CustomSuccessfulEvaluationResult;
+
+export type CustomSuccessfulEvaluationResult = {
+    type: "success";
+    verdict: "custom";
+    time: number;
+    memory: number;
+    extra: string;
+};
 
 export type CompilationErrorResult = {
     type: "error";

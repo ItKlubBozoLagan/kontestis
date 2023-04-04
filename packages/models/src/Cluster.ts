@@ -1,3 +1,4 @@
+import { EvaluationLanguage } from "./Evaluation";
 import { Snowflake } from "./Snowflake";
 
 export type ClusterV1 = {
@@ -6,4 +7,10 @@ export type ClusterV1 = {
     awarded_score: number;
 };
 
-export type Cluster = ClusterV1;
+export type ClusterV2 = ClusterV1 & {
+    generator: boolean;
+    generator_language?: EvaluationLanguage;
+    generator_code?: string;
+};
+
+export type Cluster = ClusterV2;
