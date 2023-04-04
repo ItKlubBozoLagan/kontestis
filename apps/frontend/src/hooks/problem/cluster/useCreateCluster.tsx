@@ -6,13 +6,16 @@ import { http, MutationHandler, wrapAxios } from "../../../api/http";
 type CreateClusterVariables = {
     awarded_score: number;
 };
-
+// TODO: Make generators work
 export const useCreateCluster: MutationHandler<CreateClusterVariables, Cluster, Snowflake> = (
     problemId,
     options
 ) =>
     useMutation(
-        (variables) => wrapAxios(http.post(`/problem/${problemId}/cluster/`, variables)),
+        (variables) =>
+            wrapAxios(
+                http.post(`/problem/${problemId}/cluster/`, { ...variables, generator: false })
+            ),
         options
     );
 
@@ -23,6 +26,11 @@ export const useModifyCluster: MutationHandler<
 > = ([problemId, clusterId], options) =>
     useMutation(
         (variables) =>
-            wrapAxios(http.patch(`/problem/${problemId}/cluster/${clusterId}`, variables)),
+            wrapAxios(
+                http.patch(`/problem/${problemId}/cluster/${clusterId}`, {
+                    ...variables,
+                    generator: false,
+                })
+            ),
         options
     );

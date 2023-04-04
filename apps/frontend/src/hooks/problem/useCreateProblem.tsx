@@ -10,6 +10,8 @@ type CreateProblemVariables = {
     evaluation_script?: string;
     time_limit_millis: number;
     memory_limit_megabytes: number;
+    solution_language: string;
+    solution_code: string;
 };
 
 export const useCreateProblem: MutationHandler<CreateProblemVariables, Problem, Snowflake> = (

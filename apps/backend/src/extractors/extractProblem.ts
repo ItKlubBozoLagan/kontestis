@@ -14,6 +14,7 @@ import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractContest } from "./extractContest";
 import { extractContestMember } from "./extractContestMember";
+import { extractOptionalUser } from "./extractOptionalUser";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
@@ -30,8 +31,27 @@ export const extractProblem = (
 
         const contest = await extractContest(req, problem.contest_id);
 
-        if (Date.now() >= contest.start_time.getTime())
-            return R.omit(problem, ["evaluation_script", "solution_code", "solution_language"]);
+        // TODO: Find a better way of doing this
+        const optionalUser = await extractOptionalUser(req);
+
+        const optionalMember =
+            optionalUser &&
+            (await Database.selectOneFrom("contest_members", "*", {
+                contest_id: contest.id,
+                user_id: optionalUser.id,
+            }));
+
+        if (
+            Date.now() >= contest.start_time.getTime() &&
+            (!optionalMember ||
+                !hasContestPermission(
+                    optionalMember.contest_permissions,
+                    ContestMemberPermissions.VIEW_PRIVATE
+                )) &&
+            (!optionalUser ||
+                !hasAdminPermission(optionalUser.permissions, AdminPermissions.VIEW_CONTEST))
+        )
+            return R.omit(problem, ["evaluation_script", "solution_language", "solution_code"]);
 
         const user = await extractUser(req);
 

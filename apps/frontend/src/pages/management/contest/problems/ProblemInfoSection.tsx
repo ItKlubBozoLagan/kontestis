@@ -23,12 +23,15 @@ const ModifyProblemSchema = z.object({
     evaluation_script: z.string(),
     time_limit_millis: z.coerce.number(),
     memory_limit_megabytes: z.coerce.number(),
+    solution_code: z.string(),
+    solution_language: z.string(),
 });
 
 export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
     const { contest } = useContestContext();
 
     const {
+        setValue,
         register,
         handleSubmit,
         formState: { errors },
@@ -40,6 +43,8 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             evaluation_script: problem?.evaluation_script ?? "",
             time_limit_millis: problem?.time_limit_millis ?? 0,
             memory_limit_megabytes: problem?.memory_limit_megabytes ?? 0,
+            solution_language: problem?.solution_language ?? "",
+            solution_code: problem?.solution_code ?? "",
         },
     });
 
@@ -113,6 +118,29 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     largeTextValue
                 >
                     <textarea {...register("evaluation_script")} />
+                </EditableDisplayBox>
+                <EditableDisplayBox
+                    title={"Solution language"}
+                    value={problem.solution_language + ""}
+                    submitFunction={submitForm}
+                >
+                    <select
+                        name="languages"
+                        onChange={(event) => setValue("solution_language", event.target.value)}
+                        defaultValue={problem.solution_language ?? ""}
+                    >
+                        <option value="python">Python</option>
+                        <option value="cpp">C++</option>
+                        <option value="c">C</option>
+                    </select>
+                </EditableDisplayBox>
+                <EditableDisplayBox
+                    title={"Solution code"}
+                    value={problem.solution_code ?? "None"}
+                    submitFunction={submitForm}
+                    largeTextValue
+                >
+                    <textarea {...register("solution_code")} />
                 </EditableDisplayBox>
                 <LimitBox icon={FiCheckSquare} title={"Score"} value={problem.score + ""} />
                 <div tw={"text-sm text-red-500"}>

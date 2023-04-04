@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useEffect } from "react";
+import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
@@ -17,18 +17,24 @@ const CreateProblemSchema = z.object({
     evaluation_script: z.string(),
     time_limit_millis: z.coerce.number(),
     memory_limit_megabytes: z.coerce.number(),
+    solution_code: z.string(),
+    solution_language: z.string(),
 });
 
 export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     const { contest } = useContestContext();
 
     const {
+        setValue,
         register,
         handleSubmit,
         reset,
         formState: { errors },
     } = useForm<z.infer<typeof CreateProblemSchema>>({
         resolver: zodResolver(CreateProblemSchema),
+        defaultValues: {
+            solution_language: "python",
+        },
     });
 
     const createMutation = useCreateProblem(contest.id);
@@ -75,7 +81,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                     <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("title")} />
                     <span tw={"mt-2"}>Description</span>
                     <textarea
-                        tw={"w-full h-32 resize-none font-mono text-sm"}
+                        tw={"w-full h-28 resize-none font-mono text-sm"}
                         {...register("description")}
                     ></textarea>
                     <div tw={"flex gap-2"}>
@@ -95,6 +101,20 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                     <textarea
                         tw={"w-full h-32 resize-none font-mono text-sm"}
                         {...register("evaluation_script")}
+                    ></textarea>
+                    <span tw={"mt-2"}>Solution language</span>
+                    <select
+                        name="languages"
+                        onChange={(event) => setValue("solution_language", event.target.value)}
+                    >
+                        <option value="python">Python</option>
+                        <option value="cpp">C++</option>
+                        <option value="c">C</option>
+                    </select>
+                    <span tw={"mt-2"}>Solution code</span>
+                    <textarea
+                        tw={"w-full h-32 resize-none font-mono text-sm"}
+                        {...register("solution_code")}
                     ></textarea>
                     <SimpleButton tw={"mt-2"}>Create</SimpleButton>
                 </div>
