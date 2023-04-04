@@ -2,12 +2,20 @@ export type EvaluationLanguage = "c" | "cpp" | "python";
 
 export type EvaluationVariant = "plain" | "script" | "interactive";
 
-export type SuccessfulEvaluationResult = {
-    type: "success";
-    verdict: "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded";
-    time: number;
-    memory: number;
-};
+export type SuccessfulEvaluationResult =
+    | {
+          type: "success";
+          verdict: "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded";
+          time: number;
+          memory: number;
+      }
+    | {
+          type: "success";
+          verdict: "custom";
+          time: number;
+          memory: number;
+          extra: string;
+      };
 
 export type CompilationErrorResult = {
     type: "error";

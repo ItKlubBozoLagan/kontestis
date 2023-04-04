@@ -115,6 +115,21 @@ export const evaluateSimpleChecker = async (
             continue;
         }
 
+        if (checkerResult.startsWith("custom:")) {
+            const checkerOutput = checkerResult.slice("custom".length);
+
+            evaluated.push({
+                type: "success",
+                testCaseId: testcase.id,
+                verdict: "custom",
+                time: timeMillis,
+                memory: result.memory_usage_megabytes,
+                extra: checkerOutput,
+            });
+
+            return;
+        }
+
         evaluated.push({
             type: "error",
             verdict: "system_error",
