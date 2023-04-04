@@ -52,13 +52,15 @@ const handleContest = async (contest: Contest) => {
             Database.update(
                 "users",
                 {
-                    elo:
+                    elo: Math.max(
+                        0,
                         user.elo +
-                        computeELODifference(
-                            leaderboard.find((it) => it.user_id === user.id)!,
-                            problemPoints,
-                            leaderboard.filter((it) => it.user_id !== user.id)
-                        ),
+                            computeELODifference(
+                                leaderboard.find((it) => it.user_id === user.id)!,
+                                problemPoints,
+                                leaderboard.filter((it) => it.user_id !== user.id)
+                            )
+                    ),
                 },
                 { id: user.id, google_id: user.google_id }
             )
