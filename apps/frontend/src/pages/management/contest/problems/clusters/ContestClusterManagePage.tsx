@@ -11,8 +11,10 @@ import {
     TableItem,
     TableRow,
 } from "../../../../../components/Table";
+import { Translated } from "../../../../../components/Translated";
 import { useAllTestcases } from "../../../../../hooks/problem/cluster/testcase/useAllTestcases";
 import { useCluster } from "../../../../../hooks/problem/cluster/useCluster";
+import { useTranslation } from "../../../../../hooks/useTranslation";
 import { ClusterInfoSection } from "./ClusterInfoSection";
 import { CreateTestcaseModal } from "./testcases/CreateTestcaseModal";
 
@@ -30,6 +32,8 @@ export const ContestClusterManagePage: FC = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col gap-6 items-end"}>
             <div tw={"w-3/5 self-center"}>
@@ -37,7 +41,7 @@ export const ContestClusterManagePage: FC = () => {
                 {cluster && <ClusterInfoSection cluster={cluster} />}
             </div>
             <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                Create testcase
+                {t("contests.management.individual.problems.cluster.testCase.createButton")}
             </SimpleButton>
             {cluster && (
                 <CreateTestcaseModal
@@ -50,7 +54,11 @@ export const ContestClusterManagePage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Testcase</TableHeadItem>
+                        <TableHeadItem>
+                            {t(
+                                "contests.management.individual.problems.cluster.testCase.table.head.testCase"
+                            )}
+                        </TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
@@ -63,7 +71,9 @@ export const ContestClusterManagePage: FC = () => {
                                         to={testcase.id + ""}
                                         tw={"hover:(text-sky-800 cursor-pointer)"}
                                     >
-                                        Testcase #{id + 1}
+                                        <Translated translationKey="contests.management.individual.problems.cluster.testCase.table.body.testCase">
+                                            {"#" + String(id + 1)}
+                                        </Translated>
                                     </Link>
                                 </TableItem>
                             </TableRow>

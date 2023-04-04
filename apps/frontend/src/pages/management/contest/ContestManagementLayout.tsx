@@ -12,6 +12,7 @@ import { Outlet, useLocation, useNavigate, useParams } from "react-router";
 import { Link, Navigate } from "react-router-dom";
 
 import { NavItem } from "../../../components/NavElement";
+import { Translated } from "../../../components/Translated";
 import { ContestContext } from "../../../context/constestContext";
 import { useContest } from "../../../hooks/contest/useContest";
 import { useSelfContestMembers } from "../../../hooks/contest/useSelfContestMembers";
@@ -90,7 +91,11 @@ export const ContestManagementLayout: FC = () => {
         <div tw={"flex justify-center w-full"}>
             <div tw={"w-full max-w-[1000px] pt-12 rounded flex flex-col gap-12"}>
                 <ContestContext.Provider value={{ contest, member }}>
-                    <span tw={"text-3xl w-full"}>Contest » {contest.name}</span>
+                    <span tw={"text-3xl w-full"}>
+                        <Translated translationKey="contests.management.individual.title">
+                            {contest.name}
+                        </Translated>
+                    </span>
                     <div tw={"flex flex-col w-full"}>
                         <div tw={"flex w-full bg-neutral-200"}>
                             {SubRoutes.filter(

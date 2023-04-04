@@ -3,6 +3,7 @@ import { parseTime } from "@kontestis/utils";
 import React, { FC, useEffect, useState } from "react";
 import { FiMonitor } from "react-icons/all";
 
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { LimitBox } from "../../../problems/ProblemViewPage";
 
 type Properties = {
@@ -20,26 +21,36 @@ export const ContestStatusIndicator: FC<Properties> = ({ contest }) => {
         };
     }, []);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-2/5 flex self-center text-center text-xl"}>
             {contest.start_time.getTime() > Date.now() ? (
                 <LimitBox
                     icon={FiMonitor}
-                    title={"Status"}
-                    value={"Starts in: " + parseTime(contest.start_time.getTime() - time)}
+                    title={t("contests.management.individual.overview.status.label")}
+                    value={
+                        t("contests.management.individual.overview.status.pending") +
+                        ":" +
+                        parseTime(contest.start_time.getTime() - time)
+                    }
                     tw={"bg-yellow-100"}
                 />
             ) : time > contest.start_time.getTime() + contest.duration_seconds * 1000 ? (
-                <LimitBox icon={FiMonitor} title={"Status"} value={"Finished"} tw={"bg-red-100"} />
+                <LimitBox
+                    icon={FiMonitor}
+                    title={t("contests.management.individual.overview.status.label")}
+                    value={t("contests.management.individual.overview.status.finished")}
+                    tw={"bg-red-100"}
+                />
             ) : (
                 <LimitBox
                     icon={FiMonitor}
-                    title={"Status"}
+                    title={t("contests.management.individual.overview.status.label")}
                     value={
-                        "Running: " +
-                        parseTime(
-                            contest.start_time.getTime() + contest.duration_seconds * 1000 - time
-                        )
+                        t("contests.management.individual.overview.status.running") +
+                        ":" +
+                        parseTime(contest.start_time.getTime() - time)
                     }
                     tw={"bg-green-100"}
                 />

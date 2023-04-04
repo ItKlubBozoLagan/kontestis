@@ -4,6 +4,7 @@ import React, { FC, useCallback } from "react";
 import { http } from "../../api/http";
 import { TitledSection } from "../../components/TitledSection";
 import { Translated } from "../../components/Translated";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useTokenStore } from "../../state/token";
 
 const LoginBase: FC = () => {
@@ -17,9 +18,11 @@ const LoginBase: FC = () => {
         http.post("/auth/google-login", credentialResponse).then(() => setToken(credential));
     }, []);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full md:max-w-[500px] mt-20"}>
-            <TitledSection title={"Log in"}>
+            <TitledSection title={t("login.label")}>
                 <div tw={"flex flex-col gap-6 items-center"}>
                     <Translated translationKey={"login.siteRestriction"}>
                         <a

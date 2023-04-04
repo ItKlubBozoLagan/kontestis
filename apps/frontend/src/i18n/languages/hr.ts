@@ -2,7 +2,8 @@ import { DefaultLanguageSpec } from "../i18n";
 
 export default {
     login: {
-        siteRestriction: "Prijava je trenutno dostupna samo za %1 računa",
+        label: "prijava",
+        siteRestriction: "Prijava je trenutno dostupna samo za %1 račune",
     },
     navbar: {
         dashboard: "Kontrolna ploča",
@@ -19,27 +20,32 @@ export default {
         },
     },
     contests: {
+        table: {
+            head: {
+                name: "Naziv",
+                startTime: "Početak",
+                starts: {
+                    label: "Počinje",
+                },
+                duration: "Trajanje",
+                partaking: "Sudjelovanje",
+            },
+            body: {
+                starts: {
+                    finished: "Završeno",
+                    started: "Započeto",
+                },
+                registered: {
+                    notRegistered: "Registriraj se",
+                    registered: "Registriran",
+                },
+            },
+        },
         page: {
             exams: "Ispiti",
             official: "Službena natjecanja",
             unofficial: "Neslužbena natjecanja",
-            table: {
-                head: {
-                    name: "Naziv",
-                    startTime: "Početak",
-                    starts: {
-                        label: "Počinje",
-                    },
-                    duration: "Trajanje",
-                    partaking: "Sudjelovanje",
-                },
-                body: {
-                    starts: {
-                        finished: "Završeno",
-                        started: "Započeto",
-                    },
-                },
-            },
+            loading: "učitavam",
         },
         individual: {
             problems_table: {
@@ -52,7 +58,9 @@ export default {
                 finished: "Konačni poredak",
                 table: {
                     contestant: "Natjecatelj",
+                    total: "Ukupno bodova",
                 },
+                emptyMessage: "Iznenađujuće, bodovna lista je prazna",
             },
             announcements: {
                 label: "Obavijesti",
@@ -61,17 +69,29 @@ export default {
                 label: "Pitanja",
                 ask: "Postavi pitanje:",
                 sendButton: "Pošalji",
+                list: {
+                    preMessage: "Čekanje odgovora!",
+                    all: "prikaži starije",
+                    collapse: "Sažmi",
+                },
             },
         },
         management: {
             label: "Vaša natjecanja",
+            createButton: "Stvori novo",
+            noContests: "Nema ničega za sada",
+            modal: {
+                label: "Stvori natjecanje",
+                createButton: "Stvori",
+            },
             individual: {
+                title: "Natjecanje » %1",
                 overview: {
                     label: "Pregled",
                     status: {
                         label: "Status",
-                        pending: "Počinje za %1",
-                        running: "Trenutno traje: %1",
+                        pending: "Počinje za",
+                        running: "U tijeku",
                         finished: "Završeno",
                     },
                     info: {
@@ -94,10 +114,6 @@ export default {
                             contest: "Natjecanje",
                             exam: "Ispit",
                         },
-                        errorMessage: {
-                            invalid: "Greška pri validaciji! Provjerite unos.",
-                        },
-                        createButton: "Kreiraj",
                     },
                     statistics: {
                         label: "Statistika",
@@ -113,8 +129,19 @@ export default {
                             name: "Naziv",
                             score: "Bodovi",
                             users: "Korisnici",
-                            solves: "Rješenja",
+                            solves: "Rješenost",
                         },
+                    },
+                    createModal: {
+                        title: "Postavi problem za %1",
+                        name: "Ime",
+                        statement: "Opis problema",
+                        timeLimit: "Vremensko ograničenje",
+                        memoryLimit: "Memorijsko ograničenje",
+                        evaluationScript: "Evaluacijska skripta (opcionalna)",
+                        solutionLanguage: "Jezik rješenja",
+                        solutionCode: "Kod rješenja",
+                        createBottun: "Postavi",
                     },
                     individual: {
                         info: {
@@ -123,29 +150,48 @@ export default {
                             description: "Opis",
                             timeLimit: "Vremensko ograničenje",
                             memoryLimit: "Ograničenje memorije",
-                            evaluationScript: "Skripta za evaluaciju",
+                            evaluationScript: "Skripta za evaluaciju (u Pythonu)",
+                            solutionLanguage: "Jezik rješenja",
+                            solutionCode: "Kod rješenja",
                             score: "Bodovi",
+                            empty: "Nema",
                         },
                     },
                     cluster: {
-                        createButton: "Stvori grupu",
+                        createButton: "Stvori klaster",
+                        info: {
+                            title: "info",
+                            score: "Bodovi",
+                        },
                         table: {
                             head: {
-                                cluster: "Grupa",
+                                cluster: "Klaster",
                                 awardedScore: "Dodijeljeni bodovi",
                             },
+                            body: {
+                                cluserIndex: "Klaster %1",
+                            },
                         },
-                    },
-                    submissions: {
-                        empty: "Još nema prijava :(",
-                        table: {
-                            head: {
-                                user: "Korisnik",
-                                verdict: "Verdict",
-                                time: "Vrijeme",
-                                memory: "Memorija",
-                                language: "Jezik",
-                                points: "Bodovi",
+                        modal: {
+                            title: "Dodaj klaster za %1",
+                            awardedScore: "Dodjeljeni bodovi",
+                            createButton: "Dodaj",
+                        },
+                        testCase: {
+                            input: "Ulaz",
+                            output: "Točan izlaz",
+                            info: "info",
+                            createButton: "Create testcase",
+                            table: {
+                                head: {
+                                    testCase: "Test podatak",
+                                },
+                                body: {
+                                    testCase: "Test podatak %1",
+                                },
+                            },
+                            modal: {
+                                CreateButton: "Dodaj",
                             },
                         },
                     },
@@ -156,13 +202,12 @@ export default {
                 },
                 questions: {
                     empty: "Nema pitanja za sada",
+                    answerButton: "Odgovori",
                     unAnswered: {
                         label: "Nije odgovoreno",
-                        answerButton: "Odgovori",
                     },
                     answered: {
                         label: "Odgovoreno",
-                        answerButton: "Odgovori",
                     },
                 },
                 participants: {
@@ -175,30 +220,122 @@ export default {
                             double: "Korisnik ne postoji ili je već sudionik",
                         },
                     },
+                    remove: {
+                        proposeRemoval: "Ukloni",
+                        confirm: "Potvrdi",
+                    },
                 },
             },
         },
     },
     problems: {
+        table: {
+            head: {
+                name: "Naziv",
+                contestName: "Naziv natjecanja",
+                added: "Vrijeme dodavanja",
+                score: "Bodovi",
+            },
+        },
         page: {
             title: "Problemi",
-            table: {
-                head: {
-                    name: "Naziv",
-                    contestName: "Naziv natjecanja",
-                    added: "Vrijeme dodavanja",
-                    score: "Bodovi",
-                },
+        },
+        individual: {
+            loading: "Učitavanje...",
+            limits: {
+                title: "Ograničenja",
+                time: "Vremensko",
+                memory: "Memorijsko",
+                sourceSize: "Veličina programa",
+                points: "Bodovi",
+            },
+            submit: {
+                title: "Slanje rješenja",
+                code: "Kod",
+                submitButton: "Pošalji",
+            },
+        },
+    },
+    submissions: {
+        empty: "Još nema poslanih rješenja :(",
+        loading: "Učitavam poslana rješenja...",
+        processing: "Obrađujem...",
+        table: {
+            head: {
+                user: "Korsinik",
+                verdict: "Ishod",
+                time: "Vrijeme",
+                memory: "Memorija",
+                language: "Jezik",
+                points: "Bodovi",
+                final: "Ukupno",
+                cluster: "Klaster",
+                testcase: "Test podatak",
+            },
+            body: {
+                final: "Konačno",
+                notFinal: "Postavi kao konačno",
+                notExam: "Ingorirano",
+                pointsAchieved: "%1 bodova",
+                clusterIndex: "Klaster #%1",
+                testcaseIndex: "Test podatak #%1",
+            },
+            overflow: {
+                expand: "Proširi",
+                collapse: "Vrati",
             },
         },
     },
     account: {
         label: "Informacije računa",
-        fullName: "Puno ime",
+        fullName: "Ime i prezime",
         email: "E-pošta",
         breadcrumbs: {
             creator: "Tvorac",
             admin: "Administrator",
+            owner: "Vlasnik",
         },
+    },
+    ogranisations: {
+        page: {
+            title: "Organizacije",
+            createButton: "Napravi organizaciju",
+            table: {
+                name: "Ime",
+                details: "Detalji",
+            },
+            modal: {
+                title: "Stvori novu organizaciju",
+                name: "Ime",
+                createButton: "Stvori",
+            },
+        },
+        menagement: {
+            backButton: "Nazad",
+            title: "Organizacija » %1",
+            info: {
+                title: "Info",
+                name: "Ime",
+            },
+            members: {
+                add: {
+                    label: "Dodaj člana",
+                    addButton: "Dodaj",
+                    placeholder: "primjer@skole.hr",
+                    errorMessages: {
+                        invalid: "Neispravna adresa e-pošte",
+                        double: "Korisnik ne postoji ili je već učlanjen",
+                    },
+                },
+                remove: {
+                    proposeRemoval: "Ukloni",
+                    confirm: "Potvrdi",
+                },
+            },
+        },
+    },
+    errorMessages: {
+        invalid: "Greška pri validaciji! Provjerite unos!",
+        withInfo: "Greška! %1",
     },
 } as const satisfies DefaultLanguageSpec;

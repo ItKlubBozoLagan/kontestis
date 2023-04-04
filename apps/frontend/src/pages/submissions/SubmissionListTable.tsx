@@ -14,6 +14,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllFinalSubmissions } from "../../hooks/submission/useAllFinalSubmissions";
 import { useSetFinalSubmission } from "../../hooks/submission/useSetFinalSubmission";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 
 type Properties = {
@@ -41,6 +42,8 @@ export const SubmissionListTable: FC<Properties> = ({
 
     const queryClient = useQueryClient();
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         if (!setFinalSubmission.isSuccess) return;
 
@@ -53,27 +56,29 @@ export const SubmissionListTable: FC<Properties> = ({
         <Table tw={"w-full"}>
             <thead>
                 <TableHeadRow>
-                    {adminView && <TableHeadItem>User</TableHeadItem>}
-                    <TableHeadItem>Verdict</TableHeadItem>
-                    <TableHeadItem>Time</TableHeadItem>
-                    <TableHeadItem>Memory</TableHeadItem>
-                    <TableHeadItem>Language</TableHeadItem>
-                    <TableHeadItem>Points</TableHeadItem>
-                    {!adminView && contest && contest.exam && <TableHeadItem>Final</TableHeadItem>}
+                    {adminView && <TableHeadItem>{t("submissions.table.head.user")}</TableHeadItem>}
+                    <TableHeadItem>{t("submissions.table.head.verdict")}</TableHeadItem>
+                    <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
+                    <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
+                    <TableHeadItem>{t("submissions.table.head.language")}</TableHeadItem>
+                    <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
+                    {!adminView && contest && contest.exam && (
+                        <TableHeadItem>{t("submissions.table.head.final")}</TableHeadItem>
+                    )}
                 </TableHeadRow>
             </thead>
             <tbody>
                 {!submissions && (
                     <TableRow>
                         <TableItem colSpan={5} tw={"text-center"}>
-                            Loading submissions...
+                            {t("submissions.loading")}
                         </TableItem>
                     </TableRow>
                 )}
                 {submissions?.length === 0 && (
                     <TableRow>
                         <TableItem colSpan={5} tw={"text-center"}>
-                            No submissions yet :(
+                            {t("submissions.empty")}
                         </TableItem>
                     </TableRow>
                 )}
@@ -110,7 +115,9 @@ export const SubmissionListTable: FC<Properties> = ({
                                             {(finalSubmissions ?? []).some(
                                                 (fs) => fs.submission_id === s.id
                                             ) ? (
-                                                <span tw={"text-green-600"}>Final</span>
+                                                <span tw={"text-green-600"}>
+                                                    {t("submissions.table.body.final")}
+                                                </span>
                                             ) : contest.start_time.getTime() <= Date.now() &&
                                               contest.start_time.getTime() +
                                                   contest.duration_seconds * 1000 >=
@@ -121,17 +128,19 @@ export const SubmissionListTable: FC<Properties> = ({
                                                         setFinalSubmission.mutate(s.id);
                                                     }}
                                                 >
-                                                    Set Final
+                                                    {t("submissions.table.body.notFinal")}
                                                 </span>
                                             ) : (
-                                                <span tw={"text-neutral-600"}>Ignored</span>
+                                                <span tw={"text-neutral-600"}>
+                                                    {t("submissions.table.body.notExam")}
+                                                </span>
                                             )}
                                         </TableItem>
                                     )}
                                 </>
                             ) : (
                                 <TableItem colSpan={5} tw={"text-center text-yellow-800"}>
-                                    Processing
+                                    {t("submissions.processing")}
                                 </TableItem>
                             )}
                         </TableRow>
@@ -149,12 +158,12 @@ export const SubmissionListTable: FC<Properties> = ({
                                 {expanded ? (
                                     <>
                                         <AiFillCaretUp />
-                                        Collapse
+                                        {t("submissions.table.overflow.collapse")}
                                     </>
                                 ) : (
                                     <>
                                         <AiFillCaretDown />
-                                        Expand
+                                        {t("submissions.table.overflow.expand")}
                                     </>
                                 )}
                             </div>

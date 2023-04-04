@@ -5,6 +5,7 @@ import { SimpleButton } from "../../../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow } from "../../../../components/Table";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { CreateProblemModal } from "./CreateProblemModal";
 import { ProblemListItem } from "./ProblemListItem";
 
@@ -15,10 +16,12 @@ export const ContestProblemsPage: FC = () => {
 
     const { data: problems } = useAllProblems(contest.id);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col items-end justify-center gap-4"}>
             <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                Create new
+                {t("contests.management.individual.problems.createButton")}
             </SimpleButton>
             <CreateProblemModal
                 isOpen={modalOpen}
@@ -29,10 +32,18 @@ export const ContestProblemsPage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Name</TableHeadItem>
-                        <TableHeadItem>Score</TableHeadItem>
-                        <TableHeadItem>Users</TableHeadItem>
-                        <TableHeadItem>Solves</TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.problems.table.head.name")}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.problems.table.head.score")}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.problems.table.head.users")}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.problems.table.head.solves")}
+                        </TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

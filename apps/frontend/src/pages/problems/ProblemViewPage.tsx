@@ -17,6 +17,7 @@ import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
 import { useDocumentEvent } from "../../hooks/useDocumentEvent";
 import { useInterval } from "../../hooks/useInterval";
+import { useTranslation } from "../../hooks/useTranslation";
 import { convertToBase64 } from "../../util/base";
 import { SubmissionListTable } from "../submissions/SubmissionListTable";
 
@@ -61,6 +62,8 @@ export const ProblemViewPage: FC = () => {
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
 
     const { data: submissions, refetch } = useAllProblemSubmissions(BigInt(problemId ?? 0));
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         const textArea = textAreaReference.current;
@@ -111,28 +114,34 @@ export const ProblemViewPage: FC = () => {
             <span tw={"text-neutral-800 text-3xl"}>{problem?.title}</span>
             <div tw={"flex flex-col gap-4 w-full"}>
                 <div tw={"w-full flex gap-4"}>
-                    <TitledSection title={"Limits"}>
+                    <TitledSection title={t("problems.individual.limits.title")}>
                         <div tw={"flex flex-col items-center justify-between gap-4 w-full h-full"}>
                             <LimitBox
                                 icon={FiClock}
-                                title={"Time"}
+                                title={t("problems.individual.limits.time")}
                                 value={(problem?.time_limit_millis ?? 0) + " ms"}
                             />
                             <LimitBox
                                 icon={FiDatabase}
-                                title={"Memory"}
+                                title={t("problems.individual.limits.memory")}
                                 value={(problem?.memory_limit_megabytes ?? 0) + " MiB"}
                             />
-                            <LimitBox icon={FiCode} title={"Source size"} value={"64 KiB"} />
+                            <LimitBox
+                                icon={FiCode}
+                                title={t("problems.individual.limits.sourceSize")}
+                                value={"64 KiB"}
+                            />
                             <LimitBox
                                 icon={FiCheckSquare}
-                                title={"Points"}
+                                title={t("problems.individual.limits.points")}
                                 value={(problem?.score ?? 0).toString()}
                             />
                         </div>
                     </TitledSection>
-                    <TitledSection title={"Submit"}>
-                        <span tw={"text-lg w-full text-left"}>Code:</span>
+                    <TitledSection title={t("problems.individual.submit.title")}>
+                        <span tw={"text-lg w-full text-left"}>
+                            {t("problems.individual.submit.code")}
+                        </span>
                         <textarea
                             tw={"w-full h-48 resize-none font-mono text-sm"}
                             style={{ tabSize: 4 }}
@@ -163,7 +172,7 @@ export const ProblemViewPage: FC = () => {
                                 setCode("");
                             }}
                         >
-                            Submit
+                            {t("problems.individual.submit.submitButton")}
                         </SimpleButton>
                     </TitledSection>
                 </div>
@@ -183,7 +192,7 @@ export const ProblemViewPage: FC = () => {
                 }
             >
                 <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                    {problem ? problem.description : "Loading"}
+                    {problem ? problem.description : t("problems.individual.loading")}
                 </ReactMarkdown>
             </div>
         </div>

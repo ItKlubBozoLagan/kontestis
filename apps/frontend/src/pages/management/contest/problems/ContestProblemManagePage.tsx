@@ -11,9 +11,11 @@ import {
     TableItem,
     TableRow,
 } from "../../../../components/Table";
+import { Translated } from "../../../../components/Translated";
 import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters";
 import { useProblem } from "../../../../hooks/problem/useProblem";
 import { useGlobalProblemSubmissions } from "../../../../hooks/submission/useGlobalProblemSubmissions";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { SubmissionListTable } from "../../../submissions/SubmissionListTable";
 import { CreateClusterModal } from "./clusters/CreateClusterModal";
 import { ProblemInfoSection } from "./ProblemInfoSection";
@@ -32,6 +34,8 @@ export const ContestProblemManagePage: FC = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col gap-6 items-end"}>
             <div tw={"w-3/5 self-center"}>
@@ -46,13 +50,21 @@ export const ContestProblemManagePage: FC = () => {
                 />
             )}
             <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                Create cluster
+                {t("contests.management.individual.problems.cluster.createButton")}
             </SimpleButton>
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Cluster</TableHeadItem>
-                        <TableHeadItem>Awarded Score</TableHeadItem>
+                        <TableHeadItem>
+                            {t(
+                                "contests.management.individual.problems.cluster.table.head.cluster"
+                            )}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t(
+                                "contests.management.individual.problems.cluster.table.head.awardedScore"
+                            )}
+                        </TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
@@ -65,7 +77,9 @@ export const ContestProblemManagePage: FC = () => {
                                         to={cluster.id + ""}
                                         tw={"hover:(text-sky-800 cursor-pointer)"}
                                     >
-                                        Cluster #{id + 1}
+                                        <Translated translationKey="contests.management.individual.problems.cluster.table.body.cluserIndex">
+                                            {"#" + String(id + 1)}
+                                        </Translated>
                                     </Link>
                                 </TableItem>
                                 <TableItem>{cluster.awarded_score}</TableItem>

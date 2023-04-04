@@ -9,6 +9,7 @@ import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
 import { TitledSection } from "../../../../components/TitledSection";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAnswerQuestion } from "../../../../hooks/contest/questions/useAnswerQuestion";
+import { useTranslation } from "../../../../hooks/useTranslation";
 
 type Properties = {
     question: ContestQuestion;
@@ -58,6 +59,8 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
         );
     };
 
+    const { t } = useTranslation();
+
     // TODO: width part here is terrible, figure out a better way sometime maybe
     return (
         <TitledSection title={question.question} parentStyle={{ maxWidth: "282px" }}>
@@ -67,7 +70,7 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
             ) && (
                 <form onSubmit={onSubmit} tw={"w-full"} ref={formReference}>
                     <EditableDisplayBox
-                        title={"Answer"}
+                        title={t("contests.management.individual.questions.answerButton")}
                         value={question?.response ?? ""}
                         submitFunction={submitForm}
                         largeTextValue

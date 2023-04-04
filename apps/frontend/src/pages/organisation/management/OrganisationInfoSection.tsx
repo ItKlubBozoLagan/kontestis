@@ -8,7 +8,9 @@ import { z } from "zod";
 import { EditableDisplayBox } from "../../../components/EditableDisplayBox";
 import { TitledInput } from "../../../components/TitledInput";
 import { TitledSection } from "../../../components/TitledSection";
+import { Translated } from "../../../components/Translated";
 import { useModifyOrganisation } from "../../../hooks/organisation/useCreateOrganisation";
+import { useTranslation } from "../../../hooks/useTranslation";
 
 type Properties = {
     organisation: Organisation;
@@ -55,21 +57,27 @@ export const OrganisationInfoSection: FC<Properties> = ({ organisation }) => {
         );
     };
 
+    const { t } = useTranslation();
+
     return (
         <form onSubmit={onSubmit} ref={formReference}>
-            <TitledSection title={"Info"}>
+            <TitledSection title={t("ogranisations.menagement.info.title")}>
                 <EditableDisplayBox
-                    title={"Name"}
+                    title={t("ogranisations.menagement.info.name")}
                     value={organisation.name}
                     submitFunction={submitForm}
                 >
                     <TitledInput focusOnLoad {...register("name")} />
                 </EditableDisplayBox>
                 <div tw={"text-sm text-red-500"}>
-                    {Object.keys(errors).length > 0 && (
-                        <span>Validation error! Check your input!</span>
+                    {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
+                    {modifyMutation.error && (
+                        <span>
+                            <Translated translationKey="errorMessages.withInfo">
+                                {modifyMutation.error.message}
+                            </Translated>
+                        </span>
                     )}
-                    {modifyMutation.error && <span>Error! {modifyMutation.error.message}</span>}
                 </div>
             </TitledSection>
         </form>

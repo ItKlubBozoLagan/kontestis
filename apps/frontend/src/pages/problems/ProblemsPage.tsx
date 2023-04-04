@@ -12,6 +12,7 @@ import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export const ProblemsPage: FC = () => {
     const { data: contests } = useAllContests();
@@ -47,16 +48,18 @@ export const ProblemsPage: FC = () => {
         [rawProblems, problemScores]
     );
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col"}>
-            <PageTitle tw={"w-full"}>Problems</PageTitle>
+            <PageTitle tw={"w-full"}>{t("problems.page.title")}</PageTitle>
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Name</TableHeadItem>
-                        <TableHeadItem>Contest Name</TableHeadItem>
-                        <TableHeadItem>Added</TableHeadItem>
-                        <TableHeadItem>Score</TableHeadItem>
+                        <TableHeadItem>{t("problems.table.head.name")}</TableHeadItem>
+                        <TableHeadItem>{t("problems.table.head.contestName")}</TableHeadItem>
+                        <TableHeadItem>{t("problems.table.head.added")}</TableHeadItem>
+                        <TableHeadItem>{t("problems.table.head.score")}</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

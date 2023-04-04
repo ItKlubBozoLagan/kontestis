@@ -12,7 +12,9 @@ import { SimpleButton } from "../../components/SimpleButton";
 import { TitledDateInput } from "../../components/TitledDateInput";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSwitch } from "../../components/TitledSwitch";
+import { Translated } from "../../components/Translated";
 import { useCreateContest } from "../../hooks/contest/useCreateContest";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useOrganisationStore } from "../../state/organisation";
 import { ModalStyles } from "../../util/ModalStyles";
 
@@ -51,6 +53,8 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
 
     const queryClient = useQueryClient();
 
+    const { t } = useTranslation();
+
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
 
@@ -86,25 +90,36 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
             contentLabel={"Create contest Modal"}
             style={ModalStyles}
         >
-            <div tw={"text-xl"}>Create contest</div>
+            <div tw={"text-xl"}>{t("contests.management.modal.label")}</div>
             <div tw={"text-sm text-red-500"}>
-                {Object.keys(errors).length > 0 && <span>Validation error! Check your input!</span>}
-                {createMutation.error && <span>Error! {createMutation.error.message}</span>}
+                {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
+                {createMutation.error && (
+                    <span>
+                        <Translated translationKey="errorMessages.withInfo">
+                            {createMutation.error.message}
+                        </Translated>
+                    </span>
+                )}
             </div>
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col items-stretch gap-2"}>
-                    <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("name")} />
+                    <TitledInput
+                        bigLabel
+                        label={t("contests.management.individual.overview.info.name")}
+                        tw={"max-w-full"}
+                        {...register("name")}
+                    />
                     <div tw={"flex gap-4"}>
                         <TitledDateInput
                             type={"datetime"}
-                            label={"Start time"}
+                            label={t("contests.management.individual.overview.info.startTime")}
                             bigLabel
                             {...register("start_time")}
                         />
                         <div tw={"flex items-end gap-2 w-full"}>
                             <TitledInput
                                 bigLabel
-                                label={"Duration"}
+                                label={t("contests.management.individual.overview.info.duration")}
                                 tw={"w-24"}
                                 {...register("duration_hours")}
                             />
@@ -120,31 +135,84 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
                     <div tw={"flex gap-4"}>
                         <div tw={"w-full"}>
                             <TitledSwitch
-                                label={"Visibility"}
-                                choice={["Private", "Public"]}
-                                onChange={(value) => setValue("public", value === "Public")}
+                                label={t(
+                                    "contests.management.individual.overview.info.visibility.label"
+                                )}
+                                choice={[
+                                    t(
+                                        "contests.management.individual.overview.info.visibility.private"
+                                    ),
+                                    t(
+                                        "contests.management.individual.overview.info.visibility.public"
+                                    ),
+                                ]}
+                                onChange={(value) =>
+                                    setValue(
+                                        "public",
+                                        value ===
+                                            t(
+                                                "contests.management.individual.overview.info.visibility.public"
+                                            )
+                                    )
+                                }
                             />
                         </div>
                         {Number(organisationId) !== 1 && (
                             <div tw={"w-full"}>
                                 <TitledSwitch
-                                    label={"Style"}
-                                    choice={["Contest", "Exam"]}
-                                    onChange={(value) => setValue("exam", value === "Exam")}
+                                    label={t(
+                                        "contests.management.individual.overview.info.style.label"
+                                    )}
+                                    choice={[
+                                        t(
+                                            "contests.management.individual.overview.info.style.contest"
+                                        ),
+                                        t(
+                                            "contests.management.individual.overview.info.style.exam"
+                                        ),
+                                    ]}
+                                    onChange={(value) =>
+                                        setValue(
+                                            "exam",
+                                            value ===
+                                                t(
+                                                    "contests.management.individual.overview.info.style.exam"
+                                                )
+                                        )
+                                    }
                                 />
                             </div>
                         )}
                         <CanAdmin permission={AdminPermissions.ADMIN}>
                             <div tw={"w-full"}>
                                 <TitledSwitch
-                                    label={"Scoring"}
-                                    choice={["Unofficial", "Official"]}
-                                    onChange={(value) => setValue("official", value === "Official")}
+                                    label={t(
+                                        "contests.management.individual.overview.info.scoring.label"
+                                    )}
+                                    choice={[
+                                        t(
+                                            "contests.management.individual.overview.info.scoring.unofficial"
+                                        ),
+                                        t(
+                                            "contests.management.individual.overview.info.scoring.official"
+                                        ),
+                                    ]}
+                                    onChange={(value) =>
+                                        setValue(
+                                            "official",
+                                            value ===
+                                                t(
+                                                    "contests.management.individual.overview.info.scoring.official"
+                                                )
+                                        )
+                                    }
                                 />
                             </div>
                         </CanAdmin>
                     </div>
-                    <SimpleButton tw={"mt-2"}>Create</SimpleButton>
+                    <SimpleButton tw={"mt-2"}>
+                        {t("contests.management.modal.createButton")}
+                    </SimpleButton>
                 </div>
             </form>
         </Modal>

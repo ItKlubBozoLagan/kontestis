@@ -6,6 +6,7 @@ import tw from "twin.macro";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContestMembers } from "../../hooks/contest/participants/useAllContestMembers";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 
 type Properties = {
@@ -18,6 +19,8 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
     const { user } = useAuthStore();
 
     const maxScore = problems.reduce((accumulator, current) => accumulator + current.score, 0);
+
+    const { t } = useTranslation();
 
     const contestMembers = useMemo(() => {
         if (!isSuccess) return [];
@@ -43,23 +46,31 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
 
     return (
         <div tw={"w-full flex flex-col gap-4 pt-4"}>
-            <span tw={"text-2xl"}>{contestEnded ? "Final standings" : "Live leaderboard"}</span>
+            <span tw={"text-2xl"}>
+                {contestEnded
+                    ? t("contests.individual.leaderboard.finished")
+                    : t("contests.individual.leaderboard.running")}
+            </span>
             <Table>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Contestant</TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.individual.leaderboard.table.contestant")}
+                        </TableHeadItem>
                         {problems.map((problem) => (
                             <TableHeadItem key={problem.id.toString()}>
                                 {problem.title}
                             </TableHeadItem>
                         ))}
-                        <TableHeadItem>Total</TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.individual.leaderboard.table.total")}
+                        </TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
                     {data?.length === 0 && (
                         <TableItem colSpan={5} tw={"text-center"}>
-                            Surprisingly empty here
+                            {t("contests.individual.leaderboard.emptyMessage")}
                         </TableItem>
                     )}
                     {isSuccess &&

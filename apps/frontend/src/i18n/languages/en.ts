@@ -2,6 +2,7 @@ import { LanguageSpec } from "../i18n";
 
 const I18nEn = {
     login: {
+        label: "Log in",
         siteRestriction: "Login is currently only limited to %1 accounts",
     },
     navbar: {
@@ -19,27 +20,32 @@ const I18nEn = {
         },
     },
     contests: {
+        table: {
+            head: {
+                name: "Name",
+                startTime: "Start time",
+                starts: {
+                    label: "Starts",
+                },
+                duration: "Duration",
+                partaking: "Partaking",
+            },
+            body: {
+                starts: {
+                    finished: "Finished",
+                    started: "Started",
+                },
+                registered: {
+                    notRegistered: "Register",
+                    registered: "Registered",
+                },
+            },
+        },
         page: {
             exams: "Exams",
             official: "Contests",
             unofficial: "Unofficial contests",
-            table: {
-                head: {
-                    name: "Name",
-                    startTime: "Start time",
-                    starts: {
-                        label: "Starts",
-                    },
-                    duration: "Duration",
-                    partaking: "Partaking",
-                },
-                body: {
-                    starts: {
-                        finished: "Finished",
-                        started: "Started",
-                    },
-                },
-            },
+            loading: "loading",
         },
         individual: {
             problems_table: {
@@ -52,7 +58,9 @@ const I18nEn = {
                 finished: "Final standings",
                 table: {
                     contestant: "Contestant",
+                    total: "Total",
                 },
+                emptyMessage: "Surprisingly empty here",
             },
             announcements: {
                 label: "Announcements",
@@ -61,17 +69,29 @@ const I18nEn = {
                 label: "Questions",
                 ask: "Ask a question:",
                 sendButton: "Send",
+                list: {
+                    preMessage: "Waiting for response!",
+                    all: "Show older",
+                    collapse: "Collapse",
+                },
             },
         },
         management: {
             label: "Your contests",
+            createButton: "Create new",
+            noContests: "None so far",
+            modal: {
+                label: "Contest information",
+                createButton: "Create",
+            },
             individual: {
+                title: "Contest » %1",
                 overview: {
                     label: "Overview",
                     status: {
                         label: "Status",
-                        pending: "Starts in %1",
-                        running: "Running: %1",
+                        pending: "Starts in ",
+                        running: "Running",
                         finished: "Finished",
                     },
                     info: {
@@ -94,10 +114,6 @@ const I18nEn = {
                             contest: "Contest",
                             exam: "Exam",
                         },
-                        errorMessage: {
-                            invalid: "Validation error! Check your input",
-                        },
-                        createButton: "Create",
                     },
                     statistics: {
                         label: "Statistics",
@@ -116,6 +132,17 @@ const I18nEn = {
                             solves: "Solves",
                         },
                     },
+                    createModal: {
+                        title: "Create problem for %1",
+                        name: "Name",
+                        statement: "Description",
+                        timeLimit: "Time limit",
+                        memoryLimit: "Memory limit",
+                        evaluationScript: "Evaluation script (optional)",
+                        solutionLanguage: "Solution language",
+                        solutionCode: "Solution code",
+                        createBottun: "Create",
+                    },
                     individual: {
                         info: {
                             label: "Info",
@@ -123,29 +150,48 @@ const I18nEn = {
                             description: "Description",
                             timeLimit: "Time limit",
                             memoryLimit: "Memory limit",
-                            evaluationScript: "Evaluation script",
+                            evaluationScript: "Evaluation script (python)",
+                            solutionLanguage: "Solution language",
+                            solutionCode: "Solution code",
                             score: "Score",
+                            empty: "None",
                         },
                     },
                     cluster: {
                         createButton: "Create cluster",
+                        info: {
+                            title: "info",
+                            score: "Score",
+                        },
                         table: {
                             head: {
                                 cluster: "Cluster",
                                 awardedScore: "Awarded score",
                             },
+                            body: {
+                                cluserIndex: "Cluster %1",
+                            },
                         },
-                    },
-                    submissions: {
-                        empty: "No submissions yet :(",
-                        table: {
-                            head: {
-                                user: "User",
-                                verdict: "Verdict",
-                                time: "Time",
-                                memory: "Memory",
-                                language: "Language",
-                                points: "Points",
+                        modal: {
+                            title: "Create cluster for %1",
+                            awardedScore: "Awarded score",
+                            createButton: "Create",
+                        },
+                        testCase: {
+                            input: "Input",
+                            output: "Correct output",
+                            info: "info",
+                            createButton: "Create testcase",
+                            table: {
+                                head: {
+                                    testCase: "Testcase",
+                                },
+                                body: {
+                                    testCase: "Testcase %1",
+                                },
+                            },
+                            modal: {
+                                CreateButton: "Create",
                             },
                         },
                     },
@@ -156,13 +202,12 @@ const I18nEn = {
                 },
                 questions: {
                     empty: "None so far",
+                    answerButton: "Answer",
                     unAnswered: {
                         label: "Not answered",
-                        answerButton: "Answer",
                     },
                     answered: {
                         label: "Answered",
-                        answerButton: "Answer",
                     },
                 },
                 participants: {
@@ -175,20 +220,69 @@ const I18nEn = {
                             double: "User doesn't exist or is already a participant",
                         },
                     },
+                    remove: {
+                        proposeRemoval: "Remove",
+                        confirm: "Confirm",
+                    },
                 },
             },
         },
     },
     problems: {
+        table: {
+            head: {
+                name: "Name",
+                contestName: "Contest Name",
+                added: "Added",
+                score: "Score",
+            },
+        },
         page: {
             title: "Problems",
-            table: {
-                head: {
-                    name: "Name",
-                    contestName: "Contest Name",
-                    added: "Added",
-                    score: "Score",
-                },
+        },
+        individual: {
+            loading: "Loading...",
+            limits: {
+                title: "Limits",
+                time: "Time",
+                memory: "Memory",
+                sourceSize: "Source size",
+                points: "Points",
+            },
+            submit: {
+                title: "Submit",
+                code: "Code",
+                submitButton: "Submit",
+            },
+        },
+    },
+    submissions: {
+        empty: "No submissions yet :(",
+        loading: "Loading submissions...",
+        processing: "Processing...",
+        table: {
+            head: {
+                user: "User",
+                verdict: "Verdict",
+                time: "Time",
+                memory: "Memory",
+                language: "Language",
+                points: "Points",
+                final: "Final",
+                cluster: "Cluster",
+                testcase: "Testcase",
+            },
+            body: {
+                final: "final",
+                notFinal: "Set final",
+                notExam: "Ignored",
+                pointsAchieved: "%1 points",
+                clusterIndex: "Cluster #%1",
+                testcaseIndex: "Testcase #%1",
+            },
+            overflow: {
+                expand: "Expand",
+                collapse: "Collapse",
             },
         },
     },
@@ -199,7 +293,50 @@ const I18nEn = {
         breadcrumbs: {
             creator: "Creator",
             admin: "Admin",
+            owner: "Owner",
         },
+    },
+    ogranisations: {
+        page: {
+            title: "Organisations",
+            createButton: "Create Organisation",
+            table: {
+                name: "Name",
+                details: "Details",
+            },
+            modal: {
+                title: "Create new organisation",
+                name: "Name",
+                createButton: "Create",
+            },
+        },
+        menagement: {
+            backButton: "Back",
+            title: "Organisation » %1",
+            info: {
+                title: "Info",
+                name: "Name",
+            },
+            members: {
+                add: {
+                    label: "Add memeber",
+                    addButton: "Add",
+                    placeholder: "example@skole.hr",
+                    errorMessages: {
+                        invalid: "Invalid email address",
+                        double: "User doesn't exist or is already a member",
+                    },
+                },
+                remove: {
+                    proposeRemoval: "Remove",
+                    confirm: "Confirm",
+                },
+            },
+        },
+    },
+    errorMessages: {
+        invalid: "Validation error! Check your input!",
+        withInfo: "Error! %1",
     },
 } as const satisfies LanguageSpec;
 

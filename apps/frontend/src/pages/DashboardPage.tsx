@@ -8,6 +8,7 @@ import { Header } from "../components/Header";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../components/Table";
 import { useAllContests } from "../hooks/contest/useAllContests";
 import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
+import { useTranslation } from "../hooks/useTranslation";
 import { useAuthStore } from "../state/auth";
 
 export const DashboardPage: FC = () => {
@@ -32,15 +33,17 @@ export const DashboardPage: FC = () => {
         [problemQueries]
     );
 
+    const { t } = useTranslation();
+
     return (
         <div>
             <Header />
             <Table tw={"w-full table-fixed"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Total Contests</TableHeadItem>
-                        <TableHeadItem>Total Problems</TableHeadItem>
-                        <TableHeadItem>Total Submissions</TableHeadItem>
+                        <TableHeadItem>{t("dashboard.total.contests")}</TableHeadItem>
+                        <TableHeadItem>{t("dashboard.total.problems")}</TableHeadItem>
+                        <TableHeadItem>{t("dashboard.total.submissions")}</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

@@ -9,8 +9,10 @@ import { z } from "zod";
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
 import { TitledInput } from "../../../../components/TitledInput";
 import { TitledSection } from "../../../../components/TitledSection";
+import { Translated } from "../../../../components/Translated";
 import { useContestContext } from "../../../../context/constestContext";
 import { useModifyProblem } from "../../../../hooks/problem/useCreateProblem";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { LimitBox } from "../../../problems/ProblemViewPage";
 
 type Properties = {
@@ -79,18 +81,20 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
         );
     };
 
+    const { t } = useTranslation();
+
     return (
         <form tw={"w-full"} onSubmit={onSubmit} ref={formReference}>
             <TitledSection title={"Info"}>
                 <EditableDisplayBox
-                    title={"Name"}
+                    title={t("contests.management.individual.problems.individual.info.name")}
                     value={problem.title}
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("title")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Description"}
+                    title={t("contests.management.individual.problems.individual.info.description")}
                     value={problem.description}
                     submitFunction={submitForm}
                     largeTextValue
@@ -98,29 +102,36 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     <textarea {...register("description")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Time Limit (ms)"}
+                    title={t("contests.management.individual.problems.individual.info.timeLimit")}
                     value={problem.time_limit_millis + ""}
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("time_limit_millis")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Memory Limit (MiB)"}
+                    title={t("contests.management.individual.problems.individual.info.timeLimit")}
                     value={problem.memory_limit_megabytes + ""}
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("memory_limit_megabytes")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Evaluation Script (Python)"}
-                    value={problem.evaluation_script ?? "None"}
+                    title={t(
+                        "contests.management.individual.problems.individual.info.evaluationScript"
+                    )}
+                    value={
+                        problem.evaluation_script ??
+                        t("contests.management.individual.problems.individual.info.empty")
+                    }
                     submitFunction={submitForm}
                     largeTextValue
                 >
                     <textarea {...register("evaluation_script")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Solution language"}
+                    title={t(
+                        "contests.management.individual.problems.individual.info.solutionLanguage"
+                    )}
                     value={problem.solution_language + ""}
                     submitFunction={submitForm}
                 >
@@ -135,8 +146,13 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     </select>
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Solution code"}
-                    value={problem.solution_code ?? "None"}
+                    title={t(
+                        "contests.management.individual.problems.individual.info.solutionCode"
+                    )}
+                    value={
+                        problem.solution_code ??
+                        t("contests.management.individual.problems.individual.info.empty")
+                    }
                     submitFunction={submitForm}
                     largeTextValue
                 >
@@ -144,10 +160,14 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                 </EditableDisplayBox>
                 <LimitBox icon={FiCheckSquare} title={"Score"} value={problem.score + ""} />
                 <div tw={"text-sm text-red-500"}>
-                    {Object.keys(errors).length > 0 && (
-                        <span>Validation error! Check your input!</span>
+                    {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
+                    {modifyMutation.error && (
+                        <span>
+                            <Translated translationKey="errorMessages.withInfo">
+                                {modifyMutation.error.message}
+                            </Translated>
+                        </span>
                     )}
-                    {modifyMutation.error && <span>Error! {modifyMutation.error.message}</span>}
                 </div>
             </TitledSection>
         </form>

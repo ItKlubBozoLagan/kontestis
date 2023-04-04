@@ -6,6 +6,7 @@ import { PageTitle } from "../../components/PageTitle";
 import { SimpleButton } from "../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllOrganisations } from "../../hooks/organisation/useAllOrganisations";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 import { useOrganisationStore } from "../../state/organisation";
 import { CreateOrganisationModal } from "./CreateOrganisationModal";
@@ -28,11 +29,13 @@ export const OrganisationPage: FC = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col items-end gap-5"}>
-            <PageTitle>Organisations</PageTitle>
+            <PageTitle>{t("ogranisations.page.title")}</PageTitle>
             <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                Create organisation
+                {t("ogranisations.page.createButton")}
             </SimpleButton>
             <CreateOrganisationModal
                 isOpen={modalOpen}
@@ -42,8 +45,8 @@ export const OrganisationPage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Name</TableHeadItem>
-                        <TableHeadItem>Details</TableHeadItem>
+                        <TableHeadItem>{t("ogranisations.page.table.name")}</TableHeadItem>
+                        <TableHeadItem>{t("ogranisations.page.table.details")}</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

@@ -13,6 +13,7 @@ import { TitledInput } from "../../../components/TitledInput";
 import { useAddOrganisationMember } from "../../../hooks/organisation/useAddOrganisationMemeber";
 import { useAllOrganisationMembers } from "../../../hooks/organisation/useAllOrganisationMembers";
 import { useRemoveOrganisationMember } from "../../../hooks/organisation/useRemoveOrganisationMember";
+import { useTranslation } from "../../../hooks/useTranslation";
 
 type MemberBoxProperties = {
     member: OrganisationMemberWithInfo;
@@ -26,6 +27,8 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
     const deleteMutation = useRemoveOrganisationMember(organisation.id);
 
     const queryClient = useQueryClient();
+
+    const { t } = useTranslation();
 
     const onDeleteClick = () => {
         if (deleteMutation.isLoading) return;
@@ -52,7 +55,9 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
         >
             <div tw={"flex gap-2"}>
                 {member.user_id === organisation.owner && (
-                    <Breadcrumb color={theme`colors.red.400`}>Owner</Breadcrumb>
+                    <Breadcrumb color={theme`colors.red.400`}>
+                        {t("account.breadcrumbs.owner")}
+                    </Breadcrumb>
                 )}
                 <DomainBreadcrumb email={member.email} />
                 {member.full_name}
@@ -68,7 +73,9 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
                         }
                         onClick={onDeleteClick}
                     >
-                        {confirmDelete ? "Confirm" : "Remove"}
+                        {confirmDelete
+                            ? t("ogranisations.menagement.members.remove.confirm")
+                            : t("ogranisations.menagement.members.remove.proposeRemoval")}
                     </span>
                 </div>
             )}
@@ -107,6 +114,8 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
 
     const queryClient = useQueryClient();
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         if (addMutation.isError) setNetError(true);
 
@@ -119,20 +128,24 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
             <form onSubmit={onSubmit}>
                 <div tw={"flex gap-4 items-end"}>
                     <TitledInput
-                        label={"Add member"}
+                        label={t("ogranisations.menagement.members.add.label")}
                         bigLabel
                         tw={"pt-0 max-w-full"}
-                        placeholder={"example@skole.hr"}
+                        placeholder={t("ogranisations.menagement.members.add.placeholder")}
                         {...register("email")}
                     />
-                    <SimpleButton>Add</SimpleButton>
+                    <SimpleButton>
+                        {t("ogranisations.menagement.members.add.addButton")}
+                    </SimpleButton>
                 </div>
             </form>
             <div tw={"text-red-500"}>
                 {Object.keys(errors).length > 0 ? (
-                    <span>Invalid email address!</span>
+                    <span>{t("ogranisations.menagement.members.errorMessages.invalid")}</span>
                 ) : (
-                    netError && <span>User doesn&apos;t exist or is already a member</span>
+                    netError && (
+                        <span>{t("ogranisations.menagement.members.errorMessages.double")}</span>
+                    )
                 )}
             </div>
             {members && (

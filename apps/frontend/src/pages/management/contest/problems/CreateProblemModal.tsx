@@ -7,8 +7,10 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledInput } from "../../../../components/TitledInput";
+import { Translated } from "../../../../components/Translated";
 import { useContestContext } from "../../../../context/constestContext";
 import { useCreateProblem } from "../../../../hooks/problem/useCreateProblem";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { ModalStyles } from "../../../../util/ModalStyles";
 
 const CreateProblemSchema = z.object({
@@ -41,6 +43,8 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
 
     const queryClient = useQueryClient();
 
+    const { t } = useTranslation();
+
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
 
@@ -70,16 +74,31 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
             style={ModalStyles}
         >
             <div tw={"text-xl"}>
-                Create problem for <span tw={"font-bold"}>{contest.name}</span>
+                <Translated translationKey="contests.management.individual.problems.createModal.title">
+                    <span tw={"font-bold"}>{contest.name}</span>
+                </Translated>
             </div>
             <div tw={"text-sm text-red-500"}>
-                {Object.keys(errors).length > 0 && <span>Validation error! Check your input!</span>}
-                {createMutation.error && <span>Error! {createMutation.error.message}</span>}
+                {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
+                {createMutation.error && (
+                    <span>
+                        <Translated translationKey="errorMessages.withInfo">
+                            {createMutation.error.message}
+                        </Translated>
+                    </span>
+                )}
             </div>
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col items-stretch gap-2 p-1"}>
-                    <TitledInput bigLabel label={"Name"} tw={"max-w-full"} {...register("title")} />
-                    <span tw={"mt-2"}>Description</span>
+                    <TitledInput
+                        bigLabel
+                        label={t("contests.management.individual.problems.createModal.name")}
+                        tw={"max-w-full"}
+                        {...register("title")}
+                    />
+                    <span tw={"mt-2"}>
+                        {t("contests.management.individual.problems.createModal.statement")}
+                    </span>
                     <textarea
                         tw={"w-full h-28 resize-none font-mono text-sm"}
                         {...register("description")}
@@ -87,22 +106,32 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                     <div tw={"flex gap-2"}>
                         <TitledInput
                             bigLabel
-                            label={"Time limit (ms)"}
+                            label={
+                                t("contests.management.individual.problems.createModal.timeLimit") +
+                                " (ms)"
+                            }
                             {...register("time_limit_millis")}
                         />
                         <TitledInput
                             bigLabel
-                            label={"Memory limit (MiB)"}
+                            label={
+                                t("contests.management.individual.problems.createModal.timeLimit") +
+                                " (MiB)"
+                            }
                             {...register("memory_limit_megabytes")}
                         />
                     </div>
 
-                    <span tw={"mt-2"}>Evaluation script (optional)</span>
+                    <span tw={"mt-2"}>
+                        {t("contests.management.individual.problems.createModal.evaluationScript")}
+                    </span>
                     <textarea
                         tw={"w-full h-32 resize-none font-mono text-sm"}
                         {...register("evaluation_script")}
                     ></textarea>
-                    <span tw={"mt-2"}>Solution language</span>
+                    <span tw={"mt-2"}>
+                        {t("contests.management.individual.problems.createModal.solutionLanguage")}
+                    </span>
                     <select
                         name="languages"
                         onChange={(event) => setValue("solution_language", event.target.value)}
@@ -111,12 +140,16 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         <option value="cpp">C++</option>
                         <option value="c">C</option>
                     </select>
-                    <span tw={"mt-2"}>Solution code</span>
+                    <span tw={"mt-2"}>
+                        {t("contests.management.individual.problems.createModal.solutionCode")}
+                    </span>
                     <textarea
                         tw={"w-full h-32 resize-none font-mono text-sm"}
                         {...register("solution_code")}
                     ></textarea>
-                    <SimpleButton tw={"mt-2"}>Create</SimpleButton>
+                    <SimpleButton tw={"mt-2"}>
+                        {t("contests.management.individual.problems.createModal.createBottun")}
+                    </SimpleButton>
                 </div>
             </form>
         </Modal>

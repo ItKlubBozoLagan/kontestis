@@ -9,8 +9,10 @@ import tw from "twin.macro";
 
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { TitledSection } from "../../components/TitledSection";
+import { Translated } from "../../components/Translated";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
+import { useTranslation } from "../../hooks/useTranslation";
 import { convertFromBase64 } from "../../util/base";
 import { SubmissionTestcaseTable } from "./SubmissionTestcaseTable";
 
@@ -37,6 +39,8 @@ export const SubmissionViewPage: FC = () => {
 
     const [selectedCluster, setSelectedCluster] = useState<ClusterSubmission>();
     const [displayTestcase, setDisplayTestcase] = useState(false);
+
+    const { t } = useTranslation();
 
     return (
         <div tw={"w-full h-full py-12 flex flex-col gap-5"}>
@@ -72,11 +76,11 @@ export const SubmissionViewPage: FC = () => {
                 <Table tw={"w-full"}>
                     <thead>
                         <TableHeadRow>
-                            <TableHeadItem>Cluster</TableHeadItem>
-                            <TableHeadItem>Verdict</TableHeadItem>
-                            <TableHeadItem>Time</TableHeadItem>
-                            <TableHeadItem>Memory</TableHeadItem>
-                            <TableHeadItem>Score</TableHeadItem>
+                            <TableHeadItem>{t("submissions.table.head.cluster")}</TableHeadItem>
+                            <TableHeadItem>{t("submissions.table.head.verdict")}</TableHeadItem>
+                            <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
+                            <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
+                            <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
                         </TableHeadRow>
                     </thead>
                     <tbody>
@@ -91,7 +95,9 @@ export const SubmissionViewPage: FC = () => {
                                             setDisplayTestcase(true);
                                         }}
                                     >
-                                        Cluster #{index + 1}:
+                                        <Translated translationKey="submissions.table.body.clusterIndex">
+                                            {String(index + 1) + ":"}
+                                        </Translated>
                                     </TableItem>
                                     <TableItem
                                         css={
@@ -104,7 +110,11 @@ export const SubmissionViewPage: FC = () => {
                                     </TableItem>
                                     <TableItem>{c.time_used_millis} ms</TableItem>
                                     <TableItem>{c.memory_used_megabytes} MiB</TableItem>
-                                    <TableItem>{c.awarded_score} points</TableItem>
+                                    <TableItem>
+                                        <Translated translationKey="submissions.table.body.pointsAchieved">
+                                            {c.awarded_score}
+                                        </Translated>
+                                    </TableItem>
                                 </TableRow>
                             ))}
                     </tbody>

@@ -8,6 +8,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useMappedContests } from "../../hooks/contest/useMappedContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
+import { useTranslation } from "../../hooks/useTranslation";
 import { ContestListItem } from "../contests/ContestListItem";
 import { CreateContestModal } from "./CreateContestModal";
 
@@ -27,12 +28,14 @@ export const ManagementPage: FC = () => {
         [completeContests]
     );
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col"}>
             <PageTitle>
-                Your contests
+                {t("contests.management.label")}
                 <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                    Create new
+                    {t("contests.management.createButton")}
                 </SimpleButton>
             </PageTitle>
             <CreateContestModal
@@ -43,9 +46,10 @@ export const ManagementPage: FC = () => {
             <Table>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>Name</TableHeadItem>
-                        <TableHeadItem>Start time</TableHeadItem>
-                        <TableHeadItem>Starts</TableHeadItem>
+                        <TableHeadItem>{t("contests.table.head.name")}</TableHeadItem>
+                        <TableHeadItem>{t("contests.table.head.startTime")}</TableHeadItem>
+                        <TableHeadItem>{t("contests.table.head.starts.label")}</TableHeadItem>
+                        <TableHeadItem>{t("contests.table.head.duration")}</TableHeadItem>
                         <TableHeadItem>Duration</TableHeadItem>
                     </TableHeadRow>
                 </thead>
@@ -53,7 +57,7 @@ export const ManagementPage: FC = () => {
                     <TableRow>
                         {myContests.length === 0 && (
                             <TableItem colSpan={4} tw={"text-center"}>
-                                None so far
+                                {t("contests.management.noContests")}
                             </TableItem>
                         )}
                     </TableRow>

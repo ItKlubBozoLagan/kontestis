@@ -15,6 +15,7 @@ import { useContestContext } from "../../../../context/constestContext";
 import { useAddParticipant } from "../../../../hooks/contest/participants/useAddParticipant";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useRemoveParticipant } from "../../../../hooks/contest/participants/useRemoveParticipant";
+import { useTranslation } from "../../../../hooks/useTranslation";
 
 type MemberBoxProperties = {
     member: ContestMemberWithInfo;
@@ -48,13 +49,19 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
         queryClient.invalidateQueries(["contests", contest.id, "members"]);
     }, [deleteMutation]);
 
+    const { t } = useTranslation();
+
     return (
         <div
             key={member.id.toString()}
             tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-black"}
         >
             <div tw={"flex gap-2"}>
-                {admin && <Breadcrumb color={theme`colors.red.400`}>Creator</Breadcrumb>}
+                {admin && (
+                    <Breadcrumb color={theme`colors.red.400`}>
+                        {t("account.breadcrumbs.creator")}
+                    </Breadcrumb>
+                )}
                 <DomainBreadcrumb email={member.email} />
                 <RankBreadcrumb specificElo={member.elo} />
                 {member.full_name}
@@ -70,7 +77,11 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
                         }
                         onClick={onDeleteClick}
                     >
-                        {confirmDelete ? "Confirm" : "Remove"}
+                        {confirmDelete
+                            ? t("contests.management.individual.participants.remove.confirm")
+                            : t(
+                                  "contests.management.individual.participants.remove.proposeRemoval"
+                              )}
                     </span>
                 </div>
             )}
@@ -114,25 +125,43 @@ export const ContestParticipantsPage: FC = () => {
             queryClient.invalidateQueries(["contests", contest.id, "members"]);
     }, [addMutation.isSuccess, addMutation.isError]);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col gap-4"}>
             <form onSubmit={onSubmit}>
                 <div tw={"flex gap-4 items-end"}>
                     <TitledInput
-                        label={"Add participant"}
+                        label={t(
+                            "contests.management.individual.participants.addParticipant.label"
+                        )}
                         bigLabel
                         tw={"pt-0 max-w-full"}
-                        placeholder={"example@skole.hr"}
+                        placeholder={t(
+                            "contests.management.individual.participants.addParticipant.placeholder"
+                        )}
                         {...register("email")}
                     />
-                    <SimpleButton>Add</SimpleButton>
+                    <SimpleButton>
+                        {t("contests.management.individual.participants.addParticipant.addButton")}
+                    </SimpleButton>
                 </div>
             </form>
             <div tw={"text-red-500"}>
                 {Object.keys(errors).length > 0 ? (
-                    <span>Invalid email address!</span>
+                    <span>
+                        {t(
+                            "contests.management.individual.participants.addParticipant.errorMessages.invalid"
+                        )}
+                    </span>
                 ) : (
-                    netError && <span>User doesn&apos;t exist or is already a participant</span>
+                    netError && (
+                        <span>
+                            {t(
+                                "contests.management.individual.participants.addParticipant.errorMessages.double"
+                            )}
+                        </span>
+                    )
                 )}
             </div>
             {members && (

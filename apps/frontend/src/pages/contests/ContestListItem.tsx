@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 
 import { http } from "../../api/http";
 import { TableItem, TableRow } from "../../components/Table";
+import { useTranslation } from "../../hooks/useTranslation";
 
 type Properties = {
     contest: ContestWithPermissions;
@@ -20,6 +21,8 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
     const [registered, setRegistered] = useState(contest.registered);
 
     const queryClient = useQueryClient();
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         const interval = setInterval(() => setTime(Date.now()), 1000);
@@ -53,9 +56,9 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                 {state == "pending" ? (
                     parseTime(contest.start_time.getTime() - time)
                 ) : state == "started" ? (
-                    <div tw={"text-green-700"}>Started</div>
+                    <div tw={"text-green-700"}>{t("contests.page.table.body.starts.started")}</div>
                 ) : (
-                    <div tw={"text-red-600"}>Finished</div>
+                    <div tw={"text-red-600"}>{t("contests.page.table.body.starts.finished")}</div>
                 )}
             </TableItem>
             <TableItem>
@@ -69,7 +72,9 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                 <TableItem>
                     {state != "finished" ? (
                         registered ? (
-                            <span tw={"text-green-700"}>Registered</span>
+                            <span tw={"text-green-700"}>
+                                {t("contests.page.table.body.registered.registered")}
+                            </span>
                         ) : (
                             <span
                                 tw={"text-yellow-600 hover:(text-yellow-700 cursor-pointer)"}
@@ -86,7 +91,7 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                                         .then(() => setRegistered(true));
                                 }}
                             >
-                                Register
+                                {t("contests.page.table.body.registered.notRegistered")}
                             </span>
                         )
                     ) : (

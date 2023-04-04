@@ -18,6 +18,7 @@ import { useCreateQuestion } from "../../hooks/contest/questions/useCreateQuesti
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
+import { useTranslation } from "../../hooks/useTranslation";
 import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
@@ -40,6 +41,8 @@ export const ContestViewPage: FC = () => {
     const { data: questions } = useAllContestQuestions(BigInt(contestId ?? 0n));
 
     const [questionsExpanded, setQuestionsExpanded] = useState(false);
+
+    const { t } = useTranslation();
 
     const running = useMemo(() => {
         if (!contest) return false;
@@ -70,14 +73,17 @@ export const ContestViewPage: FC = () => {
 
     const problemScores = useAllProblemScores();
 
-    if (!contest) return <div>Loading...</div>;
+    if (!contest) return <div>{t("contests.page.loading")}</div>;
 
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 mt-5"}>
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
             {contest && running && (
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
-                    <TitledSection title={"Announcements"} tw={"gap-y-0"}>
+                    <TitledSection
+                        title={t("contests.individual.announcements.label")}
+                        tw={"gap-y-0"}
+                    >
                         {(announcements ?? []).map((announcement) => (
                             <pre
                                 tw={
@@ -89,16 +95,21 @@ export const ContestViewPage: FC = () => {
                             </pre>
                         ))}
                     </TitledSection>
-                    <TitledSection title={"Questions"} tw={"flex w-full flex-col gap-4"}>
+                    <TitledSection
+                        title={t("contests.individual.questions.label")}
+                        tw={"flex w-full flex-col gap-4"}
+                    >
                         <form onSubmit={onQuestionSubmit} tw={"w-full"}>
                             <div tw={"flex flex-col gap-4 w-full"}>
                                 <TitledInput
-                                    label={"Ask a question: "}
+                                    label={t("contests.individual.questions.ask")}
                                     bigLabel
                                     tw={"w-full max-w-full"}
                                     {...register("question")}
                                 ></TitledInput>
-                                <SimpleButton>Send</SimpleButton>
+                                <SimpleButton>
+                                    {t("contests.individual.questions.sendButton")}
+                                </SimpleButton>
                             </div>
                         </form>
                         {(questions ?? [])
@@ -110,7 +121,10 @@ export const ContestViewPage: FC = () => {
                                     title={question.question}
                                     key={question.id.toString()}
                                 >
-                                    <pre>{question.response ?? "Waiting for response!"}</pre>
+                                    <pre>
+                                        {question.response ??
+                                            t("contests.individual.questions.list.preMessage")}
+                                    </pre>
                                 </TitledSection>
                             ))}
                         {questions && questions.length > 1 && (
@@ -118,7 +132,9 @@ export const ContestViewPage: FC = () => {
                                 tw={"text-neutral-800 cursor-pointer"}
                                 onClick={() => setQuestionsExpanded((q) => !q)}
                             >
-                                {!questionsExpanded ? "Show older" : "Collapse"}
+                                {!questionsExpanded
+                                    ? t("contests.individual.questions.list.all")
+                                    : t("contests.individual.questions.list.collapse")}
                             </span>
                         )}
                     </TitledSection>
@@ -127,8 +143,14 @@ export const ContestViewPage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>{contest?.exam ? "Task" : "Problem"}</TableHeadItem>
-                        <TableHeadItem>Score</TableHeadItem>
+                        <TableHeadItem>
+                            {contest?.exam
+                                ? t("contests.individual.problems_table.examProblem")
+                                : t("contests.individual.problems_table.problem")}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.individual.problems_table.score")}
+                        </TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

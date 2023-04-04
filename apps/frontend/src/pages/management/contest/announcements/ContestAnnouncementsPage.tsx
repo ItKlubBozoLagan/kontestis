@@ -9,6 +9,7 @@ import { SimpleButton } from "../../../../components/SimpleButton";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestAnnouncements } from "../../../../hooks/contest/announcements/useAllContestAnnouncements";
 import { useCreateContestAnnouncement } from "../../../../hooks/contest/announcements/useCreateContestAnnouncement";
+import { useTranslation } from "../../../../hooks/useTranslation";
 
 const CreateAnnouncementSchema = z.object({
     message: z.string().min(1),
@@ -46,6 +47,8 @@ export const ContestAnnouncementsPage: FC = () => {
         reset();
     }, [createMutation.isSuccess]);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"flex gap-2 w-full justify-center"}>
             <div tw={"flex flex-col items-center gap-6 w-full"}>
@@ -55,12 +58,16 @@ export const ContestAnnouncementsPage: FC = () => {
                 ) && (
                     <form onSubmit={onSubmit}>
                         <div tw={"flex flex-col gap-2 w-96"}>
-                            <label htmlFor={"message"}>Announcement:</label>
+                            <label htmlFor={"message"}>
+                                {t("contests.management.individual.announcements.label")}:
+                            </label>
                             <textarea
                                 {...register("message")}
                                 tw={"resize-y min-h-[8rem] text-base"}
                             />
-                            <SimpleButton tw={"mt-2"}>Send</SimpleButton>
+                            <SimpleButton tw={"mt-2"}>
+                                {t("contests.management.individual.announcements.sendButton")}
+                            </SimpleButton>
                         </div>
                     </form>
                 )}

@@ -14,12 +14,14 @@ import { TitledDateInput } from "../../../../components/TitledDateInput";
 import { TitledInput } from "../../../../components/TitledInput";
 import { TitledSection } from "../../../../components/TitledSection";
 import { TitledSwitch } from "../../../../components/TitledSwitch";
+import { Translated } from "../../../../components/Translated";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestAnnouncements } from "../../../../hooks/contest/announcements/useAllContestAnnouncements";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useAllContestQuestions } from "../../../../hooks/contest/questions/useAllContestQuestions";
 import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { useOrganisationStore } from "../../../../state/organisation";
 import { Leaderboard } from "../../../contests/Leaderboard";
 import { LimitBox } from "../../../problems/ProblemViewPage";
@@ -72,6 +74,8 @@ export const ContestOverviewPage: FC = () => {
     const members = useAllContestMembers(contest.id);
     const announcements = useAllContestAnnouncements(contest.id);
 
+    const { t } = useTranslation();
+
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
 
@@ -114,9 +118,12 @@ export const ContestOverviewPage: FC = () => {
             <div tw={"w-full flex gap-8"}>
                 <div tw={"w-1/2"}>
                     <form onSubmit={onSubmit} ref={formReference}>
-                        <TitledSection title={"Contest information"} tw={"gap-4"}>
+                        <TitledSection
+                            title={t("contests.management.individual.overview.info.label")}
+                            tw={"gap-4"}
+                        >
                             <EditableDisplayBox
-                                title={"Name"}
+                                title={t("contests.management.individual.overview.info.name")}
                                 value={contest.name}
                                 submitFunction={submitForm}
                             >
@@ -126,7 +133,7 @@ export const ContestOverviewPage: FC = () => {
                                 ></TitledInput>
                             </EditableDisplayBox>
                             <EditableDisplayBox
-                                title={"Start time"}
+                                title={t("contests.management.individual.overview.info.startTime")}
                                 value={toCroatianLocale(contest.start_time)}
                                 submitFunction={submitForm}
                             >
@@ -137,7 +144,7 @@ export const ContestOverviewPage: FC = () => {
                                 />
                             </EditableDisplayBox>
                             <EditableDisplayBox
-                                title={"Duration"}
+                                title={t("contests.management.individual.overview.info.duration")}
                                 value={parseTime(contest.duration_seconds * 1000)}
                                 submitFunction={submitForm}
                             >
@@ -165,25 +172,68 @@ export const ContestOverviewPage: FC = () => {
                                 </div>
                             </EditableDisplayBox>
                             <TitledSwitch
-                                label={"Visibility"}
-                                choice={["Private", "Public"]}
+                                label={t(
+                                    "contests.management.individual.overview.info.visibility.label"
+                                )}
+                                choice={[
+                                    t(
+                                        "contests.management.individual.overview.info.visibility.private"
+                                    ),
+                                    t(
+                                        "contests.management.individual.overview.info.visibility.public"
+                                    ),
+                                ]}
                                 defaultIndex={contest.public ? 1 : 0}
                                 onChange={(value) => {
-                                    setValue("public", value === "Public");
+                                    setValue(
+                                        "public",
+                                        value ===
+                                            t(
+                                                "contests.management.individual.overview.info.visibility.public"
+                                            )
+                                    );
 
-                                    if ((value === "Public") !== contest.public) submitForm();
+                                    if (
+                                        (value ===
+                                            t(
+                                                "contests.management.individual.overview.info.visibility.public"
+                                            )) !==
+                                        contest.public
+                                    )
+                                        submitForm();
                                 }}
                             />
                             <CanAdmin permission={AdminPermissions.ADMIN}>
                                 <div tw={"w-full"}>
                                     <TitledSwitch
-                                        label={"Scoring"}
+                                        label={t(
+                                            "contests.management.individual.overview.info.scoring.label"
+                                        )}
                                         defaultIndex={contest.official ? 1 : 0}
-                                        choice={["Unofficial", "Official"]}
+                                        choice={[
+                                            t(
+                                                "contests.management.individual.overview.info.scoring.unofficial"
+                                            ),
+                                            t(
+                                                "contests.management.individual.overview.info.scoring.official"
+                                            ),
+                                        ]}
                                         onChange={(value) => {
-                                            setValue("official", value === "Official");
+                                            setValue(
+                                                "official",
+                                                value ===
+                                                    t(
+                                                        "contests.management.individual.overview.info.scoring.official"
+                                                    )
+                                            );
 
-                                            if ((value === "Official") !== contest.official)
+                                            if (
+                                                (value ===
+                                                    t(
+                                                        "contests.management.individual.overview.info.scoring.official"
+                                                    )) !==
+                                                contest.official
+                                            )
                                                 submitForm();
                                         }}
                                     />
@@ -192,13 +242,35 @@ export const ContestOverviewPage: FC = () => {
                             {Number(organisationId) !== 1 && (
                                 <div tw={"w-full"}>
                                     <TitledSwitch
-                                        label={"Style"}
-                                        choice={["Contest", "Exam"]}
+                                        label={t(
+                                            "contests.management.individual.overview.info.style.label"
+                                        )}
+                                        choice={[
+                                            t(
+                                                "contests.management.individual.overview.info.style.contest"
+                                            ),
+                                            t(
+                                                "contests.management.individual.overview.info.style.exam"
+                                            ),
+                                        ]}
                                         defaultIndex={contest.exam ? 1 : 0}
                                         onChange={(value) => {
-                                            setValue("exam", value === "Exam");
+                                            setValue(
+                                                "exam",
+                                                value ===
+                                                    t(
+                                                        "contests.management.individual.overview.info.style.exam"
+                                                    )
+                                            );
 
-                                            if ((value === "Exam") !== contest.exam) submitForm();
+                                            if (
+                                                (value ===
+                                                    t(
+                                                        "contests.management.individual.overview.info.style.exam"
+                                                    )) !==
+                                                contest.exam
+                                            )
+                                                submitForm();
                                         }}
                                     />
                                 </div>
@@ -207,26 +279,38 @@ export const ContestOverviewPage: FC = () => {
                     </form>
                     <div tw={"text-sm text-red-500"}>
                         {Object.keys(errors).length > 0 && (
-                            <span>Validation error! Check your input!</span>
+                            <span>{t("errorMessages.invalid")}</span>
                         )}
-                        {modifyMutation.error && <span>Error! {modifyMutation.error.message}</span>}
+                        {modifyMutation.error && (
+                            <span>
+                                <Translated translationKey="errorMessages.withInfo">
+                                    {modifyMutation.error.message}
+                                </Translated>
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div tw={"flex flex-col w-1/2 gap-2"}>
                     <TitledSection title={"Statistics"} tw={"gap-4"}>
                         <LimitBox
                             icon={FiUsers}
-                            title={"Registered participants"}
+                            title={t(
+                                "contests.management.individual.overview.statistics.registeredParticipants"
+                            )}
                             value={(members.data?.length ?? 0) + ""}
                         />
                         <LimitBox
                             icon={FiAlertTriangle}
-                            title={"Announcements"}
+                            title={t(
+                                "contests.management.individual.overview.statistics.announcements"
+                            )}
                             value={(announcements.data?.length ?? 0) + ""}
                         />
                         <LimitBox
                             icon={FiMessageSquare}
-                            title={"Unanswered questions"}
+                            title={t(
+                                "contests.management.individual.overview.statistics.unansweredQuestions"
+                            )}
                             value={
                                 (questions.data?.filter((q) => q.response_author_id === undefined)
                                     .length ?? 0) + ""

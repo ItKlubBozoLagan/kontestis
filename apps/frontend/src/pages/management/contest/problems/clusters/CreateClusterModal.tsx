@@ -8,7 +8,9 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import { TitledInput } from "../../../../../components/TitledInput";
+import { Translated } from "../../../../../components/Translated";
 import { useCreateCluster } from "../../../../../hooks/problem/cluster/useCreateCluster";
+import { useTranslation } from "../../../../../hooks/useTranslation";
 import { ModalStyles } from "../../../../../util/ModalStyles";
 
 const CreateClusterSchema = z.object({
@@ -47,6 +49,8 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         properties.onAfterClose?.();
     }, [createMutation.isSuccess]);
 
+    const { t } = useTranslation();
+
     return (
         <Modal
             {...properties}
@@ -56,21 +60,33 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
             style={ModalStyles}
         >
             <div tw={"text-xl"}>
-                Create cluster for <span tw={"font-bold"}>{problem.title}</span>
+                <Translated translationKey="contests.management.individual.problems.cluster.modal.title">
+                    <span tw={"font-bold"}>{problem.title}</span>
+                </Translated>
             </div>
             <div tw={"text-sm text-red-500"}>
-                {Object.keys(errors).length > 0 && <span>Validation error! Check your input!</span>}
-                {createMutation.error && <span>Error! {createMutation.error.message}</span>}
+                {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
+                {createMutation.error && (
+                    <span>
+                        <Translated translationKey="errorMessages.withInfo">
+                            {createMutation.error.message}
+                        </Translated>
+                    </span>
+                )}
             </div>
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col items-stretch gap-2"}>
                     <TitledInput
                         bigLabel
-                        label={"Awarded score"}
+                        label={t(
+                            "contests.management.individual.problems.cluster.modal.awardedScore"
+                        )}
                         tw={"max-w-full"}
                         {...register("awarded_score")}
                     />
-                    <SimpleButton tw={"mt-2"}>Create</SimpleButton>
+                    <SimpleButton tw={"mt-2"}>
+                        {t("contests.management.individual.problems.cluster.modal.createButton")}
+                    </SimpleButton>
                 </div>
             </form>
         </Modal>
