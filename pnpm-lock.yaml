@@ -26,6 +26,8 @@ importers:
 
   apps/backend:
     specifiers:
+      '@influxdata/influxdb-client': ^1.33.2
+      '@influxdata/influxdb-client-apis': ^1.33.2
       '@kontestis/models': workspace:^1.0.0
       '@kontestis/utils': workspace:^1.0.0
       '@lvksh/logger': ^1.6.3
@@ -58,6 +60,8 @@ importers:
       ts-node: ^10.9.1
       typescript: ^4.9.4
     dependencies:
+      '@influxdata/influxdb-client': 1.33.2
+      '@influxdata/influxdb-client-apis': 1.33.2_juldvnwpg3ncnrfhgnzmfii4eq
       '@kontestis/models': link:../../packages/models
       '@kontestis/utils': link:../../packages/utils
       '@lvksh/logger': 1.6.4
@@ -815,6 +819,18 @@ packages:
   /@humanwhocodes/object-schema/1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
+
+  /@influxdata/influxdb-client-apis/1.33.2_juldvnwpg3ncnrfhgnzmfii4eq:
+    resolution: {integrity: sha512-W6x9TOAQ3AUx0RBCrCibDhSvMqN50lxJmElc3rHn7+R/9Zi35oczu8r9YMkyNlzWnksu+dcyKr8/xLv28Ot4hw==}
+    peerDependencies:
+      '@influxdata/influxdb-client': '*'
+    dependencies:
+      '@influxdata/influxdb-client': 1.33.2
+    dev: false
+
+  /@influxdata/influxdb-client/1.33.2:
+    resolution: {integrity: sha512-RT5SxH+grHAazo/YK3UTuWK/frPWRM0N7vkrCUyqVprDgQzlLP+bSK4ak2Jv3QVF/pazTnsxWjvtKZdwskV5Xw==}
+    dev: false
 
   /@jridgewell/gen-mapping/0.1.1:
     resolution: {integrity: sha512-sQXCasFk+U8lWYEe66WxRDOE9PjVz4vSM51fTu3Hw+ClTpUSQb718772vH3pyS5pShp6lvQM7SxgIDXXXmOX7w==}

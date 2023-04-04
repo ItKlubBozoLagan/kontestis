@@ -7,6 +7,7 @@ export const Logger = createLogger(
         debug: chalk.yellow` DEBUG `,
         database: chalk.cyan` DATABASE `,
         redis: chalk.redBright` REDIS `,
+        influx: chalk.magentaBright` INFLUX `,
         console: chalk.green` CONSOLE `,
         panic: chalk.bgRed.white`!! PANIC !!`,
     },

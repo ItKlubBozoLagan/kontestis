@@ -11,6 +11,10 @@ type GlobalsType = {
     oauthClientId: string;
     oauthAllowedDomains: string[];
     defaultOrganisationName: string;
+    influxUrl: string;
+    influxToken: string;
+    influxOrg: string;
+    influxBucket: string;
 };
 
 export const Globals: GlobalsType = {
@@ -29,4 +33,8 @@ export const Globals: GlobalsType = {
         ? process.env.OAUTH_ALLOWED_DOMAINS.split(",").filter(Boolean)
         : [],
     defaultOrganisationName: process.env.DEFAULT_ORGANISATION_NAME ?? "Kontestis",
+    influxUrl: process.env.INFLUXDB_URL ?? "http://localhost:8086",
+    influxToken: process.env.INFLUXDB_TOKEN ?? "devtoken",
+    influxOrg: process.env.INFLUXDB_ORG ?? "kontestis-org",
+    influxBucket: process.env.INFLUXDB_BUCKET ?? "kontestis",
 };
