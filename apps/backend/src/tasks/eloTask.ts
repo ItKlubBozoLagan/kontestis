@@ -1,7 +1,10 @@
 import { Contest } from "@kontestis/models";
+import * as R from "remeda";
 import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
+import { Influx } from "../influx/Influx";
+import { createInfluxUInt } from "../influx/InfluxClient";
 import { computeELODifference } from "../lib/elo";
 import { Logger } from "../lib/logger";
 
@@ -47,25 +50,42 @@ const handleContest = async (contest: Contest) => {
             .slice(-problems.length),
     }));
 
-    await Promise.all(
-        users.map((user) =>
+    const newUserEloValues = R.fromPairs(
+        users.map((user) => [
+            user.id.toString(),
+            Math.max(
+                0,
+                user.elo +
+                    computeELODifference(
+                        leaderboard.find((it) => it.user_id === user.id)!,
+                        problemPoints,
+                        leaderboard.filter((it) => it.user_id !== user.id)
+                    )
+            ),
+        ])
+    );
+
+    await Promise.all([
+        ...users.map((user) =>
             Database.update(
                 "users",
                 {
-                    elo: Math.max(
-                        0,
-                        user.elo +
-                            computeELODifference(
-                                leaderboard.find((it) => it.user_id === user.id)!,
-                                problemPoints,
-                                leaderboard.filter((it) => it.user_id !== user.id)
-                            )
-                    ),
+                    elo: newUserEloValues[user.id.toString()],
                 },
                 { id: user.id, google_id: user.google_id }
             )
-        )
-    );
+        ),
+        Influx.insertMany(
+            users.map((user) =>
+                Influx.createLine(
+                    "elo",
+                    // TODO: organisations
+                    { userId: user.id.toString(), orgId: "1" },
+                    { score: createInfluxUInt(newUserEloValues[user.id.toString()]) }
+                )
+            )
+        ),
+    ]);
 
     await Database.update(
         "contests",
