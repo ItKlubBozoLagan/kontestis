@@ -21,7 +21,7 @@ import { Redis } from "./redis/Redis";
 import { Globals } from "./globals";
 import { startEloTask } from "./tasks/eloTask";
 import OrganisationHandler from "./routes/organisation/OrganisationHandler";
-import { Influx, initInflux } from "./influx/Influx";
+import { initInflux } from "./influx/Influx";
 
 declare global {
     interface BigInt {
@@ -96,9 +96,3 @@ Promise.allSettled([
         startEloTask();
     });
 });
-
-(async () => {
-    const result = await Influx.query("elo", { userId: "161957049708580864", orgId: "1" });
-
-    console.log(result);
-})();
