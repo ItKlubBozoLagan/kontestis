@@ -16,7 +16,6 @@ import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
 import { useDocumentEvent } from "../../hooks/useDocumentEvent";
-import { useInterval } from "../../hooks/useInterval";
 import { useTranslation } from "../../hooks/useTranslation";
 import { convertToBase64 } from "../../util/base";
 import { SubmissionListTable } from "../submissions/SubmissionListTable";
@@ -61,7 +60,9 @@ export const ProblemViewPage: FC = () => {
 
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
 
-    const { data: submissions, refetch } = useAllProblemSubmissions(BigInt(problemId ?? 0));
+    const { data: submissions } = useAllProblemSubmissions(BigInt(problemId ?? 0), {
+        refetchInterval: 1000,
+    });
 
     const { t } = useTranslation();
 
@@ -104,10 +105,6 @@ export const ProblemViewPage: FC = () => {
             textArea.scrollTop = scrollTop;
         }
     });
-
-    useInterval(() => {
-        const _ = refetch();
-    }, 1000);
 
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6"}>
