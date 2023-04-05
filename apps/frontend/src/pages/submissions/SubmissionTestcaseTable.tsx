@@ -52,7 +52,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({ cluster_submission_id,
                         <TableItem>{ts.memory_used_megabytes} MiB</TableItem>
                         <TableItem>
                             <Translated translationKey="submissions.table.body.pointsAchieved">
-                                {ts.awarded_score}
+                                {ts.awarded_score ?? "?"}
                             </Translated>
                         </TableItem>
                     </TableRow>

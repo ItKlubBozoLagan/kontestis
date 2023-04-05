@@ -64,10 +64,11 @@ export default {
             },
             announcements: {
                 label: "Obavijesti",
+                empty: "Nema obavjesti za sada.",
             },
             questions: {
                 label: "Pitanja",
-                ask: "Postavi pitanje:",
+                ask: "Postavi pitanje",
                 sendButton: "Pošalji",
                 list: {
                     preMessage: "Čekanje odgovora!",
@@ -197,7 +198,7 @@ export default {
                     },
                 },
                 announcements: {
-                    label: "Obavijest:",
+                    label: "Obavijest",
                     sendButton: "Pošalji",
                 },
                 questions: {
@@ -276,7 +277,7 @@ export default {
                 final: "Konačno",
                 notFinal: "Postavi kao konačno",
                 notExam: "Ingorirano",
-                pointsAchieved: "%1 bodova",
+                pointsAchieved: " %1 bodova",
                 clusterIndex: "Klaster %1",
                 testcaseIndex: "Test podatak %1",
             },

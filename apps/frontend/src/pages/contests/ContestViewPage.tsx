@@ -96,7 +96,7 @@ export const ContestViewPage: FC = () => {
                         ))}
                     </TitledSection>
                     <TitledSection
-                        title={t("contests.individual.questions.label")}
+                        title={t("contests.individual.questions.label") + ":"}
                         tw={"flex w-full flex-col gap-4"}
                     >
                         <form onSubmit={onQuestionSubmit} tw={"w-full"}>

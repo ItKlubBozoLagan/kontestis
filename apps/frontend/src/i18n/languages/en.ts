@@ -64,10 +64,11 @@ const I18nEn = {
             },
             announcements: {
                 label: "Announcements",
+                empty: "No announcements yet.",
             },
             questions: {
                 label: "Questions",
-                ask: "Ask a question:",
+                ask: "Ask a question",
                 sendButton: "Send",
                 list: {
                     preMessage: "Waiting for response!",
@@ -197,7 +198,7 @@ const I18nEn = {
                     },
                 },
                 announcements: {
-                    label: "Announcement:",
+                    label: "Announcement",
                     sendButton: "Send",
                 },
                 questions: {
@@ -276,7 +277,7 @@ const I18nEn = {
                 final: "final",
                 notFinal: "Set final",
                 notExam: "Ignored",
-                pointsAchieved: "%1 points",
+                pointsAchieved: " %1 points",
                 clusterIndex: "Cluster %1",
                 testcaseIndex: "Testcase %1",
             },
