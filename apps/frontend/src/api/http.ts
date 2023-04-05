@@ -64,10 +64,8 @@ export const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
-    const { setIsProcessing } = useProcessingLoader.getState();
-
     if (["POST", "PUT", "PATCH", "DELETE"].includes(config.method?.toUpperCase() ?? ""))
-        setIsProcessing(true);
+        useProcessingLoader.getState().startProcessing();
 
     const { token } = useTokenStore.getState();
     const { isSelected, organisationId } = useOrganisationStore.getState();
@@ -86,21 +84,25 @@ const handleAxiosError = (error: AxiosError) => {
 };
 
 http.interceptors.response.use(
-    (resp) => {
-        if (resp.status === 429) {
+    (response) => {
+        if (response.status === 429) {
             useBackendError.getState().setBackendError("rate-limit");
 
-            return resp;
+            return response;
         }
 
-        useProcessingLoader.getState().setIsProcessing(false);
+        if (
+            ["POST", "PUT", "PATCH", "DELETE"].includes(response.config.method?.toUpperCase() ?? "")
+        )
+            useProcessingLoader.getState().endProcessing();
 
-        if (resp.status === 401 || resp.status === 403) useTokenStore.getState().setToken("");
+        if (response.status === 401 || response.status === 403)
+            useTokenStore.getState().setToken("");
 
-        return resp;
+        return response;
     },
     (error) => {
-        useProcessingLoader.getState().setIsProcessing(false);
+        useProcessingLoader.getState().endProcessing();
 
         if (error instanceof AxiosError) handleAxiosError(error);
 

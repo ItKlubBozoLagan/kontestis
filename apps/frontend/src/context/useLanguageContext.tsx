@@ -29,11 +29,11 @@ export const LocalStorageLanguageProvider: FC<{ children: ReactNode }> = ({ chil
     const [languageState, setLanguageState] = useState<LanguageContextType>();
     const [defaultLoaded, setDefaultLoaded] = useState(false);
 
-    const { setIsProcessing } = useProcessingLoader();
+    const { startProcessing, endProcessing } = useProcessingLoader();
     const { currentLanguage } = useLanguageStore();
 
     useEffect(() => {
-        setIsProcessing(true);
+        startProcessing();
         (async (language: I18N_POSSIBLE_LANGUAGES) => {
             await loadLanguage(language);
 
@@ -41,7 +41,7 @@ export const LocalStorageLanguageProvider: FC<{ children: ReactNode }> = ({ chil
                 currentLanguage: language,
                 translationResources: getLanguageResources(language),
             });
-            setIsProcessing(false);
+            endProcessing();
         })(currentLanguage);
     }, [currentLanguage]);
 

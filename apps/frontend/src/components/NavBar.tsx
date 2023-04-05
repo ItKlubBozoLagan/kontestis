@@ -23,7 +23,7 @@ export const NavBar: FC = () => {
     const { user } = useAuthStore();
     const { setToken } = useTokenStore();
     const { setIsSelected, organisationId } = useOrganisationStore();
-    const { isProcessing } = useProcessingLoader();
+    const { processingCount } = useProcessingLoader();
 
     const { data, isSuccess } = useOrganisation(organisationId);
 
@@ -77,7 +77,10 @@ export const NavBar: FC = () => {
                 </div>
             </div>
             <div tw={"flex gap-6 flex-col sm:flex-row items-center"}>
-                <div tw={"opacity-0 transition-opacity"} css={isProcessing ? tw`opacity-100` : ""}>
+                <div
+                    tw={"opacity-0 transition-opacity"}
+                    css={processingCount > 0 ? tw`opacity-100` : ""}
+                >
                     <div
                         tw={
                             "h-6 w-6 border-2 border-solid border-neutral-800 border-r-neutral-400 border-b-neutral-400 border-l-neutral-400 rounded-full animate-spin"
