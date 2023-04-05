@@ -58,7 +58,11 @@ const plainTextEvaluatorBase64 = Buffer.from(PLAIN_TEXT_EVALUATOR, "utf8").toStr
 app.use(json({ limit: "50mb" }));
 
 app.post("/", async (req, res) => {
+    console.log("REQUEST: ");
+
     if (!typeCheck.Check(req.body)) return res.status(400).end();
+
+    console.log("Continue:");
 
     const submission: Static<typeof schema> & { evaluator?: string } = req.body;
 
@@ -99,6 +103,8 @@ app.post("/", async (req, res) => {
     }
 
     if (submission.language === "python") {
+        console.log("Here:");
+
         return res
             .status(200)
             .json(

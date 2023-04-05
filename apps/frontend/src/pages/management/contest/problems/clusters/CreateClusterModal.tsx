@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Problem } from "@kontestis/models";
-import { FC, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import { TitledInput } from "../../../../../components/TitledInput";
+import { TitledSwitch } from "../../../../../components/TitledSwitch";
 import { Translated } from "../../../../../components/Translated";
 import { useCreateCluster } from "../../../../../hooks/problem/cluster/useCreateCluster";
 import { useTranslation } from "../../../../../hooks/useTranslation";
@@ -15,6 +16,9 @@ import { ModalStyles } from "../../../../../util/ModalStyles";
 
 const CreateClusterSchema = z.object({
     awarded_score: z.coerce.number(),
+    generator: z.coerce.boolean(),
+    generator_language: z.coerce.string(),
+    generator_code: z.coerce.string(),
 });
 
 type Properties = {
@@ -23,12 +27,17 @@ type Properties = {
 
 export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...properties }) => {
     const {
+        setValue,
         register,
         handleSubmit,
         reset,
         formState: { errors },
     } = useForm<z.infer<typeof CreateClusterSchema>>({
         resolver: zodResolver(CreateClusterSchema),
+        defaultValues: {
+            generator: false,
+            generator_language: "python",
+        },
     });
 
     const createMutation = useCreateCluster(problem.id);
@@ -37,6 +46,8 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         createMutation.reset();
         createMutation.mutate(data);
     });
+
+    const [generator, setGenerator] = useState(false);
 
     const queryClient = useQueryClient();
 
@@ -75,7 +86,7 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                 )}
             </div>
             <form onSubmit={onSubmit}>
-                <div tw={"flex flex-col items-stretch gap-2"}>
+                <div tw={"flex flex-col items-stretch gap-3"}>
                     <TitledInput
                         bigLabel
                         label={t(
@@ -84,6 +95,36 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                         tw={"max-w-full"}
                         {...register("awarded_score")}
                     />
+                    <TitledSwitch
+                        label={"Generator"}
+                        choice={["Plain", "Generator"]}
+                        onChange={(value) => {
+                            setGenerator(value === "Generator");
+                            setValue("generator", value === "Generator");
+                        }}
+                    />
+                    {generator && (
+                        <div>
+                            <div tw={"flex flex-col gap-2"}>
+                                <span tw={"mt-2"}>Generator language</span>
+                                <select
+                                    name="languages"
+                                    onChange={(event) =>
+                                        setValue("generator_language", event.target.value)
+                                    }
+                                >
+                                    <option value="python">Python</option>
+                                    <option value="cpp">C++</option>
+                                    <option value="c">C</option>
+                                </select>
+                            </div>
+                            <span tw={"mt-2"}>Generator code</span>
+                            <textarea
+                                tw={"w-full h-32 resize-none font-mono text-sm"}
+                                {...register("generator_code")}
+                            ></textarea>
+                        </div>
+                    )}
                     <SimpleButton tw={"mt-2"}>
                         {t("contests.management.individual.problems.cluster.modal.createButton")}
                     </SimpleButton>

@@ -10,6 +10,7 @@ import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { AxiosEvaluationResponse } from "./evaluation";
+import { Logger } from "./logger";
 import { generateSnowflake } from "./snowflake";
 
 const existsTestcase = async (clusterId: Snowflake, testcase: number) => {
@@ -26,7 +27,7 @@ def read_until(separator):
         line = input()
         if line == separator:
             return out
-        out += " " + line.strip()
+        out += line + "\\n"
 
 while True:
     separator = input()
@@ -90,16 +91,16 @@ const getGeneratedTestcase = async (cluster: Cluster, testcaseIndex: number) => 
 };
 
 const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
-    const [data] = (await axios
+    const [data, _error] = (await axios
         .post<EvaluationResult>(
             Globals.evaluatorEndpoint,
             {
                 language: cluster.generator_language,
-                code: cluster.generator_code,
+                code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
                 time_limit: 60_000,
                 memory_limit: 2048,
                 testcases: Array.from({ length: count }).map((_, index) => ({
-                    id: index,
+                    id: index.toString(),
                     in: index.toString(),
                     out: "",
                 })),
@@ -112,7 +113,10 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
         .then((data) => [data.data, undefined])
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 
-    if (!data) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+    Logger.debug("Data:");
+    Logger.debug(data);
+
+    if (!data) return [];
 
     const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
 
@@ -124,16 +128,16 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
         inputData[result.testCaseId] = result.verdict === "custom" ? result.extra : "";
     }
 
-    const [rawOutData] = (await axios
+    const [rawOutData, error] = (await axios
         .post<EvaluationResult>(
             Globals.evaluatorEndpoint,
             {
                 language: problem.solution_language,
-                code: problem.solution_code,
+                code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
                 time_limit: problem.time_limit_millis,
                 memory_limit: problem.memory_limit_megabytes,
                 testcases: Array.from({ length: count }).map((_, index) => ({
-                    id: index,
+                    id: index.toString(),
                     in: inputData[index.toString()],
                     out: "",
                 })),
@@ -146,9 +150,13 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
         .then((data) => [data.data, undefined])
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 
+    Logger.debug(error);
+    Logger.debug("Out data: ");
+    Logger.database(rawOutData);
+
     // TODO: Error handling stuffs...
 
-    if (!rawOutData) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+    if (!rawOutData) return [];
 
     const testcases: Testcase[] = [];
 
@@ -162,6 +170,9 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
             correct_output: result.extra,
         });
     }
+
+    Logger.debug("Testcases: ");
+    Logger.debug(testcases);
 
     return testcases;
 };

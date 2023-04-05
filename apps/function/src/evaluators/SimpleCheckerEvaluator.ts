@@ -116,7 +116,7 @@ export const evaluateSimpleChecker = async (
         }
 
         if (checkerResult.startsWith("custom:")) {
-            const checkerOutput = checkerResult.slice("custom".length);
+            const checkerOutput = checkerResult.slice("custom:".length);
 
             evaluated.push({
                 type: "success",
@@ -127,7 +127,9 @@ export const evaluateSimpleChecker = async (
                 extra: checkerOutput,
             });
 
-            return;
+            continueEvaluation = true;
+
+            continue;
         }
 
         evaluated.push({
