@@ -82,19 +82,39 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                     <TitledInput {...register("awarded_score")} />
                 </EditableDisplayBox>
                 <TitledSwitch
-                    label={"Generator"}
-                    choice={["Plain", "Generator"]}
+                    label={t(
+                        "contests.management.individual.problems.cluster.info.generator.label"
+                    )}
+                    choice={[
+                        t("contests.management.individual.problems.cluster.info.generator.plain"),
+                        t(
+                            "contests.management.individual.problems.cluster.info.generator.generator"
+                        ),
+                    ]}
                     defaultIndex={cluster.generator ? 1 : 0}
                     onChange={(value) => {
-                        setGenerator(value === "Generator");
-                        setValue("generator", value === "Generator");
+                        setGenerator(
+                            value ===
+                                t(
+                                    "contests.management.individual.problems.cluster.info.generator.generator"
+                                )
+                        );
+                        setValue(
+                            "generator",
+                            value ===
+                                t(
+                                    "contests.management.individual.problems.cluster.info.generator.generator"
+                                )
+                        );
                         submitForm();
                     }}
                 />
                 {generator && (
                     <div tw={"w-full flex flex-col gap-5 mt-5"}>
                         <EditableDisplayBox
-                            title={"Generator language"}
+                            title={t(
+                                "contests.management.individual.problems.cluster.info.generator_language"
+                            )}
                             value={cluster.generator_language + ""}
                             submitFunction={submitForm}
                         >
@@ -111,7 +131,9 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                             </select>
                         </EditableDisplayBox>
                         <EditableDisplayBox
-                            title={"Generator code"}
+                            title={t(
+                                "contests.management.individual.problems.cluster.info.generator_code"
+                            )}
                             value={cluster.generator_code ?? ""}
                             submitFunction={submitForm}
                             largeTextValue

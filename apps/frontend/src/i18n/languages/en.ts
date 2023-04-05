@@ -163,6 +163,13 @@ const I18nEn = {
                         info: {
                             title: "info",
                             score: "Score",
+                            generator: {
+                                label: "Generator",
+                                plain: "Plain",
+                                generator: "Generator",
+                            },
+                            generator_language: "Generator language",
+                            generator_code: "Generator code",
                         },
                         table: {
                             head: {

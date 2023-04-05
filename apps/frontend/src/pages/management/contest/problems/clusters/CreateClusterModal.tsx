@@ -96,17 +96,41 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                         {...register("awarded_score")}
                     />
                     <TitledSwitch
-                        label={"Generator"}
-                        choice={["Plain", "Generator"]}
+                        label={t(
+                            "contests.management.individual.problems.cluster.info.generator.label"
+                        )}
+                        choice={[
+                            t(
+                                "contests.management.individual.problems.cluster.info.generator.plain"
+                            ),
+                            t(
+                                "contests.management.individual.problems.cluster.info.generator.generator"
+                            ),
+                        ]}
                         onChange={(value) => {
-                            setGenerator(value === "Generator");
-                            setValue("generator", value === "Generator");
+                            setGenerator(
+                                value ===
+                                    t(
+                                        "contests.management.individual.problems.cluster.info.generator.generator"
+                                    )
+                            );
+                            setValue(
+                                "generator",
+                                value ===
+                                    t(
+                                        "contests.management.individual.problems.cluster.info.generator.generator"
+                                    )
+                            );
                         }}
                     />
                     {generator && (
                         <div>
                             <div tw={"flex flex-col gap-2"}>
-                                <span tw={"mt-2"}>Generator language</span>
+                                <span tw={"mt-2"}>
+                                    {t(
+                                        "contests.management.individual.problems.cluster.info.generator_language"
+                                    )}
+                                </span>
                                 <select
                                     name="languages"
                                     onChange={(event) =>
@@ -118,7 +142,11 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                                     <option value="c">C</option>
                                 </select>
                             </div>
-                            <span tw={"mt-2"}>Generator code</span>
+                            <span tw={"mt-2"}>
+                                {t(
+                                    "contests.management.individual.problems.cluster.info.generator_code"
+                                )}
+                            </span>
                             <textarea
                                 tw={"w-full h-32 resize-none font-mono text-sm"}
                                 {...register("generator_code")}

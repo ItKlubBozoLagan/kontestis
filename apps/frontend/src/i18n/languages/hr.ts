@@ -163,6 +163,13 @@ export default {
                         info: {
                             title: "info",
                             score: "Bodovi",
+                            generator: {
+                                label: "Generator",
+                                plain: "Obican",
+                                generator: "Generator",
+                            },
+                            generator_language: "Jezik generatora",
+                            generator_code: "Kod generatora",
                         },
                         table: {
                             head: {
