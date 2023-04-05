@@ -144,7 +144,9 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
                     <span>{t("ogranisations.menagement.members.add.errorMessages.invalid")}</span>
                 ) : (
                     netError && (
-                        <span>{t("ogranisations.menagement.members.add.errorMessages.double")}</span>
+                        <span>
+                            {t("ogranisations.menagement.members.add.errorMessages.double")}
+                        </span>
                     )
                 )}
             </div>
