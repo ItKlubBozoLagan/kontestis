@@ -91,7 +91,7 @@ const I18nEn = {
                     label: "Overview",
                     status: {
                         label: "Status",
-                        pending: "Starts in ",
+                        pending: "Starts in",
                         running: "Running",
                         finished: "Finished",
                     },

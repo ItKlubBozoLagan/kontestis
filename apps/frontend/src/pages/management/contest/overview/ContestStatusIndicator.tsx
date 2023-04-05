@@ -33,7 +33,7 @@ export const ContestStatusIndicator: FC<Properties> = ({ contest }) => {
                     title={t("contests.management.individual.overview.status.label")}
                     value={
                         t("contests.management.individual.overview.status.pending") +
-                        ":" +
+                        ": " +
                         parseTime(contest.start_time.getTime() - time)
                     }
                     tw={"bg-yellow-100"}

@@ -38,6 +38,8 @@ BigInt.prototype.toJSON = function () {
 
 const app = Express();
 
+app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
+
 app.use(
     rateLimit({
         windowMs: 60 * 1000,
@@ -73,7 +75,6 @@ app.use((req, res, next) => {
 });
 
 app.use(json());
-app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
 
 app.use("/api/auth", AuthHandler);
 app.use("/api/organisation", OrganisationHandler);

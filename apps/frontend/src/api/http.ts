@@ -1,5 +1,5 @@
 import { safeParseJson } from "@kontestis/utils";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import contentType from "content-type";
 import {
     UseMutationOptions,
@@ -10,6 +10,7 @@ import {
 import superjson from "superjson";
 import { z } from "zod";
 
+import { useBackendError } from "../state/backendError";
 import { useOrganisationStore } from "../state/organisation";
 import { useProcessingLoader } from "../state/processing";
 import { useTokenStore } from "../state/token";
@@ -41,6 +42,8 @@ const ExpectedResponseSchema = z.object({
 
 export const http = axios.create({
     baseURL: (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
+    // axios will not make a difference between ERR_BAD_REQUEST and 429, so here's an ugly solution
+    validateStatus: (status) => (status >= 200 && status < 300) || status === 429,
     transformResponse: (data, headers) => {
         if (contentType.parse(headers.get("content-type") as string).type !== "application/json")
             return data;
@@ -76,18 +79,34 @@ http.interceptors.request.use((config) => {
     return config;
 });
 
-http.interceptors.response.use((resp) => {
-    const { setIsProcessing } = useProcessingLoader.getState();
+const handleAxiosError = (error: AxiosError) => {
+    if (error.code !== "ERR_NETWORK") return;
 
-    setIsProcessing(false);
+    useBackendError.getState().setBackendError("unavailable");
+};
 
-    if (resp.status === 401 || resp.status === 403)
-        useTokenStore.setState({
-            token: "",
-        });
+http.interceptors.response.use(
+    (resp) => {
+        if (resp.status === 429) {
+            useBackendError.getState().setBackendError("rate-limit");
 
-    return resp;
-});
+            return resp;
+        }
+
+        useProcessingLoader.getState().setIsProcessing(false);
+
+        if (resp.status === 401 || resp.status === 403) useTokenStore.getState().setToken("");
+
+        return resp;
+    },
+    (error) => {
+        useProcessingLoader.getState().setIsProcessing(false);
+
+        if (error instanceof AxiosError) handleAxiosError(error);
+
+        return Promise.reject(new HttpError(error));
+    }
+);
 
 export const wrapAxios = <T>(request: Promise<AxiosResponse<ServerData<T>>>): Promise<T> =>
     request.then((data) => data.data.data);
