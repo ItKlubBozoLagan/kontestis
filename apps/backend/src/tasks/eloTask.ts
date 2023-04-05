@@ -77,10 +77,11 @@ const handleContest = async (contest: Contest) => {
 
     const finalNewRatings = eloValuesAfterChange.map((user, ind) => ({
         id: user.user_id.toString(),
-        elo:
+        elo: Math.trunc(
             ind < treshold
                 ? user.newGlobalElo * (ratingSumBeforeChange / ratingSumAfterChange)
-                : user.newGlobalElo,
+                : user.newGlobalElo
+        ),
     }));
 
     const newUserEloValues = R.fromPairs(
