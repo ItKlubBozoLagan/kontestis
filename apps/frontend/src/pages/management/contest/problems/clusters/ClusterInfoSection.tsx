@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Cluster } from "@kontestis/models";
+import { ClusterWithStatus } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
@@ -12,9 +12,10 @@ import { TitledSwitch } from "../../../../../components/TitledSwitch";
 import { Translated } from "../../../../../components/Translated";
 import { useModifyCluster } from "../../../../../hooks/problem/cluster/useCreateCluster";
 import { useTranslation } from "../../../../../hooks/useTranslation";
+import { ClusterStatusSection } from "./ClusterStatusSection";
 
 type Properties = {
-    cluster: Cluster;
+    cluster: ClusterWithStatus;
 };
 
 const ModifyClusterSchema = z.object({
@@ -111,6 +112,7 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                 />
                 {generator && (
                     <div tw={"w-full flex flex-col gap-5 mt-5"}>
+                        <ClusterStatusSection cluster={cluster} />
                         <EditableDisplayBox
                             title={t(
                                 "contests.management.individual.problems.cluster.info.generator_language"

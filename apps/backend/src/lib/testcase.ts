@@ -61,7 +61,7 @@ export const getAllTestcases: (c: Cluster) => Promise<Testcase[]> = async (clust
 
 // TODO: Refactor
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
+export const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
     await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
 
     const [data, _error] = (await axios

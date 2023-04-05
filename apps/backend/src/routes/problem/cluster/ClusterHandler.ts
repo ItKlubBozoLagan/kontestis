@@ -2,6 +2,7 @@ import { Cluster } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import * as R from "remeda";
 
 import { Database } from "../../../database/Database";
 import { SafeError } from "../../../errors/SafeError";
@@ -10,7 +11,10 @@ import { extractModifiableCluster } from "../../../extractors/extractModifiableC
 import { extractModifiableProblem } from "../../../extractors/extractModifiableProblem";
 import { extractProblem } from "../../../extractors/extractProblem";
 import { generateSnowflake } from "../../../lib/snowflake";
+import { generateTestcaseBatch, getClusterStatus } from "../../../lib/testcase";
 import { useValidation } from "../../../middlewares/useValidation";
+import { Redis } from "../../../redis/Redis";
+import { RedisKeys } from "../../../redis/RedisKeys";
 import { respond } from "../../../utils/response";
 import TestcaseHandler from "./testcase/TestcaseHandler";
 
@@ -30,9 +34,14 @@ const clusterSchema = Type.Object({
 ClusterHandler.get("/", async (req, res) => {
     const problem = await extractProblem(req);
 
-    const clusters = await Database.selectFrom("clusters", "*", {
-        problem_id: problem.id,
-    });
+    const clusters = await Promise.all(
+        R.map(
+            await Database.selectFrom("clusters", "*", {
+                problem_id: problem.id,
+            }),
+            async (c) => R.addProp(c, "status", await getClusterStatus(c.id))
+        )
+    );
 
     return respond(res, StatusCodes.OK, clusters);
 });
@@ -61,7 +70,30 @@ ClusterHandler.post("/", useValidation(clusterSchema), async (req, res) => {
 ClusterHandler.get("/:cluster_id", async (req, res) => {
     const cluster = await extractCluster(req);
 
-    return respond(res, StatusCodes.OK, cluster);
+    return respond(
+        res,
+        StatusCodes.OK,
+        R.addProp(cluster, "status", await getClusterStatus(cluster.id))
+    );
+});
+
+ClusterHandler.post("/:cluster_id/cache/drop", async (req, res) => {
+    const cluster = await extractModifiableCluster(req);
+
+    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "uncached");
+
+    return respond(res, StatusCodes.OK);
+});
+
+ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
+    const cluster = await extractModifiableCluster(req);
+
+    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
+
+    // TODO: Fix count here
+    generateTestcaseBatch(cluster, 10);
+
+    return respond(res, StatusCodes.OK);
 });
 
 ClusterHandler.patch("/:cluster_id", useValidation(clusterSchema), async (req, res) => {
