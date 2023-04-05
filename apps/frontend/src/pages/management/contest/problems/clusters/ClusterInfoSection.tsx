@@ -105,7 +105,15 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                                     "contests.management.individual.problems.cluster.info.generator.generator"
                                 )
                         );
-                        submitForm();
+
+                        if (
+                            (value ===
+                                t(
+                                    "contests.management.individual.problems.cluster.info.generator.generator"
+                                )) !==
+                            cluster.generator
+                        )
+                            submitForm();
                     }}
                 />
                 {generator && (
