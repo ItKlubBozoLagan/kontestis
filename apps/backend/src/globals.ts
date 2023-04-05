@@ -16,6 +16,8 @@ type GlobalsType = {
     influxToken: string;
     influxOrg: string;
     influxBucket: string;
+    evaluatorServiceAccountEmail: string;
+    evaluatorServiceAccountPrivateKey: Buffer | null;
 };
 
 export const Globals: GlobalsType = {
@@ -39,4 +41,9 @@ export const Globals: GlobalsType = {
     influxToken: process.env.INFLUXDB_TOKEN ?? "devtoken",
     influxOrg: process.env.INFLUXDB_ORG ?? "kontestis-org",
     influxBucket: process.env.INFLUXDB_BUCKET ?? "kontestis",
+    evaluatorServiceAccountEmail: process.env.GOOGLE_EVALUATOR_SERVICE_ACCOUNT_EMAIL ?? "",
+    evaluatorServiceAccountPrivateKey: process.env
+        .GOOGLE_EVALUATOR_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64
+        ? Buffer.from(process.env.GOOGLE_EVALUATOR_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64, "base64")
+        : null,
 };

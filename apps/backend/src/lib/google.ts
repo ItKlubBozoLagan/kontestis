@@ -1,6 +1,7 @@
 import { DEFAULT_ELO, FullUser, KnownUserData, User } from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
+import { sign } from "jsonwebtoken";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 
 import { Database } from "../database/Database";
@@ -21,6 +22,24 @@ type VerifyTokenResponse = {
 type NiceTokenResponse = Omit<VerifyTokenResponse, "sub" | "picture"> & {
     id: string;
     picture_url: string;
+};
+
+type GoogleServiceTokenResponse = {
+    id_token: string;
+};
+
+const GOOGLE_TOKEN_URL = "https://www.googleapis.com/oauth2/v4/token";
+const GOOGLE_TOKEN_EXPIRY = "1h";
+const GOOGLE_TOKEN_REFRESH_PERIOD = 50 * 60 * 1000; // 50 minutes
+
+type TokenCache = {
+    token: string | undefined;
+    lastUpdated: number;
+};
+
+const googleServiceTokenCache: TokenCache = {
+    token: undefined,
+    lastUpdated: 0,
 };
 
 export const verifyToken = async (token: string): Promise<NiceTokenResponse> => {
@@ -116,4 +135,59 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
         email: tokenData.email,
         full_name: tokenData.name,
     };
+};
+
+const exchangeEvaluatorServiceToken = async (): Promise<string | undefined> => {
+    const privateKey = Globals.evaluatorServiceAccountPrivateKey;
+
+    if (!privateKey) return;
+
+    const selfSigned = sign(
+        {
+            target_audience: Globals.evaluatorEndpoint,
+        },
+        privateKey,
+        {
+            algorithm: "RS256",
+            audience: GOOGLE_TOKEN_URL,
+            issuer: Globals.evaluatorServiceAccountEmail,
+            subject: Globals.evaluatorServiceAccountEmail,
+            expiresIn: GOOGLE_TOKEN_EXPIRY,
+        }
+    );
+
+    return await axios
+        .post<GoogleServiceTokenResponse>(
+            GOOGLE_TOKEN_URL,
+            {
+                grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                assertion: selfSigned,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    Authorization: `Bearer ${selfSigned}`,
+                },
+            }
+        )
+        .then((data) => data.data.id_token);
+};
+
+export const getEvaluatorServiceToken = async (): Promise<string | undefined> => {
+    const privateKey = Globals.evaluatorServiceAccountPrivateKey;
+
+    if (!privateKey) return;
+
+    if (
+        googleServiceTokenCache.token &&
+        Date.now() - googleServiceTokenCache.lastUpdated < GOOGLE_TOKEN_REFRESH_PERIOD
+    )
+        return googleServiceTokenCache.token;
+
+    const token = await exchangeEvaluatorServiceToken();
+
+    googleServiceTokenCache.token = token;
+    googleServiceTokenCache.lastUpdated = Date.now();
+
+    return token;
 };

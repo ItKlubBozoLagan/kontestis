@@ -2,6 +2,7 @@ import { Cluster, ClusterStatus, EvaluationResult, Snowflake, Testcase } from "@
 import axios, { AxiosError } from "axios";
 import { StatusCodes } from "http-status-codes";
 
+import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Globals } from "../globals";
@@ -65,9 +66,9 @@ export const getAllTestcases: (c: Cluster) => Promise<Testcase[]> = async (clust
 export const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
     await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
 
-    const [data, _error] = (await axios
+    const [data, _error] = (await evaluatorAxios
         .post<EvaluationResult>(
-            Globals.evaluatorEndpoint,
+            "",
             {
                 language: cluster.generator_language,
                 code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),

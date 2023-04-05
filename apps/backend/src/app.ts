@@ -19,12 +19,12 @@ import SubmissionHandler from "./routes/submission/SubmissionHandler";
 import { reject, respond } from "./utils/response";
 import { Redis } from "./redis/Redis";
 import { Globals } from "./globals";
-import { startEloTask } from "./tasks/eloTask";
 import OrganisationHandler from "./routes/organisation/OrganisationHandler";
 import { initInflux } from "./influx/Influx";
 import rateLimit from "express-rate-limit";
 import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
+import { startEloTask } from "./tasks/eloTask";
 
 declare global {
     interface BigInt {

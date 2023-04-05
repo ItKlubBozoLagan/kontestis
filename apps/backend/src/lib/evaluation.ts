@@ -10,10 +10,10 @@ import {
     Testcase,
     User,
 } from "@kontestis/models";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 
+import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
-import { Globals } from "../globals";
 import { isContestRunning } from "./contest";
 import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
@@ -62,9 +62,9 @@ const evaluateTestcases = async (
     testcases: Testcase[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
-    return (await axios
+    return (await evaluatorAxios
         .post<EvaluationResult>(
-            Globals.evaluatorEndpoint,
+            "",
             {
                 language: problemDetails.language,
                 code: problemDetails.code,
@@ -116,6 +116,8 @@ const splitAndEvaluateTestcases = async (
 
     for (const groupTestcases of groups) {
         const [results, error] = await evaluateTestcases(problemDetails, groupTestcases, problem);
+
+        if (error) console.log(error.status);
 
         if (error) return [undefined, error] as AxiosEvaluationResponse;
 
