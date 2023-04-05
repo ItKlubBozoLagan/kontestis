@@ -13,6 +13,8 @@ type Properties = {
 export const ContestStatusIndicator: FC<Properties> = ({ contest }) => {
     const [time, setTime] = useState(Date.now());
 
+    const endTime = contest.start_time.getTime() + contest.duration_seconds * 1000;
+
     useEffect(() => {
         const interval = setInterval(() => setTime(Date.now()), 1000);
 
@@ -25,7 +27,7 @@ export const ContestStatusIndicator: FC<Properties> = ({ contest }) => {
 
     return (
         <div tw={"w-2/5 flex self-center text-center text-xl"}>
-            {contest.start_time.getTime() > Date.now() ? (
+            {contest.start_time.getTime() > time ? (
                 <LimitBox
                     icon={FiMonitor}
                     title={t("contests.management.individual.overview.status.label")}
@@ -36,7 +38,7 @@ export const ContestStatusIndicator: FC<Properties> = ({ contest }) => {
                     }
                     tw={"bg-yellow-100"}
                 />
-            ) : time > contest.start_time.getTime() + contest.duration_seconds * 1000 ? (
+            ) : time > endTime ? (
                 <LimitBox
                     icon={FiMonitor}
                     title={t("contests.management.individual.overview.status.label")}
@@ -50,7 +52,7 @@ export const ContestStatusIndicator: FC<Properties> = ({ contest }) => {
                     value={
                         t("contests.management.individual.overview.status.running") +
                         ":" +
-                        parseTime(contest.start_time.getTime() - time)
+                        parseTime(endTime - time)
                     }
                     tw={"bg-green-100"}
                 />
