@@ -47,7 +47,16 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
             <div tw={"fixed right-6 bottom-6 flex gap-2"}>
                 {I18N_AVAILABLE_LANGUAGES.filter((it) => it !== currentLanguage).map((language) => (
                     <SimpleButton key={language} onClick={() => setLanguage(language)}>
-                        {language}
+                        <div tw={"flex gap-2 items-center"}>
+                            <img
+                                src={`https://flagcdn.com/16x12/${language.replace(
+                                    /^en$/,
+                                    "gb"
+                                )}.webp`}
+                                alt={`${language} flag`}
+                            />
+                            {language.toUpperCase()}
+                        </div>
                     </SimpleButton>
                 ))}
             </div>

@@ -1,5 +1,5 @@
 import { darkenHex } from "@kontestis/utils";
-import { ButtonHTMLAttributes, FC } from "react";
+import { ButtonHTMLAttributes, FC, ReactNode } from "react";
 import { IconType } from "react-icons";
 import styled from "styled-components";
 import tw, { theme } from "twin.macro";
@@ -7,7 +7,7 @@ import tw, { theme } from "twin.macro";
 type Properties = {
     color?: string;
     prependIcon?: IconType;
-    children: string;
+    children: ReactNode;
 };
 
 const ButtonStyle = styled.button<{ $color: string }>`
