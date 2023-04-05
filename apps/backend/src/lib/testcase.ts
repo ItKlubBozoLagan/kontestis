@@ -1,8 +1,6 @@
-import { Cluster, EvaluationResult, Snowflake, Testcase } from "@kontestis/models";
+import { Cluster, ClusterStatus, EvaluationResult, Snowflake, Testcase } from "@kontestis/models";
 import axios, { AxiosError } from "axios";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
-import { isTruthy } from "remeda";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
@@ -10,16 +8,6 @@ import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { AxiosEvaluationResponse } from "./evaluation";
-import { Logger } from "./logger";
-import { generateSnowflake } from "./snowflake";
-
-const existsTestcase = async (clusterId: Snowflake, testcase: number) => {
-    return (
-        (await Redis.exists(RedisKeys.CACHED_TESTCASE_INPUT(clusterId, testcase))) &&
-        (await Redis.exists(RedisKeys.CACHED_TESTCASE_OUTPUT(clusterId, testcase)))
-    );
-};
-
 const RETURN_OUTPUT_EVALUATOR = `
 def read_until(separator):
     out = ""
@@ -44,53 +32,38 @@ print("custom:" + subOut.strip())
 
 const returnOutputEvaluatorBase64 = Buffer.from(RETURN_OUTPUT_EVALUATOR, "utf8").toString("base64");
 
+export const getClusterStatus = async (clusterId: Snowflake) => {
+    return ((await Redis.get(RedisKeys.CLUSTER_STATUS(clusterId))) ?? "uncached") as ClusterStatus;
+};
+
 // TODO: Number of tests
-export const getAllTestcases = async (cluster: Cluster) => {
-    return R.filter(
-        await Promise.all(
-            Array.from({ length: 10 }).map(
-                async (_, index) => await getGeneratedTestcase(cluster, index + 1)
-            )
-        ),
-        isTruthy
-    );
-};
+export const getAllTestcases: (c: Cluster) => Promise<Testcase[]> = async (cluster: Cluster) => {
+    const clusterStatus: ClusterStatus = await getClusterStatus(cluster.id);
 
-const getGeneratedTestcase = async (cluster: Cluster, testcaseIndex: number) => {
-    if (!cluster.generator) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-    if (await existsTestcase(cluster.id, testcaseIndex)) {
-        const testcase: Testcase = {
-            id: generateSnowflake(),
-            cluster_id: cluster.id,
-            input:
-                (await Redis.get(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, testcaseIndex))) ?? "",
-            correct_output:
-                (await Redis.get(RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, testcaseIndex))) ??
-                "",
-        };
-
-        return testcase;
+    if (clusterStatus === "cached") {
+        return (await Promise.all(
+            Array.from({ length: 10 }).map(async (_, index) => ({
+                id: BigInt(index),
+                cluster_id: cluster.id,
+                input: (await Redis.get(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, index))) ?? "",
+                correct_output:
+                    (await Redis.get(RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, index))) ?? "",
+            }))
+        )) as Testcase[];
     }
 
-    // TODO: Move testcase count to the associated cluster
-    const testcases: Testcase[] = await generateTestcaseBatch(cluster, 10);
+    await generateTestcaseBatch(cluster, 10);
 
-    for (const testcase of testcases) {
-        await Redis.set(
-            RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, Number(testcase.id)),
-            testcase.input
-        );
-        await Redis.set(
-            RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, Number(testcase.id)),
-            testcase.correct_output ?? ""
-        );
-    }
+    if ((await getClusterStatus(cluster.id)) === "cached") return await getAllTestcases(cluster);
 
-    return testcases.find((ts) => Number(ts.id) === testcaseIndex);
+    return [];
 };
 
+// TODO: Refactor
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
+    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
+
     const [data, _error] = (await axios
         .post<EvaluationResult>(
             Globals.evaluatorEndpoint,
@@ -113,10 +86,9 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
         .then((data) => [data.data, undefined])
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 
-    Logger.debug("Data:");
-    Logger.debug(data);
-
-    if (!data) return [];
+    if (!data) {
+        return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "generator_error");
+    }
 
     const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
 
@@ -125,10 +97,14 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
     const inputData: Record<string, string> = {};
 
     for (const result of data) {
+        if (result.type !== "success" || result.verdict !== "custom") {
+            return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "generator_error");
+        }
+
         inputData[result.testCaseId] = result.verdict === "custom" ? result.extra : "";
     }
 
-    const [rawOutData, error] = (await axios
+    const [rawOutData] = (await axios
         .post<EvaluationResult>(
             Globals.evaluatorEndpoint,
             {
@@ -150,18 +126,16 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
         .then((data) => [data.data, undefined])
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 
-    Logger.debug(error);
-    Logger.debug("Out data: ");
-    Logger.database(rawOutData);
-
-    // TODO: Error handling stuffs...
-
-    if (!rawOutData) return [];
+    if (!rawOutData) {
+        return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "solution_error");
+    }
 
     const testcases: Testcase[] = [];
 
     for (const result of rawOutData) {
-        if (result.type !== "success" || result.verdict !== "custom") continue;
+        if (result.type !== "success" || result.verdict !== "custom") {
+            return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "solution_error");
+        }
 
         testcases.push({
             id: BigInt(result.testCaseId),
@@ -171,8 +145,17 @@ const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
         });
     }
 
-    Logger.debug("Testcases: ");
-    Logger.debug(testcases);
+    await Promise.all(
+        testcases.map(async (tc) => {
+            await Redis.set(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, Number(tc.id)), tc.input);
+            await Redis.set(
+                RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, Number(tc.id)),
+                tc.correct_output ?? ""
+            );
+        })
+    );
+
+    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "cached");
 
     return testcases;
 };
