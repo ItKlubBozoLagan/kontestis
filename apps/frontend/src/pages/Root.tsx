@@ -13,7 +13,7 @@ type Properties = {
 };
 
 export const Root: FC<Properties> = ({ hideNavbar = false }) => {
-    const { setLanguage } = useLanguageContext();
+    const { currentLanguage, setLanguage } = useLanguageContext();
     const { lastUpdate, backendError, setBackendError } = useBackendError();
 
     const [errorTimeout, setErrorTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -45,7 +45,7 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                 </div>
             }
             <div tw={"fixed right-6 bottom-6 flex gap-2"}>
-                {I18N_AVAILABLE_LANGUAGES.map((language) => (
+                {I18N_AVAILABLE_LANGUAGES.filter((it) => it !== currentLanguage).map((language) => (
                     <SimpleButton key={language} onClick={() => setLanguage(language)}>
                         {language}
                     </SimpleButton>
