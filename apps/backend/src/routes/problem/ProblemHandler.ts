@@ -2,7 +2,6 @@ import { Problem } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 import { isTruthy } from "remeda";
 
 import { Database } from "../../database/Database";
@@ -14,6 +13,7 @@ import { extractProblem } from "../../extractors/extractProblem";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import ClusterHandler from "./cluster/ClusterHandler";
 

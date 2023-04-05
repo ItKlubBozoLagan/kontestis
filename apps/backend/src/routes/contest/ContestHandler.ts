@@ -11,7 +11,6 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
-import * as R from "remeda";
 import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
@@ -24,6 +23,7 @@ import { extractUser } from "../../extractors/extractUser";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import ContestAnnouncementHandler from "./ContestAnnouncementHandler";
 import ContestGradingHandler from "./ContestGradingHandler";

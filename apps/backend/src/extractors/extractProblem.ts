@@ -7,11 +7,11 @@ import {
 } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { extractIdFromParameters } from "../utils/extractorUtils";
+import { R } from "../utils/remeda";
 import { extractContest } from "./extractContest";
 import { extractContestMember } from "./extractContestMember";
 import { extractOptionalUser } from "./extractOptionalUser";

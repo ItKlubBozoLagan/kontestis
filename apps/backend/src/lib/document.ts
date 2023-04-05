@@ -10,11 +10,11 @@ import {
     TextRun,
 } from "docx";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
+import { R } from "../utils/remeda";
 
 export const parseMultiLine = (lines: string) =>
     lines.split("\n").map((line) => new TextRun({ break: 1, text: line }));

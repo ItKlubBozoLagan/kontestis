@@ -8,6 +8,7 @@ import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { AxiosEvaluationResponse } from "./evaluation";
+
 const RETURN_OUTPUT_EVALUATOR = `
 def read_until(separator):
     out = ""
@@ -59,7 +60,7 @@ export const getAllTestcases: (c: Cluster) => Promise<Testcase[]> = async (clust
     return [];
 };
 
-// TODO: Refactor
+// TODO: refactor
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
     await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");

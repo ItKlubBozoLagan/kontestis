@@ -2,7 +2,6 @@ import { Cluster } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 
 import { Database } from "../../../database/Database";
 import { SafeError } from "../../../errors/SafeError";
@@ -15,6 +14,7 @@ import { generateTestcaseBatch, getClusterStatus } from "../../../lib/testcase";
 import { useValidation } from "../../../middlewares/useValidation";
 import { Redis } from "../../../redis/Redis";
 import { RedisKeys } from "../../../redis/RedisKeys";
+import { R } from "../../../utils/remeda";
 import { respond } from "../../../utils/response";
 import TestcaseHandler from "./testcase/TestcaseHandler";
 

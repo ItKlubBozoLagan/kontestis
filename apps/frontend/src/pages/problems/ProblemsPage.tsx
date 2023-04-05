@@ -4,7 +4,6 @@ import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useQueries } from "react-query";
 import { Link } from "react-router-dom";
-import * as R from "remeda";
 
 import { http, wrapAxios } from "../../api/http";
 import { PageTitle } from "../../components/PageTitle";
@@ -13,6 +12,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 import { useTranslation } from "../../hooks/useTranslation";
+import { R } from "../../util/remeda";
 
 export const ProblemsPage: FC = () => {
     const { data: contests } = useAllContests();

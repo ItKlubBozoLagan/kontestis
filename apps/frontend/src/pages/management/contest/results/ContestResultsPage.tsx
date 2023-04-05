@@ -1,7 +1,6 @@
 import { ExamGradingScale, Snowflake } from "@kontestis/models";
 import { FC, useEffect, useMemo, useState } from "react";
 import { FiFilePlus, FiPlus } from "react-icons/all";
-import * as R from "remeda";
 
 import { http } from "../../../../api/http";
 import { ProblemScoreBox } from "../../../../components/ProblemScoreBox";
@@ -18,6 +17,7 @@ import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestGradingScales } from "../../../../hooks/contest/grading/useAllContestGradingScales";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { R } from "../../../../util/remeda";
 import { CreateGradingScaleModal } from "./CreateGradingScaleModal";
 import { GradingScaleListItem } from "./GradingScaleListItem";
 

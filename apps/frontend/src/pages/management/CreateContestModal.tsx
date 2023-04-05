@@ -4,7 +4,6 @@ import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
-import * as R from "remeda";
 import { z } from "zod";
 
 import { CanAdmin } from "../../components/CanAdmin";
@@ -17,6 +16,7 @@ import { useCreateContest } from "../../hooks/contest/useCreateContest";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useOrganisationStore } from "../../state/organisation";
 import { ModalStyles } from "../../util/ModalStyles";
+import { R } from "../../util/remeda";
 
 const CreateContestSchema = z.object({
     name: z.string().min(1),

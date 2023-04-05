@@ -1,6 +1,5 @@
 import { Contest, ProblemWithScore } from "@kontestis/models";
 import React, { FC, useMemo } from "react";
-import * as R from "remeda";
 import tw from "twin.macro";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
@@ -8,6 +7,7 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { useAllContestMembers } from "../../hooks/contest/participants/useAllContestMembers";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
+import { R } from "../../util/remeda";
 
 type Properties = {
     contest: Contest;

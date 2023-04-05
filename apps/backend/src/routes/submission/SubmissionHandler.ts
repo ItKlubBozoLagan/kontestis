@@ -8,7 +8,6 @@ import {
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
@@ -25,6 +24,7 @@ import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
 const SubmissionHandler = Router();

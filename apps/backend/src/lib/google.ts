@@ -2,11 +2,11 @@ import { DEFAULT_ELO, FullUser, KnownUserData, User } from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
-import * as R from "remeda";
 
 import { Database } from "../database/Database";
 import { DEFAULT_ORGANISATION } from "../extractors/extractOrganisation";
 import { Globals } from "../globals";
+import { R } from "../utils/remeda";
 import { generateSnowflake } from "./snowflake";
 
 type VerifyTokenResponse = {

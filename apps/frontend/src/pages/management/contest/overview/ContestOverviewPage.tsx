@@ -5,7 +5,6 @@ import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
 import { useQueryClient } from "react-query";
-import * as R from "remeda";
 import { z } from "zod";
 
 import { CanAdmin } from "../../../../components/CanAdmin";
@@ -23,6 +22,7 @@ import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { useOrganisationStore } from "../../../../state/organisation";
+import { R } from "../../../../util/remeda";
 import { Leaderboard } from "../../../contests/Leaderboard";
 import { LimitBox } from "../../../problems/ProblemViewPage";
 import { ContestStatusIndicator } from "./ContestStatusIndicator";

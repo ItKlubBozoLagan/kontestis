@@ -2,7 +2,6 @@ import { DEFAULT_ELO, OrganisationMember } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as R from "remeda";
 import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
@@ -12,6 +11,7 @@ import { extractOrganisation } from "../../extractors/extractOrganisation";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
+import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
 const OrganisationMemberHandler = Router({ mergeParams: true });

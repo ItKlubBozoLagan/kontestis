@@ -6,7 +6,8 @@ import {
     hasContestPermission,
 } from "@kontestis/models";
 import { useMemo } from "react";
-import * as R from "remeda";
+
+import { R } from "../../util/remeda";
 
 export const useMappedContests = (
     contests: Contest[] | undefined,

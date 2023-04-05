@@ -11,7 +11,8 @@ import {
     WriteApi,
 } from "@influxdata/influxdb-client";
 import { DeleteAPI } from "@influxdata/influxdb-client-apis";
-import * as R from "remeda";
+
+import { R } from "../utils/remeda";
 
 const tomorrow = () => new Date(Date.now() + 24 * 60 * 60 * 1000);
 

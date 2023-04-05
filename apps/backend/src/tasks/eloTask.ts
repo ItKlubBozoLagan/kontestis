@@ -1,5 +1,4 @@
 import { Contest, DEFAULT_ELO } from "@kontestis/models";
-import * as R from "remeda";
 import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
@@ -7,6 +6,7 @@ import { Influx } from "../influx/Influx";
 import { createInfluxUInt } from "../influx/InfluxClient";
 import { computeELODifference } from "../lib/elo";
 import { Logger } from "../lib/logger";
+import { R } from "../utils/remeda";
 
 const handleContest = async (contest: Contest) => {
     const members = await Database.selectFrom(
