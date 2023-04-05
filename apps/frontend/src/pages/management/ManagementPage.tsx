@@ -50,7 +50,6 @@ export const ManagementPage: FC = () => {
                         <TableHeadItem>{t("contests.table.head.startTime")}</TableHeadItem>
                         <TableHeadItem>{t("contests.table.head.starts.label")}</TableHeadItem>
                         <TableHeadItem>{t("contests.table.head.duration")}</TableHeadItem>
-                        <TableHeadItem>Duration</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
