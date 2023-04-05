@@ -26,8 +26,6 @@ const ModifyClusterSchema = z.object({
 });
 
 export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
-    console.log(cluster);
-
     const {
         setValue,
         register,
