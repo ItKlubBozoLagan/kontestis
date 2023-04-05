@@ -22,6 +22,9 @@ import { Globals } from "./globals";
 import { startEloTask } from "./tasks/eloTask";
 import OrganisationHandler from "./routes/organisation/OrganisationHandler";
 import { initInflux } from "./influx/Influx";
+import rateLimit from "express-rate-limit";
+import { ipFromRequest } from "./utils/request";
+import RedisStore from "rate-limit-redis";
 
 declare global {
     interface BigInt {
@@ -34,6 +37,35 @@ BigInt.prototype.toJSON = function () {
 };
 
 const app = Express();
+
+app.use(
+    rateLimit({
+        windowMs: 60 * 1000,
+        max: Globals.rateLimit,
+        standardHeaders: true,
+        legacyHeaders: false,
+        keyGenerator: ipFromRequest,
+        skip: (req) => ["GET", "OPTIONS", "HEAD"].includes(req.method),
+        handler: (req, res) =>
+            reject(res, StatusCodes.TOO_MANY_REQUESTS, ReasonPhrases.TOO_MANY_REQUESTS),
+        store: new RedisStore({
+            prefix: "__kontestis_rate_limit",
+            sendCommand: async (...redisArguments) => {
+                // a weird and stupid hack that will wait for redis to come online before proceeding
+                await new Promise<void>((resolve) => {
+                    const interval = setInterval(() => {
+                        if (!Redis.isReady) return;
+
+                        clearInterval(interval);
+                        resolve();
+                    }, 100);
+                });
+
+                return Redis.sendCommand(redisArguments);
+            },
+        }),
+    })
+);
 
 app.use((req, res, next) => {
     Logger.debug(req.method + " ON " + req.url);
