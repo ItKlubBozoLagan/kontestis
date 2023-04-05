@@ -1,11 +1,10 @@
 import { Cluster, ClusterStatus, EvaluationResult, Snowflake, Testcase } from "@kontestis/models";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { StatusCodes } from "http-status-codes";
 
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
-import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { AxiosEvaluationResponse } from "./evaluation";
@@ -106,9 +105,9 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
         inputData[result.testCaseId] = result.verdict === "custom" ? result.extra : "";
     }
 
-    const [rawOutData] = (await axios
+    const [rawOutData] = (await evaluatorAxios
         .post<EvaluationResult>(
-            Globals.evaluatorEndpoint,
+            "",
             {
                 language: problem.solution_language,
                 code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
