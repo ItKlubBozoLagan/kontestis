@@ -142,7 +142,7 @@ const I18nEn = {
                         evaluationScript: "Evaluation script (optional)",
                         solutionLanguage: "Solution language",
                         solutionCode: "Solution code",
-                        createBottun: "Create",
+                        createButton: "Create",
                     },
                     individual: {
                         info: {
@@ -177,7 +177,7 @@ const I18nEn = {
                                 awardedScore: "Awarded score",
                             },
                             body: {
-                                cluserIndex: "Cluster %1",
+                                clusterIndex: "Cluster %1",
                             },
                         },
                         modal: {
@@ -304,7 +304,7 @@ const I18nEn = {
             owner: "Owner",
         },
     },
-    ogranisations: {
+    organisations: {
         page: {
             title: "Organisations",
             createButton: "Create Organisation",
@@ -318,7 +318,7 @@ const I18nEn = {
                 createButton: "Create",
             },
         },
-        menagement: {
+        management: {
             backButton: "Back",
             title: "Organisation » %1",
             info: {
@@ -327,7 +327,7 @@ const I18nEn = {
             },
             members: {
                 add: {
-                    label: "Add memeber",
+                    label: "Add member",
                     addButton: "Add",
                     placeholder: "example@skole.hr",
                     errorMessages: {

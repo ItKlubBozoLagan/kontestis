@@ -77,7 +77,7 @@ export const ContestProblemManagePage: FC = () => {
                                         to={cluster.id + ""}
                                         tw={"hover:(text-sky-800 cursor-pointer)"}
                                     >
-                                        <Translated translationKey="contests.management.individual.problems.cluster.table.body.cluserIndex">
+                                        <Translated translationKey="contests.management.individual.problems.cluster.table.body.clusterIndex">
                                             {"#" + String(id + 1)}
                                         </Translated>
                                     </Link>

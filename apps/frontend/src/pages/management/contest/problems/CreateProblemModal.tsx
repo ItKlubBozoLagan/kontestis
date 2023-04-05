@@ -148,7 +148,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         {...register("solution_code")}
                     ></textarea>
                     <SimpleButton tw={"mt-2"}>
-                        {t("contests.management.individual.problems.createModal.createBottun")}
+                        {t("contests.management.individual.problems.createModal.createButton")}
                     </SimpleButton>
                 </div>
             </form>

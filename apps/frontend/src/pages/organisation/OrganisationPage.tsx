@@ -33,9 +33,9 @@ export const OrganisationPage: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col items-end gap-5"}>
-            <PageTitle>{t("ogranisations.page.title")}</PageTitle>
+            <PageTitle>{t("organisations.page.title")}</PageTitle>
             <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                {t("ogranisations.page.createButton")}
+                {t("organisations.page.createButton")}
             </SimpleButton>
             <CreateOrganisationModal
                 isOpen={modalOpen}
@@ -45,8 +45,8 @@ export const OrganisationPage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>{t("ogranisations.page.table.name")}</TableHeadItem>
-                        <TableHeadItem>{t("ogranisations.page.table.details")}</TableHeadItem>
+                        <TableHeadItem>{t("organisations.page.table.name")}</TableHeadItem>
+                        <TableHeadItem>{t("organisations.page.table.details")}</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

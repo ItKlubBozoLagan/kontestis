@@ -61,9 +61,9 @@ export const OrganisationInfoSection: FC<Properties> = ({ organisation }) => {
 
     return (
         <form onSubmit={onSubmit} ref={formReference}>
-            <TitledSection title={t("ogranisations.menagement.info.title")}>
+            <TitledSection title={t("organisations.management.info.title")}>
                 <EditableDisplayBox
-                    title={t("ogranisations.menagement.info.name")}
+                    title={t("organisations.management.info.name")}
                     value={organisation.name}
                     submitFunction={submitForm}
                 >

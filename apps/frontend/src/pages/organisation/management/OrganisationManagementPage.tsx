@@ -8,7 +8,7 @@ import { Translated } from "../../../components/Translated";
 import { useOrganisation } from "../../../hooks/organisation/useOrganisation";
 import { useTranslation } from "../../../hooks/useTranslation";
 import { OrganisationInfoSection } from "./OrganisationInfoSection";
-import { OrganisationMembersSection } from "./OrganisationMemebersSection";
+import { OrganisationMembersSection } from "./OrganisationMembersSection";
 
 type Properties = {
     organisationId: string;
@@ -25,11 +25,11 @@ export const OrganisationManagementPage: FC = () => {
         <div tw={"w-full flex flex-col"}>
             <div tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}>
                 <Link to={"/"} tw={"flex gap-2 items-center text-lg"}>
-                    <FiArrowLeft size={"16px"} /> {t("ogranisations.menagement.backButton")}
+                    <FiArrowLeft size={"16px"} /> {t("organisations.management.backButton")}
                 </Link>
             </div>
             <PageTitle>
-                <Translated translationKey="ogranisations.menagement.title">
+                <Translated translationKey="organisations.management.title">
                     {organisation?.name ?? ""}
                 </Translated>
             </PageTitle>

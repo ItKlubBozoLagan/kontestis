@@ -54,7 +54,7 @@ export const CreateOrganisationModal: FC<Modal.Props> = ({ ...properties }) => {
             contentLabel={"Create organisation Modal"}
             style={ModalStyles}
         >
-            <div tw={"text-xl"}>{t("ogranisations.page.modal.title")}</div>
+            <div tw={"text-xl"}>{t("organisations.page.modal.title")}</div>
             <div tw={"text-sm text-red-500"}>
                 {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
                 {createMutation.error && (
@@ -69,12 +69,12 @@ export const CreateOrganisationModal: FC<Modal.Props> = ({ ...properties }) => {
                 <div tw={"flex flex-col items-stretch gap-2"}>
                     <TitledInput
                         bigLabel
-                        label={t("ogranisations.page.modal.name")}
+                        label={t("organisations.page.modal.name")}
                         tw={"max-w-full"}
                         {...register("name")}
                     />
                     <SimpleButton tw={"mt-2"}>
-                        {t("ogranisations.page.modal.createButton")}
+                        {t("organisations.page.modal.createButton")}
                     </SimpleButton>
                 </div>
             </form>

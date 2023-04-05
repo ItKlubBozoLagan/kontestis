@@ -142,7 +142,7 @@ export default {
                         evaluationScript: "Evaluacijska skripta (opcionalna)",
                         solutionLanguage: "Jezik rješenja",
                         solutionCode: "Kod rješenja",
-                        createBottun: "Postavi",
+                        createButton: "Postavi",
                     },
                     individual: {
                         info: {
@@ -177,7 +177,7 @@ export default {
                                 awardedScore: "Dodijeljeni bodovi",
                             },
                             body: {
-                                cluserIndex: "Klaster %1",
+                                clusterIndex: "Grupa %1",
                             },
                         },
                         modal: {
@@ -304,7 +304,7 @@ export default {
             owner: "Vlasnik",
         },
     },
-    ogranisations: {
+    organisations: {
         page: {
             title: "Organizacije",
             createButton: "Napravi organizaciju",
@@ -318,7 +318,7 @@ export default {
                 createButton: "Stvori",
             },
         },
-        menagement: {
+        management: {
             backButton: "Nazad",
             title: "Organizacija » %1",
             info: {

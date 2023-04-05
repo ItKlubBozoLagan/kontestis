@@ -74,8 +74,8 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
                         onClick={onDeleteClick}
                     >
                         {confirmDelete
-                            ? t("ogranisations.menagement.members.remove.confirm")
-                            : t("ogranisations.menagement.members.remove.proposeRemoval")}
+                            ? t("organisations.management.members.remove.confirm")
+                            : t("organisations.management.members.remove.proposeRemoval")}
                     </span>
                 </div>
             )}
@@ -128,24 +128,24 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
             <form onSubmit={onSubmit}>
                 <div tw={"flex gap-4 items-end"}>
                     <TitledInput
-                        label={t("ogranisations.menagement.members.add.label")}
+                        label={t("organisations.management.members.add.label")}
                         bigLabel
                         tw={"pt-0 max-w-full"}
-                        placeholder={t("ogranisations.menagement.members.add.placeholder")}
+                        placeholder={t("organisations.management.members.add.placeholder")}
                         {...register("email")}
                     />
                     <SimpleButton>
-                        {t("ogranisations.menagement.members.add.addButton")}
+                        {t("organisations.management.members.add.addButton")}
                     </SimpleButton>
                 </div>
             </form>
             <div tw={"text-red-500"}>
                 {Object.keys(errors).length > 0 ? (
-                    <span>{t("ogranisations.menagement.members.add.errorMessages.invalid")}</span>
+                    <span>{t("organisations.management.members.add.errorMessages.invalid")}</span>
                 ) : (
                     netError && (
                         <span>
-                            {t("ogranisations.menagement.members.add.errorMessages.double")}
+                            {t("organisations.management.members.add.errorMessages.double")}
                         </span>
                     )
                 )}
