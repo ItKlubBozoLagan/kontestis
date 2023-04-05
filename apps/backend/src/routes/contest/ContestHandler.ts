@@ -205,9 +205,17 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         user_id: eqIn(...contestMembers.map((it) => it.user_id)),
     });
 
-    const databaseUsers = await Database.selectFrom("users", "*", {
+    await Database.selectFrom("users", "*", {
         id: eqIn(...contestMembers.map((it) => it.user_id)),
     });
+    const organisationMembers = await Database.selectFrom(
+        "organisation_members",
+        "*",
+        {
+            organisation_id: contest.organisation_id,
+        },
+        "ALLOW FILTERING"
+    );
 
     return respond(
         res,
@@ -219,7 +227,9 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
                     "email",
                     "full_name",
                 ]),
-                ...R.pick(databaseUsers.find((user) => user.id === it.user_id)!, ["elo"]),
+                ...R.pick(organisationMembers.find((member) => member.user_id === it.user_id)!, [
+                    "elo",
+                ]),
             }))
             .map((it) => ({ ...it, score: it.score ?? {} }))
     );

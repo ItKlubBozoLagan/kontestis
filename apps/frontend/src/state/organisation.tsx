@@ -1,4 +1,4 @@
-import { Snowflake } from "@kontestis/models";
+import { DEFAULT_ELO, Snowflake } from "@kontestis/models";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -6,6 +6,8 @@ type OrganisationState = {
     skipOrganisationSelect: boolean;
     isSelected: boolean;
     organisationId: Snowflake;
+    elo: number;
+    setElo: (_: number) => void;
     setIsSelected: (_: boolean) => void;
     setSkipOrganisationSelect: (_: boolean) => void;
     setOrganisationId: (_: Snowflake) => void;
@@ -20,6 +22,12 @@ export const useOrganisationStore = create<OrganisationState>()(
             isSelected: false,
             skipOrganisationSelect: true,
             organisationId: 0n,
+            elo: DEFAULT_ELO,
+            setElo: (elo) => {
+                return set({
+                    elo,
+                });
+            },
             setOrganisationId: (organisationId) => {
                 return set({
                     organisationId,

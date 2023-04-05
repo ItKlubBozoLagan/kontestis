@@ -5,6 +5,7 @@ import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import * as R from "remeda";
 
 import { Database } from "../database/Database";
+import { DEFAULT_ORGANISATION } from "../extractors/extractOrganisation";
 import { Globals } from "../globals";
 import { generateSnowflake } from "./snowflake";
 
@@ -92,7 +93,6 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
 
     const user: User = existingUser ?? {
         id: generateSnowflake(),
-        elo: DEFAULT_ELO,
         google_id: googleId,
         permissions:
             numberUsers === 0n
@@ -100,7 +100,15 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
                 : grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADD_CONTEST),
     };
 
-    if (!existingUser) await Database.insertInto("users", user);
+    if (!existingUser) {
+        await Database.insertInto("users", user);
+        await Database.insertInto("organisation_members", {
+            id: generateSnowflake(),
+            organisation_id: DEFAULT_ORGANISATION.id,
+            user_id: user.id,
+            elo: DEFAULT_ELO,
+        });
+    }
 
     return {
         ...user,

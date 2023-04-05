@@ -11,6 +11,7 @@ import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
+import { useOrganisationStore } from "../../state/organisation";
 import {
     AllRanks,
     colorFromRank,
@@ -54,6 +55,7 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 
 export const AccountPage: FC = () => {
     const { user } = useAuthStore();
+    const { elo } = useOrganisationStore();
 
     const { t } = useTranslation();
 
@@ -104,7 +106,7 @@ export const AccountPage: FC = () => {
                         size={"32px"}
                         tw={"text-yellow-500 absolute -top-3"}
                         style={{
-                            left: `min(96%, calc(-12px + ((${user.elo}/3200) * 98%))`,
+                            left: `min(96%, calc(-12px + ((${elo}/3200) * 98%))`,
                         }}
                     />
                     {AllRanks.map((rank, index) => (

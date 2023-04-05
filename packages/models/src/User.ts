@@ -30,7 +30,9 @@ export type UserV4 = Omit<UserV3, "google_id"> & {
     google_id: string;
 };
 
-export type User = UserV4;
+export type UserV5 = Omit<UserV4, "elo">;
+
+export type User = UserV5;
 
 export type FullUser = User & {
     full_name: string;

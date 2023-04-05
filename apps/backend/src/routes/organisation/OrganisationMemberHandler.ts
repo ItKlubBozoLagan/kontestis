@@ -1,4 +1,4 @@
-import { OrganisationMember } from "@kontestis/models";
+import { DEFAULT_ELO, OrganisationMember } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -44,6 +44,20 @@ OrganisationMemberHandler.get("/", async (req, res) => {
     );
 });
 
+OrganisationMemberHandler.get("/:user_id", async (req, res) => {
+    const organisation = await extractOrganisation(req);
+    const userId = extractIdFromParameters(req, "user_id");
+
+    const member = await Database.selectOneFrom("organisation_members", "*", {
+        organisation_id: organisation.id,
+        user_id: userId,
+    });
+
+    if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    return respond(res, StatusCodes.OK, member);
+});
+
 // TODO: Make this more robust
 
 const memberSchema = Type.Object({
@@ -77,6 +91,7 @@ OrganisationMemberHandler.post("/", useValidation(memberSchema), async (req, res
 
     const member: OrganisationMember = {
         id: generateSnowflake(),
+        elo: DEFAULT_ELO,
         organisation_id: organisation.id,
         user_id: targetUser.user_id,
     };

@@ -1,4 +1,4 @@
-import { Contest } from "@kontestis/models";
+import { Contest, DEFAULT_ELO } from "@kontestis/models";
 import * as R from "remeda";
 import { eqIn } from "scyllo";
 
@@ -13,14 +13,30 @@ const handleContest = async (contest: Contest) => {
         "contest_members",
         "*",
         { contest_id: contest.id },
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         "ALLOW FILTERING"
     );
 
     if (members.length === 0) return;
 
-    const users = await Database.selectFrom("users", "*", {
-        id: eqIn(...members.map((it) => it.user_id)),
-    });
+    const organisation_members = await Database.selectFrom(
+        "organisation_members",
+        "*",
+        { organisation_id: contest.organisation_id },
+        "ALLOW FILTERING"
+    );
+
+    const usersWithElo = R.map(
+        await Database.selectFrom("users", "*", {
+            id: eqIn(...members.map((it) => it.user_id)),
+        }),
+        (user) =>
+            R.addProp(
+                user,
+                "elo",
+                organisation_members.find((om) => om.user_id === user.id)?.elo ?? DEFAULT_ELO
+            )
+    );
 
     const problems = await Database.selectFrom("problems", "*", {
         contest_id: contest.id,
@@ -44,7 +60,7 @@ const handleContest = async (contest: Contest) => {
     const leaderboard = members
         .map((member) => ({
             user_id: member.user_id,
-            currentGlobalElo: users.find((user) => user.id === member.user_id)?.elo ?? 0,
+            currentGlobalElo: usersWithElo.find((user) => user.id === member.user_id)?.elo ?? 0,
             problemPoints: Array.from<number>({ length: problems.length })
                 .fill(0)
                 .concat(Object.values(member.score ?? {}))
@@ -89,21 +105,20 @@ const handleContest = async (contest: Contest) => {
     );
 
     await Promise.all([
-        ...users.map((user) =>
+        ...usersWithElo.map((user) =>
             Database.update(
-                "users",
+                "organisation_members",
                 {
                     elo: newUserEloValues[user.id.toString()],
                 },
-                { id: user.id, google_id: user.google_id }
+                { user_id: user.id, organisation_id: contest.organisation_id }
             )
         ),
         Influx.insertMany(
-            users.map((user) =>
+            usersWithElo.map((user) =>
                 Influx.createLine(
                     "elo",
-                    // TODO: organisations
-                    { userId: user.id.toString(), orgId: "1" },
+                    { userId: user.id.toString(), orgId: contest.organisation_id.toString() },
                     { score: createInfluxUInt(newUserEloValues[user.id.toString()]) }
                 )
             )

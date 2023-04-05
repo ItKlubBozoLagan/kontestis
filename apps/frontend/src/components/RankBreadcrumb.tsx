@@ -1,7 +1,7 @@
 import { capitalize, darkenHex } from "@kontestis/utils";
 import React, { FC } from "react";
 
-import { useAuthStore } from "../state/auth";
+import { useOrganisationStore } from "../state/organisation";
 import { colorFromRank, rankFromElo } from "../util/rank";
 import { Breadcrumb } from "./Breadcrumb";
 
@@ -11,9 +11,9 @@ type Properties = {
 };
 
 export const RankBreadcrumb: FC<Properties> = ({ specificElo, showExact }) => {
-    const { user } = useAuthStore();
+    const { elo: orgElo } = useOrganisationStore();
 
-    const elo = specificElo ?? user.elo;
+    const elo = specificElo ?? orgElo;
 
     return (
         <Breadcrumb
