@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import tw from "twin.macro";
 
 type SwitchProperties<T extends string> = {
@@ -15,7 +15,9 @@ export const TitledSwitch = <T extends string>({
     onChange,
     ...properties
 }: SwitchProperties<T> & React.HTMLAttributes<HTMLDivElement>) => {
-    const [selected, setSelected] = useState(choice[defaultIndex ?? 0]);
+    const [selectedIndex, setSelectedIndex] = useState(defaultIndex ?? 0);
+
+    const selected = useMemo(() => choice[selectedIndex], [choice, selectedIndex]);
 
     useEffect(() => onChange(selected), [selected]);
 
@@ -23,7 +25,7 @@ export const TitledSwitch = <T extends string>({
         <div
             tw={"px-2 cursor-pointer flex-grow border border-solid border-neutral-800 text-center"}
             css={[selected === self ? tw`bg-neutral-300` : "", last ? tw`border-l-0` : ""]}
-            onClick={() => setSelected(self)}
+            onClick={() => setSelectedIndex(choice.indexOf(self))}
         >
             {self}
         </div>
