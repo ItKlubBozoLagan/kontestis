@@ -41,28 +41,50 @@ const handleContest = async (contest: Contest) => {
             .reduce((accumulator, current) => accumulator + current.awarded_score, 0)
     );
 
-    const leaderboard = members.map((member) => ({
-        user_id: member.user_id,
-        currentGlobalElo: users.find((user) => user.id === member.user_id)?.elo ?? 0,
-        problemPoints: Array.from<number>({ length: problems.length })
-            .fill(0)
-            .concat(Object.values(member.score ?? {}))
-            .slice(-problems.length),
+    const leaderboard = members
+        .map((member) => ({
+            user_id: member.user_id,
+            currentGlobalElo: users.find((user) => user.id === member.user_id)?.elo ?? 0,
+            problemPoints: Array.from<number>({ length: problems.length })
+                .fill(0)
+                .concat(Object.values(member.score ?? {}))
+                .slice(-problems.length),
+        }))
+        .sort((a, b) => b.currentGlobalElo - a.currentGlobalElo);
+
+    const treshold = Math.min(leaderboard.length, 3 * Math.sqrt(leaderboard.length));
+
+    const eloValuesAfterChange = leaderboard.map((user) => ({
+        user_id: user.user_id.toString(),
+        newGlobalElo: Math.max(
+            0,
+            user.currentGlobalElo +
+                computeELODifference(
+                    leaderboard.find((it) => it.user_id === user.user_id)!,
+                    problemPoints,
+                    leaderboard.filter((it) => it.user_id !== user.user_id)
+                )
+        ),
+    }));
+
+    const ratingSumBeforeChange = leaderboard.reduce((sum, user, ind) => {
+        return ind < treshold ? sum + user.currentGlobalElo : sum;
+    }, 0);
+
+    const ratingSumAfterChange = eloValuesAfterChange.reduce((sum, user, ind) => {
+        return ind < treshold ? sum + user.newGlobalElo : sum;
+    }, 0);
+
+    const finalNewRatings = eloValuesAfterChange.map((user, ind) => ({
+        id: user.user_id.toString(),
+        elo:
+            ind < treshold
+                ? user.newGlobalElo * (ratingSumBeforeChange / ratingSumAfterChange)
+                : user.newGlobalElo,
     }));
 
     const newUserEloValues = R.fromPairs(
-        users.map((user) => [
-            user.id.toString(),
-            Math.max(
-                0,
-                user.elo +
-                    computeELODifference(
-                        leaderboard.find((it) => it.user_id === user.id)!,
-                        problemPoints,
-                        leaderboard.filter((it) => it.user_id !== user.id)
-                    )
-            ),
-        ])
+        finalNewRatings.map((user) => [user.id.toString(), user.elo])
     );
 
     await Promise.all([
