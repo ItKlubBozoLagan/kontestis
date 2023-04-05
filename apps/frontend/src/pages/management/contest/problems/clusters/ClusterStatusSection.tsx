@@ -1,6 +1,6 @@
 import { ClusterWithStatus } from "@kontestis/models";
 import { FC } from "react";
-import { FiCheck, FiClock, FiX } from "react-icons/all";
+import { FiCheck, FiClock, FiLayers, FiX } from "react-icons/all";
 import { useQueryClient } from "react-query";
 import { theme } from "twin.macro";
 
@@ -32,7 +32,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                 <LimitBox icon={FiClock} title={"Status"} value={"Pending"} tw={"bg-yellow-100"} />
             ) : (
                 <LimitBox
-                    icon={FiClock}
+                    icon={FiLayers}
                     title={"Status"}
                     value={"Ready (uncached)"}
                     tw={"bg-blue-100"}
