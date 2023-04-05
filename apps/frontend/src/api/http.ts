@@ -42,8 +42,6 @@ const ExpectedResponseSchema = z.object({
 
 export const http = axios.create({
     baseURL: (import.meta.env.VITE_API_ENDPOINT ?? "http://localhost:8080") + "/api",
-    // axios will not make a difference between ERR_BAD_REQUEST and 429, so here's an ugly solution
-    validateStatus: (status) => (status >= 200 && status < 300) || status === 429,
     transformResponse: (data, headers) => {
         if (contentType.parse(headers.get("content-type") as string).type !== "application/json")
             return data;
@@ -78,8 +76,17 @@ http.interceptors.request.use((config) => {
 });
 
 const handleAxiosError = (error: AxiosError) => {
+    const responseStatus = error.response?.status;
+
+    if (responseStatus) {
+        if (responseStatus === 429) return useBackendError.getState().setBackendError("rate-limit");
+
+        if ([401, 403].includes(responseStatus)) return useTokenStore.getState().setToken("");
+    }
+
     if (error.code !== "ERR_NETWORK") return;
 
+    useTokenStore.getState().setToken("");
     useBackendError.getState().setBackendError("unavailable");
 };
 
@@ -89,15 +96,6 @@ http.interceptors.response.use(
             ["POST", "PUT", "PATCH", "DELETE"].includes(response.config.method?.toUpperCase() ?? "")
         )
             useProcessingLoader.getState().endProcessing();
-
-        if (response.status === 429) {
-            useBackendError.getState().setBackendError("rate-limit");
-
-            return response;
-        }
-
-        if (response.status === 401 || response.status === 403)
-            useTokenStore.getState().setToken("");
 
         return response;
     },
