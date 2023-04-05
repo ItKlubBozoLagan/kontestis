@@ -277,8 +277,8 @@ export default {
                 notFinal: "Postavi kao konačno",
                 notExam: "Ingorirano",
                 pointsAchieved: "%1 bodova",
-                clusterIndex: "Klaster #%1",
-                testcaseIndex: "Test podatak #%1",
+                clusterIndex: "Klaster %1",
+                testcaseIndex: "Test podatak %1",
             },
             overflow: {
                 expand: "Proširi",

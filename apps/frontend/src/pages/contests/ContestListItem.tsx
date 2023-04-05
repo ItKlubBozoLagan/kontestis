@@ -56,9 +56,9 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                 {state == "pending" ? (
                     parseTime(contest.start_time.getTime() - time)
                 ) : state == "started" ? (
-                    <div tw={"text-green-700"}>{t("contests.page.table.body.starts.started")}</div>
+                    <div tw={"text-green-700"}>{t("contests.table.body.starts.started")}</div>
                 ) : (
-                    <div tw={"text-red-600"}>{t("contests.page.table.body.starts.finished")}</div>
+                    <div tw={"text-red-600"}>{t("contests.table.body.starts.finished")}</div>
                 )}
             </TableItem>
             <TableItem>
@@ -73,7 +73,7 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                     {state != "finished" ? (
                         registered ? (
                             <span tw={"text-green-700"}>
-                                {t("contests.page.table.body.registered.registered")}
+                                {t("contests.table.body.registered.registered")}
                             </span>
                         ) : (
                             <span
@@ -91,7 +91,7 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                                         .then(() => setRegistered(true));
                                 }}
                             >
-                                {t("contests.page.table.body.registered.notRegistered")}
+                                {t("contests.table.body.registered.notRegistered")}
                             </span>
                         )
                     ) : (

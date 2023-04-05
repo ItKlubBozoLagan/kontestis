@@ -141,10 +141,10 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
             </form>
             <div tw={"text-red-500"}>
                 {Object.keys(errors).length > 0 ? (
-                    <span>{t("ogranisations.menagement.members.errorMessages.invalid")}</span>
+                    <span>{t("ogranisations.menagement.members.add.errorMessages.invalid")}</span>
                 ) : (
                     netError && (
-                        <span>{t("ogranisations.menagement.members.errorMessages.double")}</span>
+                        <span>{t("ogranisations.menagement.members.add.errorMessages.double")}</span>
                     )
                 )}
             </div>

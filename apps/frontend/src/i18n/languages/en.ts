@@ -277,8 +277,8 @@ const I18nEn = {
                 notFinal: "Set final",
                 notExam: "Ignored",
                 pointsAchieved: "%1 points",
-                clusterIndex: "Cluster #%1",
-                testcaseIndex: "Testcase #%1",
+                clusterIndex: "Cluster %1",
+                testcaseIndex: "Testcase %1",
             },
             overflow: {
                 expand: "Expand",
