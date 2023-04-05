@@ -85,16 +85,16 @@ const handleAxiosError = (error: AxiosError) => {
 
 http.interceptors.response.use(
     (response) => {
+        if (
+            ["POST", "PUT", "PATCH", "DELETE"].includes(response.config.method?.toUpperCase() ?? "")
+        )
+            useProcessingLoader.getState().endProcessing();
+
         if (response.status === 429) {
             useBackendError.getState().setBackendError("rate-limit");
 
             return response;
         }
-
-        if (
-            ["POST", "PUT", "PATCH", "DELETE"].includes(response.config.method?.toUpperCase() ?? "")
-        )
-            useProcessingLoader.getState().endProcessing();
 
         if (response.status === 401 || response.status === 403)
             useTokenStore.getState().setToken("");

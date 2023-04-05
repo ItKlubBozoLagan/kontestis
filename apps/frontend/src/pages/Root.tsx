@@ -5,6 +5,7 @@ import tw from "twin.macro";
 import { NavBar } from "../components/NavBar";
 import { SimpleButton } from "../components/SimpleButton";
 import { useLanguageContext } from "../context/useLanguageContext";
+import { useTranslation } from "../hooks/useTranslation";
 import { I18N_AVAILABLE_LANGUAGES } from "../i18n/i18n";
 import { useBackendError } from "../state/backendError";
 
@@ -31,6 +32,8 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
             errorTimeout && clearTimeout(errorTimeout);
         };
     }, [lastUpdate]);
+
+    const { t } = useTranslation();
 
     return (
         <div tw={"w-full flex flex-col items-center"}>
@@ -68,8 +71,10 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                             tw`flex flex-col max-w-[256px]`,
                         ]}
                     >
-                        <span tw={"text-xl font-bold flex gap-2 items-center"}>Sorry</span>
-                        <span>We seem to be experiencing some problems right now</span>
+                        <span tw={"text-xl font-bold flex gap-2 items-center"}>
+                            {t("backendErrors.unavailable.header")}
+                        </span>
+                        <span>{t("backendErrors.unavailable.description")}</span>
                     </div>
                 ) : (
                     <div
@@ -78,8 +83,10 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                             tw`flex flex-col max-w-[256px]`,
                         ]}
                     >
-                        <span tw={"text-xl font-bold flex gap-2 items-center"}>Slow down!</span>
-                        <span>You have been rate limited.</span>
+                        <span tw={"text-xl font-bold flex gap-2 items-center"}>
+                            {t("backendErrors.rateLimit.header")}
+                        </span>
+                        <span>{t("backendErrors.rateLimit.description")}</span>
                     </div>
                 ))}
         </div>

@@ -1,6 +1,16 @@
 import { DefaultLanguageSpec } from "../i18n";
 
 export default {
+    backendErrors: {
+        unavailable: {
+            header: "Isprike",
+            description: "Naši sustavi trenutno ne funkcioniraju kako bi trebali.",
+        },
+        rateLimit: {
+            header: "Uspori!",
+            description: "Pre brzo mijenjaš stvari.",
+        },
+    },
     login: {
         label: "prijava",
         siteRestriction: "Prijava je trenutno dostupna samo za %1 račune",

@@ -1,6 +1,16 @@
 import { LanguageSpec } from "../i18n";
 
 const I18nEn = {
+    backendErrors: {
+        unavailable: {
+            header: "Sorry",
+            description: "We seem to be experiencing some problems right now.",
+        },
+        rateLimit: {
+            header: "Slow down!",
+            description: "You have been rate limited.",
+        },
+    },
     login: {
         label: "Log in",
         siteRestriction: "Login is currently only limited to %1 accounts",

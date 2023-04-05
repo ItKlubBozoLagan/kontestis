@@ -23,7 +23,7 @@ type GlobalsType = {
 export const Globals: GlobalsType = {
     mode: process.env.MODE ?? "development",
     port: process.env.PORT ? Number.parseInt(process.env.PORT) : 8080,
-    rateLimit: process.env.RATE_LIMIT ? Number.parseInt(process.env.RATE_LIMIT) : 60,
+    rateLimit: process.env.RATE_LIMIT ? Number.parseInt(process.env.RATE_LIMIT) : 2,
     tokenSecret: process.env.TOKEN_SECRET ?? "",
     dbHost: process.env.DB_HOST ?? "",
     dbPort: process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 9042,
