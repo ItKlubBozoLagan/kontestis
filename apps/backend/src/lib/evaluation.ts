@@ -117,8 +117,6 @@ const splitAndEvaluateTestcases = async (
     for (const groupTestcases of groups) {
         const [results, error] = await evaluateTestcases(problemDetails, groupTestcases, problem);
 
-        if (error) console.log(error.status);
-
         if (error) return [undefined, error] as AxiosEvaluationResponse;
 
         data.push(...results);

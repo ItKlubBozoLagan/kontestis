@@ -1,5 +1,5 @@
 import { ExamGradingScale, Snowflake } from "@kontestis/models";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { FiFilePlus, FiPlus } from "react-icons/all";
 
 import { http } from "../../../../api/http";
@@ -70,10 +70,6 @@ export const ContestResultsPage: FC = () => {
             ),
         [members, gradingScales, memberScores]
     );
-
-    useEffect(() => {
-        console.log(memberGrades);
-    }, [memberGrades]);
 
     const downloadClickHandler = async (userId: Snowflake) => {
         const response = await http
