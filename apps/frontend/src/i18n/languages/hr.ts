@@ -12,13 +12,13 @@ export default {
         },
     },
     login: {
-        label: "prijava",
+        label: "Prijava",
         siteRestriction: "Prijava je trenutno dostupna samo za %1 račune",
     },
     navbar: {
         dashboard: "Kontrolna ploča",
         contests: "Natjecanja",
-        problems: "Zadaci",
+        problems: "Zadatci",
         account: "Račun",
         management: "Upravljanje",
     },
@@ -55,7 +55,7 @@ export default {
             exams: "Ispiti",
             official: "Službena natjecanja",
             unofficial: "Neslužbena natjecanja",
-            loading: "učitavam",
+            loading: "Učitavam",
         },
         individual: {
             problems_table: {

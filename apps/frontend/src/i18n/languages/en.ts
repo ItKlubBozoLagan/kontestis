@@ -55,7 +55,7 @@ const I18nEn = {
             exams: "Exams",
             official: "Contests",
             unofficial: "Unofficial contests",
-            loading: "loading",
+            loading: "Loading",
         },
         individual: {
             problems_table: {
