@@ -55,7 +55,7 @@ export const ManagementPage: FC = () => {
                 <tbody>
                     <TableRow>
                         {myContests.length === 0 && (
-                            <TableItem colSpan={4} tw={"text-center"}>
+                            <TableItem colSpan={100} tw={"text-center"}>
                                 {t("contests.management.noContests")}
                             </TableItem>
                         )}

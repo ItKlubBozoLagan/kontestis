@@ -69,7 +69,7 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
                 </thead>
                 <tbody>
                     {data?.length === 0 && (
-                        <TableItem colSpan={5} tw={"text-center"}>
+                        <TableItem colSpan={100} tw={"text-center"}>
                             {t("contests.individual.leaderboard.emptyMessage")}
                         </TableItem>
                     )}

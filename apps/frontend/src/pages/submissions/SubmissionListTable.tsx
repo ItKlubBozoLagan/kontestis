@@ -70,14 +70,14 @@ export const SubmissionListTable: FC<Properties> = ({
             <tbody>
                 {!submissions && (
                     <TableRow>
-                        <TableItem colSpan={5} tw={"text-center"}>
+                        <TableItem colSpan={100} tw={"text-center"}>
                             {t("submissions.loading")}
                         </TableItem>
                     </TableRow>
                 )}
                 {submissions?.length === 0 && (
                     <TableRow>
-                        <TableItem colSpan={5} tw={"text-center"}>
+                        <TableItem colSpan={100} tw={"text-center"}>
                             {t("submissions.empty")}
                         </TableItem>
                     </TableRow>
@@ -139,7 +139,7 @@ export const SubmissionListTable: FC<Properties> = ({
                                     )}
                                 </>
                             ) : (
-                                <TableItem colSpan={5} tw={"text-center text-yellow-800"}>
+                                <TableItem colSpan={100} tw={"text-center text-yellow-800"}>
                                     {t("submissions.processing")}
                                 </TableItem>
                             )}
@@ -150,7 +150,7 @@ export const SubmissionListTable: FC<Properties> = ({
                 <tfoot>
                     <TableRow>
                         <TableItem
-                            colSpan={5}
+                            colSpan={100}
                             onClick={() => setExpanded((current) => !current)}
                             tw={"cursor-pointer"}
                         >
