@@ -19,6 +19,7 @@ import { useContest } from "../../hooks/contest/useContest";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 import { useTranslation } from "../../hooks/useTranslation";
+import { ContestStatusIndicator } from "../management/contest/overview/ContestStatusIndicator";
 import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
@@ -78,6 +79,7 @@ export const ContestViewPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 mt-5"}>
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
+            {contest && <ContestStatusIndicator contest={contest} />}
             {contest && running && (
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
                     <TitledSection
