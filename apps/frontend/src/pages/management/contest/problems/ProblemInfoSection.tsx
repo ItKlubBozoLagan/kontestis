@@ -60,8 +60,6 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
 
-        console.log(data);
-
         modifyMutation.mutate({
             ...data,
             evaluation_script:

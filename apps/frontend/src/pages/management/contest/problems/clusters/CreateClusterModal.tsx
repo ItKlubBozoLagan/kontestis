@@ -61,8 +61,6 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         properties.onAfterClose?.();
     }, [createMutation.isSuccess]);
 
-    useEffect(() => console.log(errors), [errors]);
-
     const { t } = useTranslation();
 
     return (

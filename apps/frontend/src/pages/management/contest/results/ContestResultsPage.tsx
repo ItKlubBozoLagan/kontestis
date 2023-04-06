@@ -77,8 +77,6 @@ export const ContestResultsPage: FC = () => {
                 responseType: "blob",
             })
             .then((response) => {
-                console.log(response.headers);
-
                 return {
                     data: response.data,
                     fileName: (response.headers["content-disposition"] as string).split("=")[1],
