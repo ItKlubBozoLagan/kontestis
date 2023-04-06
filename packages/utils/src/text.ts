@@ -14,7 +14,7 @@ export const textToColor = (text: string) => {
 
     for (let index = 0; index < 3; index++) {
         // eslint-disable-next-line unicorn/number-literal-case
-        const value = Math.max((hash >> (index * 8)) & 0xff, 160);
+        const value = Math.max((hash >> (index * 8)) & 0xff, 128);
 
         color += ("00" + value.toString(16)).slice(-2);
     }

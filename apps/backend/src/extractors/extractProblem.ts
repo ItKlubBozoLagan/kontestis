@@ -23,11 +23,17 @@ export const extractProblem = (
     problemId: Snowflake = extractIdFromParameters(req, "problem_id")
 ) =>
     memoizedRequestExtractor(req, "__problem_" + problemId, async () => {
-        const problem = await Database.selectOneFrom("problems", "*", {
+        const rawProblem = await Database.selectOneFrom("problems", "*", {
             id: problemId,
         });
 
-        if (!problem) throw new SafeError(StatusCodes.NOT_FOUND);
+        // TODO: Fix this
+        if (!rawProblem) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        const problem = {
+            ...rawProblem,
+            tags: rawProblem.tags ?? [],
+        };
 
         const contest = await extractContest(req, problem.contest_id);
 

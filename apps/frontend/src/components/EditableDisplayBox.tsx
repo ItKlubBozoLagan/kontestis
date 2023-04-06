@@ -1,14 +1,16 @@
 import React, { FC, ReactNode, useState } from "react";
-import { FiEdit, FiX } from "react-icons/fi";
+import { FiEdit, FiPlus } from "react-icons/all";
+import { FiX } from "react-icons/fi";
 import { FiCheck } from "react-icons/fi";
 import tw from "twin.macro";
 
 type Properties = {
     title: string;
-    value: string;
+    value: string | ReactNode;
     largeTextValue?: boolean;
     smallTextBox?: boolean;
     submitFunction: () => void;
+    variant?: "edit" | "add";
     children: ReactNode;
 };
 
@@ -19,6 +21,7 @@ export const EditableDisplayBox: FC<Properties> = ({
     children,
     largeTextValue = false,
     smallTextBox = false,
+    variant = "edit",
 }) => {
     const [editMode, setEditMode] = useState(false);
 
@@ -53,12 +56,21 @@ export const EditableDisplayBox: FC<Properties> = ({
                 ) : (
                     <div tw={"flex w-full gap-2 items-center text-lg justify-end"}>
                         {!largeTextValue && <span tw={"text-right"}>{value}</span>}
-                        <FiEdit
-                            onClick={() => {
-                                setEditMode(true);
-                            }}
-                            tw={"min-w-[20px] hover:(cursor-pointer text-blue-700)"}
-                        />
+                        {variant === "add" ? (
+                            <FiPlus
+                                onClick={() => {
+                                    setEditMode(true);
+                                }}
+                                tw={"min-w-[20px] text-xl hover:(cursor-pointer text-blue-700)"}
+                            />
+                        ) : (
+                            <FiEdit
+                                onClick={() => {
+                                    setEditMode(true);
+                                }}
+                                tw={"min-w-[20px] hover:(cursor-pointer text-blue-700)"}
+                            />
+                        )}
                     </div>
                 )}
             </div>

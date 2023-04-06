@@ -1,11 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProblemWithScore } from "@kontestis/models";
-import React, { FC, useEffect } from "react";
+import { textToColor } from "@kontestis/utils";
+import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FiCheckSquare } from "react-icons/all";
+import { FiCheckSquare, FiX } from "react-icons/all";
 import { useQueryClient } from "react-query";
 import { z } from "zod";
 
+import { Breadcrumb } from "../../../../components/Breadcrumb";
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
 import { TitledInput } from "../../../../components/TitledInput";
 import { TitledSection } from "../../../../components/TitledSection";
@@ -27,6 +29,7 @@ const ModifyProblemSchema = z.object({
     memory_limit_megabytes: z.coerce.number(),
     solution_code: z.string(),
     solution_language: z.string(),
+    tags: z.array(z.string()),
 });
 
 export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
@@ -57,6 +60,8 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
 
+        console.log(data);
+
         modifyMutation.mutate({
             ...data,
             evaluation_script:
@@ -82,6 +87,8 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
     };
 
     const { t } = useTranslation();
+
+    const [newTag, setNewTag] = useState("");
 
     return (
         <form tw={"w-full"} onSubmit={onSubmit} ref={formReference}>
@@ -157,6 +164,29 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     largeTextValue
                 >
                     <textarea {...register("solution_code")} />
+                </EditableDisplayBox>
+                <EditableDisplayBox
+                    title={"Tags"}
+                    value={
+                        <div tw={"flex gap-1"}>
+                            {(problem.tags ?? ["dd"]).map((t) => (
+                                <Breadcrumb key={t} color={textToColor(t)}>
+                                    {t}
+                                    <FiX />
+                                </Breadcrumb>
+                            ))}
+                        </div>
+                    }
+                    variant={"add"}
+                    submitFunction={() => {
+                        if (newTag.length === 0) return;
+
+                        setValue("tags", [newTag, ...problem.tags]);
+                        setNewTag("");
+                        submitForm();
+                    }}
+                >
+                    <TitledInput onChange={(event) => setNewTag(event.target.value)} />
                 </EditableDisplayBox>
                 <LimitBox icon={FiCheckSquare} title={"Score"} value={problem.score + ""} />
                 <div tw={"text-sm text-red-500"}>

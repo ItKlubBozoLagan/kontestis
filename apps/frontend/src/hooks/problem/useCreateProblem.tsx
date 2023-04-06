@@ -12,6 +12,7 @@ type CreateProblemVariables = {
     memory_limit_megabytes: number;
     solution_language: string;
     solution_code: string;
+    tags: string[];
 };
 
 export const useCreateProblem: MutationHandler<CreateProblemVariables, Problem, Snowflake> = (
