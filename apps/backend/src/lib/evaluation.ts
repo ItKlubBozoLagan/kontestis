@@ -8,6 +8,7 @@ import {
     Problem,
     Snowflake,
     Testcase,
+    TestcaseWithOutput,
     User,
 } from "@kontestis/models";
 import { AxiosError } from "axios";
@@ -25,6 +26,7 @@ type ProblemDetails = {
     problemId: bigint;
     language: EvaluationLanguage;
     code: string;
+    evaluator?: string;
 };
 
 export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
@@ -59,7 +61,7 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
 
 const evaluateTestcases = async (
     problemDetails: ProblemDetails,
-    testcases: Testcase[],
+    testcases: TestcaseWithOutput[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
     return (await evaluatorAxios
@@ -75,6 +77,7 @@ const evaluateTestcases = async (
                     in: testcase.input,
                     out: testcase.correct_output,
                 })),
+                evaluator: problemDetails.evaluator,
             },
             {
                 timeout: 60_000,
@@ -86,12 +89,12 @@ const evaluateTestcases = async (
 
 const GROUP_SIZE_LIMIT = 1 << 22;
 
-const splitAndEvaluateTestcases = async (
+export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
-    testcases: Testcase[],
+    testcases: TestcaseWithOutput[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
-    const groups: Testcase[][] = [];
+    const groups: TestcaseWithOutput[][] = [];
 
     let currentSize = 0;
     let groupId = 0;
@@ -132,11 +135,7 @@ const evaluateCluster = async (
     pendingSubmission: PendingSubmission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const testcases = cluster.generator
-        ? await getAllTestcases(cluster)
-        : (await Database.selectFrom("testcases", "*", { cluster_id: cluster.id })).sort(
-              (a, b) => Number(a.id) - Number(b.id)
-          );
+    const testcases = await getAllTestcases(cluster);
     const testCasesById: Record<string, Testcase> = {};
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;

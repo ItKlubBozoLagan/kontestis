@@ -5,7 +5,6 @@ import { http, MutationHandler, wrapAxios } from "../../../../api/http";
 
 type CreateTestcaseVariables = {
     input: string;
-    correctOutput: string;
 };
 
 export const useCreateTestcase: MutationHandler<

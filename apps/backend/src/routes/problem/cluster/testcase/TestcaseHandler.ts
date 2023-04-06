@@ -19,7 +19,6 @@ const TESTCASE_MAX_SIZE = 1 << 23;
 
 const testcaseSchema = Type.Object({
     input: Type.String({ maxLength: TESTCASE_MAX_SIZE }),
-    correctOutput: Type.String({ default: "", maxLength: TESTCASE_MAX_SIZE }),
 });
 
 TestcaseHandler.post("/", useValidation(testcaseSchema), async (req, res) => {
@@ -29,7 +28,6 @@ TestcaseHandler.post("/", useValidation(testcaseSchema), async (req, res) => {
         id: generateSnowflake(),
         cluster_id: cluster.id,
         input: req.body.input,
-        correct_output: req.body.correctOutput,
     };
 
     await Database.insertInto("testcases", testcase);
@@ -61,7 +59,6 @@ TestcaseHandler.patch("/:testcase_id", useValidation(testcaseSchema), async (req
         "testcases",
         {
             input: req.body.input,
-            correct_output: req.body.correctOutput,
         },
         { id: testcase.id }
     );

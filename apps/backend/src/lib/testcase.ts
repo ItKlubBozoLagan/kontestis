@@ -1,13 +1,12 @@
-import { Cluster, ClusterStatus, EvaluationResult, Snowflake, Testcase } from "@kontestis/models";
-import { AxiosError } from "axios";
+import { Cluster, ClusterStatus, Snowflake, TestcaseWithOutput } from "@kontestis/models";
 import { StatusCodes } from "http-status-codes";
 
-import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
-import { AxiosEvaluationResponse } from "./evaluation";
+import { R } from "../utils/remeda";
+import { splitAndEvaluateTestcases } from "./evaluation";
 
 const RETURN_OUTPUT_EVALUATOR = `
 def read_until(separator):
@@ -38,19 +37,25 @@ export const getClusterStatus = async (clusterId: Snowflake) => {
 };
 
 // TODO: Number of tests
-export const getAllTestcases: (c: Cluster) => Promise<Testcase[]> = async (cluster: Cluster) => {
+export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithOutput[]> = async (
+    cluster: Cluster
+) => {
     const clusterStatus: ClusterStatus = await getClusterStatus(cluster.id);
 
     if (clusterStatus === "cached") {
+        const testcaseIds = cluster.generator
+            ? Array.from({ length: 10 }).map((_, index) => ({ id: BigInt(index) }))
+            : await Database.selectFrom("testcases", ["id"], { cluster_id: cluster.id });
+
         return (await Promise.all(
-            Array.from({ length: 10 }).map(async (_, index) => ({
-                id: BigInt(index),
+            testcaseIds.map(async (it) => ({
+                id: it.id,
                 cluster_id: cluster.id,
-                input: (await Redis.get(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, index))) ?? "",
+                input: (await Redis.get(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, it.id))) ?? "",
                 correct_output:
-                    (await Redis.get(RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, index))) ?? "",
+                    (await Redis.get(RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, it.id))) ?? "",
             }))
-        )) as Testcase[];
+        )) as TestcaseWithOutput[];
     }
 
     await generateTestcaseBatch(cluster, 10);
@@ -60,34 +65,53 @@ export const getAllTestcases: (c: Cluster) => Promise<Testcase[]> = async (clust
     return [];
 };
 
-// TODO: refactor
-// eslint-disable-next-line sonarjs/cognitive-complexity
+const generateTestcaseInput = async (cluster: Cluster, count: number) => {
+    const [data] = await splitAndEvaluateTestcases(
+        {
+            problemId: 0n,
+            language: cluster.generator_language ?? "python",
+            code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
+            evaluator: returnOutputEvaluatorBase64,
+        },
+        Array.from({ length: count }).map((_, index) => ({
+            id: BigInt(index),
+            cluster_id: cluster.id,
+            input: index.toString(),
+            correct_output: "",
+        })),
+        {
+            time_limit_millis: 60_000,
+            memory_limit_megabytes: 2048,
+        }
+    );
+
+    if (!data) return;
+
+    const inputData: Record<string, string> = {};
+
+    for (const result of data) {
+        if (result.type !== "success" || result.verdict !== "custom") {
+            return;
+        }
+
+        inputData[result.testCaseId] = result.extra;
+    }
+
+    return Array.from({ length: count }).map((_, index) => ({
+        id: BigInt(index),
+        cluster_id: cluster.id,
+        input: inputData[index.toString()],
+    }));
+};
+
 export const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
     await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
 
-    const [data, _error] = (await evaluatorAxios
-        .post<EvaluationResult>(
-            "",
-            {
-                language: cluster.generator_language,
-                code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
-                time_limit: 60_000,
-                memory_limit: 2048,
-                testcases: Array.from({ length: count }).map((_, index) => ({
-                    id: index.toString(),
-                    in: index.toString(),
-                    out: "",
-                })),
-                evaluator: returnOutputEvaluatorBase64,
-            },
-            {
-                timeout: 60_000,
-            }
-        )
-        .then((data) => [data.data, undefined])
-        .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
+    const testcaseInputs = cluster.generator
+        ? await generateTestcaseInput(cluster, count)
+        : await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
 
-    if (!data) {
+    if (!testcaseInputs) {
         return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "generator_error");
     }
 
@@ -95,43 +119,25 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
 
     if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
-    const inputData: Record<string, string> = {};
-
-    for (const result of data) {
-        if (result.type !== "success" || result.verdict !== "custom") {
-            return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "generator_error");
+    const [rawOutData] = await splitAndEvaluateTestcases(
+        {
+            problemId: problem.id,
+            language: problem.solution_language ?? "python",
+            code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
+            evaluator: returnOutputEvaluatorBase64,
+        },
+        R.map(testcaseInputs, (t) => R.addProp(t, "correct_output", "")),
+        {
+            time_limit_millis: 60_000,
+            memory_limit_megabytes: 2048,
         }
-
-        inputData[result.testCaseId] = result.verdict === "custom" ? result.extra : "";
-    }
-
-    const [rawOutData] = (await evaluatorAxios
-        .post<EvaluationResult>(
-            "",
-            {
-                language: problem.solution_language,
-                code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
-                time_limit: problem.time_limit_millis,
-                memory_limit: problem.memory_limit_megabytes,
-                testcases: Array.from({ length: count }).map((_, index) => ({
-                    id: index.toString(),
-                    in: inputData[index.toString()],
-                    out: "",
-                })),
-                evaluator: returnOutputEvaluatorBase64,
-            },
-            {
-                timeout: 60_000,
-            }
-        )
-        .then((data) => [data.data, undefined])
-        .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
+    );
 
     if (!rawOutData) {
         return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "solution_error");
     }
 
-    const testcases: Testcase[] = [];
+    const testcases: TestcaseWithOutput[] = [];
 
     for (const result of rawOutData) {
         if (result.type !== "success" || result.verdict !== "custom") {
@@ -141,16 +147,16 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
         testcases.push({
             id: BigInt(result.testCaseId),
             cluster_id: cluster.id,
-            input: inputData[result.testCaseId],
+            input: testcaseInputs.find((ti) => ti.id == BigInt(result.testCaseId))!.input,
             correct_output: result.extra,
         });
     }
 
     await Promise.all(
         testcases.map(async (tc) => {
-            await Redis.set(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, Number(tc.id)), tc.input);
+            await Redis.set(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, tc.id), tc.input);
             await Redis.set(
-                RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, Number(tc.id)),
+                RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, tc.id),
                 tc.correct_output ?? ""
             );
         })

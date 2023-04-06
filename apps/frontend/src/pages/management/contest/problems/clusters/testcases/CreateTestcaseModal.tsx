@@ -14,7 +14,6 @@ import { ModalStyles } from "../../../../../../util/ModalStyles";
 
 const CreateTestcaseSchema = z.object({
     input: z.string().min(1),
-    correctOutput: z.string().min(1),
 });
 
 type Properties = {
@@ -79,14 +78,6 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
                     <textarea
                         tw={"w-full h-16 resize-none font-mono text-sm"}
                         {...register("input")}
-                    ></textarea>
-
-                    <span tw={"mt-2"}>
-                        {t("contests.management.individual.problems.cluster.testCase.output")}
-                    </span>
-                    <textarea
-                        tw={"w-full h-16 resize-none font-mono text-sm"}
-                        {...register("correctOutput")}
                     ></textarea>
                     <SimpleButton tw={"mt-2"}>
                         {t(

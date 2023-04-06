@@ -116,9 +116,9 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                             submitForm();
                     }}
                 />
+                <ClusterStatusSection cluster={cluster} />
                 {generator && (
                     <div tw={"w-full flex flex-col gap-5 mt-5"}>
-                        <ClusterStatusSection cluster={cluster} />
                         <EditableDisplayBox
                             title={t(
                                 "contests.management.individual.problems.cluster.info.generator_language"

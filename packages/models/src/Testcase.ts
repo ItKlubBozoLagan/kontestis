@@ -11,4 +11,10 @@ export type TestcaseV2 = Omit<TestcaseV1, "correctoutput"> & {
     correct_output?: string;
 };
 
-export type Testcase = TestcaseV2;
+export type TestcaseV3 = Omit<TestcaseV2, "correct_output">;
+
+export type Testcase = TestcaseV3;
+
+export type TestcaseWithOutput = Testcase & {
+    correct_output: string;
+};

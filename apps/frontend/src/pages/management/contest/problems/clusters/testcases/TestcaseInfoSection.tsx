@@ -19,7 +19,6 @@ type Properties = {
 
 const ModifyTestcaseSchema = z.object({
     input: z.string().min(1),
-    correctOutput: z.string().min(1),
 });
 
 export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => {
@@ -31,7 +30,6 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
         resolver: zodResolver(ModifyTestcaseSchema),
         defaultValues: {
             input: testcase.input,
-            correctOutput: testcase.correct_output,
         },
     });
 
@@ -81,14 +79,6 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                     largeTextValue
                 >
                     <textarea {...register("input")} />
-                </EditableDisplayBox>
-                <EditableDisplayBox
-                    title={t("contests.management.individual.problems.cluster.testCase.output")}
-                    value={cutText(testcase.correct_output ?? "", 100)}
-                    submitFunction={submitForm}
-                    largeTextValue
-                >
-                    <textarea {...register("correctOutput")} />
                 </EditableDisplayBox>
             </TitledSection>
             <div tw={"text-sm text-red-500"}>
