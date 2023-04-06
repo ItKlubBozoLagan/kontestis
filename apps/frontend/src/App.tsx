@@ -71,7 +71,11 @@ export const App = () => {
 
         // next tick
         setTimeout(() => {
-            navigate(`/?afterLogin=${encodeURIComponent(path)}&organisationId=${orgId}`);
+            navigate(
+                `/?afterLogin=${encodeURIComponent(path)}&organisationId=${
+                    orgId === 0n ? 1 : orgId
+                }`
+            );
         });
 
         doForceLogout(false);
