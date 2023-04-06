@@ -216,7 +216,7 @@ const handleContest = async (contest: Contest) => {
     );
 };
 
-export const startEloTask = () => {
+export const startEloTask = async () => {
     Logger.info("Started ELO task");
     setInterval(async () => {
         const potentiallyPending = await Database.selectFrom("contests", "*", {

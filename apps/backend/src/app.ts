@@ -126,6 +126,6 @@ Promise.allSettled([
 
     app.listen(_PORT, () => {
         Logger.info("Listening on " + _PORT);
-        startEloTask();
+        const _ = startEloTask();
     });
 });
