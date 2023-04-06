@@ -92,6 +92,8 @@ export const ProblemsPage: FC = () => {
                                         "flex gap-1 flex-wrap text-sm min-h-[50px] max-w-[100px] items-center"
                                     }
                                 >
+                                    {!problem.tags ||
+                                        (problem?.tags.length === 0 && <span>None</span>)}
                                     {(problem.tags ?? []).map((t) => (
                                         <div tw={"max-h-[25px]"} key={t}>
                                             <Breadcrumb color={textToColor(t)}>{t}</Breadcrumb>
