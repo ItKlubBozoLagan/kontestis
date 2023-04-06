@@ -9,6 +9,7 @@ import { http, wrapAxios } from "../../api/http";
 import { Breadcrumb } from "../../components/Breadcrumb";
 import { PageTitle } from "../../components/PageTitle";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
+import { RankBreadcrumb } from "../../components/RankBreadcrumb";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
@@ -90,9 +91,18 @@ export const ProblemsPage: FC = () => {
                                 <div tw={"flex gap-1 flex-wrap text-sm max-w-[100px] items-center"}>
                                     {!problem.tags ||
                                         (problem?.tags.length === 0 && <span>None</span>)}
-                                    {(problem.tags ?? []).map((t) => (
-                                        <div tw={"max-h-[25px]"} key={t}>
-                                            <Breadcrumb color={textToColor(t)}>{t}</Breadcrumb>
+                                    {(problem.tags ?? []).sort().map((tag) => (
+                                        <div tw={"max-h-[24px]"} key={tag}>
+                                            {/\*\d+/.test(tag) ? (
+                                                <RankBreadcrumb
+                                                    specificElo={Number(tag.slice(1))}
+                                                    alternateText={tag}
+                                                />
+                                            ) : (
+                                                <Breadcrumb color={textToColor(tag)}>
+                                                    {tag}
+                                                </Breadcrumb>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

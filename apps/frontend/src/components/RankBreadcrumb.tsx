@@ -8,9 +8,10 @@ import { Breadcrumb } from "./Breadcrumb";
 type Properties = {
     specificElo?: number;
     showExact?: boolean;
+    alternateText?: string;
 };
 
-export const RankBreadcrumb: FC<Properties> = ({ specificElo, showExact }) => {
+export const RankBreadcrumb: FC<Properties> = ({ specificElo, showExact, alternateText }) => {
     const { elo: orgElo } = useOrganisationStore();
 
     const elo = specificElo ?? orgElo;
@@ -20,7 +21,7 @@ export const RankBreadcrumb: FC<Properties> = ({ specificElo, showExact }) => {
             color={colorFromRank(rankFromElo(elo))}
             borderColor={darkenHex(colorFromRank(rankFromElo(elo)), 40)}
         >
-            {capitalize(rankFromElo(elo))} {showExact ? `(${elo.toString()})` : ""}
+            {alternateText ?? capitalize(rankFromElo(elo))} {showExact ? `(${elo.toString()})` : ""}
         </Breadcrumb>
     );
 };
