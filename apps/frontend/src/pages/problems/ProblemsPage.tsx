@@ -87,11 +87,7 @@ export const ProblemsPage: FC = () => {
                                 />
                             </TableItem>
                             <TableItem>
-                                <div
-                                    tw={
-                                        "flex gap-1 flex-wrap text-sm min-h-[50px] max-w-[100px] items-center"
-                                    }
-                                >
+                                <div tw={"flex gap-1 flex-wrap text-sm max-w-[100px] items-center"}>
                                     {!problem.tags ||
                                         (problem?.tags.length === 0 && <span>None</span>)}
                                     {(problem.tags ?? []).map((t) => (

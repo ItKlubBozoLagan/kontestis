@@ -8,8 +8,6 @@ import { computeELODifference, ContestMemberLeaderboardInfo } from "../lib/elo";
 import { Logger } from "../lib/logger";
 import { R } from "../utils/remeda";
 
-//USED FOR PROBLEM DIFFICULTY:
-
 const calculateLoss = (difficulty: number, solves: number[], notSolves: number[]) => {
     const solvesLoss = solves.reduce(
         (loss, elo) => loss / (1 + 10 ** ((elo - difficulty) / 400)),
@@ -29,43 +27,40 @@ const calculateProblemDifficulties = (
     problemPoints: number[],
     leaderboard: ContestMemberLeaderboardInfo[]
 ) => {
-    return problems.map((problem, ind) => {
-        // ONLY WORKS IF PROBLEMS ARE IDENTICALLY ORDERED IN problemPoints AND IN ContestMemberLeaderboardInfo.problemPoints.
-        // OTHERWISE IT HAS TO BE DONE WITH IDs
-        const solvesElos = leaderboard
-            .filter((user) => user.problemPoints[ind] === problemPoints[ind])
-            .map((user) => user.currentGlobalElo);
-        const notSolvesElos = leaderboard
-            .filter((user) => user.problemPoints[ind] !== problemPoints[ind])
-            .map((user) => user.currentGlobalElo);
+    return R.fromPairs(
+        problems.map((problem, ind) => {
+            const solvesElos = leaderboard
+                .filter((user) => user.problemPoints[ind] === problemPoints[ind])
+                .map((user) => user.currentGlobalElo);
+            const notSolvesElos = leaderboard
+                .filter((user) => user.problemPoints[ind] !== problemPoints[ind])
+                .map((user) => user.currentGlobalElo);
 
-        const delta = 0.1;
+            const delta = 0.1;
 
-        let low = 400;
-        let high = leaderboard[0].currentGlobalElo + 200;
+            let low = 400;
+            let high = leaderboard[0].currentGlobalElo + 200;
 
-        while (high - low > 1) {
-            const mid = low + (high - low) / 2;
+            while (high - low > 1) {
+                const mid = low + (high - low) / 2;
 
-            if (
-                calculateLoss(mid, solvesElos, notSolvesElos) >
-                calculateLoss(mid + delta, solvesElos, notSolvesElos)
-            ) {
-                low = mid;
-            } else {
-                high = mid;
+                if (
+                    calculateLoss(mid, solvesElos, notSolvesElos) >
+                    calculateLoss(mid + delta, solvesElos, notSolvesElos)
+                ) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
             }
-        }
 
-        const finalDifficulty = Math.round(high);
-        const roundedFinalDifficulty =
-            finalDifficulty - (finalDifficulty % 100) + (finalDifficulty % 100) > 50 ? 100 : 0;
+            const finalDifficulty = Math.round(high);
+            const roundedFinalDifficulty =
+                finalDifficulty - (finalDifficulty % 100) + (finalDifficulty % 100) > 50 ? 100 : 0;
 
-        return {
-            problem_id: problem.id,
-            difficulty: roundedFinalDifficulty,
-        };
-    });
+            return [problem.id.toString(), roundedFinalDifficulty];
+        })
+    );
 };
 
 const handleContest = async (contest: Contest) => {
@@ -164,8 +159,21 @@ const handleContest = async (contest: Contest) => {
         finalNewRatings.map((user) => [user.id.toString(), user.elo])
     );
 
-    ///PROBLEM DIFFICULTY:
-    const problemDificulties = calculateProblemDifficulties(problems, problemPoints, leaderboard);
+    const problemDifficulties = calculateProblemDifficulties(problems, problemPoints, leaderboard);
+
+    await Promise.all(
+        Object.entries(problemDifficulties).map(async ([problemId, difficulty]) => {
+            const problem = await Database.selectOneFrom("problems", ["tags"], { id: problemId });
+
+            if (!problem) return;
+
+            await Database.update(
+                "problems",
+                { tags: [...(problem.tags ?? []), `*${difficulty}`] },
+                { id: problemId }
+            );
+        })
+    );
 
     await Promise.all([
         ...usersWithElo.map((user) =>
