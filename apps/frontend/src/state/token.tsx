@@ -5,7 +5,7 @@ import { useAuthStore } from "./auth";
 
 type TokenState = {
     token: string;
-    setToken: (_: string) => void;
+    setToken: (_: string, force?: boolean) => void;
 };
 
 export const useTokenStore = create<TokenState>()(

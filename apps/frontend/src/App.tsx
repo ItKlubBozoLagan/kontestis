@@ -5,6 +5,7 @@ import { FullUser } from "@kontestis/models";
 import React, { useEffect } from "react";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
+import { useLocation, useNavigate } from "react-router";
 import { useRoutes } from "react-router-dom";
 
 import { http, wrapAxios } from "./api/http";
@@ -21,12 +22,26 @@ BigInt.prototype.toJSON = function () {
     return this.toString();
 };
 
+type ForceLogoutState = {
+    path: string;
+    orgId: bigint;
+};
+
 export const App = () => {
-    const { isLoggedIn, setUser, setIsLoggedIn } = useAuthStore();
+    const { isLoggedIn, setUser, setIsLoggedIn, forceLogout, doForceLogout } = useAuthStore();
     const { token, setToken } = useTokenStore();
-    const { isSelected, organisationId, reset: resetOrganisationStore } = useOrganisationStore();
+    const {
+        isSelected,
+        organisationId,
+        setOrganisationId,
+        setIsSelected: setIsOrganisationSelected,
+        reset: resetOrganisationStore,
+    } = useOrganisationStore();
 
     const queryClient = useQueryClient();
+
+    const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         queryClient.clear();
@@ -46,27 +61,46 @@ export const App = () => {
                 setUser(data);
                 setIsLoggedIn(true);
             })
-            .catch(() => setToken(""));
+            .catch(() => doForceLogout());
     }, [token]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (token.length === 0) return;
-
-            wrapAxios<FullUser>(http.get("/auth/info"))
-                .then((data) => {
-                    setUser(data);
-                    setIsLoggedIn(true);
-                })
-                .catch(() => setToken(""));
-        }, 20_000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     const matched = useRoutes(
         isLoggedIn ? (isSelected ? dashboardRoutes : organisationRoutes) : loginRoutes
     );
+
+    useEffect(() => {
+        if (!forceLogout || location.pathname === "/") return;
+
+        const path = location.pathname;
+        const orgId = organisationId;
+
+        // next tick
+        setTimeout(() => {
+            navigate(`/?afterLogin=${encodeURIComponent(path)}&organisationId=${orgId}`);
+        });
+
+        doForceLogout(false);
+    }, [location, forceLogout]);
+
+    useEffect(() => {
+        if (!isLoggedIn) return;
+
+        const search = new URLSearchParams(location.search);
+
+        if (search.has("organisationId")) {
+            setOrganisationId(BigInt(search.get("organisationId") ?? "1"));
+            setIsOrganisationSelected(true);
+        }
+
+        if (search.has("afterLogin")) {
+            const where = search.get("afterLogin")!;
+
+            // trigger next tick
+            setTimeout(() => {
+                navigate(where);
+            });
+        }
+    }, [isLoggedIn, location]);
 
     if (token.length > 0 && !isLoggedIn) return <></>;
 

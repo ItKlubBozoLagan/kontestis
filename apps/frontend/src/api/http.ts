@@ -10,6 +10,7 @@ import {
 import superjson from "superjson";
 import { z } from "zod";
 
+import { useAuthStore } from "../state/auth";
 import { useBackendError } from "../state/backendError";
 import { useOrganisationStore } from "../state/organisation";
 import { useProcessingLoader } from "../state/processing";
@@ -81,12 +82,12 @@ const handleAxiosError = (error: AxiosError) => {
     if (responseStatus) {
         if (responseStatus === 429) return useBackendError.getState().setBackendError("rate-limit");
 
-        if ([401, 403].includes(responseStatus)) return useTokenStore.getState().setToken("");
+        if ([401, 403].includes(responseStatus)) return useAuthStore.getState().doForceLogout();
     }
 
     if (error.code !== "ERR_NETWORK") return;
 
-    useTokenStore.getState().setToken("");
+    useAuthStore.getState().doForceLogout();
     useBackendError.getState().setBackendError("unavailable");
 };
 
