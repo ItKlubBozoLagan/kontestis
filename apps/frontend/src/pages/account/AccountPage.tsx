@@ -9,9 +9,9 @@ import { DomainBreadcrumb } from "../../components/DomainBreadcrumb";
 import { RankBreadcrumb } from "../../components/RankBreadcrumb";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
+import { useElo } from "../../hooks/organisation/useElo";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
-import { useOrganisationStore } from "../../state/organisation";
 import {
     AllRanks,
     colorFromRank,
@@ -55,7 +55,7 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 
 export const AccountPage: FC = () => {
     const { user } = useAuthStore();
-    const { elo } = useOrganisationStore();
+    const elo = useElo();
 
     const { t } = useTranslation();
 

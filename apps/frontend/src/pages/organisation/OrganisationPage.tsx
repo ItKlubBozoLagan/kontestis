@@ -1,9 +1,7 @@
-import { OrganisationMember } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
 import { FiEdit, FiPlus } from "react-icons/all";
 import { Link } from "react-router-dom";
 
-import { http, wrapAxios } from "../../api/http";
 import { PageTitle } from "../../components/PageTitle";
 import { SimpleButton } from "../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
@@ -14,13 +12,8 @@ import { useOrganisationStore } from "../../state/organisation";
 import { CreateOrganisationModal } from "./CreateOrganisationModal";
 
 export const OrganisationPage: FC = () => {
-    const {
-        setIsSelected,
-        setOrganisationId,
-        skipOrganisationSelect,
-        setSkipOrganisationSelect,
-        setElo,
-    } = useOrganisationStore();
+    const { setIsSelected, setOrganisationId, skipOrganisationSelect, setSkipOrganisationSelect } =
+        useOrganisationStore();
 
     const { user } = useAuthStore();
 
@@ -67,11 +60,6 @@ export const OrganisationPage: FC = () => {
                                         setIsSelected(true);
                                         setOrganisationId(organisation.id);
                                         setSkipOrganisationSelect(false);
-                                        wrapAxios<OrganisationMember>(
-                                            http.get(
-                                                `/organisation/${organisation.id}/member/${user.id}`
-                                            )
-                                        ).then((data) => setElo(data.elo));
                                     }}
                                 >
                                     {organisation.name}
