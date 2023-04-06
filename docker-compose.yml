@@ -60,7 +60,7 @@ services:
 
   scylla:
     image: "scylladb/scylla:5.1.7"
-    command: "--smp 1 --skip-wait-for-gossip-to-settle 0"
+    command: "--smp 1 --skip-wait-for-gossip-to-settle 0 --developer-mode 1"
     ports:
       - "9042:9042"
     volumes:
