@@ -21,8 +21,8 @@ type Properties = {
 const ModifyClusterSchema = z.object({
     awarded_score: z.coerce.number(),
     generator: z.coerce.boolean(),
-    generator_language: z.coerce.string(),
-    generator_code: z.coerce.string(),
+    generator_language: z.string(),
+    generator_code: z.string(),
 });
 
 export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
@@ -45,7 +45,11 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
 
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
-        modifyMutation.mutate(data);
+        modifyMutation.mutate({
+            ...data,
+            generator_language: data.generator_language || undefined,
+            generator_code: data.generator_code || undefined,
+        });
     });
 
     const [generator, setGenerator] = useState(cluster.generator);
