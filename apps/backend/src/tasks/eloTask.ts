@@ -55,8 +55,7 @@ const calculateProblemDifficulties = (
             }
 
             const finalDifficulty = Math.round(high);
-            const roundedFinalDifficulty =
-                finalDifficulty - (finalDifficulty % 100) + (finalDifficulty % 100) > 50 ? 100 : 0;
+            const roundedFinalDifficulty = Math.round(finalDifficulty / 100) * 100;
 
             return [problem.id.toString(), roundedFinalDifficulty];
         })
@@ -86,10 +85,16 @@ const handleContest = async (contest: Contest) => {
             id: eqIn(...members.map((it) => it.user_id)),
         }),
         (user) =>
-            R.addProp(
+            R.pipe(
                 user,
-                "elo",
-                organisation_members.find((om) => om.user_id === user.id)?.elo ?? DEFAULT_ELO
+                R.addProp(
+                    "organisationMemberId",
+                    organisation_members.find((om) => om.user_id === user.id)!.id
+                ),
+                R.addProp(
+                    "elo",
+                    organisation_members.find((om) => om.user_id === user.id)?.elo ?? DEFAULT_ELO
+                )
             )
     );
 
@@ -182,7 +187,11 @@ const handleContest = async (contest: Contest) => {
                 {
                     elo: newUserEloValues[user.id.toString()],
                 },
-                { user_id: user.id, organisation_id: contest.organisation_id }
+                {
+                    id: user.organisationMemberId,
+                    user_id: user.id,
+                    organisation_id: contest.organisation_id,
+                }
             )
         ),
         Influx.insertMany(
