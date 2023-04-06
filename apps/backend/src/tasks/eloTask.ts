@@ -233,6 +233,6 @@ export const startEloTask = () => {
             "Computing ELO for",
             toDo.map((it) => it.id)
         );
-        await Promise.all(toDo.map(handleContest));
-    }, 60 * 1000);
+        await Promise.all(toDo.map(handleContest)).catch(console.error);
+    }, 10 * 1000);
 };
