@@ -41,6 +41,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
             <div tw={"flex justify-around mt-2 gap-2"}>
                 <SimpleButton
                     tw={"w-full"}
+                    type={"button"}
                     color={theme`colors.red.300`!}
                     onClick={async () => {
                         await http.post(
@@ -58,6 +59,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                 </SimpleButton>
                 <SimpleButton
                     tw={"w-full"}
+                    type={"button"}
                     onClick={async () => {
                         await http.post(
                             `/problem/${cluster.problem_id}/cluster/${cluster.id}/cache/regenerate`

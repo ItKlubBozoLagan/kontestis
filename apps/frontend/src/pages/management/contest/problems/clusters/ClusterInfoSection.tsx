@@ -36,8 +36,8 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
         defaultValues: {
             awarded_score: cluster.awarded_score,
             generator: cluster.generator,
-            generator_language: cluster.generator_language,
-            generator_code: cluster.generator_code,
+            generator_language: cluster.generator_language ?? "python",
+            generator_code: cluster.generator_code ?? "",
         },
     });
 
@@ -45,11 +45,7 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
 
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
-        modifyMutation.mutate({
-            ...data,
-            generator_language: data.generator_language || undefined,
-            generator_code: data.generator_code || undefined,
-        });
+        modifyMutation.mutate(data);
     });
 
     const [generator, setGenerator] = useState(cluster.generator);

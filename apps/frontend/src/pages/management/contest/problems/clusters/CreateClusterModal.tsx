@@ -17,8 +17,8 @@ import { ModalStyles } from "../../../../../util/ModalStyles";
 const CreateClusterSchema = z.object({
     awarded_score: z.coerce.number(),
     generator: z.coerce.boolean(),
-    generator_language: z.coerce.string(),
-    generator_code: z.coerce.string(),
+    generator_language: z.string(),
+    generator_code: z.string(),
 });
 
 type Properties = {
@@ -37,6 +37,7 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         defaultValues: {
             generator: false,
             generator_language: "python",
+            generator_code: "",
         },
     });
 
@@ -59,6 +60,8 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         reset();
         properties.onAfterClose?.();
     }, [createMutation.isSuccess]);
+
+    useEffect(() => console.log(errors), [errors]);
 
     const { t } = useTranslation();
 
@@ -153,7 +156,7 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                             ></textarea>
                         </div>
                     )}
-                    <SimpleButton tw={"mt-2"}>
+                    <SimpleButton tw={"mt-2"} disabled={createMutation.isLoading}>
                         {t("contests.management.individual.problems.cluster.modal.createButton")}
                     </SimpleButton>
                 </div>

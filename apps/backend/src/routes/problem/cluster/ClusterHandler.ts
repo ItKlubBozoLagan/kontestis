@@ -57,8 +57,8 @@ ClusterHandler.post("/", useValidation(clusterSchema), async (req, res) => {
         problem_id: problem.id,
         awarded_score: req.body.awarded_score,
         generator: req.body.generator,
-        generator_code: req.body.generator_code,
-        generator_language: req.body.generator_language,
+        generator_code: req.body.generator_code ?? "",
+        generator_language: req.body.generator_language ?? "python",
     };
 
     await Database.insertInto("clusters", cluster);
