@@ -39,13 +39,13 @@ const calculateProblemDifficulties = (
             const delta = 0.1;
 
             let low = 400;
-            let high = leaderboard[0].currentGlobalElo + 200;
+            let high = Math.max(leaderboard[0].currentGlobalElo + 200, 400);
 
             while (high - low > 1) {
                 const mid = low + (high - low) / 2;
 
                 if (
-                    calculateLoss(mid, solvesElos, notSolvesElos) >
+                    calculateLoss(mid, solvesElos, notSolvesElos) <
                     calculateLoss(mid + delta, solvesElos, notSolvesElos)
                 ) {
                     low = mid;
