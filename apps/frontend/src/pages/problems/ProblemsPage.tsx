@@ -1,11 +1,12 @@
 import { ProblemWithScore } from "@kontestis/models";
-import { toCroatianLocale } from "@kontestis/utils";
+import { textToColor, toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useQueries } from "react-query";
 import { Link } from "react-router-dom";
 
 import { http, wrapAxios } from "../../api/http";
+import { Breadcrumb } from "../../components/Breadcrumb";
 import { PageTitle } from "../../components/PageTitle";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
@@ -60,6 +61,7 @@ export const ProblemsPage: FC = () => {
                         <TableHeadItem>{t("problems.table.head.contestName")}</TableHeadItem>
                         <TableHeadItem>{t("problems.table.head.added")}</TableHeadItem>
                         <TableHeadItem>{t("problems.table.head.score")}</TableHeadItem>
+                        <TableHeadItem>{t("problems.table.head.tags")}</TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>
@@ -83,6 +85,19 @@ export const ProblemsPage: FC = () => {
                                     }
                                     maxScore={problem.score}
                                 />
+                            </TableItem>
+                            <TableItem>
+                                <div
+                                    tw={
+                                        "flex gap-1 flex-wrap text-sm min-h-[50px] max-w-[100px] items-center"
+                                    }
+                                >
+                                    {(problem.tags ?? []).map((t) => (
+                                        <div tw={"max-h-[25px]"} key={t}>
+                                            <Breadcrumb color={textToColor(t)}>{t}</Breadcrumb>
+                                        </div>
+                                    ))}
+                                </div>
                             </TableItem>
                         </TableRow>
                     ))}

@@ -253,6 +253,7 @@ const I18nEn = {
                 contestName: "Contest Name",
                 added: "Added",
                 score: "Score",
+                tags: "Tags",
             },
         },
         page: {

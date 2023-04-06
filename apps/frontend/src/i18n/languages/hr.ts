@@ -253,6 +253,7 @@ export default {
                 contestName: "Naziv natjecanja",
                 added: "Vrijeme dodavanja",
                 score: "Bodovi",
+                tags: "Tagovi",
             },
         },
         page: {
