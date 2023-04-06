@@ -21,6 +21,7 @@ const CreateProblemSchema = z.object({
     memory_limit_megabytes: z.coerce.number(),
     solution_code: z.string(),
     solution_language: z.string(),
+    tags: z.array(z.string()),
 });
 
 export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
@@ -36,6 +37,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
         resolver: zodResolver(CreateProblemSchema),
         defaultValues: {
             solution_language: "python",
+            tags: [],
         },
     });
 
