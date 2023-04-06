@@ -43,7 +43,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - INFLUXDB_URL=http://influxdb:8086
       - OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
-      - OAUTH_ALLOWED_DOMAINS=skole.hr,hm4.dev
+      - OAUTH_ALLOWED_DOMAINS=skole.hr,hm4.dev,fer.hr,fer.unizg.hr,unizg.hr
       - EVALUATOR_ENDPOINT=http://function:8080
 
   function:

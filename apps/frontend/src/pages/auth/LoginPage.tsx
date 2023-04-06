@@ -35,6 +35,16 @@ const LoginBase: FC = () => {
                         >
                             skole.hr
                         </a>
+                        <a
+                            tw={
+                                "font-mono rounded bg-neutral-100 border border-solid border-neutral-300 px-1 no-underline hover:bg-neutral-200"
+                            }
+                            href={"https://fer.hr"}
+                            target={"_blank"}
+                            rel="noreferrer"
+                        >
+                            fer.hr
+                        </a>
                     </Translated>
 
                     <GoogleLogin

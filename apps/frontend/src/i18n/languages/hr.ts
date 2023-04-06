@@ -13,7 +13,7 @@ export default {
     },
     login: {
         label: "Prijava",
-        siteRestriction: "Prijava je trenutno dostupna samo za %1 račune",
+        siteRestriction: "Prijava je trenutno dostupna samo za %1 i %2 račune",
     },
     navbar: {
         dashboard: "Kontrolna ploča",

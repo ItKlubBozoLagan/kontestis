@@ -13,7 +13,7 @@ const I18nEn = {
     },
     login: {
         label: "Log in",
-        siteRestriction: "Login is currently only limited to %1 accounts",
+        siteRestriction: "Login is currently only limited to %1 and %2 accounts",
     },
     navbar: {
         dashboard: "Dashboard",
