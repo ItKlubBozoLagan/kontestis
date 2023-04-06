@@ -19,8 +19,12 @@ export type ProblemV2 = ProblemV1 & {
     solution_code: string;
 };
 
+export type ProblemV3 = ProblemV2 & {
+    tags: string[];
+};
+
 export type ProblemWithScore = Problem & {
     score: number;
 };
 
-export type Problem = ProblemV2;
+export type Problem = ProblemV3;

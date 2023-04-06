@@ -36,6 +36,7 @@ const problemSchema = Type.Object({
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 10_240 }),
     solution_language: Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")]),
     solution_code: Type.String(),
+    tags: Type.Optional(Type.Array(Type.String())),
 });
 
 ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, res) => {
@@ -55,6 +56,7 @@ ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, re
         memory_limit_megabytes: req.body.memory_limit_megabytes,
         solution_language: req.body.solution_language,
         solution_code: req.body.solution_code,
+        tags: req.body.tags ?? [],
     };
 
     await Database.insertInto("problems", problem);
@@ -130,6 +132,7 @@ ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, r
             evaluation_script: req.body.evaluation_script,
             solution_language: req.body.solution_language,
             solution_code: req.body.solution_code,
+            tags: req.body.tags ?? [],
         },
         { id: problem.id }
     );
