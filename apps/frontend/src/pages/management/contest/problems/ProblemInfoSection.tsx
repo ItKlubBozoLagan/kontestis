@@ -168,11 +168,20 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                 <EditableDisplayBox
                     title={"Tags"}
                     value={
-                        <div tw={"flex gap-1"}>
-                            {(problem.tags ?? ["dd"]).map((t) => (
+                        <div tw={"flex gap-1 flex-wrap"}>
+                            {(problem.tags ?? []).map((t) => (
                                 <Breadcrumb key={t} color={textToColor(t)}>
                                     {t}
-                                    <FiX />
+                                    <FiX
+                                        tw={"hover:text-red-600 cursor-pointer"}
+                                        onClick={() => {
+                                            setValue(
+                                                "tags",
+                                                problem.tags.filter((tag) => tag != t)
+                                            );
+                                            submitForm();
+                                        }}
+                                    />
                                 </Breadcrumb>
                             ))}
                         </div>
