@@ -22,14 +22,9 @@ BigInt.prototype.toJSON = function () {
     return this.toString();
 };
 
-type ForceLogoutState = {
-    path: string;
-    orgId: bigint;
-};
-
 export const App = () => {
     const { isLoggedIn, setUser, setIsLoggedIn, forceLogout, doForceLogout } = useAuthStore();
-    const { token, setToken } = useTokenStore();
+    const { token } = useTokenStore();
     const {
         isSelected,
         organisationId,

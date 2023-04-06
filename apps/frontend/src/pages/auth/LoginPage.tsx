@@ -1,6 +1,5 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import React, { FC, useCallback } from "react";
-import { useNavigate } from "react-router";
 
 import { http } from "../../api/http";
 import { TitledSection } from "../../components/TitledSection";
@@ -18,8 +17,6 @@ const LoginBase: FC = () => {
 
         http.post("/auth/google-login", credentialResponse).then(() => setToken(credential));
     }, []);
-
-    const navigate = useNavigate();
 
     const { t } = useTranslation();
 
