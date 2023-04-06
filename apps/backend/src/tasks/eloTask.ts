@@ -1,12 +1,72 @@
-import { Contest, DEFAULT_ELO } from "@kontestis/models";
+import { Contest, DEFAULT_ELO, ProblemV2 } from "@kontestis/models";
 import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
 import { Influx } from "../influx/Influx";
 import { createInfluxUInt } from "../influx/InfluxClient";
-import { computeELODifference } from "../lib/elo";
+import { computeELODifference, ContestMemberLeaderboardInfo } from "../lib/elo";
 import { Logger } from "../lib/logger";
 import { R } from "../utils/remeda";
+
+//USED FOR PROBLEM DIFFICULTY:
+
+const calculateLoss = (difficulty: number, solves: number[], notSolves: number[]) => {
+    const solvesLoss = solves.reduce(
+        (loss, elo) => loss / (1 + 10 ** ((elo - difficulty) / 400)),
+        1
+    );
+
+    const notSolvesLoss = notSolves.reduce(
+        (loss, elo) => loss / (1 + 10 ** ((difficulty - elo) / 400)),
+        1
+    );
+
+    return notSolvesLoss * solvesLoss;
+};
+
+const calculateProblemDifficulties = (
+    problems: ProblemV2[],
+    problemPoints: number[],
+    leaderboard: ContestMemberLeaderboardInfo[]
+) => {
+    return problems.map((problem, ind) => {
+        // ONLY WORKS IF PROBLEMS ARE IDENTICALLY ORDERED IN problemPoints AND IN ContestMemberLeaderboardInfo.problemPoints.
+        // OTHERWISE IT HAS TO BE DONE WITH IDs
+        const solvesElos = leaderboard
+            .filter((user) => user.problemPoints[ind] === problemPoints[ind])
+            .map((user) => user.currentGlobalElo);
+        const notSolvesElos = leaderboard
+            .filter((user) => user.problemPoints[ind] !== problemPoints[ind])
+            .map((user) => user.currentGlobalElo);
+
+        const delta = 0.1;
+
+        let low = 400;
+        let high = leaderboard[0].currentGlobalElo + 200;
+
+        while (high - low > 1) {
+            const mid = low + (high - low) / 2;
+
+            if (
+                calculateLoss(mid, solvesElos, notSolvesElos) >
+                calculateLoss(mid + delta, solvesElos, notSolvesElos)
+            ) {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+
+        const finalDifficulty = Math.round(high);
+        const roundedFinalDifficulty =
+            finalDifficulty - (finalDifficulty % 100) + (finalDifficulty % 100) > 50 ? 100 : 0;
+
+        return {
+            problem_id: problem.id,
+            difficulty: roundedFinalDifficulty,
+        };
+    });
+};
 
 const handleContest = async (contest: Contest) => {
     const members = await Database.selectFrom(
@@ -103,6 +163,9 @@ const handleContest = async (contest: Contest) => {
     const newUserEloValues = R.fromPairs(
         finalNewRatings.map((user) => [user.id.toString(), user.elo])
     );
+
+    ///PROBLEM DIFFICULTY:
+    const problemDificulties = calculateProblemDifficulties(problems, problemPoints, leaderboard);
 
     await Promise.all([
         ...usersWithElo.map((user) =>
