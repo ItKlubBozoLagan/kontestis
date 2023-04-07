@@ -130,7 +130,7 @@ export const ContestResultsPage: FC = () => {
                             {t("contests.management.individual.results.table.head.points")}
                         </TableHeadItem>
                         <TableHeadItem>
-                            {t("contests.management.individual.results.table.head.export")}
+                            {t("contests.management.individual.results.table.head.exports")}
                         </TableHeadItem>
                     </TableHeadRow>
                 </thead>
