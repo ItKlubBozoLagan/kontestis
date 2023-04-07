@@ -9,9 +9,10 @@ import {
     FiUsers,
 } from "react-icons/all";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import { NavItem } from "../../../components/NavElement";
+import { SubRouteNavBar } from "../../../components/SubRouteNavBar";
 import { Translated } from "../../../components/Translated";
 import { ContestContext } from "../../../context/constestContext";
 import { useContest } from "../../../hooks/contest/useContest";
@@ -97,36 +98,16 @@ export const ContestManagementLayout: FC = () => {
                         </Translated>
                     </span>
                     <div tw={"flex flex-col w-full"}>
-                        <div tw={"flex w-full bg-neutral-200"}>
-                            {SubRoutes.filter(
+                        <SubRouteNavBar
+                            routes={SubRoutes.filter(
                                 (r) =>
                                     r.href !== "results" ||
                                     (contest.exam &&
                                         contest.start_time.getTime() +
                                             contest.duration_seconds * 1000 <=
                                             Date.now())
-                            ).map(({ icon: Icon, ...route }) => (
-                                <Link to={route.href} key={route.href} tw={"w-full"}>
-                                    <div
-                                        tw={
-                                            "flex items-center w-full bg-neutral-200 hover:bg-neutral-300 cursor-pointer p-3 relative gap-2"
-                                        }
-                                    >
-                                        <Icon size={"16px"} />
-                                        <span>
-                                            {route.display}
-                                            {current.pathname.endsWith(route.href) && (
-                                                <span
-                                                    tw={
-                                                        "absolute w-full h-0.5 bg-neutral-600 left-0 bottom-0"
-                                                    }
-                                                ></span>
-                                            )}
-                                        </span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                            )}
+                        />
                         <div tw={"w-full p-6 bg-neutral-100 flex items-center justify-between"}>
                             <Outlet />
                         </div>
