@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { FiActivity, FiBarChart2, FiBell, FiUsers } from "react-icons/all";
+import { FiActivity, FiBarChart2, FiBell, FiUser, FiUsers } from "react-icons/all";
 import { Outlet } from "react-router";
 
 import { NavItem } from "../../components/NavElement";
@@ -15,7 +15,7 @@ const SubRoutes: NavItem[] = [
     {
         display: "Users",
         href: "users",
-        icon: FiUsers,
+        icon: FiUser,
     },
     {
         display: "Alerts",
@@ -26,6 +26,11 @@ const SubRoutes: NavItem[] = [
         display: "Contests",
         href: "contests",
         icon: FiBarChart2,
+    },
+    {
+        display: "Organisations",
+        href: "organisations",
+        icon: FiUsers,
     },
 ];
 

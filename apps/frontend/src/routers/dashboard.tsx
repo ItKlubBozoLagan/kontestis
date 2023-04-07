@@ -2,6 +2,12 @@ import React from "react";
 import { Navigate, RouteObject } from "react-router-dom";
 
 import { AccountPage } from "../pages/account/AccountPage";
+import { AdminPageLayout } from "../pages/admin/AdminPageLayout";
+import { AdminAlertsPage } from "../pages/admin/alerts/AdminAlertsPage";
+import { AdminContestsPage } from "../pages/admin/contests/AdminContestsPage";
+import { AdminOrganisationsPage } from "../pages/admin/organisations/AdminOrganisationsPage";
+import { AdminOverviewPage } from "../pages/admin/overview/AdminOverviewPage";
+import { AdminUsersPage } from "../pages/admin/users/AdminUsersPage";
 import { ContestsPage } from "../pages/contests/ContestsPage";
 import { ContestViewPage } from "../pages/contests/ContestViewPage";
 import { DashboardPage } from "../pages/DashboardPage";
@@ -53,6 +59,32 @@ export const dashboardRoutes: RouteObject[] = [
             {
                 path: "account",
                 element: <AccountPage />,
+            },
+            {
+                path: "admin",
+                element: <AdminPageLayout />,
+                children: [
+                    {
+                        path: "overview",
+                        element: <AdminOverviewPage />,
+                    },
+                    {
+                        path: "users",
+                        element: <AdminUsersPage />,
+                    },
+                    {
+                        path: "alerts",
+                        element: <AdminAlertsPage />,
+                    },
+                    {
+                        path: "contests",
+                        element: <AdminContestsPage />,
+                    },
+                    {
+                        path: "organisations",
+                        element: <AdminOrganisationsPage />,
+                    },
+                ],
             },
             {
                 path: "management",

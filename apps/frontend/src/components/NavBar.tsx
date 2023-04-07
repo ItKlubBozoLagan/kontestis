@@ -1,5 +1,7 @@
+import { AdminPermissions } from "@kontestis/models";
 import { FC, useMemo } from "react";
 import {
+    FiActivity,
     FiArrowLeft,
     FiClock,
     FiCpu,
@@ -17,6 +19,7 @@ import { useOrganisationStore } from "../state/organisation";
 import { useProcessingLoader } from "../state/processing";
 import { useTokenStore } from "../state/token";
 import { Breadcrumb } from "./Breadcrumb";
+import { CanAdmin } from "./CanAdmin";
 import { NavElement } from "./NavElement";
 
 export const NavBar: FC = () => {
@@ -94,6 +97,15 @@ export const NavBar: FC = () => {
                         icon: FiSettings,
                     }}
                 />
+                <CanAdmin permission={AdminPermissions.ADMIN}>
+                    <NavElement
+                        item={{
+                            display: t("navbar.admin"),
+                            href: "admin/overview",
+                            icon: FiActivity,
+                        }}
+                    />
+                </CanAdmin>
                 {isSuccess && (
                     <div
                         tw={"cursor-pointer"}

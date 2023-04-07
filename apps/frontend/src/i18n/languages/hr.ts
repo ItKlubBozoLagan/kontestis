@@ -21,6 +21,7 @@ export default {
         problems: "Zadatci",
         account: "Račun",
         management: "Upravljanje",
+        admin: "Admin",
     },
     dashboard: {
         total: {

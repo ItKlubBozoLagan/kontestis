@@ -21,6 +21,7 @@ const I18nEn = {
         problems: "Problems",
         account: "Account",
         management: "Management",
+        admin: "Admin",
     },
     dashboard: {
         total: {
