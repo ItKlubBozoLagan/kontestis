@@ -98,8 +98,15 @@ const I18nEn = {
             },
             individual: {
                 title: "Contest » %1",
+                routes: {
+                    overview: "Overview",
+                    problems: "Problems",
+                    announcements: "Announcements",
+                    questions: "Questions",
+                    participants: "Participants",
+                    results: "Results",
+                },
                 overview: {
-                    label: "Overview",
                     status: {
                         label: "Status",
                         pending: "Starts in",

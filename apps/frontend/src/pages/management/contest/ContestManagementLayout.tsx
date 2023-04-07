@@ -22,44 +22,12 @@ import { Translated } from "../../../components/Translated";
 import { ContestContext } from "../../../context/constestContext";
 import { useContest } from "../../../hooks/contest/useContest";
 import { useSelfContestMembers } from "../../../hooks/contest/useSelfContestMembers";
+import { useTranslation } from "../../../hooks/useTranslation";
 import { useAuthStore } from "../../../state/auth";
 
 type PathParameters = {
     contestId: string;
 };
-
-const SubRoutes: NavItem[] = [
-    {
-        display: "Overview",
-        href: "overview",
-        icon: FiActivity,
-    },
-    {
-        display: "Problems",
-        href: "problems",
-        icon: FiGrid,
-    },
-    {
-        display: "Announcements",
-        href: "announcements",
-        icon: FiAlertTriangle,
-    },
-    {
-        display: "Questions",
-        href: "questions",
-        icon: FiMessageSquare,
-    },
-    {
-        display: "Participants",
-        href: "participants",
-        icon: FiUsers,
-    },
-    {
-        display: "Results",
-        href: "results",
-        icon: FiBarChart2,
-    },
-];
 
 export const ContestManagementLayout: FC = () => {
     const { contestId } = useParams<PathParameters>() as PathParameters;
@@ -97,6 +65,41 @@ export const ContestManagementLayout: FC = () => {
         !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
     )
         return <Navigate to={".."} />;
+
+    const { t } = useTranslation();
+
+    const SubRoutes: NavItem[] = [
+        {
+            display: t("contests.management.individual.routes.overview"),
+            href: "overview",
+            icon: FiActivity,
+        },
+        {
+            display: t("contests.management.individual.routes.problems"),
+            href: "problems",
+            icon: FiGrid,
+        },
+        {
+            display: t("contests.management.individual.routes.announcements"),
+            href: "announcements",
+            icon: FiAlertTriangle,
+        },
+        {
+            display: t("contests.management.individual.routes.questions"),
+            href: "questions",
+            icon: FiMessageSquare,
+        },
+        {
+            display: t("contests.management.individual.routes.participants"),
+            href: "participants",
+            icon: FiUsers,
+        },
+        {
+            display: t("contests.management.individual.routes.results"),
+            href: "results",
+            icon: FiBarChart2,
+        },
+    ];
 
     return (
         <div tw={"flex justify-center w-full"}>

@@ -98,8 +98,15 @@ export default {
             },
             individual: {
                 title: "Natjecanje » %1",
+                routes: {
+                    overview: "Pregled",
+                    problems: "Problemi",
+                    announcements: "Obavijesti",
+                    questions: "Pitanja",
+                    participants: "Sudionici",
+                    results: "Rezultati",
+                },
                 overview: {
-                    label: "Pregled",
                     status: {
                         label: "Status",
                         pending: "Počinje za",
