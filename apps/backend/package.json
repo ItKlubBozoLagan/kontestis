@@ -33,7 +33,7 @@
         "rate-limit-redis": "^3.0.1",
         "redis": "^4.6.4",
         "remeda": "^1.6.0",
-        "scyllo": "^1.7.2",
+        "scyllo": "^1.8.0",
         "sunflake": "^0.6.0",
         "superjson": "^1.12.2",
         "ts-node": "^10.9.1"

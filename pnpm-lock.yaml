@@ -56,7 +56,7 @@ importers:
       rate-limit-redis: ^3.0.1
       redis: ^4.6.4
       remeda: ^1.6.0
-      scyllo: ^1.7.2
+      scyllo: ^1.8.0
       sunflake: ^0.6.0
       superjson: ^1.12.2
       ts-node: ^10.9.1
@@ -85,7 +85,7 @@ importers:
       rate-limit-redis: 3.0.1_express-rate-limit@6.7.0
       redis: 4.6.4
       remeda: 1.6.1
-      scyllo: 1.7.2
+      scyllo: 1.8.0
       sunflake: 0.6.0
       superjson: 1.12.2
       ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
@@ -1137,6 +1137,10 @@ packages:
   /@types/node/18.11.18:
     resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
 
+  /@types/node/18.15.11:
+    resolution: {integrity: sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==}
+    dev: false
+
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
     dev: true
@@ -1958,7 +1962,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       '@types/long': 4.0.2
-      '@types/node': 18.11.18
+      '@types/node': 18.15.11
       adm-zip: 0.5.10
       long: 2.4.0
     dev: false
@@ -5574,8 +5578,8 @@ packages:
       ajv-keywords: 3.5.2_ajv@6.12.6
     dev: false
 
-  /scyllo/1.7.2:
-    resolution: {integrity: sha512-K6FGUSmtzA3IsLALvpE/i00Va6w2Hi4QRsxJ9UoG6bCOyn0KMnN42hqtlO2OB+cpKP/P3JMOHvbA+h5DZNM/JA==}
+  /scyllo/1.8.0:
+    resolution: {integrity: sha512-3uzQL7/VoEtiqQyHMyGC3XtOJM3hS6J8lmGSZ0lijj1XimM6d/YYNmPRxYJnkI58Ko+uEM3xSe3ftkDUFBIrUA==}
     dependencies:
       '@lvksh/logger': 1.6.4
       cassandra-driver: 4.6.4
