@@ -10,12 +10,12 @@ RUN pnpm --filter=@kontestis/function... install
 
 RUN pnpm --filter=@kontestis/function deploy pruned
 
-FROM node:hydrogen-alpine
+FROM docker:dind
 
 WORKDIR /app
 
-RUN apk add python3 gcc g++ gcompat
+RUN apk add python3 gcc g++ gcompat nodejs npm
 
 COPY --from=workspace /app/pruned .
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "dockerd --log-level error & npm start"]
