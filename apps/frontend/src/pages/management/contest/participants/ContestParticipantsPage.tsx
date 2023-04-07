@@ -98,7 +98,7 @@ const AddParticipantSchema = z.object({
 });
 
 export const ContestParticipantsPage: FC = () => {
-    const { contest, member } = useContestContext();
+    const { contest } = useContestContext();
 
     const { data: members } = useAllContestMembers(contest.id);
 
