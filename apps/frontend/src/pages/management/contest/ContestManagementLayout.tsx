@@ -4,7 +4,7 @@ import {
     hasAdminPermission,
     hasContestPermission,
 } from "@kontestis/models";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import {
     FiActivity,
     FiAlertTriangle,
@@ -16,7 +16,6 @@ import {
 import { Outlet, useNavigate, useParams } from "react-router";
 import { Navigate } from "react-router-dom";
 
-import { NavItem } from "../../../components/NavElement";
 import { SubRouteNavBar } from "../../../components/SubRouteNavBar";
 import { Translated } from "../../../components/Translated";
 import { ContestContext } from "../../../context/constestContext";
@@ -52,6 +51,44 @@ export const ContestManagementLayout: FC = () => {
         navigate("..");
     }, [isError, navigate]);
 
+    const { t } = useTranslation();
+
+    const SubRoutes = useMemo(
+        () => [
+            {
+                display: t("contests.management.individual.routes.overview"),
+                href: "overview",
+                icon: FiActivity,
+            },
+            {
+                display: t("contests.management.individual.routes.problems"),
+                href: "problems",
+                icon: FiGrid,
+            },
+            {
+                display: t("contests.management.individual.routes.announcements"),
+                href: "announcements",
+                icon: FiAlertTriangle,
+            },
+            {
+                display: t("contests.management.individual.routes.questions"),
+                href: "questions",
+                icon: FiMessageSquare,
+            },
+            {
+                display: t("contests.management.individual.routes.participants"),
+                href: "participants",
+                icon: FiUsers,
+            },
+            {
+                display: t("contests.management.individual.routes.results"),
+                href: "results",
+                icon: FiBarChart2,
+            },
+        ],
+        [t]
+    );
+
     if (!isSuccess || !isMemberSuccess) return <div>Loading...</div>;
 
     const member = members.find((it) => it.contest_id === contest.id);
@@ -65,41 +102,6 @@ export const ContestManagementLayout: FC = () => {
         !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
     )
         return <Navigate to={".."} />;
-
-    const { t } = useTranslation();
-
-    const SubRoutes: NavItem[] = [
-        {
-            display: t("contests.management.individual.routes.overview"),
-            href: "overview",
-            icon: FiActivity,
-        },
-        {
-            display: t("contests.management.individual.routes.problems"),
-            href: "problems",
-            icon: FiGrid,
-        },
-        {
-            display: t("contests.management.individual.routes.announcements"),
-            href: "announcements",
-            icon: FiAlertTriangle,
-        },
-        {
-            display: t("contests.management.individual.routes.questions"),
-            href: "questions",
-            icon: FiMessageSquare,
-        },
-        {
-            display: t("contests.management.individual.routes.participants"),
-            href: "participants",
-            icon: FiUsers,
-        },
-        {
-            display: t("contests.management.individual.routes.results"),
-            href: "results",
-            icon: FiBarChart2,
-        },
-    ];
 
     return (
         <div tw={"flex justify-center w-full"}>
