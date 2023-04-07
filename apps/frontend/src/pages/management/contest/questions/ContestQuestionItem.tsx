@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ContestMemberPermissions, ContestQuestion, hasContestPermission } from "@kontestis/models";
+import { AdminPermissions, ContestMemberPermissions, ContestQuestion } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import { z } from "zod";
 
+import { CanContestMember } from "../../../../components/CanContestMember";
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
 import { TitledSection } from "../../../../components/TitledSection";
 import { useContestContext } from "../../../../context/constestContext";
@@ -64,10 +65,11 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
     // TODO: width part here is terrible, figure out a better way sometime maybe
     return (
         <TitledSection title={question.question} parentStyle={{ maxWidth: "282px" }}>
-            {hasContestPermission(
-                member.contest_permissions,
-                ContestMemberPermissions.ANSWER_QUESTIONS
-            ) && (
+            <CanContestMember
+                member={member}
+                permission={ContestMemberPermissions.ANSWER_QUESTIONS}
+                adminPermission={AdminPermissions.EDIT_CONTEST}
+            >
                 <form onSubmit={onSubmit} tw={"w-full"} ref={formReference}>
                     <EditableDisplayBox
                         title={t("contests.management.individual.questions.answerButton")}
@@ -79,7 +81,7 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
                         <textarea {...register("response")} tw={"w-full"} />
                     </EditableDisplayBox>
                 </form>
-            )}
+            </CanContestMember>
         </TitledSection>
     );
 };

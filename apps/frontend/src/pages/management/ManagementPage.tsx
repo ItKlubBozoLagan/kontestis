@@ -1,4 +1,9 @@
-import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    hasAdminPermission,
+    hasContestPermission,
+} from "@kontestis/models";
 import { FC, useMemo, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
@@ -9,6 +14,7 @@ import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useMappedContests } from "../../hooks/contest/useMappedContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useAuthStore } from "../../state/auth";
 import { ContestListItem } from "../contests/ContestListItem";
 import { CreateContestModal } from "./CreateContestModal";
 
@@ -18,12 +24,16 @@ export const ManagementPage: FC = () => {
     const { data: contests } = useAllContests();
     const { data: contestMembers } = useSelfContestMembers();
 
+    const { user } = useAuthStore();
+
     const completeContests = useMappedContests(contests, contestMembers);
 
     const myContests = useMemo(
         () =>
-            completeContests.filter((it) =>
-                hasContestPermission(it.permissions, ContestMemberPermissions.VIEW_PRIVATE)
+            completeContests.filter(
+                (it) =>
+                    hasContestPermission(it.permissions, ContestMemberPermissions.VIEW_PRIVATE) ||
+                    hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
             ),
         [completeContests]
     );

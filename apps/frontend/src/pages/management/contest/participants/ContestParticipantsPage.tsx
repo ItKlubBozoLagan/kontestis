@@ -1,5 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ContestMemberWithInfo } from "@kontestis/models";
+import {
+    ContestMemberPermissions,
+    ContestMemberWithInfo,
+    hasContestPermission,
+} from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
@@ -166,13 +170,29 @@ export const ContestParticipantsPage: FC = () => {
             </div>
             {members && (
                 <>
-                    <MemberBox member={members.find((it) => it.id === member.id)!} admin />
+                    {members
+                        ?.filter((it) =>
+                            hasContestPermission(
+                                it.contest_permissions,
+                                ContestMemberPermissions.ADMIN
+                            )
+                        )
+                        .sort((a, b) => a.full_name.localeCompare(b.full_name))
+                        .map((member) => (
+                            <MemberBox key={member.id.toString()} member={member} admin />
+                        ))}
 
                     <div tw={"w-[calc(100% + 1rem)] -mx-2 h-[1px] bg-neutral-600"}></div>
                 </>
             )}
             {members
-                ?.filter((it) => it.user_id !== member.user_id)
+                ?.filter(
+                    (it) =>
+                        !hasContestPermission(
+                            it.contest_permissions,
+                            ContestMemberPermissions.ADMIN
+                        )
+                )
                 .sort((a, b) => a.full_name.localeCompare(b.full_name))
                 .map((member) => (
                     <MemberBox key={member.id.toString()} member={member} />

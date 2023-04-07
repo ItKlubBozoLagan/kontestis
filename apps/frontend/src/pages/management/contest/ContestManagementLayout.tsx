@@ -1,4 +1,9 @@
-import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    hasAdminPermission,
+    hasContestPermission,
+} from "@kontestis/models";
 import { FC, useEffect } from "react";
 import {
     FiActivity,
@@ -17,6 +22,7 @@ import { Translated } from "../../../components/Translated";
 import { ContestContext } from "../../../context/constestContext";
 import { useContest } from "../../../hooks/contest/useContest";
 import { useSelfContestMembers } from "../../../hooks/contest/useSelfContestMembers";
+import { useAuthStore } from "../../../state/auth";
 
 type PathParameters = {
     contestId: string;
@@ -64,6 +70,8 @@ export const ContestManagementLayout: FC = () => {
         data: contest,
     } = useContest(BigInt(/\d+/g.test(contestId) ? contestId : "0"));
 
+    const { user } = useAuthStore();
+
     const {
         isSuccess: isMemberSuccess,
         isError: isMemberError,
@@ -81,8 +89,12 @@ export const ContestManagementLayout: FC = () => {
     const member = members.find((it) => it.contest_id === contest.id);
 
     if (
-        !member ||
-        !hasContestPermission(member.contest_permissions, ContestMemberPermissions.ADMIN)
+        (!member ||
+            !hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.VIEW_PRIVATE
+            )) &&
+        !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
     )
         return <Navigate to={".."} />;
 

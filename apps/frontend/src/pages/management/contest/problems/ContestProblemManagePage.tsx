@@ -1,8 +1,10 @@
+import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 
+import { CanContestMember } from "../../../../components/CanContestMember";
 import { SimpleButton } from "../../../../components/SimpleButton";
 import {
     Table,
@@ -12,6 +14,7 @@ import {
     TableRow,
 } from "../../../../components/Table";
 import { Translated } from "../../../../components/Translated";
+import { useContestContext } from "../../../../context/constestContext";
 import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters";
 import { useProblem } from "../../../../hooks/problem/useProblem";
 import { useGlobalProblemSubmissions } from "../../../../hooks/submission/useGlobalProblemSubmissions";
@@ -32,6 +35,8 @@ export const ContestProblemManagePage: FC = () => {
 
     const { data: submissions } = useGlobalProblemSubmissions(BigInt(problemId ?? 0));
 
+    const { member } = useContestContext();
+
     const [modalOpen, setModalOpen] = useState(false);
 
     const { t } = useTranslation();
@@ -49,9 +54,15 @@ export const ContestProblemManagePage: FC = () => {
                     problem={problem}
                 />
             )}
-            <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                {t("contests.management.individual.problems.cluster.createButton")}
-            </SimpleButton>
+            <CanContestMember
+                member={member}
+                permission={ContestMemberPermissions.EDIT}
+                adminPermission={AdminPermissions.EDIT_CONTEST}
+            >
+                <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
+                    {t("contests.management.individual.problems.cluster.createButton")}
+                </SimpleButton>
+            </CanContestMember>
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>

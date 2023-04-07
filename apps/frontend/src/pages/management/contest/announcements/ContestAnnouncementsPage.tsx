@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
+import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import { z } from "zod";
 
+import { CanContestMember } from "../../../../components/CanContestMember";
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestAnnouncements } from "../../../../hooks/contest/announcements/useAllContestAnnouncements";
@@ -52,10 +53,11 @@ export const ContestAnnouncementsPage: FC = () => {
     return (
         <div tw={"flex gap-2 w-full justify-center"}>
             <div tw={"flex flex-col items-center gap-6 w-full"}>
-                {hasContestPermission(
-                    member.contest_permissions,
-                    ContestMemberPermissions.CREATE_ANNOUNCEMENT
-                ) && (
+                <CanContestMember
+                    member={member}
+                    permission={ContestMemberPermissions.CREATE_ANNOUNCEMENT}
+                    adminPermission={AdminPermissions.EDIT_CONTEST}
+                >
                     <form onSubmit={onSubmit}>
                         <div tw={"flex flex-col gap-2 w-96"}>
                             <label htmlFor={"message"}>
@@ -70,7 +72,7 @@ export const ContestAnnouncementsPage: FC = () => {
                             </SimpleButton>
                         </div>
                     </form>
-                )}
+                </CanContestMember>
                 <div tw={"w-full flex flex-wrap justify-center gap-4"}>
                     {(announcements ?? [])
                         .sort((a, b) => Number(b.id - a.id))

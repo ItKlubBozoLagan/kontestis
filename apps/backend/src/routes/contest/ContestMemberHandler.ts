@@ -1,4 +1,9 @@
-import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    hasAdminPermission,
+    hasContestPermission,
+} from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -40,7 +45,8 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
             !hasContestPermission(
                 contestMember.contest_permissions,
                 ContestMemberPermissions.ADD_USER
-            )
+            ) &&
+            !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
         )
             throw new SafeError(StatusCodes.FORBIDDEN);
     }

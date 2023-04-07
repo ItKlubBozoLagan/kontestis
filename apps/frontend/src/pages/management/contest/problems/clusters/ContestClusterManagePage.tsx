@@ -1,8 +1,10 @@
+import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 
+import { CanContestMember } from "../../../../../components/CanContestMember";
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import {
     Table,
@@ -12,6 +14,7 @@ import {
     TableRow,
 } from "../../../../../components/Table";
 import { Translated } from "../../../../../components/Translated";
+import { useContestContext } from "../../../../../context/constestContext";
 import { useAllTestcases } from "../../../../../hooks/problem/cluster/testcase/useAllTestcases";
 import { useCluster } from "../../../../../hooks/problem/cluster/useCluster";
 import { useTranslation } from "../../../../../hooks/useTranslation";
@@ -25,6 +28,8 @@ type Properties = {
 
 export const ContestClusterManagePage: FC = () => {
     const { problemId, clusterId } = useParams<Properties>();
+
+    const { member } = useContestContext();
 
     const { data: cluster } = useCluster([BigInt(problemId ?? 0), BigInt(clusterId ?? 0)], {
         refetchInterval: (data) => (data?.status === "pending" ? 500 : 5000),
@@ -53,11 +58,17 @@ export const ContestClusterManagePage: FC = () => {
                 )}
                 {!cluster?.generator && (
                     <div tw={"w-full flex flex-col gap-6 items-end"}>
-                        <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                            {t(
-                                "contests.management.individual.problems.cluster.testCase.createButton"
-                            )}
-                        </SimpleButton>
+                        <CanContestMember
+                            member={member}
+                            permission={ContestMemberPermissions.EDIT}
+                            adminPermission={AdminPermissions.EDIT_CONTEST}
+                        >
+                            <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
+                                {t(
+                                    "contests.management.individual.problems.cluster.testCase.createButton"
+                                )}
+                            </SimpleButton>
+                        </CanContestMember>
                         <Table tw={"w-full"}>
                             <thead>
                                 <TableHeadRow>

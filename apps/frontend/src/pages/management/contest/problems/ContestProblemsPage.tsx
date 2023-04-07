@@ -1,6 +1,8 @@
+import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
+import { CanContestMember } from "../../../../components/CanContestMember";
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow } from "../../../../components/Table";
 import { useContestContext } from "../../../../context/constestContext";
@@ -10,7 +12,7 @@ import { CreateProblemModal } from "./CreateProblemModal";
 import { ProblemListItem } from "./ProblemListItem";
 
 export const ContestProblemsPage: FC = () => {
-    const { contest } = useContestContext();
+    const { contest, member } = useContestContext();
 
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -20,9 +22,15 @@ export const ContestProblemsPage: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col items-end justify-center gap-4"}>
-            <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                {t("contests.management.individual.problems.createButton")}
-            </SimpleButton>
+            <CanContestMember
+                member={member}
+                permission={ContestMemberPermissions.EDIT}
+                adminPermission={AdminPermissions.EDIT_CONTEST}
+            >
+                <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
+                    {t("contests.management.individual.problems.createButton")}
+                </SimpleButton>
+            </CanContestMember>
             <CreateProblemModal
                 isOpen={modalOpen}
                 onRequestClose={() => setModalOpen(false)}
