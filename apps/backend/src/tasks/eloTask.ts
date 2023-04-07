@@ -234,5 +234,5 @@ export const startEloTask = async () => {
             toDo.map((it) => it.id)
         );
         await Promise.all(toDo.map(handleContest)).catch(console.error);
-    }, 10 * 1000);
+    }, 60 * 1000);
 };
