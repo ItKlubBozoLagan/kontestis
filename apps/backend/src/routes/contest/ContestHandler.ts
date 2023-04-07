@@ -2,10 +2,12 @@ import stream from "node:stream";
 
 import {
     AdminPermissions,
+    Cluster,
     Contest,
     ContestMemberPermissions,
     hasAdminPermission,
     hasContestPermission,
+    Problem,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
@@ -18,7 +20,10 @@ import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
-import { extractCurrentOrganisation } from "../../extractors/extractOrganisation";
+import {
+    extractCurrentOrganisation,
+    extractOrganisation,
+} from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
@@ -49,6 +54,76 @@ ContestHandler.use("/:contest_id/members", ContestMemberHandler);
 ContestHandler.use("/:contest_id/question", ContestQuestionHandler);
 ContestHandler.use("/:contest_id/announcement", ContestAnnouncementHandler);
 ContestHandler.use("/:contest_id/grade", ContestGradingHandler);
+
+const copySchema = Type.Object({
+    organisation_id: Type.BigInt(),
+});
+
+ContestHandler.post("/:contest_id/copy", useValidation(copySchema), async (req, res) => {
+    const user = await extractUser(req);
+    const contest = await extractModifiableContest(req);
+
+    await extractOrganisation(req, req.body.organisation_id);
+
+    const newContest: Contest = {
+        ...contest,
+        id: generateSnowflake(),
+        organisation_id: req.body.organisation_id,
+    };
+
+    await Database.insertInto("contests", newContest);
+
+    const problems = await Database.selectFrom("problems", "*", { contest_id: contest.id });
+
+    await Promise.all(
+        problems.map(async (problem) => {
+            const newProblem: Problem = {
+                ...problem,
+                id: generateSnowflake(),
+                contest_id: newContest.id,
+            };
+
+            await Database.insertInto("problems", newProblem);
+
+            const clusters = await Database.selectFrom("clusters", "*", { problem_id: problem.id });
+
+            await Promise.all(
+                clusters.map(async (cluster) => {
+                    const newCluster: Cluster = {
+                        ...cluster,
+                        id: generateSnowflake(),
+                        problem_id: newProblem.id,
+                    };
+
+                    await Database.insertInto("clusters", newCluster);
+
+                    const testcases = await Database.selectFrom("testcases", "*", {
+                        cluster_id: cluster.id,
+                    });
+
+                    await Promise.all(
+                        testcases.map(async (testcase) => {
+                            await Database.insertInto("testcases", {
+                                ...testcase,
+                                id: generateSnowflake(),
+                                cluster_id: newCluster.id,
+                            });
+                        })
+                    );
+                })
+            );
+        })
+    );
+
+    await Database.insertInto("contest_members", {
+        id: generateSnowflake(),
+        contest_id: newContest.id,
+        user_id: user.id,
+        contest_permissions: grantPermission(0n, ContestMemberPermissions.ADMIN),
+    });
+
+    return respond(res, StatusCodes.OK, newContest);
+});
 
 ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     const user = await extractUser(req);
