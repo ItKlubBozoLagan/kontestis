@@ -167,7 +167,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     title={"Tags"}
                     value={
                         <div tw={"flex gap-1 flex-wrap"}>
-                            {(problem.tags ?? []).map((t) => (
+                            {problem.tags.map((t) => (
                                 <Breadcrumb key={t} color={textToColor(t)}>
                                     {t}
                                     <FiX

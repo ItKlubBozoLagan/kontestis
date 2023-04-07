@@ -174,7 +174,7 @@ const handleContest = async (contest: Contest) => {
 
             await Database.update(
                 "problems",
-                { tags: [...(problem.tags ?? []), `*${difficulty}`] },
+                { tags: [...problem.tags, `*${difficulty}`] },
                 { id: problemId }
             );
         })

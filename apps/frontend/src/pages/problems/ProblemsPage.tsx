@@ -89,9 +89,8 @@ export const ProblemsPage: FC = () => {
                             </TableItem>
                             <TableItem>
                                 <div tw={"flex gap-1 flex-wrap text-sm max-w-[100px] items-center"}>
-                                    {!problem.tags ||
-                                        (problem?.tags.length === 0 && <span>None</span>)}
-                                    {(problem.tags ?? []).sort().map((tag) => (
+                                    {problem.tags.length === 0 && <span>None</span>}
+                                    {problem.tags.sort().map((tag) => (
                                         <div tw={"max-h-[24px]"} key={tag}>
                                             {/\*\d+/.test(tag) ? (
                                                 <RankBreadcrumb
