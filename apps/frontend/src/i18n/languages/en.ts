@@ -286,6 +286,9 @@ const I18nEn = {
                 score: "Score",
                 tags: "Tags",
             },
+            body: {
+                noTags: "None",
+            },
         },
         page: {
             title: "Problems",

@@ -286,6 +286,9 @@ export default {
                 score: "Bodovi",
                 tags: "Tagovi",
             },
+            body: {
+                noTags: "Nema",
+            },
         },
         page: {
             title: "Problemi",
