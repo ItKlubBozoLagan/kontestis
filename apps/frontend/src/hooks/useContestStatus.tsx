@@ -16,6 +16,7 @@ export type ContestStatusInfo =
 
 export type ValidContestStatusInfo = {
     status: ContestStatus;
+    rawTimeFormat: string;
     timeFormat: string;
 };
 
@@ -52,6 +53,7 @@ export const useContestStatus = <
     if (contest.start_time.getTime() > time)
         return {
             status: "pending",
+            rawTimeFormat: parseTime(contest.start_time.getTime() - time),
             timeFormat:
                 t("contests.management.individual.overview.status.pending") +
                 ": " +
@@ -61,11 +63,13 @@ export const useContestStatus = <
     if (time > endTime)
         return {
             status: "finished",
+            rawTimeFormat: "",
             timeFormat: t("contests.management.individual.overview.status.finished"),
         } as Return;
 
     return {
         status: "running",
+        rawTimeFormat: parseTime(endTime - time),
         timeFormat:
             t("contests.management.individual.overview.status.running") +
             ": " +

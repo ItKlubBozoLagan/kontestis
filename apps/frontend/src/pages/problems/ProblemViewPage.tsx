@@ -41,6 +41,7 @@ export const LimitBox = React.forwardRef<
             tw={
                 "w-full bg-neutral-100 border-2 border-solid border-neutral-200 p-4 flex justify-between gap-4"
             }
+            ref={reference}
             {...properties}
         >
             <div tw={"flex items-center gap-4 text-lg"}>
