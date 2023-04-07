@@ -92,7 +92,7 @@ export const ProblemViewPage: FC = () => {
 
         event.preventDefault();
 
-        if (!textArea.selectionStart && textArea.selectionStart != 0) {
+        if (!textArea.selectionStart && textArea.selectionStart !== 0) {
             textArea.value += TAB_CHAR;
             textArea.focus();
         } else {

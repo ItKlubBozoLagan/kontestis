@@ -167,15 +167,15 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     title={"Tags"}
                     value={
                         <div tw={"flex gap-1 flex-wrap"}>
-                            {problem.tags.map((t) => (
-                                <Breadcrumb key={t} color={textToColor(t)}>
-                                    {t}
+                            {problem.tags.map((tag) => (
+                                <Breadcrumb key={tag} color={textToColor(tag)}>
+                                    {tag}
                                     <FiX
                                         tw={"hover:text-red-600 cursor-pointer"}
                                         onClick={() => {
                                             setValue(
                                                 "tags",
-                                                problem.tags.filter((tag) => tag != t)
+                                                problem.tags.filter((it) => it !== tag)
                                             );
                                             submitForm();
                                         }}

@@ -22,11 +22,11 @@ export const useMappedContests = (
                 const firstDone = a.start_time.getTime() + a.duration_seconds * 1000 >= Date.now();
                 const secondDone = b.start_time.getTime() + b.duration_seconds * 1000 >= Date.now();
 
-                if (firstDone != secondDone) {
+                if (firstDone !== secondDone) {
                     return firstDone ? -1 : 1;
                 }
 
-                if (a.start_time.getTime() == b.start_time.getTime()) return 0;
+                if (a.start_time.getTime() === b.start_time.getTime()) return 0;
 
                 return a.start_time.getTime() > b.start_time.getTime() ? 1 : -1;
             }),

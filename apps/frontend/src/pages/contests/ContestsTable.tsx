@@ -9,7 +9,7 @@ type Properties = {
     contests: ContestWithPermissions[];
 };
 
-const hasStarted: (contest: Contest) => boolean = (contest) =>
+const isRunning: (contest: Contest) => boolean = (contest) =>
     Date.now() > contest.start_time.getTime() &&
     Date.now() < contest.start_time.getTime() + contest.duration_seconds * 1000;
 
@@ -33,9 +33,9 @@ export const ContestsTable: FC<Properties> = ({ contests }) => {
             <tbody>
                 {contests
                     .sort((a, b) => {
-                        if (hasStarted(a) != hasStarted(b)) return hasStarted(a) ? -1 : 1;
+                        if (isRunning(a) !== isRunning(b)) return isRunning(a) ? -1 : 1;
 
-                        if (hasEnded(a) != hasEnded(b)) return hasEnded(a) ? 1 : -1;
+                        if (hasEnded(a) !== hasEnded(b)) return hasEnded(a) ? 1 : -1;
 
                         if (hasEnded(a)) return b.start_time.getTime() - a.start_time.getTime();
 

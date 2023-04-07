@@ -92,7 +92,7 @@ export const evaluateSimpleChecker = async (
 
         const checkerResult = checkerRecord.output.toString("utf8").trim().toLowerCase();
 
-        if (checkerResult === "ac" || checkerResult == "accepted") {
+        if (checkerResult === "ac" || checkerResult === "accepted") {
             evaluated.push({
                 type: "success",
                 testCaseId: testcase.id,
@@ -104,7 +104,7 @@ export const evaluateSimpleChecker = async (
             continue;
         }
 
-        if (checkerResult === "wa" || checkerResult == "wrong_answer") {
+        if (checkerResult === "wa" || checkerResult === "wrong_answer") {
             evaluated.push({
                 type: "success",
                 testCaseId: testcase.id,

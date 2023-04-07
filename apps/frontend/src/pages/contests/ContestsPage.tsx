@@ -21,7 +21,7 @@ export const ContestsPage: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col"}>
-            {organisationId != 1n && (
+            {organisationId !== 1n && (
                 <>
                     <PageTitle>{t("contests.page.exams")}</PageTitle>
                     <ContestsTable contests={completeContests.filter((c) => c.exam)} />

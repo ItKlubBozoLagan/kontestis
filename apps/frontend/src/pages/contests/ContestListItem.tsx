@@ -18,7 +18,7 @@ type Properties = {
 export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
     const [registered, setRegistered] = useState(contest.registered);
 
-    const { status, rawTimeFormat, timeFormat } = useContestStatus(contest);
+    const { status, rawTimeFormat } = useContestStatus(contest);
 
     const queryClient = useQueryClient();
 

@@ -80,7 +80,7 @@ export const ContestOverviewPage: FC = () => {
         modifyMutation.reset();
 
         if (
-            data.start_time.getTime() != contest.start_time.getTime() &&
+            data.start_time.getTime() !== contest.start_time.getTime() &&
             data.start_time.getTime() <= Date.now()
         ) {
             setError("start_time", {

@@ -42,7 +42,7 @@ const problemSchema = Type.Object({
 ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, res) => {
     const contest = await extractModifiableContest(req);
 
-    if (req.body.evaluation_variant != "plain" && !req.body.evaluation_script)
+    if (req.body.evaluation_variant !== "plain" && !req.body.evaluation_script)
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const problem: Problem = {
@@ -118,7 +118,7 @@ ProblemHandler.delete("/:problem_id", async (req, res) => {
 ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
-    if (req.body.evaluation_variant != "plain" && !req.body.evaluation_script)
+    if (req.body.evaluation_variant !== "plain" && !req.body.evaluation_script)
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     await Database.update(

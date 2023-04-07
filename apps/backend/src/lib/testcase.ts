@@ -147,7 +147,7 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
         testcases.push({
             id: BigInt(result.testCaseId),
             cluster_id: cluster.id,
-            input: testcaseInputs.find((ti) => ti.id == BigInt(result.testCaseId))!.input,
+            input: testcaseInputs.find((input) => input.id === BigInt(result.testCaseId))!.input,
             correct_output: result.extra,
         });
     }
