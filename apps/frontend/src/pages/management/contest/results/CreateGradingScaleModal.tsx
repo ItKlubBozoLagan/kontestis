@@ -7,8 +7,10 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledInput } from "../../../../components/TitledInput";
+import { Translated } from "../../../../components/Translated";
 import { useContestContext } from "../../../../context/constestContext";
 import { useCreateContestGradingScale } from "../../../../hooks/contest/grading/useCreateContestGradingScale";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { ModalStyles } from "../../../../util/ModalStyles";
 
 const CreateGradingScaleSchema = z.object({
@@ -46,6 +48,8 @@ export const CreateGradingScaleModal: FC<Modal.Props> = ({ ...properties }) => {
         properties.onAfterClose?.();
     }, [createMutation.isSuccess]);
 
+    const { t } = useTranslation();
+
     return (
         <Modal
             {...properties}
@@ -55,27 +59,37 @@ export const CreateGradingScaleModal: FC<Modal.Props> = ({ ...properties }) => {
             style={ModalStyles}
         >
             <div tw={"text-xl"}>
-                Create grading scale for <span tw={"font-bold"}>{contest.name}</span>
+                <Translated translationKey="contests.management.individual.results.createModal.title">
+                    <span tw={"font-bold"}>{contest.name}</span>
+                </Translated>
             </div>
             <div tw={"text-sm text-red-500"}>
-                {Object.keys(errors).length > 0 && <span>Validation error! Check your input!</span>}
-                {createMutation.error && <span>Error! {createMutation.error.message}</span>}
+                {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
+                {createMutation.error && (
+                    <span>
+                        <Translated translationKey="errorMessages.withInfo">
+                            {createMutation.error.message}
+                        </Translated>
+                    </span>
+                )}
             </div>
             <form onSubmit={onSubmit}>
                 <div tw={"flex flex-col items-stretch gap-2"}>
                     <TitledInput
                         bigLabel
-                        label={"Percentage"}
+                        label={t("contests.management.individual.results.createModal.percentage")}
                         tw={"max-w-full"}
                         {...register("percentage")}
                     />
                     <TitledInput
                         bigLabel
-                        label={"Grade"}
+                        label={t("contests.management.individual.results.createModal.grade")}
                         tw={"max-w-full"}
                         {...register("grade")}
                     />
-                    <SimpleButton tw={"mt-2"}>Create</SimpleButton>
+                    <SimpleButton tw={"mt-2"}>
+                        {t("contests.management.individual.results.createModal.createButton")}
+                    </SimpleButton>
                 </div>
             </form>
         </Modal>

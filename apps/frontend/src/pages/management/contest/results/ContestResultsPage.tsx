@@ -17,6 +17,7 @@ import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestGradingScales } from "../../../../hooks/contest/grading/useAllContestGradingScales";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { useTranslation } from "../../../../hooks/useTranslation";
 import { R } from "../../../../util/remeda";
 import { CreateGradingScaleModal } from "./CreateGradingScaleModal";
 import { GradingScaleListItem } from "./GradingScaleListItem";
@@ -92,12 +93,17 @@ export const ContestResultsPage: FC = () => {
         URL.revokeObjectURL(linkElement.href);
     };
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full flex flex-col gap-5"}>
             <div tw={"w-4/5 self-center"}>
-                <TitledSection title={"Grading Scale"} tw={"items-end"}>
+                <TitledSection
+                    title={t("contests.management.individual.results.gradingScale.title")}
+                    tw={"items-end"}
+                >
                     <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                        Create grading scale
+                        {t("contests.management.individual.results.gradingScale.createButton")}
                     </SimpleButton>
                     <CreateGradingScaleModal
                         isOpen={modalOpen}
@@ -117,9 +123,15 @@ export const ContestResultsPage: FC = () => {
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
-                        <TableHeadItem>User</TableHeadItem>
-                        <TableHeadItem>Points</TableHeadItem>
-                        <TableHeadItem>Export</TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.results.table.head.user")}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.results.table.head.points")}
+                        </TableHeadItem>
+                        <TableHeadItem>
+                            {t("contests.management.individual.results.table.head.export")}
+                        </TableHeadItem>
                     </TableHeadRow>
                 </thead>
                 <tbody>

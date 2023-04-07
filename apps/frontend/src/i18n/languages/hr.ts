@@ -251,6 +251,29 @@ export default {
                         confirm: "Potvrdi",
                     },
                 },
+                results: {
+                    gradingScale: {
+                        title: "Ljestvica za ocijenjivanje",
+                        createButton: "Kreiraj ljestvicu za ocjenjivanje",
+                        listItem: {
+                            grade: "Ocjena",
+                            percentage: "Postotak",
+                        },
+                    },
+                    createModal: {
+                        title: "Kreiraj ljestvicu za ocijenjivanje za %1",
+                        percentage: "Postotak",
+                        grade: "Ocjena",
+                        createButton: "Kreiraj",
+                    },
+                    table: {
+                        head: {
+                            user: "Korsinik",
+                            points: "Bodovi",
+                            exports: "izvoz",
+                        },
+                    },
+                },
             },
         },
     },

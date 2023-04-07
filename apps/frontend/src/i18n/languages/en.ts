@@ -251,6 +251,29 @@ const I18nEn = {
                         confirm: "Confirm",
                     },
                 },
+                results: {
+                    gradingScale: {
+                        title: "Grading scale",
+                        createButton: "Create grading scale",
+                        listItem: {
+                            grade: "Grade",
+                            percentage: "Percentage",
+                        },
+                    },
+                    createModal: {
+                        title: "Create grading scale for %1",
+                        percentage: "Percentage",
+                        grade: "Grade",
+                        createButton: "Create",
+                    },
+                    table: {
+                        head: {
+                            user: "User",
+                            points: "Points",
+                            exports: "Exports",
+                        },
+                    },
+                },
             },
         },
     },
