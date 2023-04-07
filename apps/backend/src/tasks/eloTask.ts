@@ -8,14 +8,18 @@ import { computeELODifference, ContestMemberLeaderboardInfo } from "../lib/elo";
 import { Logger } from "../lib/logger";
 import { R } from "../utils/remeda";
 
-const calculateLoss = (difficulty: number, solves: number[], notSolves: number[]) => {
+const calculateSolvingProbability = (rating: number, difficulty: number) => {
+    return 1 / (1 + 10 ** ((difficulty - rating) / 400));
+};
+
+const calculatePrecision = (difficulty: number, solves: number[], notSolves: number[]) => {
     const solvesLoss = solves.reduce(
-        (loss, elo) => loss / (1 + 10 ** ((elo - difficulty) / 400)),
+        (loss, elo) => loss * calculateSolvingProbability(elo, difficulty),
         1
     );
 
     const notSolvesLoss = notSolves.reduce(
-        (loss, elo) => loss / (1 + 10 ** ((difficulty - elo) / 400)),
+        (loss, elo) => loss * (1 - calculateSolvingProbability(elo, difficulty)),
         1
     );
 
@@ -45,8 +49,8 @@ const calculateProblemDifficulties = (
                 const mid = low + (high - low) / 2;
 
                 if (
-                    calculateLoss(mid, solvesElos, notSolvesElos) <
-                    calculateLoss(mid + delta, solvesElos, notSolvesElos)
+                    calculatePrecision(mid, solvesElos, notSolvesElos) <
+                    calculatePrecision(mid + delta, solvesElos, notSolvesElos)
                 ) {
                     low = mid;
                 } else {
