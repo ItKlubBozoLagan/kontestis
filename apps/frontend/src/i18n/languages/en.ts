@@ -384,6 +384,16 @@ const I18nEn = {
             },
         },
     },
+    admin: {
+        title: "Admin page",
+        routes: {
+            overview: "Overview",
+            users: "Users",
+            alerts: "Alerts",
+            contests: "Contests",
+            organizations: "Organisations",
+        },
+    },
     errorMessages: {
         invalid: "Validation error! Check your input!",
         withInfo: "Error! %1",

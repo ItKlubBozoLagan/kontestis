@@ -384,6 +384,16 @@ export default {
             },
         },
     },
+    admin: {
+        title: "Admin stranica",
+        routes: {
+            overview: "Pregled",
+            users: "korisnici",
+            alerts: "Uzbune",
+            contests: "Natjecanja",
+            organizations: "Organizacije",
+        },
+    },
     errorMessages: {
         invalid: "Greška pri validaciji! Provjerite unos!",
         withInfo: "Greška! %1",
