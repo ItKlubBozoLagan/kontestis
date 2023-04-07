@@ -25,7 +25,7 @@ import { useOrganisationStore } from "../../../../state/organisation";
 import { R } from "../../../../util/remeda";
 import { Leaderboard } from "../../../contests/Leaderboard";
 import { LimitBox } from "../../../problems/ProblemViewPage";
-import { ContestStatusIndicator } from "./ContestStatusIndicator";
+import { ContestStatusBox } from "./ContestStatusBox";
 
 const ModifyContestSchema = z.object({
     name: z.string().min(1),
@@ -114,7 +114,7 @@ export const ContestOverviewPage: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>
-            <ContestStatusIndicator contest={contest} />
+            <ContestStatusBox contest={contest} />
             <div tw={"w-full flex gap-8"}>
                 <div tw={"w-1/2"}>
                     <form onSubmit={onSubmit} ref={formReference}>

@@ -18,8 +18,8 @@ import { useCreateQuestion } from "../../hooks/contest/questions/useCreateQuesti
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
+import { ContestStatusStyleColorMap, useContestStatus } from "../../hooks/useContestStatus";
 import { useTranslation } from "../../hooks/useTranslation";
-import { ContestStatusIndicator } from "../management/contest/overview/ContestStatusIndicator";
 import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
@@ -74,12 +74,25 @@ export const ContestViewPage: FC = () => {
 
     const problemScores = useAllProblemScores();
 
+    const contestStatus = useContestStatus(contest);
+
     if (!contest) return <div>{t("contests.page.loading")}</div>;
 
     return (
         <div tw={"w-full flex flex-col justify-start items-center gap-6 mt-5"}>
             <div tw={"text-neutral-800 text-3xl"}>{contest.name}</div>
-            {contest && <ContestStatusIndicator contest={contest} />}
+            {contest && (
+                <div
+                    tw={
+                        "border-2 border-solid border-neutral-200 py-2 px-4 text-lg flex justify-center"
+                    }
+                    style={{
+                        backgroundColor: ContestStatusStyleColorMap[contestStatus.status],
+                    }}
+                >
+                    {contestStatus.timeFormat}
+                </div>
+            )}
             {contest && running && (
                 <div tw={"w-full flex flex-row justify-between gap-x-3"}>
                     <TitledSection

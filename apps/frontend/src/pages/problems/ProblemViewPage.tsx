@@ -32,7 +32,10 @@ type LimitBoxProperties = {
     value: string;
 };
 
-export const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value, ...properties }) => {
+export const LimitBox = React.forwardRef<
+    HTMLDivElement,
+    LimitBoxProperties & React.HTMLAttributes<HTMLDivElement>
+>(({ icon: Icon, title, value, ...properties }, reference) => {
     return (
         <div
             tw={
@@ -47,7 +50,9 @@ export const LimitBox: FC<LimitBoxProperties> = ({ icon: Icon, title, value, ...
             <span tw={"text-lg"}>{value}</span>
         </div>
     );
-};
+});
+
+LimitBox.displayName = "LimitBox";
 
 export const ProblemViewPage: FC = () => {
     const { problemId } = useParams<Properties>();
