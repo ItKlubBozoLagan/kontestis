@@ -8,7 +8,7 @@ import {
     FiMessageSquare,
     FiUsers,
 } from "react-icons/all";
-import { Outlet, useLocation, useNavigate, useParams } from "react-router";
+import { Outlet, useNavigate, useParams } from "react-router";
 import { Navigate } from "react-router-dom";
 
 import { NavItem } from "../../../components/NavElement";
@@ -58,8 +58,6 @@ const SubRoutes: NavItem[] = [
 export const ContestManagementLayout: FC = () => {
     const { contestId } = useParams<PathParameters>() as PathParameters;
     const navigate = useNavigate();
-    const current = useLocation();
-
     const {
         isSuccess,
         isError,
