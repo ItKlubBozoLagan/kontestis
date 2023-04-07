@@ -31,7 +31,7 @@ importers:
       '@kontestis/models': workspace:^1.0.0
       '@kontestis/utils': workspace:^1.0.0
       '@lvksh/logger': ^1.6.3
-      '@sinclair/typebox': ^0.24.34
+      '@sinclair/typebox': ^0.26.8
       '@types/apidoc': ^0.50.0
       '@types/bcrypt': ^5.0.0
       '@types/cors': ^2.8.13
@@ -67,7 +67,7 @@ importers:
       '@kontestis/models': link:../../packages/models
       '@kontestis/utils': link:../../packages/utils
       '@lvksh/logger': 1.6.4
-      '@sinclair/typebox': 0.24.51
+      '@sinclair/typebox': 0.26.8
       apidoc: 0.53.1
       axios: 1.2.6
       bcrypt: 5.1.0
@@ -997,6 +997,10 @@ packages:
 
   /@sinclair/typebox/0.24.51:
     resolution: {integrity: sha512-1P1OROm/rdubP5aFDSZQILU0vrLCJ4fvHt6EoqHEM+2D/G5MK3bIaymUKLit8Js9gbns5UyJnkP/TZROLw4tUA==}
+    dev: false
+
+  /@sinclair/typebox/0.26.8:
+    resolution: {integrity: sha512-fvAkOrUWndf5vjptkW+4TeTH84/bILWQHgk7rbbzT8trZxW+b84lr8dZQPM/r7cGNRFxDaJYsMjHCikEYyAHaw==}
     dev: false
 
   /@tsconfig/node10/1.0.9:
