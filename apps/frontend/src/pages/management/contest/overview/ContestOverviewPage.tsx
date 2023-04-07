@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminPermissions } from "@kontestis/models";
 import { parseTime, toCroatianLocale } from "@kontestis/utils";
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
 import { useQueryClient } from "react-query";
@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { CanAdmin } from "../../../../components/CanAdmin";
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
+import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledDateInput } from "../../../../components/TitledDateInput";
 import { TitledInput } from "../../../../components/TitledInput";
 import { TitledSection } from "../../../../components/TitledSection";
@@ -18,7 +19,9 @@ import { useContestContext } from "../../../../context/constestContext";
 import { useAllContestAnnouncements } from "../../../../hooks/contest/announcements/useAllContestAnnouncements";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useAllContestQuestions } from "../../../../hooks/contest/questions/useAllContestQuestions";
+import { useCopyContest } from "../../../../hooks/contest/useCopyContest";
 import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
+import { useAllOrganisations } from "../../../../hooks/organisation/useAllOrganisations";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { useOrganisationStore } from "../../../../state/organisation";
@@ -67,6 +70,10 @@ export const ContestOverviewPage: FC = () => {
 
     const { data: problems } = useAllProblems(contest.id);
 
+    const { data: organisations } = useAllOrganisations();
+
+    const [selectedOrgId, setSelectedOrgId] = useState(1n);
+
     const queryClient = useQueryClient();
 
     // I guess we could make a route to get this info without getting all data, but it should be fine
@@ -111,6 +118,15 @@ export const ContestOverviewPage: FC = () => {
             new Event("submit", { cancelable: true, bubbles: true })
         );
     };
+
+    const copyMutation = useCopyContest(contest.id);
+
+    useEffect(() => {
+        if (!copyMutation.isSuccess) return;
+
+        queryClient.invalidateQueries(["contests"]);
+        copyMutation.reset();
+    }, [copyMutation.isSuccess]);
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>
@@ -275,6 +291,30 @@ export const ContestOverviewPage: FC = () => {
                                     />
                                 </div>
                             )}
+                            <div tw={"w-full flex justify-center gap-2"}>
+                                <SimpleButton
+                                    type={"button"}
+                                    onClick={() => {
+                                        copyMutation.mutate({ organisation_id: selectedOrgId });
+                                    }}
+                                >
+                                    Clone
+                                </SimpleButton>
+                                <select
+                                    onChange={(event) =>
+                                        setSelectedOrgId(BigInt(event.target.value))
+                                    }
+                                >
+                                    {(organisations ?? []).map((organisation) => (
+                                        <option
+                                            key={organisation.id.toString()}
+                                            value={organisation.id.toString()}
+                                        >
+                                            {organisation.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </TitledSection>
                     </form>
                     <div tw={"text-sm text-red-500"}>

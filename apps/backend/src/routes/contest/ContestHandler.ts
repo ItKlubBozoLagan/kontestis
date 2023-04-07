@@ -56,19 +56,23 @@ ContestHandler.use("/:contest_id/announcement", ContestAnnouncementHandler);
 ContestHandler.use("/:contest_id/grade", ContestGradingHandler);
 
 const copySchema = Type.Object({
-    organisation_id: Type.BigInt(),
+    organisation_id: Type.String(),
 });
 
 ContestHandler.post("/:contest_id/copy", useValidation(copySchema), async (req, res) => {
     const user = await extractUser(req);
     const contest = await extractModifiableContest(req);
 
-    await extractOrganisation(req, req.body.organisation_id);
+    if (!/^\d+$/.test(req.body.organisation_id)) throw new SafeError(StatusCodes.BAD_REQUEST);
+
+    const organisationId = BigInt(req.body.organisation_id);
+
+    await extractOrganisation(req, organisationId);
 
     const newContest: Contest = {
         ...contest,
         id: generateSnowflake(),
-        organisation_id: req.body.organisation_id,
+        organisation_id: organisationId,
     };
 
     await Database.insertInto("contests", newContest);
