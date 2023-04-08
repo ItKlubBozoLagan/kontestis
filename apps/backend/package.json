@@ -14,6 +14,7 @@
         "@influxdata/influxdb-client-apis": "^1.33.2",
         "@kontestis/models": "workspace:^1.0.0",
         "@kontestis/utils": "workspace:^1.0.0",
+        "@kubernetes/client-node": "^0.18.1",
         "@lvksh/logger": "^1.6.3",
         "@sinclair/typebox": "^0.26.8",
         "apidoc": "^0.53.1",
