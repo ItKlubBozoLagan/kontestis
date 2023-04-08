@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 
 import { http, wrapAxios } from "../../api/http";
 import { Breadcrumb } from "../../components/Breadcrumb";
+import { EmptyRow } from "../../components/EmptyRow";
 import { PageTitle } from "../../components/PageTitle";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { RankBreadcrumb } from "../../components/RankBreadcrumb";
@@ -66,6 +67,7 @@ export const ProblemsPage: FC = () => {
                     </TableHeadRow>
                 </thead>
                 <tbody>
+                    <EmptyRow contents={problems} />
                     {problems.map((problem) => (
                         <TableRow key={problem.id.toString()}>
                             <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>

@@ -23,6 +23,9 @@ export default {
         management: "Upravljanje",
         admin: "Admin",
     },
+    helper: {
+        tableNoContents: "Nema ničega za sada",
+    },
     dashboard: {
         total: {
             contests: "Ukupno natjecanja",
@@ -91,7 +94,6 @@ export default {
         management: {
             label: "Vaša natjecanja",
             createButton: "Stvori novo",
-            noContests: "Nema ničega za sada",
             modal: {
                 label: "Stvori natjecanje",
                 createButton: "Stvori",

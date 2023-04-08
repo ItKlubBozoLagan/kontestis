@@ -1,6 +1,7 @@
 import { Contest, ContestWithPermissions } from "@kontestis/models";
 import { FC } from "react";
 
+import { EmptyRow } from "../../components/EmptyRow";
 import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ContestListItem } from "./ContestListItem";
@@ -31,6 +32,7 @@ export const ContestsTable: FC<Properties> = ({ contests }) => {
                 </TableHeadRow>
             </thead>
             <tbody>
+                <EmptyRow contents={contests} />
                 {contests
                     .sort((a, b) => {
                         if (isRunning(a) !== isRunning(b)) return isRunning(a) ? -1 : 1;
@@ -41,8 +43,8 @@ export const ContestsTable: FC<Properties> = ({ contests }) => {
 
                         return a.start_time.getTime() - b.start_time.getTime();
                     })
-                    .map((c) => (
-                        <ContestListItem contest={c} key={c.id.toString()} />
+                    .map((contest) => (
+                        <ContestListItem contest={contest} key={contest.id.toString()} />
                     ))}
             </tbody>
         </Table>

@@ -7,9 +7,10 @@ import {
 import { FC, useMemo, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
+import { EmptyRow } from "../../components/EmptyRow";
 import { PageTitle } from "../../components/PageTitle";
 import { SimpleButton } from "../../components/SimpleButton";
-import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
+import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useMappedContests } from "../../hooks/contest/useMappedContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
@@ -63,13 +64,7 @@ export const ManagementPage: FC = () => {
                     </TableHeadRow>
                 </thead>
                 <tbody>
-                    <TableRow>
-                        {myContests.length === 0 && (
-                            <TableItem colSpan={100} tw={"text-center"}>
-                                {t("contests.management.noContests")}
-                            </TableItem>
-                        )}
-                    </TableRow>
+                    <EmptyRow contents={myContests} />
                     {myContests.map((c) => (
                         <ContestListItem adminView contest={c} key={c.id.toString()} />
                     ))}

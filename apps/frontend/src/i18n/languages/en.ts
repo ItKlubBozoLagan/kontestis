@@ -23,6 +23,9 @@ const I18nEn = {
         management: "Management",
         admin: "Admin",
     },
+    helper: {
+        tableNoContents: "None so far",
+    },
     dashboard: {
         total: {
             contests: "Total Contests",
@@ -91,7 +94,6 @@ const I18nEn = {
         management: {
             label: "Your contests",
             createButton: "Create new",
-            noContests: "None so far",
             modal: {
                 label: "Contest information",
                 createButton: "Create",
