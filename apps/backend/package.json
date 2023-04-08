@@ -37,6 +37,7 @@
         "scyllo": "^1.8.0",
         "sunflake": "^0.6.0",
         "superjson": "^1.12.2",
+        "systeminformation": "^5.17.12",
         "ts-node": "^10.9.1"
     },
     "devDependencies": {

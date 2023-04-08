@@ -60,6 +60,7 @@ importers:
       scyllo: ^1.8.0
       sunflake: ^0.6.0
       superjson: ^1.12.2
+      systeminformation: ^5.17.12
       ts-node: ^10.9.1
       typescript: ^4.9.4
     dependencies:
@@ -90,6 +91,7 @@ importers:
       scyllo: 1.8.0
       sunflake: 0.6.0
       superjson: 1.12.2
+      systeminformation: 5.17.12
       ts-node: 10.9.1_awa2wsr5thmg3i7jqycphctjfq
     devDependencies:
       '@types/apidoc': 0.50.0
@@ -6193,6 +6195,13 @@ packages:
   /supports-preserve-symlinks-flag/1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  /systeminformation/5.17.12:
+    resolution: {integrity: sha512-I3pfMW2vue53u+X08BNxaJieaHkRoMMKjWetY9lbYJeWFaeWPO6P4FkNc4XOCX8F9vbQ0HqQ25RJoz3U/B7liw==}
+    engines: {node: '>=8.0.0'}
+    os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
+    hasBin: true
+    dev: false
 
   /tailwindcss/3.3.1_postcss@8.4.21:
     resolution: {integrity: sha512-Vkiouc41d4CEq0ujXl6oiGFQ7bA3WEhUZdTgXAhtKxSy49OmKs8rEfQmupsfF0IGW8fv2iQkp1EVUuapCFrZ9g==}

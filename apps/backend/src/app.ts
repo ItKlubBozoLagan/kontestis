@@ -119,7 +119,7 @@ Promise.allSettled([
         }),
     // for consistency
     initInflux(),
-]).then(() => {
+]).then(async () => {
     Logger.info("Ready");
 
     const _PORT = process.env.PORT || 8080;
