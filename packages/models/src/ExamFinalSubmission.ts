@@ -11,4 +11,8 @@ export type ExamFinalSubmissionV2 = ExamFinalSubmissionV1 & {
     final_score: number;
 };
 
-export type ExamFinalSubmission = ExamFinalSubmissionV2;
+export type ExamFinalSubmissionV3 = ExamFinalSubmissionV2 & {
+    reviewed: boolean;
+};
+
+export type ExamFinalSubmission = ExamFinalSubmissionV3;

@@ -12,7 +12,7 @@ import tw from "twin.macro";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useContest } from "../../hooks/contest/useContest";
-import { useAllFinalSubmissions } from "../../hooks/submission/useAllFinalSubmissions";
+import { useAllFinalSubmissions } from "../../hooks/submission/final/useAllFinalSubmissions";
 import { useSetFinalSubmission } from "../../hooks/submission/useSetFinalSubmission";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";

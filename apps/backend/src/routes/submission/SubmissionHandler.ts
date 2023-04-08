@@ -15,6 +15,7 @@ import { SafeError } from "../../errors/SafeError";
 import { extractClusterSubmission } from "../../extractors/extractClusterSubmission";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
+import { extractFinalSubmission } from "../../extractors/extractFinalSubmission";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractOptionalUser } from "../../extractors/extractOptionalUser";
 import { extractProblem } from "../../extractors/extractProblem";
@@ -128,6 +129,7 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
         contest_id: problem.contest_id,
         submission_id: submission.id,
         final_score: submission.awarded_score,
+        reviewed: false,
     };
 
     const member = await Database.selectOneFrom("contest_members", "*", {
@@ -148,6 +150,7 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
 
 const finalSubmissionSchema = Type.Object({
     final_score: Type.Number(),
+    reviewed: Type.Boolean(),
 });
 
 SubmissionHandler.patch(
@@ -177,6 +180,7 @@ SubmissionHandler.patch(
             "exam_final_submissions",
             {
                 final_score: req.body.final_score,
+                reviewed: req.body.reviewed,
             },
             { id: finalSubmission.id }
         );
@@ -188,6 +192,12 @@ SubmissionHandler.patch(
         return respond(res, StatusCodes.OK);
     }
 );
+
+SubmissionHandler.get("/final/:final_submission_id", async (req, res) => {
+    const finalSubmission = await extractFinalSubmission(req);
+
+    return respond(res, StatusCodes.OK, finalSubmission);
+});
 
 const getFinalSubmissionSchema = Type.Object({
     user_id: Type.String(),
