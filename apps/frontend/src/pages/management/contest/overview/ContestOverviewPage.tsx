@@ -5,6 +5,7 @@ import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
 import { useQueryClient } from "react-query";
+import { useNavigate } from "react-router";
 import { z } from "zod";
 
 import { CanAdmin } from "../../../../components/CanAdmin";
@@ -121,18 +122,24 @@ export const ContestOverviewPage: FC = () => {
 
     const copyMutation = useCopyContest(contest.id);
 
+    const navigate = useNavigate();
+    const { setOrganisationId } = useOrganisationStore();
+
     useEffect(() => {
         if (!copyMutation.isSuccess) return;
 
         queryClient.invalidateQueries(["contests"]);
         copyMutation.reset();
+
+        setOrganisationId(selectedOrgId);
+        navigate(`/contest/${copyMutation.data?.id}`);
     }, [copyMutation.isSuccess]);
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>
             <ContestStatusBox contest={contest} />
-            <div tw={"w-full flex gap-8"}>
-                <div tw={"w-1/2"}>
+            <div tw={"w-full flex justify-stretch gap-8"}>
+                <div tw={"w-full"}>
                     <form onSubmit={onSubmit} ref={formReference}>
                         <TitledSection
                             title={t("contests.management.individual.overview.info.label")}
@@ -291,30 +298,6 @@ export const ContestOverviewPage: FC = () => {
                                     />
                                 </div>
                             )}
-                            <div tw={"w-full flex justify-center gap-2"}>
-                                <SimpleButton
-                                    type={"button"}
-                                    onClick={() => {
-                                        copyMutation.mutate({ organisation_id: selectedOrgId });
-                                    }}
-                                >
-                                    Clone
-                                </SimpleButton>
-                                <select
-                                    onChange={(event) =>
-                                        setSelectedOrgId(BigInt(event.target.value))
-                                    }
-                                >
-                                    {(organisations ?? []).map((organisation) => (
-                                        <option
-                                            key={organisation.id.toString()}
-                                            value={organisation.id.toString()}
-                                        >
-                                            {organisation.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
                         </TitledSection>
                     </form>
                     <div tw={"text-sm text-red-500"}>
@@ -330,7 +313,7 @@ export const ContestOverviewPage: FC = () => {
                         )}
                     </div>
                 </div>
-                <div tw={"flex flex-col w-1/2 gap-2"}>
+                <div tw={"flex flex-col w-full gap-2"}>
                     <TitledSection title={"Statistics"} tw={"gap-4"}>
                         <LimitBox
                             icon={FiUsers}
@@ -356,6 +339,31 @@ export const ContestOverviewPage: FC = () => {
                                     .length ?? 0) + ""
                             }
                         />
+                    </TitledSection>
+                    <TitledSection title={"Copy"}>
+                        <div tw={"w-full flex justify-center gap-2"}>
+                            <SimpleButton
+                                disabled={copyMutation.isLoading}
+                                type={"button"}
+                                onClick={() => {
+                                    copyMutation.mutate({ organisation_id: selectedOrgId });
+                                }}
+                            >
+                                Clone
+                            </SimpleButton>
+                            <select
+                                onChange={(event) => setSelectedOrgId(BigInt(event.target.value))}
+                            >
+                                {(organisations ?? []).map((organisation) => (
+                                    <option
+                                        key={organisation.id.toString()}
+                                        value={organisation.id.toString()}
+                                    >
+                                        {organisation.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </TitledSection>
                 </div>
             </div>

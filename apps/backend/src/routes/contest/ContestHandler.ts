@@ -126,6 +126,11 @@ ContestHandler.post("/:contest_id/copy", useValidation(copySchema), async (req, 
         contest_permissions: grantPermission(0n, ContestMemberPermissions.ADMIN),
     });
 
+    // I'm adding an artificial delay here because I don't want this to be fast
+    //  since it's something you wouldn't want to do often,
+    //  a slower response time will give people less incentive to spam it
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     return respond(res, StatusCodes.OK, newContest);
 });
 

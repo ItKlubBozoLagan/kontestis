@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import tw from "twin.macro";
 
 import { NavBar } from "../components/NavBar";
@@ -18,6 +18,10 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
     const { lastUpdate, backendError, setBackendError } = useBackendError();
 
     const [errorTimeout, setErrorTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+    const location = useLocation();
+
+    useEffect(() => console.log(location), [location]);
 
     useEffect(() => {
         if (errorTimeout) clearTimeout(errorTimeout);

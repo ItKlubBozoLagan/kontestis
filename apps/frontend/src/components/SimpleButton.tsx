@@ -15,13 +15,19 @@ const ButtonStyle = styled.button<{ $color: string }>`
     ${tw`w-auto text-black font-mono px-2 py-1 cursor-pointer h-[max-content]`}
     ${tw`flex gap-1 items-center border border-neutral-500 text-center align-middle`}
     
-    &:hover {
-        background-color: ${({ $color }) => darkenHex($color, 10)};
+    &:enabled {
+        &:hover {
+            background-color: ${({ $color }) => darkenHex($color, 10)};
+        }
+
+        &:active {
+            background-color: ${({ $color }) => darkenHex($color, 15)};
+            ${tw`pt-1.5 pb-0.5`}
+        }
     }
 
-    &:active {
-        background-color: ${({ $color }) => darkenHex($color, 15)};
-        ${tw`pt-1.5 pb-0.5`}
+    &:disabled {
+        background-color: ${({ $color }) => darkenHex($color, 30)};
     }
 `;
 
