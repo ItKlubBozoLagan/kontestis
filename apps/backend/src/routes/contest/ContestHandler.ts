@@ -296,6 +296,10 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         "ALLOW FILTERING"
     );
 
+    // if for every contestMember doesn't exist a corresponding user
+    if (!contestMembers.every((it) => users.some((user) => user.user_id === it.user_id)))
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
     return respond(
         res,
         StatusCodes.OK,
