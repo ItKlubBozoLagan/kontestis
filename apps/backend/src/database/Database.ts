@@ -53,6 +53,7 @@ import { migration_move_elo_to_organisation_member } from "./migrations/0030_mov
 import { migration_remove_correct_output_from_testcase } from "./migrations/0031_remove_correct_output_from_testcase";
 import { migration_add_tags_to_problems } from "./migrations/0032_add_tags_to_problems";
 import { migration_add_final_score_to_exam_final_submissions } from "./migrations/0033_add_final_score_to_exam_final_submissions";
+import { migration_add_exam_scores_to_contest_member } from "./migrations/0034_add_exam_scores_to_contest_member";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -117,6 +118,7 @@ const migrations: Migration<any>[] = [
     migration_remove_correct_output_from_testcase,
     migration_add_tags_to_problems,
     migration_add_final_score_to_exam_final_submissions,
+    migration_add_exam_scores_to_contest_member,
 ];
 
 export const initDatabase = async () => {

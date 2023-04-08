@@ -10,7 +10,11 @@ export type ContestMemberV1 = {
     score: Record<string, number>;
 };
 
-export type ContestMember = ContestMemberV1;
+export type ContestMemberV2 = ContestMemberV1 & {
+    exam_score: Record<string, number>;
+};
+
+export type ContestMember = ContestMemberV2;
 
 export type ContestMemberWithInfo = ContestMember & {
     full_name: string;

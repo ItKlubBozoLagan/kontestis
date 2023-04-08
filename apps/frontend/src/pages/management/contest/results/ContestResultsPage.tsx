@@ -47,7 +47,7 @@ export const ContestResultsPage: FC = () => {
             R.fromPairs(
                 (members ?? []).map((member) => [
                     member.id.toString(),
-                    Object.values(member.score).reduce(
+                    Object.values(member.exam_score).reduce(
                         (accumulator, current) => accumulator + current,
                         0
                     ),

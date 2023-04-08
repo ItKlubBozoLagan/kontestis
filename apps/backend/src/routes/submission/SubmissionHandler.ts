@@ -130,7 +130,18 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
         final_score: submission.awarded_score,
     };
 
+    const member = await Database.selectOneFrom("contest_members", "*", {
+        user_id: submission.user_id,
+        contest_id: problem.contest_id,
+    });
+
     await Database.insertInto("exam_final_submissions", finalSubmission);
+
+    if (!member) throw new SafeError(StatusCodes.BAD_REQUEST);
+
+    await Database.raw(
+        `UPDATE contest_members SET exam_score[${submission.problem_id}]=${submission.awarded_score} WHERE id=${member.id} AND contest_id=${member.id} AND user_id=${member.user_id}`
+    );
 
     return respond(res, StatusCodes.OK, finalSubmission);
 });
@@ -151,6 +162,15 @@ SubmissionHandler.patch(
 
         if (!finalSubmission) throw new SafeError(StatusCodes.NOT_FOUND);
 
+        const member = await Database.selectOneFrom("contest_members", "*", {
+            user_id: finalSubmission.user_id,
+            contest_id: finalSubmission.contest_id,
+        });
+
+        if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        const submission = await extractSubmission(req, finalSubmission.submission_id);
+
         await extractModifiableContest(req, finalSubmission.contest_id);
 
         await Database.update(
@@ -159,6 +179,10 @@ SubmissionHandler.patch(
                 final_score: req.body.final_score,
             },
             { id: finalSubmission.id }
+        );
+
+        await Database.raw(
+            `UPDATE contest_members SET exam_score[${submission.problem_id}]=${req.body.final_score} WHERE id=${member.id} AND contest_id=${member.id} AND user_id=${member.user_id}`
         );
 
         return respond(res, StatusCodes.OK);
