@@ -7,4 +7,8 @@ export type ExamFinalSubmissionV1 = {
     submission_id: Snowflake;
 };
 
-export type ExamFinalSubmission = ExamFinalSubmissionV1;
+export type ExamFinalSubmissionV2 = ExamFinalSubmissionV1 & {
+    final_score: number;
+};
+
+export type ExamFinalSubmission = ExamFinalSubmissionV2;

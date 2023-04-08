@@ -24,6 +24,7 @@ import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
@@ -126,12 +127,43 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
         user_id: submission.user_id,
         contest_id: problem.contest_id,
         submission_id: submission.id,
+        final_score: submission.awarded_score,
     };
 
     await Database.insertInto("exam_final_submissions", finalSubmission);
 
     return respond(res, StatusCodes.OK, finalSubmission);
 });
+
+const finalSubmissionSchema = Type.Object({
+    final_score: Type.Number(),
+});
+
+SubmissionHandler.patch(
+    "/final/:final_submission_id",
+    useValidation(finalSubmissionSchema),
+    async (req, res) => {
+        const finalSubmissionId = extractIdFromParameters(req, "final_submission_id");
+
+        const finalSubmission = await Database.selectOneFrom("exam_final_submissions", "*", {
+            id: finalSubmissionId,
+        });
+
+        if (!finalSubmission) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        await extractModifiableContest(req, finalSubmission.contest_id);
+
+        await Database.update(
+            "exam_final_submissions",
+            {
+                final_score: req.body.final_score,
+            },
+            { id: finalSubmission.id }
+        );
+
+        return respond(res, StatusCodes.OK);
+    }
+);
 
 const getFinalSubmissionSchema = Type.Object({
     user_id: Type.String(),
