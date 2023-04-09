@@ -109,6 +109,12 @@ export type InfluxClient<T extends InfluxDataSchema> = {
         values: T[K]["values"],
         date?: Date
     ): Promise<void>;
+    insertSync<K extends keyof T & string>(
+        measurement: K,
+        tags: Record<T[K]["tags"][number], string>,
+        values: T[K]["values"],
+        date?: Date
+    ): void;
     insertMany(lines: InfluxLine[]): Promise<void>;
     queryRaw(flux: ParameterizedQuery): Promise<unknown>;
     query<K extends keyof T & string>(
@@ -119,6 +125,7 @@ export type InfluxClient<T extends InfluxDataSchema> = {
     ): Promise<InfluxQueryResult<T, K>>;
     // will add more complex delete mechanics as we need them
     dropMeasurement<K extends keyof T & string>(measurement: K): Promise<void>;
+    flush(): Promise<void>;
     _writeApi: WriteApi;
     _readApi: QueryApi;
     _deleteApi: DeleteAPI;
@@ -181,21 +188,31 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
             .map(([key, value]) => `${key}=${stringifyInfluxType(value)}`)
             .join(",")} ${date.getTime()}`;
 
+    const insertSync = <K extends keyof T & string>(
+        measurement: K,
+        tags: Record<T[K]["tags"][number], string>,
+        values: T[K]["values"],
+        date: Date = new Date()
+    ): void => {
+        const line = createLine(measurement, tags, values, date);
+
+        debugFunction("[InfluxDB] Writing", line);
+        influxWriteApi.writeRecords([line]);
+    };
+
     return {
         createLine,
         insert: <K extends keyof T & string>(
             measurement: K,
             tags: Record<T[K]["tags"][number], string>,
             values: T[K]["values"],
-            date: Date = new Date()
+            date?: Date
         ) => {
-            const line = createLine(measurement, tags, values, date);
-
-            debugFunction("[InfluxDB] Writing", line);
-            influxWriteApi.writeRecords([line]);
+            insertSync(measurement, tags, values, date);
 
             return influxWriteApi.flush();
         },
+        insertSync,
         insertMany: (lines: InfluxLine[]) => {
             debugFunction("[InfluxDB] Writing", ...lines);
             influxWriteApi.writeRecords(lines);
@@ -258,6 +275,11 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                     predicate: `_measurement="${measurement}"`,
                 },
             });
+        },
+        flush: () => {
+            debugFunction("[InfluxDB] Flushing");
+
+            return influxWriteApi.flush();
         },
         _writeApi: influxWriteApi,
         _readApi: influxReadApi,

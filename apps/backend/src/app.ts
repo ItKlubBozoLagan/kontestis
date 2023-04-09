@@ -23,6 +23,7 @@ import rateLimit from "express-rate-limit";
 import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
 import { startEloTask } from "./tasks/eloTask";
+import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 
 declare global {
     interface BigInt {
@@ -67,7 +68,7 @@ app.use(
     })
 );
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     Logger.debug(req.method + " ON " + req.url);
     next();
 });
@@ -122,6 +123,7 @@ Promise.allSettled([
 
     app.listen(Globals.port, () => {
         Logger.info("Listening on " + Globals.port);
-        const _ = startEloTask();
+
+        for (const task of [startEloTask, startInfluxFlushTask]) task();
     });
 });
