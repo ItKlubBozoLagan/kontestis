@@ -7,6 +7,7 @@ import {
     PendingSubmission,
     Problem,
     Snowflake,
+    Submission,
     Testcase,
     TestcaseWithOutput,
     User,
@@ -16,6 +17,7 @@ import { AxiosError } from "axios";
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
 import { isContestRunning } from "./contest";
+import { Logger } from "./logger";
 import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
 import { getAllTestcases } from "./testcase";
@@ -202,7 +204,8 @@ const evaluateCluster = async (
 
 export const beginEvaluation = async (
     user: User,
-    problemDetails: ProblemDetails
+    problemDetails: ProblemDetails,
+    afterEnd?: (submission: Submission) => Promise<void> | void
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const pendingSubmission: PendingSubmission = {
@@ -249,7 +252,7 @@ export const beginEvaluation = async (
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
 
-    const _ = (async () => {
+    const _ = await (async () => {
         const clusterSubmissions = await Promise.all(
             clusters.map((c) => evaluateCluster(problemDetails, c, problem, pendingSubmission))
         );
@@ -274,20 +277,22 @@ export const beginEvaluation = async (
                   0
               );
 
+        const newSubmission: Submission = {
+            ...pendingSubmission,
+            problem_id: problemDetails.problemId,
+            awarded_score: score,
+            verdict: verdict,
+            error:
+                verdict === "compilation_error"
+                    ? clusterSubmissions.find((cs) => cs?.verdict === "compilation_error")
+                          ?.compilationError
+                    : undefined,
+            time_used_millis: time,
+            memory_used_megabytes: memory,
+        } as Submission;
+
         await Promise.all([
-            Database.insertInto("submissions", {
-                ...pendingSubmission,
-                problem_id: problemDetails.problemId,
-                awarded_score: score,
-                verdict: verdict,
-                error:
-                    verdict === "compilation_error"
-                        ? clusterSubmissions.find((cs) => cs?.verdict === "compilation_error")
-                              ?.compilationError
-                        : undefined,
-                time_used_millis: time,
-                memory_used_megabytes: memory,
-            }),
+            Database.insertInto("submissions", newSubmission),
             updateContestMember(problemDetails.problemId, user.id, score),
         ]);
 
@@ -300,6 +305,14 @@ export const beginEvaluation = async (
             },
             pendingSubmission.id
         );
+
+        if (afterEnd) {
+            try {
+                await afterEnd(newSubmission);
+            } catch (error) {
+                Logger.error("submission evaluation listener failed", error as any);
+            }
+        }
     })();
 
     return pendingSubmission.id;

@@ -23,7 +23,7 @@ AuthHandler.post("/google-login", useValidation(oauthSchema), async (req, res) =
 
     if (googleResponse === null) throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const tokenData = await processUserFromTokenData(googleResponse);
+    const tokenData = await processUserFromTokenData(googleResponse, true);
 
     await Database.update(
         "known_users",

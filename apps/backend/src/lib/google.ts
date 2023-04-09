@@ -7,6 +7,7 @@ import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import { Database } from "../database/Database";
 import { DEFAULT_ORGANISATION } from "../extractors/extractOrganisation";
 import { Globals } from "../globals";
+import { Influx } from "../influx/Influx";
 import { R } from "../utils/remeda";
 import { generateSnowflake } from "./snowflake";
 
@@ -84,7 +85,10 @@ export const fixExistingKnownUser = async (
     return updatedUser;
 };
 
-export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Promise<FullUser> => {
+export const processUserFromTokenData = async (
+    tokenData: NiceTokenResponse,
+    login: boolean = false
+): Promise<FullUser> => {
     const { id: googleId } = tokenData;
 
     const [numberUsers, potentialEntry] = await Promise.all([
@@ -128,6 +132,13 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
             elo: DEFAULT_ELO,
         });
     }
+
+    if (login)
+        await Influx.insert(
+            "logins",
+            { userId: user.id.toString(), newLogin: String(!potentialEntry) },
+            { happened: true }
+        );
 
     return {
         ...user,

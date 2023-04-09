@@ -4,6 +4,7 @@ import {
     ExamFinalSubmission,
     hasAdminPermission,
     hasContestPermission,
+    Submission,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
@@ -18,9 +19,12 @@ import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractFinalSubmission } from "../../extractors/extractFinalSubmission";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractOptionalUser } from "../../extractors/extractOptionalUser";
+import { extractCurrentOrganisation } from "../../extractors/extractOrganisation";
 import { extractProblem } from "../../extractors/extractProblem";
 import { extractSubmission } from "../../extractors/extractSubmission";
 import { extractUser } from "../../extractors/extractUser";
+import { Influx } from "../../influx/Influx";
+import { createInfluxUInt } from "../../influx/InfluxClient";
 import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
@@ -39,12 +43,29 @@ const submissionSchema = Type.Object({
 SubmissionHandler.post("/:problem_id", useValidation(submissionSchema), async (req, res) => {
     const problem = await extractProblem(req);
     const user = await extractUser(req);
+    const org = await extractCurrentOrganisation(req);
 
-    const submissionId = await beginEvaluation(user, {
-        problemId: problem.id,
-        language: req.body.language,
-        code: req.body.code,
-    });
+    const endListener = async (submission: Submission) => {
+        await Influx.insert(
+            "submissions",
+            {
+                userId: user.id.toString(),
+                orgId: org.id.toString(),
+                successful: String(submission.verdict === "accepted"),
+            },
+            { id: createInfluxUInt(submission.id) }
+        );
+    };
+
+    const submissionId = await beginEvaluation(
+        user,
+        {
+            problemId: problem.id,
+            language: req.body.language,
+            code: req.body.code,
+        },
+        endListener
+    );
 
     return respond(res, StatusCodes.CREATED, { submission: submissionId });
 });

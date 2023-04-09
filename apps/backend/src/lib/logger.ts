@@ -5,6 +5,7 @@ export const Logger = createLogger(
     {
         info: chalk.blue` INFO `,
         debug: chalk.yellow` DEBUG `,
+        error: chalk.red` ERROR `,
         database: chalk.cyan` DATABASE `,
         redis: chalk.redBright` REDIS `,
         influx: chalk.magentaBright` INFLUX `,
