@@ -66,9 +66,6 @@ SubmissionHandler.get("/", useValidation(getSchema, { query: true }), async (req
 SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
     const contest = await extractContest(req, problem.contest_id);
-    const member = await extractContestMember(req, problem.contest_id);
-    const user = await extractUser(req);
-
     const submissions = await Database.selectFrom("submissions", "*", { problem_id: problem.id });
 
     const users = await Database.selectFrom("known_users", "*", {
@@ -83,10 +80,14 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
         return respond(res, StatusCodes.OK, submissionsWithInfo);
 
-    if (
-        !hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE) &&
-        !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
-    )
+    const user = await extractUser(req);
+
+    if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
+        return respond(res, StatusCodes.OK, submissionsWithInfo);
+
+    const member = await extractContestMember(req, problem.contest_id);
+
+    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     respond(res, StatusCodes.OK, submissionsWithInfo);

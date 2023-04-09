@@ -1,11 +1,19 @@
-import { ContestMemberPermissions, ContestQuestion, hasContestPermission } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    ContestQuestion,
+    hasAdminPermission,
+    hasContestPermission,
+} from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
+import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
+import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
@@ -33,11 +41,17 @@ ContestQuestionHandler.post("/", useValidation(questionSchema), async (req, res)
 });
 
 ContestQuestionHandler.get("/", async (req, res) => {
-    const member = await extractContestMember(req);
+    const user = await extractUser(req);
+    const contest = await extractContest(req);
 
     const questions = await Database.selectFrom("contest_questions", "*", {
-        contest_id: member.contest_id,
+        contest_id: contest.id,
     });
+
+    if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
+        return respond(res, StatusCodes.OK, questions);
+
+    const member = await extractContestMember(req);
 
     if (hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS))
         return respond(res, StatusCodes.OK, questions);
