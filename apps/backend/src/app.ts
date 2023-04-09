@@ -24,6 +24,7 @@ import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
 import { startEloTask } from "./tasks/eloTask";
 import { startInfluxFlushTask } from "./tasks/influxFlushTask";
+import { StatsHandler } from "./routes/stats/StatsHandler";
 
 declare global {
     interface BigInt {
@@ -80,6 +81,7 @@ app.use("/api/organisation", OrganisationHandler);
 app.use("/api/contest", ContestHandler);
 app.use("/api/problem", ProblemHandler);
 app.use("/api/submission", SubmissionHandler);
+app.use("/api/stats", StatsHandler);
 
 app.get("/", (req, res) => respond(res, StatusCodes.OK));
 
