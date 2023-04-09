@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { Outlet } from "react-router";
 import tw from "twin.macro";
 
@@ -8,6 +8,7 @@ import { useLanguageContext } from "../context/useLanguageContext";
 import { useTranslation } from "../hooks/useTranslation";
 import { I18N_AVAILABLE_LANGUAGES } from "../i18n/i18n";
 import { useBackendError } from "../state/backendError";
+import { useTokenStore } from "../state/token";
 
 type Properties = {
     hideNavbar?: boolean;
@@ -16,6 +17,7 @@ type Properties = {
 export const Root: FC<Properties> = ({ hideNavbar = false }) => {
     const { currentLanguage, setLanguage } = useLanguageContext();
     const { lastUpdate, backendError, setBackendError } = useBackendError();
+    const { token } = useTokenStore();
 
     const [errorTimeout, setErrorTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
@@ -32,6 +34,10 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
             errorTimeout && clearTimeout(errorTimeout);
         };
     }, [lastUpdate]);
+
+    const copyToken = useCallback(() => {
+        if ("clipboard" in navigator) navigator.clipboard.writeText(token);
+    }, [token]);
 
     const { t } = useTranslation();
 
@@ -89,6 +95,11 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                         <span>{t("backendErrors.rateLimit.description")}</span>
                     </div>
                 ))}
+            {import.meta.env.DEV && (
+                <div tw={"fixed left-6 bottom-6"}>
+                    <SimpleButton onClick={copyToken}>Copy token</SimpleButton>
+                </div>
+            )}
         </div>
     );
 };
