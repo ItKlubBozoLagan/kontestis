@@ -122,10 +122,8 @@ Promise.allSettled([
 ]).then(async () => {
     Logger.info("Ready");
 
-    const _PORT = process.env.PORT || 8080;
-
-    app.listen(_PORT, () => {
-        Logger.info("Listening on " + _PORT);
+    app.listen(Globals.port, () => {
+        Logger.info("Listening on " + Globals.port);
         const _ = startEloTask();
     });
 });
