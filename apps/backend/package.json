@@ -5,7 +5,7 @@
     "license": "MIT",
     "scripts": {
         "start": "ts-node --skipIgnore src/app.ts",
-        "dev": "nodemon -e ts --exec ts-node src/app.ts",
+        "dev": "nodemon -e ts --exec ts-node --swc src/app.ts",
         "create-migration": "bash scripts/create_migration.sh src/database/migrations",
         "typecheck": "tsc --noEmit"
     },
@@ -17,6 +17,7 @@
         "@kubernetes/client-node": "^0.18.1",
         "@lvksh/logger": "^1.6.3",
         "@sinclair/typebox": "^0.26.8",
+        "@swc/core": "^1.3.46",
         "apidoc": "^0.53.1",
         "axios": "^1.2.3",
         "bcrypt": "^5.1.0",
