@@ -6,8 +6,6 @@ import { config as dotenvConfig } from "dotenv";
 // We must load .env first so the database has correct details.
 dotenvConfig();
 import Express, { json, NextFunction, Request, Response } from "express";
-require("express-async-errors");
-
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Database, initDatabase } from "./database/Database";
 import { SafeError } from "./errors/SafeError";
