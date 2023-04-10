@@ -198,7 +198,6 @@ export const HistoryLineChart = <T extends string>({
                             scales: {
                                 y: {
                                     min: 0,
-                                    max: 6000,
                                 },
                             },
                         }}
