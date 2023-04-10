@@ -111,28 +111,33 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
                 <RankBreadcrumb specificElo={member.elo} />
                 {member.full_name}
             </div>
-            <div tw={"text-red-600 cursor-pointer select-none"} onClick={() => setModalOpen(true)}>
-                Edit permissions
-            </div>
-            {!admin && (
-                <div tw={"flex items-center"}>
-                    <span
-                        tw={"text-red-600 cursor-pointer select-none"}
-                        css={
-                            deleteMutation.isLoading || deleteMutation.isSuccess
-                                ? tw`text-neutral-600`
-                                : ""
-                        }
-                        onClick={onDeleteClick}
-                    >
-                        {confirmDelete
-                            ? t("contests.management.individual.participants.remove.confirm")
-                            : t(
-                                  "contests.management.individual.participants.remove.proposeRemoval"
-                              )}
-                    </span>
+            <div tw={"flex items-center gap-4"}>
+                <div
+                    tw={"text-red-600 cursor-pointer select-none"}
+                    onClick={() => setModalOpen(true)}
+                >
+                    Edit permissions
                 </div>
-            )}
+                {!admin && (
+                    <div tw={"flex items-center"}>
+                        <span
+                            tw={"text-red-600 cursor-pointer select-none"}
+                            css={
+                                deleteMutation.isLoading || deleteMutation.isSuccess
+                                    ? tw`text-neutral-600`
+                                    : ""
+                            }
+                            onClick={onDeleteClick}
+                        >
+                            {confirmDelete
+                                ? t("contests.management.individual.participants.remove.confirm")
+                                : t(
+                                      "contests.management.individual.participants.remove.proposeRemoval"
+                                  )}
+                        </span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
