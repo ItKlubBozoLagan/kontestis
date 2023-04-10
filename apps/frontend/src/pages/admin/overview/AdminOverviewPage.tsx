@@ -43,7 +43,7 @@ export const AdminOverviewPage: FC = () => {
                         loading={loginsIsLoading}
                         onRangeChange={setLoginsRange}
                         dateFormatter={RangeFormatters[loginsRange]}
-                        toggles={["unique"]}
+                        toggles={["new users"]}
                         onToggleUpdate={(_, value) => setUniqueLogins(value)}
                     />
                 )}
