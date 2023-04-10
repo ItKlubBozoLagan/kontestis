@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 
 import { HistoryLineChart } from "../../../components/HistoryLineChart";
-import { CountStatRange } from "../../../hooks/stats/types";
+import { CountStatisticRange } from "../../../hooks/stats/types";
 import { useAdminActivityStat } from "../../../hooks/stats/useAdminActivityStat";
 import {
     AdminLoginStatParamaters,
@@ -9,10 +9,9 @@ import {
 } from "../../../hooks/stats/useAdminLoginsStat";
 import { useFormatCountStat } from "../../../hooks/useFormatCountStat";
 import { useTranslation } from "../../../hooks/useTranslation";
-import { RangeFormatters } from "../../../util/charts";
 
 export const AdminStatisticsCharts: FC = () => {
-    const [activityRange, setActivityRange] = useState<CountStatRange>("24h");
+    const [activityRange, setActivityRange] = useState<CountStatisticRange>("24h");
     const [loginParameters, setLoginParameters] = useState<AdminLoginStatParamaters>({
         range: "24h",
         unique: false,
@@ -35,22 +34,24 @@ export const AdminStatisticsCharts: FC = () => {
             {activityDataset && (
                 <HistoryLineChart
                     title={t("admin.overview.charts.activityLabel")}
+                    dark
                     dataset={activityDataset}
                     loading={activityIsLoading}
                     onRangeChange={setActivityRange}
-                    dateFormatter={RangeFormatters[activityRange]}
+                    activeRange={activityRange}
                     previousPeriodChange={activity?.previousPeriodChange}
                 />
             )}
             {loginsDataset && (
                 <HistoryLineChart
                     title={t("admin.overview.charts.loginLabel")}
+                    dark
                     dataset={loginsDataset}
                     loading={loginsIsLoading}
                     onRangeChange={(range) =>
                         setLoginParameters((parameters) => ({ ...parameters, range }))
                     }
-                    dateFormatter={RangeFormatters[loginParameters.range]}
+                    activeRange={loginParameters.range}
                     previousPeriodChange={logins?.previousPeriodChange}
                     toggles={[
                         t("admin.overview.charts.loginToggleNewUsers"),

@@ -19,6 +19,7 @@ import {
     minScoreForRank,
     nextRankFromRank,
 } from "../../util/rank";
+import { AccountStatistics } from "./AccountStatistics";
 
 type RankComponentProperties = {
     rankName: GlobalRank;
@@ -61,7 +62,7 @@ export const AccountPage: FC = () => {
 
     return (
         <div tw={"w-full md:w-5/6 flex flex-col gap-2 py-10"}>
-            <TitledSection title={t("account.label")}>
+            <TitledSection title={t("account.label")} tw={"pb-12"}>
                 <div tw={"w-full flex items-center justify-center gap-10 py-10"}>
                     <div tw={"flex flex-col items-center justify-start gap-4 font-mono"}>
                         <img
@@ -127,6 +128,7 @@ export const AccountPage: FC = () => {
                         </React.Fragment>
                     ))}
                 </div>
+                <AccountStatistics />
             </TitledSection>
         </div>
     );

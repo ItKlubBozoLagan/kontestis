@@ -2,14 +2,14 @@
 // it wouldn't semantically make sense to put them in the common module
 //  because the influx client is treated as an independent library
 
-export type CountStat = {
+export type CountStatistic = {
     time: Date;
     count: number;
 };
 
-export type CountStatWithPeriod = {
-    stats: CountStat[];
+export type CountStatisticWithPeriod = {
+    stats: CountStatistic[];
     previousPeriodChange: number;
 };
 
-export type CountStatRange = "24h" | "7d" | "30d" | "1y";
+export type CountStatisticRange = "24h" | "7d" | "30d" | "1y";

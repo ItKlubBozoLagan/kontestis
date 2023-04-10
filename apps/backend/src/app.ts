@@ -83,11 +83,6 @@ app.use(json(), (req, _, next) => {
     next();
 });
 
-app.use((req, res, next) => {
-    console.log(req.url, req.body);
-    next();
-});
-
 app.use("/api/auth", AuthHandler);
 app.use("/api/organisation", OrganisationHandler);
 app.use("/api/contest", ContestHandler);

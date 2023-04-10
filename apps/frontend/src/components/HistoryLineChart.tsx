@@ -11,9 +11,9 @@ import { Line } from "react-chartjs-2";
 import { FiMinus, FiTrendingDown, FiTrendingUp } from "react-icons/all";
 import tw, { theme } from "twin.macro";
 
-import { CountStatRange } from "../hooks/stats/types";
+import { CountStatisticRange } from "../hooks/stats/types";
 import { useTranslation } from "../hooks/useTranslation";
-import { I18NTextKeys, TranslationFunction } from "../i18n/i18n";
+import { RangeFormatters } from "../util/charts";
 import { R } from "../util/remeda";
 import { LoadingSpinner } from "./LoadingSpinner";
 
@@ -24,19 +24,15 @@ export type Dataset = {
     value: number;
 };
 
-export type ChartDateFormatFunction = (
-    date: Date,
-    index: number,
-    translation: TranslationFunction<I18NTextKeys>
-) => string;
-
-type Properties<T extends string> = {
+export type Properties<T extends string> = {
     title: string;
     dataset: Dataset[];
-    dateFormatter: ChartDateFormatFunction;
+    activeRange: CountStatisticRange;
     previousPeriodChange?: number;
     loading?: boolean;
-    onRangeChange?: (range: CountStatRange) => void;
+    onRangeChange?: (range: CountStatisticRange) => void;
+    dark?: boolean;
+    baseline?: number;
 } & (
     | {
           toggles?: undefined;
@@ -53,14 +49,15 @@ type Properties<T extends string> = {
 export const HistoryLineChart = <T extends string>({
     title,
     dataset,
-    dateFormatter,
+    activeRange,
     loading,
     onRangeChange,
     previousPeriodChange,
+    dark,
     toggles,
     onToggleUpdate,
 }: Properties<T>) => {
-    const [range, setRange] = useState<CountStatRange>("24h");
+    const [range, setRange] = useState<CountStatisticRange>("24h");
     const [toggleStates, setToggleStates] = useState(!toggles ? [] : toggles.map(() => false));
 
     const { t } = useTranslation();
@@ -71,7 +68,7 @@ export const HistoryLineChart = <T extends string>({
                 dataset,
                 R.reverse(),
                 R.map.indexed(({ time, value }, index) => ({
-                    x: dateFormatter(time, index, t),
+                    x: RangeFormatters[activeRange](time, index, t),
                     y: value,
                 }))
             ),
@@ -100,8 +97,9 @@ export const HistoryLineChart = <T extends string>({
     return (
         <div
             tw={
-                "w-full flex flex-col gap-4 bg-neutral-200 border-2 border-solid border-neutral-400 p-2"
+                "w-full flex flex-col gap-4 bg-neutral-50 border-2 border-solid border-neutral-400 p-2"
             }
+            css={dark ? tw`bg-neutral-200` : ""}
         >
             <div tw={"flex justify-between items-center gap-4"}>
                 <div tw={"flex items-center gap-3"}>
@@ -200,6 +198,7 @@ export const HistoryLineChart = <T extends string>({
                             scales: {
                                 y: {
                                     min: 0,
+                                    max: 6000,
                                 },
                             },
                         }}

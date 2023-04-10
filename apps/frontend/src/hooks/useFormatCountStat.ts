@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 
 import { Dataset } from "../components/HistoryLineChart";
-import { CountStat } from "./stats/types";
+import { CountStatistic } from "./stats/types";
 
-export const useFormatCountStat = (stat: CountStat[] | undefined) =>
+export const useFormatCountStat = (stat: CountStatistic[] | undefined) =>
     useMemo(() => {
         if (!stat) return [];
 

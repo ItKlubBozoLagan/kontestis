@@ -1,18 +1,18 @@
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { CountStatRange, CountStatWithPeriod } from "./types";
+import { CountStatisticRange, CountStatisticWithPeriod } from "./types";
 
 export type AdminLoginStatParamaters = {
-    range: CountStatRange;
+    range: CountStatisticRange;
     unique: boolean;
     newLogins: boolean;
 };
 
-export const useAdminLoginsStat: QueryHandler<CountStatWithPeriod, AdminLoginStatParamaters> = (
-    { range, unique, newLogins },
-    options
-) =>
+export const useAdminLoginsStat: QueryHandler<
+    CountStatisticWithPeriod,
+    AdminLoginStatParamaters
+> = ({ range, unique, newLogins }, options) =>
     useQuery({
         queryKey: ["stats", "admin", "logins", range, String(unique), String(newLogins)],
         queryFn: () =>

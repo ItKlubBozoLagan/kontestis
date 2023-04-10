@@ -1,10 +1,16 @@
-import { ChartDateFormatFunction } from "../components/HistoryLineChart";
-import { CountStatRange } from "../hooks/stats/types";
+import { CountStatisticRange } from "../hooks/stats/types";
+import { I18NTextKeys, TranslationFunction } from "../i18n/i18n";
+
+type ChartDateFormatFunction = (
+    date: Date,
+    index: number,
+    translation: TranslationFunction<I18NTextKeys>
+) => string;
 
 const splitAndIndex = (source: string, index: number, spliterator: string = ",") =>
     source.split(spliterator)[index];
 
-export const RangeFormatters: Record<CountStatRange, ChartDateFormatFunction> = {
+export const RangeFormatters: Record<CountStatisticRange, ChartDateFormatFunction> = {
     "24h": (date) => `${date.getHours()}:00`,
     "7d": (date, _, t) => splitAndIndex(t("helper.shortWeekDayNames"), date.getDay()),
     "30d": (date, _, t) =>

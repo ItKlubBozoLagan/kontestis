@@ -91,5 +91,6 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=kontestis-org
       - DOCKER_INFLUXDB_INIT_BUCKET=kontestis
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=devtoken
+      - TZ=Europe/Zagreb
     ports:
       - "8086:8086"

@@ -1,13 +1,13 @@
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { CountStatRange, CountStatWithPeriod } from "./types";
+import { CountStatisticRange, CountStatisticWithPeriod } from "./types";
 
 type Parameters = {
-    range: CountStatRange;
+    range: CountStatisticRange;
 };
 
-export const useAdminActivityStat: QueryHandler<CountStatWithPeriod, Parameters> = (
+export const useAdminActivityStat: QueryHandler<CountStatisticWithPeriod, Parameters> = (
     { range },
     options
 ) =>

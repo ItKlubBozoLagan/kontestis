@@ -55,7 +55,13 @@ print("AC" if out.strip() == subOut.strip() else "WA")
 
 const plainTextEvaluatorBase64 = Buffer.from(PLAIN_TEXT_EVALUATOR, "utf8").toString("base64");
 
-app.use(json({ limit: "50mb" }));
+app.use(json({ limit: "50mb" }), (req, _, next) => {
+    // json from express@5 yields undefined for empty bodies,
+    //  this breaks validation, so we're falling back to an empty object
+    if (req.body === undefined) req.body = {};
+
+    next();
+});
 
 app.post("/", async (req, res) => {
     if (!typeCheck.Check(req.body)) return res.status(400).end();
