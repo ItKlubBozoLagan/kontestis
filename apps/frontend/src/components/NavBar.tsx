@@ -83,13 +83,7 @@ export const NavBar: FC = () => {
                 <div
                     tw={"opacity-0 transition-opacity"}
                     css={processingCount > 0 ? tw`opacity-100` : ""}
-                >
-                    <div
-                        tw={
-                            "h-6 w-6 border-2 border-solid border-neutral-800 border-r-neutral-400 border-b-neutral-400 border-l-neutral-400 rounded-full animate-spin"
-                        }
-                    ></div>
-                </div>
+                ></div>
                 <NavElement
                     item={{
                         display: t("navbar.management"),

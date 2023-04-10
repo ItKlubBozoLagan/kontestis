@@ -25,6 +25,8 @@ const I18nEn = {
     },
     helper: {
         tableNoContents: "None so far",
+        shortWeekDayNames: "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+        shortMonthNames: "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
     },
     dashboard: {
         total: {

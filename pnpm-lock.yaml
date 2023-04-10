@@ -123,12 +123,14 @@ importers:
       babel-plugin-prismjs: ^2.1.0
       babel-plugin-styled-components: ^2.1.1
       babel-plugin-twin: ^1.1.0
+      chart.js: ^4.2.1
       content-type: ^1.0.5
       eslint-plugin-react: ^7.32.2
       eslint-plugin-react-hooks: ^4.6.0
       md5: ^2.3.0
       prismjs: ^1.29.0
       react: ^18.2.0
+      react-chartjs-2: ^5.2.0
       react-dom: ^18.2.0
       react-hook-form: ^7.43.1
       react-icons: ^4.7.1
@@ -160,10 +162,12 @@ importers:
       babel-plugin-macros: 3.1.0
       babel-plugin-styled-components: 2.1.1_styled-components@5.3.6
       babel-plugin-twin: 1.1.0
+      chart.js: 4.2.1
       content-type: 1.0.5
       md5: 2.3.0
       prismjs: 1.29.0
       react: 18.2.0
+      react-chartjs-2: 5.2.0_t5yjg6ab35jnsudnh2qdighszm
       react-dom: 18.2.0_react@18.2.0
       react-hook-form: 7.43.1_react@18.2.0
       react-icons: 4.7.1_react@18.2.0
@@ -969,6 +973,10 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: false
+
+  /@kurkle/color/0.3.2:
+    resolution: {integrity: sha512-fuscdXJ9G1qb7W8VdHi+IwRqij3lBkosAm4ydQtEmbY58OzHXqQhvlxqEkoz0yssNVn38bcpRWgA9PP+OGoisw==}
     dev: false
 
   /@lvksh/logger/1.6.4:
@@ -2246,6 +2254,13 @@ packages:
 
   /charenc/0.0.2:
     resolution: {integrity: sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==}
+    dev: false
+
+  /chart.js/4.2.1:
+    resolution: {integrity: sha512-6YbpQ0nt3NovAgOzbkSSeeAQu/3za1319dPUQTXn9WcOpywM8rGKxJHrhS8V8xEkAlk8YhEfjbuAPfUyp6jIsw==}
+    engines: {pnpm: ^7.0.0}
+    dependencies:
+      '@kurkle/color': 0.3.2
     dev: false
 
   /chokidar/3.5.3:
@@ -5622,6 +5637,16 @@ packages:
       http-errors: 2.0.0
       iconv-lite: 0.4.24
       unpipe: 1.0.0
+    dev: false
+
+  /react-chartjs-2/5.2.0_t5yjg6ab35jnsudnh2qdighszm:
+    resolution: {integrity: sha512-98iN5aguJyVSxp5U3CblRLH67J8gkfyGNbiK3c+l1QI/G4irHMPQw44aEPmjVag+YKTyQ260NcF82GTQ3bdscA==}
+    peerDependencies:
+      chart.js: ^4.1.1
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      chart.js: 4.2.1
+      react: 18.2.0
     dev: false
 
   /react-dom/18.2.0_react@18.2.0:

@@ -1,14 +1,17 @@
 import { useCallback } from "react";
 
 import { useLanguageContext } from "../context/useLanguageContext";
-import { I18NDefaultKeys, I18NPlaceholderKeys, translationValueFromKey } from "../i18n/i18n";
+import { I18NTextKeys, TranslationFunction, translationValueFromKey } from "../i18n/i18n";
 
-export const useTranslation = () => {
+type UseTranslationType = {
+    t: TranslationFunction<I18NTextKeys>;
+};
+
+export const useTranslation = (): UseTranslationType => {
     const { currentLanguage } = useLanguageContext();
 
-    const translate = useCallback(
-        (key: Exclude<I18NDefaultKeys, I18NPlaceholderKeys>) =>
-            translationValueFromKey(currentLanguage, key),
+    const translate = useCallback<UseTranslationType["t"]>(
+        (key) => translationValueFromKey(currentLanguage, key),
         [currentLanguage]
     );
 

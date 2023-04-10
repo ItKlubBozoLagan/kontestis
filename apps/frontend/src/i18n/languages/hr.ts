@@ -25,6 +25,8 @@ export default {
     },
     helper: {
         tableNoContents: "Nema ničega za sada",
+        shortWeekDayNames: "Pon,Uto,Sri,Čet,Pet,Sub,Ned",
+        shortMonthNames: "Sij,Velj,Ožu,Tra,Svi,Lip,Srp,Kol,Ruj,Lis,Stu,Pro",
     },
     dashboard: {
         total: {

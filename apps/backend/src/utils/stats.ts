@@ -3,17 +3,23 @@ import { Static } from "@sinclair/typebox";
 import { AllowedCountWindows, InfluxCountResult } from "../influx/InfluxClient";
 import { RangeQueryUnion } from "../routes/stats/schemas";
 
-export const getWindowFromRange = (range: Static<typeof RangeQueryUnion>): AllowedCountWindows =>
+type Range = Static<typeof RangeQueryUnion>;
+
+export const getWindowFromRange = (range: Range): AllowedCountWindows =>
     range === "24h" ? "1h" : ["7d", "30d"].includes(range) ? "1d" : "1mo";
+
+const rangeItemLengthMap: Record<Range, number> = {
+    "24h": 24,
+    "7d": 7,
+    "30d": 30,
+    "1y": 12,
+};
 
 // very simple, if empty, give array where count = 0
 //  influx will usually handle all the sorting and making the array nice
 //  unless there is no data at all, it then returns nothing
-export const fillIfEmpty = (
-    source: InfluxCountResult,
-    range: Static<typeof RangeQueryUnion>
-): InfluxCountResult => {
-    if (source.length > 0) return source;
+export const fillIfEmpty = (source: InfluxCountResult, range: Range): InfluxCountResult => {
+    if (source.length > 0) return source.slice(0, rangeItemLengthMap[range]);
 
     const now = new Date();
 

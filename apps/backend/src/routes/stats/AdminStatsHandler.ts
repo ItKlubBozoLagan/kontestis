@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { Influx } from "../../influx/Influx";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
-import { getWindowFromRange } from "../../utils/stats";
+import { fillIfEmpty, getWindowFromRange } from "../../utils/stats";
 import { BooleanStringSchema } from "../../utils/types";
 import { MetricsHandlers } from "./MetricsHandlers";
 import { RangeQuerySchema } from "./schemas";
@@ -31,11 +31,14 @@ AdminStatsHandler.get(
         respond(
             res,
             StatusCodes.OK,
-            await Influx.aggregateCountPerWindow(
-                "logins",
-                getWindowFromRange(range),
-                unique ? { newLogin: unique } : undefined,
-                `-${range}`
+            fillIfEmpty(
+                await Influx.aggregateCountPerWindow(
+                    "logins",
+                    getWindowFromRange(range),
+                    unique ? { newLogin: unique } : undefined,
+                    `-${range}`
+                ),
+                range
             )
         );
     }
@@ -50,11 +53,14 @@ AdminStatsHandler.get(
         respond(
             res,
             StatusCodes.OK,
-            await Influx.aggregateCountPerWindow(
-                "activity",
-                getWindowFromRange(range),
-                undefined,
-                `-${range}`
+            fillIfEmpty(
+                await Influx.aggregateCountPerWindow(
+                    "activity",
+                    getWindowFromRange(range),
+                    undefined,
+                    `-${range}`
+                ),
+                range
             )
         );
     }

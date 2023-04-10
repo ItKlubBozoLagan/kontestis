@@ -65,6 +65,9 @@ type FixWebstormBug<T> = {
 
 export type I18NDefaultKeys = KeysFromSpec<DefaultLanguageType>;
 export type I18NPlaceholderKeys = FixWebstormBug<KeysFromSpec<DefaultLanguageType, true>>;
+export type I18NTextKeys = Exclude<I18NDefaultKeys, I18NPlaceholderKeys>;
+
+export type TranslationFunction<T extends I18NDefaultKeys> = (key: T) => string;
 
 type FillTuple<Source extends readonly any[], Type> = Source extends [infer _, ...infer Rest]
     ? [Type, ...FillTuple<Rest, Type>]
