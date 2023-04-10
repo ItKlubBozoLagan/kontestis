@@ -94,24 +94,24 @@ export const ContestViewPage: FC = () => {
                 </div>
             )}
             {contest && running && (
-                <div tw={"w-full flex flex-row justify-between gap-x-3"}>
+                <div tw={"w-full flex justify-stretch gap-4"}>
                     <TitledSection
                         title={t("contests.individual.announcements.label")}
-                        tw={"gap-y-0"}
+                        tw={"gap-y-0 w-full"}
                     >
                         {(announcements ?? []).map((announcement) => (
-                            <pre
+                            <span
                                 tw={
-                                    "w-full text-lg border-solid border-neutral-300 border-[2px] p-2"
+                                    "w-full border-solid border-neutral-300 border-[2px] p-2 font-mono text-center"
                                 }
                                 key={announcement.id.toString()}
                             >
                                 {announcement.message}
-                            </pre>
+                            </span>
                         ))}
                     </TitledSection>
                     <TitledSection
-                        title={t("contests.individual.questions.label") + ":"}
+                        title={t("contests.individual.questions.label")}
                         tw={"flex w-full flex-col gap-4"}
                     >
                         <form onSubmit={onQuestionSubmit} tw={"w-full"}>
@@ -136,10 +136,10 @@ export const ContestViewPage: FC = () => {
                                     title={question.question}
                                     key={question.id.toString()}
                                 >
-                                    <pre>
+                                    <span tw={"text-center"}>
                                         {question.response ??
-                                            t("contests.individual.questions.list.preMessage")}
-                                    </pre>
+                                            t("contests.individual.questions.list.waiting")}
+                                    </span>
                                 </TitledSection>
                             ))}
                         {questions && questions.length > 1 && (

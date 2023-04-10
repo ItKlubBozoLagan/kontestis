@@ -85,7 +85,7 @@ export default {
                 ask: "Postavi pitanje",
                 sendButton: "Pošalji",
                 list: {
-                    preMessage: "Čekanje odgovora!",
+                    waiting: "Čekanje odgovora!",
                     all: "prikaži starije",
                     collapse: "Sažmi",
                 },

@@ -85,7 +85,7 @@ const I18nEn = {
                 ask: "Ask a question",
                 sendButton: "Send",
                 list: {
-                    preMessage: "Waiting for response!",
+                    waiting: "Waiting for response!",
                     all: "Show older",
                     collapse: "Collapse",
                 },
