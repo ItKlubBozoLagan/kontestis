@@ -35,7 +35,7 @@ AdminStatsHandler.get(
                 await Influx.aggregateCountPerWindow(
                     "logins",
                     getWindowFromRange(range),
-                    unique ? { newLogin: unique } : undefined,
+                    { newLogin: !unique || unique === "false" ? undefined : "true" },
                     `-${range}`
                 ),
                 range

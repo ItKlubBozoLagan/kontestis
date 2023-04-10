@@ -81,7 +81,7 @@ StatsHandler.get(
                     {
                         userId: user.id.toString(),
                         orgId: organisation.id.toString(),
-                        successful: accepted || undefined,
+                        successful: !accepted || accepted === "false" ? undefined : accepted,
                     },
                     `-${range}`
                 ),
