@@ -75,7 +75,18 @@ app.use(async (req, res, next) => {
     next();
 });
 
-app.use(json());
+app.use(json(), (req, _, next) => {
+    // json from express@5 yields undefined for empty bodies,
+    //  this breaks validation, so we're falling back to an empty object
+    if (req.body === undefined) req.body = {};
+
+    next();
+});
+
+app.use((req, res, next) => {
+    console.log(req.url, req.body);
+    next();
+});
 
 app.use("/api/auth", AuthHandler);
 app.use("/api/organisation", OrganisationHandler);
