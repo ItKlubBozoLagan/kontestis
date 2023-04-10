@@ -23,11 +23,7 @@ const ModifyFinalSubmissionSchema = z.object({
     final_score: z.number(),
 });
 
-export const FinalSubmissionInfoSection: FC<Parameters> = ({
-    finalSubmission,
-    submission,
-    problem,
-}) => {
+export const FinalSubmissionInfoSection: FC<Parameters> = ({ finalSubmission }) => {
     const {
         setValue,
         register,
