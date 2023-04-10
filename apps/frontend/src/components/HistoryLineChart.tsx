@@ -1,6 +1,14 @@
-import { CategoryScale, Chart as ChartJS, LinearScale, LineElement, PointElement } from "chart.js";
+import {
+    CategoryScale,
+    Chart as ChartJS,
+    LinearScale,
+    LineElement,
+    PointElement,
+    Tooltip,
+} from "chart.js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
+import { FiMinus, FiTrendingDown, FiTrendingUp } from "react-icons/all";
 import tw, { theme } from "twin.macro";
 
 import { CountStatRange } from "../hooks/stats/types";
@@ -9,7 +17,7 @@ import { I18NTextKeys, TranslationFunction } from "../i18n/i18n";
 import { R } from "../util/remeda";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale);
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
 export type Dataset = {
     time: Date;
@@ -26,6 +34,7 @@ type Properties<T extends string> = {
     title: string;
     dataset: Dataset[];
     dateFormatter: ChartDateFormatFunction;
+    previousPeriodChange?: number;
     loading?: boolean;
     onRangeChange?: (range: CountStatRange) => void;
 } & (
@@ -47,6 +56,7 @@ export const HistoryLineChart = <T extends string>({
     dateFormatter,
     loading,
     onRangeChange,
+    previousPeriodChange,
     toggles,
     onToggleUpdate,
 }: Properties<T>) => {
@@ -94,7 +104,34 @@ export const HistoryLineChart = <T extends string>({
             }
         >
             <div tw={"flex justify-between items-center gap-4"}>
-                <span tw={"text-lg"}>{title}</span>
+                <div tw={"flex items-center gap-3"}>
+                    <span tw={"text-lg"}>{title}</span>
+                    {previousPeriodChange !== undefined && (
+                        <div tw={"flex flex-col"}>
+                            <div
+                                tw={"flex gap-1 items-center"}
+                                css={
+                                    previousPeriodChange === 0
+                                        ? tw`text-neutral-600`
+                                        : previousPeriodChange > 0
+                                        ? tw`text-green-700`
+                                        : tw`text-red-700`
+                                }
+                            >
+                                {previousPeriodChange === 0 ? (
+                                    <FiMinus size={"16px"} />
+                                ) : previousPeriodChange > 0 ? (
+                                    <FiTrendingUp size={"16px"} />
+                                ) : (
+                                    <FiTrendingDown size={"16px"} />
+                                )}
+                                <span tw={"text-base font-bold"}>
+                                    {(previousPeriodChange * 100).toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
                 <div tw={"flex items-center gap-2"}>
                     {toggles && (
                         <div tw={"flex"}>
@@ -155,6 +192,11 @@ export const HistoryLineChart = <T extends string>({
                         options={{
                             responsive: true,
                             animation: false,
+                            plugins: {
+                                tooltip: {
+                                    enabled: true,
+                                },
+                            },
                             scales: {
                                 y: {
                                     min: 0,

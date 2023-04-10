@@ -1,3 +1,5 @@
+/* eslint-disable sonarjs/no-duplicate-string */
+
 import { Agent } from "node:http";
 
 import {
@@ -20,8 +22,8 @@ const tomorrow = () => new Date(Date.now() + 24 * 60 * 60 * 1000);
 
 export type DateRange =
     | {
-          start: Date;
-          end: Date;
+          start: Date | string;
+          end: Date | string;
       }
     | string;
 
@@ -146,6 +148,12 @@ export type InfluxClient<T extends InfluxDataSchema> = {
         range?: DateRange,
         uniqueBy?: T[K]["tags"][number]
     ): Promise<InfluxCountResult>;
+    totalInRange<K extends keyof T & string>(
+        measurement: K,
+        tags?: Partial<Record<T[K]["tags"][number], string>>,
+        range?: DateRange,
+        uniqueBy?: T[K]["tags"][number]
+    ): Promise<bigint>;
     // will add more complex delete mechanics as we need them
     dropMeasurement<K extends keyof T & string>(measurement: K): Promise<void>;
     flush(): Promise<void>;
@@ -234,12 +242,16 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                     |> range(
                         start: ${
                             typeof range !== "string"
-                                ? fluxDateTime(range.start.toISOString())
+                                ? typeof range.start === "string"
+                                    ? fluxExpression(range.start)
+                                    : fluxDateTime(range.start.toISOString())
                                 : fluxExpression(range)
                         },
                         stop: ${
                             typeof range !== "string"
-                                ? fluxDateTime(range.end.toISOString())
+                                ? typeof range.end === "string"
+                                    ? fluxExpression(range.end)
+                                    : fluxDateTime(range.end.toISOString())
                                 : fluxExpression("now()")
                         }
                     )
@@ -313,7 +325,7 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
             tags?: Partial<Record<T[K]["tags"][number], string>>,
             range?: DateRange,
             uniqueBy?: T[K]["tags"][number]
-        ): Promise<InfluxCountResult> => {
+        ) => {
             const query =
                 generateBaseQuery(measurement, tags, range) +
                 `
@@ -344,6 +356,37 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                     count: Number(entries.find((it) => "_value" in it)!._value),
                 }))
             ) as InfluxCountResult;
+        },
+        totalInRange: async <K extends keyof T & string>(
+            measurement: K,
+            tags?: Partial<Record<T[K]["tags"][number], string>>,
+            range?: DateRange,
+            uniqueBy?: T[K]["tags"][number]
+        ) => {
+            const query =
+                generateBaseQuery(measurement, tags, range) +
+                `
+                ${
+                    uniqueBy
+                        ? `
+                    |> drop(fn: (column) => not contains(value: column, set: ["userId", "_start", "_value"]))
+                    |> unique(column: ${fluxString(uniqueBy)})
+                `
+                        : ""
+                }
+                |> group(columns: ["_start"])
+                |> count()
+            `;
+
+            const result = await influxReadApi.collectRows(query, defaultRowMapper);
+
+            debugFunction("[InfluxDB] Querying", query.toString());
+
+            if (result.length === 0) return 0n;
+
+            if (result.length !== 1) throw new Error("influx: totalInRange: invalid result length");
+
+            return result[0]["_value"] as bigint;
         },
         dropMeasurement: <K extends keyof T & string>(measurement: K) => {
             return influxDeleteApi.postDelete({

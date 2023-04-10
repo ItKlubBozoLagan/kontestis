@@ -24,9 +24,9 @@ export const AdminOverviewPage: FC = () => {
     });
     const { data: logins, isLoading: loginsIsLoading } = useAdminLoginsStat(loginParameters);
 
-    const activityDataset = useFormatCountStat(activity);
+    const activityDataset = useFormatCountStat(activity?.stats);
 
-    const loginsDataset = useFormatCountStat(logins);
+    const loginsDataset = useFormatCountStat(logins?.stats);
 
     const { t } = useTranslation();
 
@@ -35,22 +35,24 @@ export const AdminOverviewPage: FC = () => {
             <div tw={"flex gap-4"}>
                 {activityDataset && (
                     <HistoryLineChart
-                        title={"Activity"}
+                        title={t("admin.overview.charts.activityLabel")}
                         dataset={activityDataset}
                         loading={activityIsLoading}
                         onRangeChange={setActivityRange}
                         dateFormatter={RangeFormatters[activityRange]}
+                        previousPeriodChange={activity?.previousPeriodChange}
                     />
                 )}
                 {loginsDataset && (
                     <HistoryLineChart
-                        title={"Logins"}
+                        title={t("admin.overview.charts.loginLabel")}
                         dataset={loginsDataset}
                         loading={loginsIsLoading}
                         onRangeChange={(range) =>
                             setLoginParameters((parameters) => ({ ...parameters, range }))
                         }
                         dateFormatter={RangeFormatters[loginParameters.range]}
+                        previousPeriodChange={logins?.previousPeriodChange}
                         toggles={[
                             t("admin.overview.charts.loginToggleNewUsers"),
                             t("admin.overview.charts.loginToggleUnique"),

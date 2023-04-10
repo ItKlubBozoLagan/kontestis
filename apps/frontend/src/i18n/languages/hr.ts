@@ -403,8 +403,10 @@ export default {
         },
         overview: {
             charts: {
-                loginToggleNewUsers: "novi korisnici",
-                loginToggleUnique: "unikatni",
+                activityLabel: "Aktivnost",
+                loginLabel: "Prijave",
+                loginToggleNewUsers: "nove",
+                loginToggleUnique: "unikatne",
             },
         },
     },

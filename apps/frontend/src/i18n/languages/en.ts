@@ -403,6 +403,8 @@ const I18nEn = {
         },
         overview: {
             charts: {
+                activityLabel: "Activity",
+                loginLabel: "Logins",
                 loginToggleNewUsers: "new users",
                 loginToggleUnique: "unique",
             },

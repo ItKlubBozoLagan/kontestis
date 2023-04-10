@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { CountStat, CountStatRange } from "./types";
+import { CountStatRange, CountStatWithPeriod } from "./types";
 
 export type AdminLoginStatParamaters = {
     range: CountStatRange;
@@ -9,7 +9,7 @@ export type AdminLoginStatParamaters = {
     newLogins: boolean;
 };
 
-export const useAdminLoginsStat: QueryHandler<CountStat[], AdminLoginStatParamaters> = (
+export const useAdminLoginsStat: QueryHandler<CountStatWithPeriod, AdminLoginStatParamaters> = (
     { range, unique, newLogins },
     options
 ) =>

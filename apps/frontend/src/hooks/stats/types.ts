@@ -7,4 +7,9 @@ export type CountStat = {
     count: number;
 };
 
+export type CountStatWithPeriod = {
+    stats: CountStat[];
+    previousPeriodChange: number;
+};
+
 export type CountStatRange = "24h" | "7d" | "30d" | "1y";
