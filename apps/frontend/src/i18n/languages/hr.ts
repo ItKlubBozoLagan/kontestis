@@ -401,6 +401,12 @@ export default {
             contests: "Natjecanja",
             organizations: "Organizacije",
         },
+        overview: {
+            charts: {
+                loginToggleNewUsers: "novi korisnici",
+                loginToggleUnique: "unikatni",
+            },
+        },
     },
     errorMessages: {
         invalid: "Greška pri validaciji! Provjerite unos!",

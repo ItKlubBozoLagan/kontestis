@@ -401,6 +401,12 @@ const I18nEn = {
             contests: "Contests",
             organizations: "Organisations",
         },
+        overview: {
+            charts: {
+                loginToggleNewUsers: "new users",
+                loginToggleUnique: "unique",
+            },
+        },
     },
     errorMessages: {
         invalid: "Validation error! Check your input!",

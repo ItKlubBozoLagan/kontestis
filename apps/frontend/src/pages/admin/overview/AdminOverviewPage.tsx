@@ -8,6 +8,7 @@ import {
     useAdminLoginsStat,
 } from "../../../hooks/stats/useAdminLoginsStat";
 import { useFormatCountStat } from "../../../hooks/useFormatCountStat";
+import { useTranslation } from "../../../hooks/useTranslation";
 import { RangeFormatters } from "../../../util/charts";
 
 export const AdminOverviewPage: FC = () => {
@@ -26,6 +27,8 @@ export const AdminOverviewPage: FC = () => {
     const activityDataset = useFormatCountStat(activity);
 
     const loginsDataset = useFormatCountStat(logins);
+
+    const { t } = useTranslation();
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>
@@ -48,15 +51,18 @@ export const AdminOverviewPage: FC = () => {
                             setLoginParameters((parameters) => ({ ...parameters, range }))
                         }
                         dateFormatter={RangeFormatters[loginParameters.range]}
-                        toggles={["new users", "unique"]}
+                        toggles={[
+                            t("admin.overview.charts.loginToggleNewUsers"),
+                            t("admin.overview.charts.loginToggleUnique"),
+                        ]}
                         onToggleUpdate={(toggle, value) => {
-                            if (toggle === "new users")
+                            if (toggle === t("admin.overview.charts.loginToggleNewUsers"))
                                 setLoginParameters((parameters) => ({
                                     ...parameters,
                                     newLogins: value,
                                 }));
 
-                            if (toggle === "unique")
+                            if (toggle === t("admin.overview.charts.loginToggleUnique"))
                                 setLoginParameters((parameters) => ({
                                     ...parameters,
                                     unique: value,
