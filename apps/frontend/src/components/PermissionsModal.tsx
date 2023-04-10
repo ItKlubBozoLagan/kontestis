@@ -71,9 +71,9 @@ export const PermissionsModal: FC<Modal.Props & Properties> = ({
                 <span tw={"text-2xl"}>
                     {t("contests.management.individual.participants.permissions.modal.title")}
                 </span>
-                <div tw={"grid grid-cols-2"}>
+                <div tw={"grid grid-cols-2 gap-x-2"}>
                     {permissionData.keys
-                        .map((name) => [name, name.slice(type.length)] as const)
+                        .map((name) => [name, name.slice(type.length + 1)] as const)
                         .map(([keyName, name]) => (
                             <div key={name} tw={"flex"}>
                                 <input
