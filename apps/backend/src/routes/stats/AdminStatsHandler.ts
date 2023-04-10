@@ -16,7 +16,7 @@ const AdminStatsHandler = Router();
 AdminStatsHandler.use("/metrics", MetricsHandlers);
 
 const calculateDifferencePercentage = (current: number, previous: number): number =>
-    previous === 0 ? 9.99 : current / previous - 1;
+    previous === 0 ? (current !== 0 ? 9.99 : 0) : current / previous - 1;
 
 const sumCounts = (data: InfluxCountResult) =>
     data.reduce((accumulator, current) => accumulator + current.count, 0);
