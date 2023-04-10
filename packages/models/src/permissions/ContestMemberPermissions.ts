@@ -13,6 +13,11 @@ export enum ContestMemberPermissions {
     CREATE_ANNOUNCEMENT,
 }
 
+export type ContestMemberPermissionKeys = keyof typeof ContestMemberPermissions;
+
+export const ContestMemberPermissionNames = ((values = Object.keys(ContestMemberPermissions)) =>
+    values.slice(values.length / 2))() as ContestMemberPermissionKeys[];
+
 export const hasContestPermission = (
     data: PermissionData,
     permission: ContestMemberPermissions

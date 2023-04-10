@@ -1,7 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+    AdminPermissions,
     ContestMemberPermissions,
     ContestMemberWithInfo,
+    hasAdminPermission,
     hasContestPermission,
 } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
@@ -12,14 +14,17 @@ import { z } from "zod";
 
 import { Breadcrumb } from "../../../../components/Breadcrumb";
 import { DomainBreadcrumb } from "../../../../components/DomainBreadcrumb";
+import { PermissionsModal } from "../../../../components/PermissionsModal";
 import { RankBreadcrumb } from "../../../../components/RankBreadcrumb";
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledInput } from "../../../../components/TitledInput";
 import { useContestContext } from "../../../../context/constestContext";
 import { useAddParticipant } from "../../../../hooks/contest/participants/useAddParticipant";
 import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
+import { useModifyContestMember } from "../../../../hooks/contest/participants/useModifyContestMember";
 import { useRemoveParticipant } from "../../../../hooks/contest/participants/useRemoveParticipant";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import { useAuthStore } from "../../../../state/auth";
 
 type MemberBoxProperties = {
     member: ContestMemberWithInfo;
@@ -27,7 +32,8 @@ type MemberBoxProperties = {
 };
 
 const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
-    const { contest } = useContestContext();
+    const { contest, member: editMember } = useContestContext();
+    const { user } = useAuthStore();
 
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -47,11 +53,22 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
         deleteMutation.mutate(member.user_id);
     };
 
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const modifyMutation = useModifyContestMember([contest.id, member.user_id]);
+
     useEffect(() => {
         if (!deleteMutation.isSuccess) return;
 
         queryClient.invalidateQueries(["contests", contest.id, "members"]);
     }, [deleteMutation]);
+
+    useEffect(() => {
+        if (!modifyMutation.isSuccess) return;
+
+        queryClient.invalidateQueries(["contests", contest.id, "members"]);
+        modifyMutation.reset();
+    }, [modifyMutation]);
 
     const { t } = useTranslation();
 
@@ -60,6 +77,30 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
             key={member.id.toString()}
             tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-black"}
         >
+            <PermissionsModal
+                isOpen={modalOpen}
+                onRequestClose={() => setModalOpen(false)}
+                onAfterClose={() => setModalOpen(false)}
+                permissions={member.contest_permissions}
+                type={"contest_member"}
+                editor_permission={
+                    hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
+                        ? 1n
+                        : editMember
+                        ? hasContestPermission(
+                              editMember.contest_permissions,
+                              ContestMemberPermissions.EDIT_USER_PERMISSIONS
+                          )
+                            ? editMember.contest_permissions
+                            : 0n
+                        : 0n
+                }
+                onSave={(data) => {
+                    modifyMutation.mutate({
+                        contest_permissions: data,
+                    });
+                }}
+            />
             <div tw={"flex gap-2"}>
                 {admin && (
                     <Breadcrumb color={theme`colors.red.400`}>
@@ -69,6 +110,9 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
                 <DomainBreadcrumb email={member.email} />
                 <RankBreadcrumb specificElo={member.elo} />
                 {member.full_name}
+            </div>
+            <div tw={"text-red-600 cursor-pointer select-none"} onClick={() => setModalOpen(true)}>
+                Edit permissions
             </div>
             {!admin && (
                 <div tw={"flex items-center"}>

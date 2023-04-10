@@ -128,6 +128,7 @@ importers:
       eslint-plugin-react: ^7.32.2
       eslint-plugin-react-hooks: ^4.6.0
       md5: ^2.3.0
+      permissio: ^2.0.2
       prismjs: ^1.29.0
       react: ^18.2.0
       react-chartjs-2: ^5.2.0
@@ -165,6 +166,7 @@ importers:
       chart.js: 4.2.1
       content-type: 1.0.5
       md5: 2.3.0
+      permissio: 2.0.2
       prismjs: 1.29.0
       react: 18.2.0
       react-chartjs-2: 5.2.0_t5yjg6ab35jnsudnh2qdighszm

@@ -20,6 +20,7 @@
         "chart.js": "^4.2.1",
         "content-type": "^1.0.5",
         "md5": "^2.3.0",
+        "permissio": "^2.0.2",
         "prismjs": "^1.29.0",
         "react": "^18.2.0",
         "react-chartjs-2": "^5.2.0",

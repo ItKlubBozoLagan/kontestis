@@ -148,7 +148,7 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
     await Database.update(
         "contest_members",
         { contest_permissions: newPermissions },
-        { user_id: targetId, contest_id: contest.id }
+        { user_id: targetId, contest_id: contest.id, id: targetMember.id }
     );
 
     return respond(res, StatusCodes.OK);
