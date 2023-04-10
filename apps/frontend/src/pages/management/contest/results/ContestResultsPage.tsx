@@ -1,6 +1,7 @@
 import { ExamGradingScale, Snowflake } from "@kontestis/models";
 import { FC, useMemo, useState } from "react";
 import { FiFilePlus, FiPlus } from "react-icons/all";
+import { Link } from "react-router-dom";
 
 import { http } from "../../../../api/http";
 import { ProblemScoreBox } from "../../../../components/ProblemScoreBox";
@@ -21,6 +22,7 @@ import { useTranslation } from "../../../../hooks/useTranslation";
 import { R } from "../../../../util/remeda";
 import { CreateGradingScaleModal } from "./CreateGradingScaleModal";
 import { GradingScaleListItem } from "./GradingScaleListItem";
+import { ResultsTableReviewedItem } from "./ResultsTableReviewedItem";
 
 const calculateGradeFromScale = (
     scale: ExamGradingScale[],
@@ -130,6 +132,9 @@ export const ContestResultsPage: FC = () => {
                             {t("contests.management.individual.results.table.head.points")}
                         </TableHeadItem>
                         <TableHeadItem>
+                            {t("contests.management.individual.results.table.head.reviewed")}
+                        </TableHeadItem>
+                        <TableHeadItem>
                             {t("contests.management.individual.results.table.head.exports")}
                         </TableHeadItem>
                     </TableHeadRow>
@@ -139,7 +144,9 @@ export const ContestResultsPage: FC = () => {
                         .sort((a, b) => a.full_name.localeCompare(b.full_name))
                         .map((member) => (
                             <TableRow key={member.id.toString()}>
-                                <TableItem>{member.full_name}</TableItem>
+                                <TableItem>
+                                    <Link to={`${member.user_id}`}>{member.full_name}</Link>
+                                </TableItem>
                                 <TableItem>
                                     <div tw={"flex gap-2"}>
                                         <ProblemScoreBox
@@ -153,6 +160,7 @@ export const ContestResultsPage: FC = () => {
                                         )}
                                     </div>
                                 </TableItem>
+                                <ResultsTableReviewedItem member={member} />
                                 <TableItem
                                     tw={"text-xl"}
                                     onClick={() => downloadClickHandler(member.user_id)}

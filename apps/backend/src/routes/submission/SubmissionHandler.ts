@@ -164,7 +164,7 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
     if (!member) throw new SafeError(StatusCodes.BAD_REQUEST);
 
     await Database.raw(
-        `UPDATE contest_members SET exam_score[${submission.problem_id}]=${submission.awarded_score} WHERE id=${member.id} AND contest_id=${member.id} AND user_id=${member.user_id}`
+        `UPDATE contest_members SET exam_score['${submission.problem_id}']=${submission.awarded_score} WHERE id=${member.id} AND contest_id=${member.contest_id} AND user_id=${member.user_id}`
     );
 
     return respond(res, StatusCodes.OK, finalSubmission);
@@ -204,11 +204,15 @@ SubmissionHandler.patch(
                 final_score: req.body.final_score,
                 reviewed: req.body.reviewed,
             },
-            { id: finalSubmission.id }
+            {
+                id: finalSubmission.id,
+                contest_id: finalSubmission.contest_id,
+                user_id: finalSubmission.user_id,
+            }
         );
 
         await Database.raw(
-            `UPDATE contest_members SET exam_score[${submission.problem_id}]=${req.body.final_score} WHERE id=${member.id} AND contest_id=${member.id} AND user_id=${member.user_id}`
+            `UPDATE contest_members SET exam_score['${submission.problem_id}']=${req.body.final_score} WHERE id=${member.id} AND contest_id=${member.contest_id} AND user_id=${member.user_id}`
         );
 
         return respond(res, StatusCodes.OK);
@@ -255,7 +259,21 @@ SubmissionHandler.get(
             contest_id: contest.id,
         });
 
-        return respond(res, StatusCodes.OK, finalSubmissions);
+        const submissions = await Database.selectFrom("submissions", ["id", "problem_id"], {
+            id: eqIn(...finalSubmissions.map((finalSubmission) => finalSubmission.submission_id)),
+        });
+
+        return respond(
+            res,
+            StatusCodes.OK,
+            R.map(finalSubmissions, (finalSubmission) =>
+                R.addProp(
+                    finalSubmission,
+                    "problem_id",
+                    submissions.find((s) => s.id === finalSubmission.submission_id)?.problem_id ?? 0
+                )
+            )
+        );
     }
 );
 

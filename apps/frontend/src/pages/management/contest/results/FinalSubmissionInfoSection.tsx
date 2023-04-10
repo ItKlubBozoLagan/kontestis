@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ExamFinalSubmission, Problem, Submission } from "@kontestis/models";
+import { ExamFinalSubmission } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
@@ -14,13 +14,11 @@ import { useTranslation } from "../../../../hooks/useTranslation";
 
 type Parameters = {
     finalSubmission: ExamFinalSubmission;
-    submission: Submission;
-    problem: Problem;
 };
 
 const ModifyFinalSubmissionSchema = z.object({
     reviewed: z.boolean(),
-    final_score: z.number(),
+    final_score: z.coerce.number(),
 });
 
 export const FinalSubmissionInfoSection: FC<Parameters> = ({ finalSubmission }) => {
@@ -49,7 +47,8 @@ export const FinalSubmissionInfoSection: FC<Parameters> = ({ finalSubmission }) 
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries([["submission", "final", "submission", finalSubmission.id]]);
+        queryClient.invalidateQueries(["submission", "final", "submission", finalSubmission.id]);
+        modifyMutation.reset();
     });
 
     const formReference = React.useRef<HTMLFormElement>(null);
@@ -63,7 +62,7 @@ export const FinalSubmissionInfoSection: FC<Parameters> = ({ finalSubmission }) 
     const { t } = useTranslation();
 
     return (
-        <form onSubmit={onSubmit} ref={formReference}>
+        <form onSubmit={onSubmit} ref={formReference} tw={"flex flex-col gap-4"}>
             <EditableDisplayBox
                 title={"Final Score"}
                 value={finalSubmission.final_score}

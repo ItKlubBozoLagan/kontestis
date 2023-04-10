@@ -16,3 +16,7 @@ export type ExamFinalSubmissionV3 = ExamFinalSubmissionV2 & {
 };
 
 export type ExamFinalSubmission = ExamFinalSubmissionV3;
+
+export type ExamFinalSubmissionWithProblemId = ExamFinalSubmission & {
+    problem_id: Snowflake;
+};

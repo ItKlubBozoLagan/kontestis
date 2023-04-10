@@ -21,6 +21,8 @@ import { ContestProblemManagePage } from "../pages/management/contest/problems/C
 import { ContestProblemsPage } from "../pages/management/contest/problems/ContestProblemsPage";
 import { ContestQuestionsPage } from "../pages/management/contest/questions/ContestQuestionsPage";
 import { ContestResultsPage } from "../pages/management/contest/results/ContestResultsPage";
+import { FinalSubmissionReviewPage } from "../pages/management/contest/results/FinalSubmissionReviewPage";
+import { FinalSubmissionsPage } from "../pages/management/contest/results/FinalSubmissionsPage";
 import { ManagementPage } from "../pages/management/ManagementPage";
 import { ProblemsPage } from "../pages/problems/ProblemsPage";
 import { ProblemViewPage } from "../pages/problems/ProblemViewPage";
@@ -59,6 +61,10 @@ export const dashboardRoutes: RouteObject[] = [
             {
                 path: "account",
                 element: <AccountPage />,
+            },
+            {
+                path: "review/:final_submission_id",
+                element: <FinalSubmissionReviewPage />,
             },
             {
                 path: "admin",
@@ -129,6 +135,10 @@ export const dashboardRoutes: RouteObject[] = [
                     {
                         path: "results",
                         element: <ContestResultsPage />,
+                    },
+                    {
+                        path: "results/:user_id",
+                        element: <FinalSubmissionsPage />,
                     },
                     {
                         index: true,

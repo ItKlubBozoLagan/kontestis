@@ -274,6 +274,7 @@ const I18nEn = {
                         head: {
                             user: "User",
                             points: "Points",
+                            reviewed: "Reviewed",
                             exports: "Exports",
                         },
                     },

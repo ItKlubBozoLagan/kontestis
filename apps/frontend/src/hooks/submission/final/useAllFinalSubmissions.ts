@@ -1,12 +1,12 @@
-import { ExamFinalSubmission, Snowflake } from "@kontestis/models";
+import { ExamFinalSubmissionWithProblemId, Snowflake } from "@kontestis/models";
 import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../../api/http";
 
-export const useAllFinalSubmissions: QueryHandler<ExamFinalSubmission[], [Snowflake, Snowflake]> = (
-    [contestId, userId],
-    options
-) =>
+export const useAllFinalSubmissions: QueryHandler<
+    ExamFinalSubmissionWithProblemId[],
+    [Snowflake, Snowflake]
+> = ([contestId, userId], options) =>
     useQuery({
         queryKey: ["submission", "final", contestId, userId],
         queryFn: () =>

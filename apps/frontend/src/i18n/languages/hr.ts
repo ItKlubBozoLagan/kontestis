@@ -274,7 +274,8 @@ export default {
                         head: {
                             user: "Korsinik",
                             points: "Bodovi",
-                            exports: "izvoz",
+                            reviewed: "Pregledano",
+                            exports: "Izvoz",
                         },
                     },
                 },
