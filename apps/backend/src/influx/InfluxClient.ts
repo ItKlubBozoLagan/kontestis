@@ -105,7 +105,7 @@ export type InfluxDataSchema = Record<string, InfluxMeasurement>;
 export type InfluxQueryResult<T extends InfluxDataSchema, K extends keyof T> = (T[K]["values"] & {
     time: Date;
 })[];
-export type InfluxDayCountResult = {
+export type InfluxCountResult = {
     time: Date;
     count: number;
 }[];
@@ -143,7 +143,7 @@ export type InfluxClient<T extends InfluxDataSchema> = {
         window: AllowedCountWindows,
         tags?: Partial<Record<T[K]["tags"][number], string>>,
         range?: DateRange
-    ): Promise<InfluxDayCountResult>;
+    ): Promise<InfluxCountResult>;
     // will add more complex delete mechanics as we need them
     dropMeasurement<K extends keyof T & string>(measurement: K): Promise<void>;
     flush(): Promise<void>;
@@ -245,6 +245,7 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
             ` +
             (tags
                 ? Object.entries(tags)
+                      .filter(([_, v]) => v !== undefined)
                       .map(([key, value]) => flux`|> filter(fn: (r) => r["${key}"] == "${value}")`)
                       .join(" ")
                 : "")
@@ -309,7 +310,7 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
             window: AllowedCountWindows,
             tags?: Partial<Record<T[K]["tags"][number], string>>,
             range?: DateRange
-        ): Promise<InfluxDayCountResult> => {
+        ): Promise<InfluxCountResult> => {
             const query =
                 generateBaseQuery(measurement, tags, range) +
                 `
@@ -331,9 +332,9 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                 R.toPairs,
                 R.map(([date, entries]) => ({
                     time: new Date(date),
-                    count: entries.find((it) => "_value" in it)!._value,
+                    count: Number(entries.find((it) => "_value" in it)!._value),
                 }))
-            ) as InfluxDayCountResult;
+            ) as InfluxCountResult;
         },
         dropMeasurement: <K extends keyof T & string>(measurement: K) => {
             return influxDeleteApi.postDelete({

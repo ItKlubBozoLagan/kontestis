@@ -5,6 +5,7 @@ import { StatusCodes } from "http-status-codes";
 import { Influx } from "../../influx/Influx";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
+import { getWindowFromRange } from "../../utils/stats";
 import { BooleanStringSchema } from "../../utils/types";
 import { MetricsHandlers } from "./MetricsHandlers";
 import { RangeQuerySchema } from "./schemas";
@@ -32,7 +33,7 @@ AdminStatsHandler.get(
             StatusCodes.OK,
             await Influx.aggregateCountPerWindow(
                 "logins",
-                range === "24h" ? "1h" : ["7d", "30d"].includes(range) ? "1d" : "1mo",
+                getWindowFromRange(range),
                 unique ? { newLogin: unique } : undefined,
                 `-${range}`
             )
@@ -51,7 +52,7 @@ AdminStatsHandler.get(
             StatusCodes.OK,
             await Influx.aggregateCountPerWindow(
                 "activity",
-                range === "24h" ? "1h" : ["7d", "30d"].includes(range) ? "1d" : "1mo",
+                getWindowFromRange(range),
                 undefined,
                 `-${range}`
             )

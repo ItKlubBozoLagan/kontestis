@@ -1,75 +1,43 @@
-import { R } from "./remeda";
+import { Static } from "@sinclair/typebox";
 
-type CountRange = "24h" | "7d" | "30d" | "1y";
+import { AllowedCountWindows, InfluxCountResult } from "../influx/InfluxClient";
+import { RangeQueryUnion } from "../routes/stats/schemas";
 
-type StatCount = {
-    time: Date;
-    count: number;
-};
+export const getWindowFromRange = (range: Static<typeof RangeQueryUnion>): AllowedCountWindows =>
+    range === "24h" ? "1h" : ["7d", "30d"].includes(range) ? "1d" : "1mo";
 
-const fillUp = (
-    source: StatCount[],
-    elements: number,
-    dateGenerator: (index: number) => Date,
-    dateComparator: (a: Date, b: Date) => boolean
-) => {
-    const raw = Array.from({ length: 24 }, (_, index) => ({
-        time: dateGenerator(index),
-        count: 0,
-    })).concat(source);
+// very simple, if empty, give array where count = 0
+//  influx will usually handle all the sorting and making the array nice
+//  unless there is no data at all, it then returns nothing
+export const fillIfEmpty = (
+    source: InfluxCountResult,
+    range: Static<typeof RangeQueryUnion>
+): InfluxCountResult => {
+    if (source.length > 0) return source;
 
-    return R.uniqWith(
-        raw.filter((stat) =>
-            raw
-                .filter((it) => dateComparator(stat.time, it.time))
-                .every((it) => it.count <= stat.count)
-        ),
-        (a, b) => dateComparator(a.time, b.time) && a.count === b.count
-    ).slice(0, 24);
-};
-
-export const fitCountStatToRange = (source: StatCount[], range: CountRange) => {
-    const baseDate = R.maxBy(source, (it) => it.time.getTime())?.time ?? new Date();
+    const now = new Date();
 
     switch (range) {
         case "24h":
-            return fillUp(
-                source,
-                24,
-                (index) =>
-                    new Date(
-                        baseDate.getFullYear(),
-                        baseDate.getMonth(),
-                        baseDate.getDate(),
-                        baseDate.getHours() - index
-                    ),
-                (a, b) =>
-                    Math.trunc(a.getTime() / 1000 / 60 / 60) ===
-                    Math.trunc(b.getTime() / 1000 / 60 / 60)
-            );
+            return Array.from({ length: 24 }, (_, index) => ({
+                time: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    now.getHours() - index
+                ),
+                count: 0,
+            }));
         case "7d":
         case "30d":
-            return fillUp(
-                source,
-                range === "7d" ? 7 : 30,
-                (index) =>
-                    new Date(
-                        baseDate.getFullYear(),
-                        baseDate.getMonth(),
-                        baseDate.getDate() - index
-                    ),
-                (a, b) =>
-                    Math.trunc(a.getTime() / 1000 / 60 / 60 / 24) ===
-                    Math.trunc(b.getTime() / 1000 / 60 / 60 / 24)
-            );
+            return Array.from({ length: range === "7d" ? 7 : 30 }, (_, index) => ({
+                time: new Date(now.getFullYear(), now.getMonth(), now.getDate() - index),
+                count: 0,
+            }));
         case "1y":
-            return fillUp(
-                source,
-                12,
-                (index) => new Date(baseDate.getFullYear(), baseDate.getMonth() - index),
-                (a, b) =>
-                    Math.trunc(a.getTime() / 1000 / 60 / 60 / 24 / 30) ===
-                    Math.trunc(b.getTime() / 1000 / 60 / 60 / 24 / 30)
-            );
+            return Array.from({ length: 12 }, (_, index) => ({
+                time: new Date(now.getFullYear(), now.getMonth() - index),
+                count: 0,
+            }));
     }
 };
