@@ -21,12 +21,13 @@ AdminStatsHandler.get(
             RangeQuerySchema,
             Type.Object({
                 unique: Type.Optional(BooleanStringSchema),
+                newLogins: Type.Optional(BooleanStringSchema),
             }),
         ]),
         { query: true }
     ),
     async (req, res) => {
-        const { range, unique } = req.query;
+        const { range, unique, newLogins } = req.query;
 
         respond(
             res,
@@ -35,8 +36,9 @@ AdminStatsHandler.get(
                 await Influx.aggregateCountPerWindow(
                     "logins",
                     getWindowFromRange(range),
-                    { newLogin: !unique || unique === "false" ? undefined : "true" },
-                    `-${range}`
+                    { newLogin: !newLogins || newLogins === "false" ? undefined : "true" },
+                    `-${range}`,
+                    unique === "true" ? "userId" : undefined
                 ),
                 range
             )

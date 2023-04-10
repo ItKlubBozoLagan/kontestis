@@ -3,22 +3,25 @@ import { FC, useState } from "react";
 import { HistoryLineChart } from "../../../components/HistoryLineChart";
 import { CountStatRange } from "../../../hooks/stats/types";
 import { useAdminActivityStat } from "../../../hooks/stats/useAdminActivityStat";
-import { useAdminLoginsStat } from "../../../hooks/stats/useAdminLoginsStat";
+import {
+    AdminLoginStatParamaters,
+    useAdminLoginsStat,
+} from "../../../hooks/stats/useAdminLoginsStat";
 import { useFormatCountStat } from "../../../hooks/useFormatCountStat";
 import { RangeFormatters } from "../../../util/charts";
 
 export const AdminOverviewPage: FC = () => {
     const [activityRange, setActivityRange] = useState<CountStatRange>("24h");
-    const [loginsRange, setLoginsRange] = useState<CountStatRange>("24h");
-    const [uniqueLogins, setUniqueLogins] = useState(false);
+    const [loginParameters, setLoginParameters] = useState<AdminLoginStatParamaters>({
+        range: "24h",
+        unique: false,
+        newLogins: false,
+    });
 
     const { data: activity, isLoading: activityIsLoading } = useAdminActivityStat({
         range: activityRange,
     });
-    const { data: logins, isLoading: loginsIsLoading } = useAdminLoginsStat({
-        range: loginsRange,
-        unique: uniqueLogins,
-    });
+    const { data: logins, isLoading: loginsIsLoading } = useAdminLoginsStat(loginParameters);
 
     const activityDataset = useFormatCountStat(activity);
 
@@ -41,10 +44,24 @@ export const AdminOverviewPage: FC = () => {
                         title={"Logins"}
                         dataset={loginsDataset}
                         loading={loginsIsLoading}
-                        onRangeChange={setLoginsRange}
-                        dateFormatter={RangeFormatters[loginsRange]}
-                        toggles={["new users"]}
-                        onToggleUpdate={(_, value) => setUniqueLogins(value)}
+                        onRangeChange={(range) =>
+                            setLoginParameters((parameters) => ({ ...parameters, range }))
+                        }
+                        dateFormatter={RangeFormatters[loginParameters.range]}
+                        toggles={["new users", "unique"]}
+                        onToggleUpdate={(toggle, value) => {
+                            if (toggle === "new users")
+                                setLoginParameters((parameters) => ({
+                                    ...parameters,
+                                    newLogins: value,
+                                }));
+
+                            if (toggle === "unique")
+                                setLoginParameters((parameters) => ({
+                                    ...parameters,
+                                    unique: value,
+                                }));
+                        }}
                     />
                 )}
             </div>

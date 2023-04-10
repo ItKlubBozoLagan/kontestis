@@ -5,6 +5,7 @@ import {
     flux,
     fluxDateTime,
     fluxExpression,
+    fluxString,
     FluxTableMetaData,
     InfluxDB,
     ParameterizedQuery,
@@ -142,7 +143,8 @@ export type InfluxClient<T extends InfluxDataSchema> = {
         measurement: K,
         window: AllowedCountWindows,
         tags?: Partial<Record<T[K]["tags"][number], string>>,
-        range?: DateRange
+        range?: DateRange,
+        uniqueBy?: T[K]["tags"][number]
     ): Promise<InfluxCountResult>;
     // will add more complex delete mechanics as we need them
     dropMeasurement<K extends keyof T & string>(measurement: K): Promise<void>;
@@ -309,15 +311,22 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
             measurement: K,
             window: AllowedCountWindows,
             tags?: Partial<Record<T[K]["tags"][number], string>>,
-            range?: DateRange
+            range?: DateRange,
+            uniqueBy?: T[K]["tags"][number]
         ): Promise<InfluxCountResult> => {
             const query =
                 generateBaseQuery(measurement, tags, range) +
                 `
                     |> group(columns: ["_start"])
-                    |> aggregateWindow(every: ${fluxExpression(
-                        window
-                    )}, fn: count, timeSrc: "_start")
+                    |> aggregateWindow(every: ${fluxExpression(window)}, fn: ${
+                    !uniqueBy
+                        ? fluxExpression("count")
+                        : fluxExpression(
+                              `(column, tables=<-) => tables |> unique(column: ${fluxString(
+                                  uniqueBy
+                              )}) |> count()`
+                          )
+                }, timeSrc: "_start")
                     |> sort(columns: ["_time"], desc: true)                    
                 `;
 
