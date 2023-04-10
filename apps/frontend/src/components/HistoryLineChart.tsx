@@ -156,7 +156,7 @@ export const HistoryLineChart = <T extends string>({
                             responsive: true,
                             animation: false,
                             scales: {
-                                x: {
+                                y: {
                                     min: 0,
                                 },
                             },
