@@ -4,6 +4,7 @@ import {
     ColumnType,
     flux,
     fluxDateTime,
+    fluxExpression,
     FluxTableMetaData,
     InfluxDB,
     ParameterizedQuery,
@@ -15,6 +16,15 @@ import { DeleteAPI } from "@influxdata/influxdb-client-apis";
 import { R } from "../utils/remeda";
 
 const tomorrow = () => new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+export type DateRange =
+    | {
+          start: Date;
+          end: Date;
+      }
+    | string;
+
+const DefaultDateRange: DateRange = { start: new Date(0), end: tomorrow() };
 
 const InfluxUIntegerSymbol = Symbol.for("influxdb/types/uinteger");
 
@@ -95,6 +105,12 @@ export type InfluxDataSchema = Record<string, InfluxMeasurement>;
 export type InfluxQueryResult<T extends InfluxDataSchema, K extends keyof T> = (T[K]["values"] & {
     time: Date;
 })[];
+export type InfluxDayCountResult = {
+    time: Date;
+    count: number;
+}[];
+
+export type AllowedCountWindows = "1h" | "1d" | "1mo";
 
 export type InfluxClient<T extends InfluxDataSchema> = {
     createLine<K extends keyof T & string>(
@@ -119,10 +135,15 @@ export type InfluxClient<T extends InfluxDataSchema> = {
     queryRaw(flux: ParameterizedQuery): Promise<unknown>;
     query<K extends keyof T & string>(
         measurement: K,
-        tags: Record<T[K]["tags"][number], string>,
-        start?: Date,
-        end?: Date
+        tags?: Partial<Record<T[K]["tags"][number], string>>,
+        range?: DateRange
     ): Promise<InfluxQueryResult<T, K>>;
+    aggregateCountPerWindow<K extends keyof T & string>(
+        measurement: K,
+        window: AllowedCountWindows,
+        tags?: Partial<Record<T[K]["tags"][number], string>>,
+        range?: DateRange
+    ): Promise<InfluxDayCountResult>;
     // will add more complex delete mechanics as we need them
     dropMeasurement<K extends keyof T & string>(measurement: K): Promise<void>;
     flush(): Promise<void>;
@@ -200,6 +221,36 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
         influxWriteApi.writeRecords([line]);
     };
 
+    const generateBaseQuery = <K extends keyof T & string>(
+        measurement: K,
+        tags?: Partial<Record<T[K]["tags"][number], string>>,
+        range: DateRange = DefaultDateRange
+    ) => {
+        return (
+            flux`
+                from(bucket: "${config.bucket}")
+                    |> range(
+                        start: ${
+                            typeof range !== "string"
+                                ? fluxDateTime(range.start.toISOString())
+                                : fluxExpression(range)
+                        },
+                        stop: ${
+                            typeof range !== "string"
+                                ? fluxDateTime(range.end.toISOString())
+                                : fluxExpression("now()")
+                        }
+                    )
+                    |> filter(fn: (r) => r["_measurement"] == "${measurement}")
+            ` +
+            (tags
+                ? Object.entries(tags)
+                      .map(([key, value]) => flux`|> filter(fn: (r) => r["${key}"] == "${value}")`)
+                      .join(" ")
+                : "")
+        );
+    };
+
     return {
         createLine,
         insert: <K extends keyof T & string>(
@@ -227,22 +278,10 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
         },
         query: async <K extends keyof T & string>(
             measurement: K,
-            tags: Record<T[K]["tags"][number], string>,
-            start: Date = new Date(0),
-            end: Date = tomorrow() // adjust for timezones
+            tags?: Partial<Record<T[K]["tags"][number], string>>,
+            range?: DateRange
         ) => {
-            const query =
-                flux`
-                from(bucket: "${config.bucket}")
-                    |> range(
-                        start: ${fluxDateTime(start.toISOString())},
-                        stop: ${fluxDateTime(end.toISOString())}
-                    )
-                    |> filter(fn: (r) => r["_measurement"] == "${measurement}")
-            ` +
-                Object.entries(tags)
-                    .map(([key, value]) => flux`|> filter(fn: (r) => r["${key}"] == "${value}")`)
-                    .join(" ");
+            const query = generateBaseQuery(measurement, tags, range);
 
             debugFunction("[InfluxDB] Querying", query.toString());
 
@@ -265,6 +304,37 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                 }))
             ) as InfluxQueryResult<T, K>;
         },
+        aggregateCountPerWindow: async <K extends keyof T & string>(
+            measurement: K,
+            window: AllowedCountWindows,
+            tags?: Partial<Record<T[K]["tags"][number], string>>,
+            range?: DateRange
+        ): Promise<InfluxDayCountResult> => {
+            const query =
+                generateBaseQuery(measurement, tags, range) +
+                `
+                    |> group(columns: ["_start"])
+                    |> aggregateWindow(every: ${fluxExpression(
+                        window
+                    )}, fn: count, timeSrc: "_start")
+                    |> sort(columns: ["_time"], desc: true)                    
+                `;
+
+            debugFunction("[InfluxDB] Querying", query.toString());
+
+            const result = await influxReadApi.collectRows(query, defaultRowMapper);
+
+            return R.pipe(
+                result,
+                R.filter((it) => "_time" in it && it["_time"] instanceof Date),
+                R.groupBy((it) => (it["_time"] as Date).toISOString()),
+                R.toPairs,
+                R.map(([date, entries]) => ({
+                    time: new Date(date),
+                    count: entries.find((it) => "_value" in it)!._value,
+                }))
+            ) as InfluxDayCountResult;
+        },
         dropMeasurement: <K extends keyof T & string>(measurement: K) => {
             return influxDeleteApi.postDelete({
                 org: config.org,
@@ -276,11 +346,7 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                 },
             });
         },
-        flush: () => {
-            debugFunction("[InfluxDB] Flushing");
-
-            return influxWriteApi.flush();
-        },
+        flush: () => influxWriteApi.flush(),
         _writeApi: influxWriteApi,
         _readApi: influxReadApi,
         _deleteApi: influxDeleteApi,
