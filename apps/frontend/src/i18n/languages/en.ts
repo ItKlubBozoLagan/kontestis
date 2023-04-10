@@ -254,6 +254,13 @@ const I18nEn = {
                         proposeRemoval: "Remove",
                         confirm: "Confirm",
                     },
+                    permissions: {
+                        editButton: "Edit permissions",
+                        modal: {
+                            title: "Permissions",
+                            saveButton: "Save",
+                        },
+                    },
                 },
                 results: {
                     gradingScale: {
@@ -408,6 +415,36 @@ const I18nEn = {
                 loginToggleNewUsers: "new users",
                 loginToggleUnique: "unique",
             },
+        },
+    },
+    permissions: {
+        contest_member: {
+            ADMIN: "Admin",
+            VIEW_PRIVATE: "View (admin)",
+            ADD_USER: "Add user",
+            EDIT_USER_PERMISSIONS: "Edit user permissions",
+            ANSWER_QUESTIONS: "Answer questions",
+            VIEW: "View",
+            EDIT: "Edit",
+            REMOVE_USER: "Remove user",
+            VIEW_QUESTIONS: "View questions",
+            CREATE_ANNOUNCEMENT: "Create announcements",
+        },
+        admin: {
+            ADMIN: "Admin",
+            VIEW_USER: "View user",
+            EDIT_USER: "Edit user",
+            DELETE_USER: "Delete user",
+            ADD_CONTEST: "Add contest",
+            VIEW_CONTEST: "View contest",
+            EDIT_CONTEST: "Edit contest",
+            DELETE_CONTEST: "Delete contest",
+            ADD_ALERTS: "Add alerts",
+            EDIT_ALERTS: "Edit alerts",
+            DELETE_ALERTS: "Delete alerts",
+            VIEW_ORGANISATIONS: "View organisations",
+            EDIT_ORGANISATIONS: "Edit organisations",
+            DELETE_ORGANISATIONS: "Delete organisations",
         },
     },
     errorMessages: {

@@ -116,7 +116,7 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
                     tw={"text-red-600 cursor-pointer select-none"}
                     onClick={() => setModalOpen(true)}
                 >
-                    Edit permissions
+                    {t("contests.management.individual.participants.permissions.editButton")}
                 </div>
                 {!admin && (
                     <div tw={"flex items-center"}>

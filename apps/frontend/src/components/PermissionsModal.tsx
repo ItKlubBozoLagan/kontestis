@@ -1,6 +1,8 @@
 import {
+    AdminPermissionKeys,
     AdminPermissionNames,
     AdminPermissions,
+    ContestMemberPermissionKeys,
     ContestMemberPermissionNames,
     ContestMemberPermissions,
     hasAdminPermission,
@@ -10,6 +12,7 @@ import { grantPermission, hasPermission, removePermission } from "permissio";
 import { FC, useState } from "react";
 import Modal from "react-modal";
 
+import { useTranslation } from "../hooks/useTranslation";
 import { ModalStyles } from "../util/ModalStyles";
 import { SimpleButton } from "./SimpleButton";
 
@@ -31,12 +34,14 @@ type PermissionData = {
 const permissionByType = {
     admin: {
         permission: AdminPermissions,
-        keys: AdminPermissionNames,
+        keys: AdminPermissionNames.map((it) => `admin.${it}`) as `admin.${AdminPermissionKeys}`[],
         function: hasAdminPermission,
     },
     contest_member: {
         permission: ContestMemberPermissions,
-        keys: ContestMemberPermissionNames,
+        keys: ContestMemberPermissionNames.map(
+            (it) => `contest_member.${it}`
+        ) as `contest_member.${ContestMemberPermissionKeys}`[],
         function: hasContestPermission,
     },
 } satisfies Record<PermissionType, PermissionData>;
@@ -52,6 +57,8 @@ export const PermissionsModal: FC<Modal.Props & Properties> = ({
 
     const permissionData = permissionByType[type];
 
+    const { t } = useTranslation();
+
     return (
         <Modal
             {...properties}
@@ -61,58 +68,62 @@ export const PermissionsModal: FC<Modal.Props & Properties> = ({
             style={ModalStyles}
         >
             <div tw={"flex flex-col gap-5 justify-end"}>
-                <span tw={"text-2xl"}>Permissions</span>
+                <span tw={"text-2xl"}>
+                    {t("contests.management.individual.participants.permissions.modal.title")}
+                </span>
                 <div tw={"grid grid-cols-2"}>
-                    {permissionData.keys.map((name) => (
-                        <div key={name} tw={"flex"}>
-                            <input
-                                type={"checkbox"}
-                                checked={hasPermission(
-                                    newPermissions,
-                                    permissionData.permission[
-                                        name as keyof typeof permissionData.permission
-                                    ]
-                                )}
-                                onChange={(event) => {
-                                    if (event.target.checked) {
+                    {permissionData.keys
+                        .map((name) => [name, name.slice(type.length)] as const)
+                        .map(([keyName, name]) => (
+                            <div key={name} tw={"flex"}>
+                                <input
+                                    type={"checkbox"}
+                                    checked={hasPermission(
+                                        newPermissions,
+                                        permissionData.permission[
+                                            name as keyof typeof permissionData.permission
+                                        ]
+                                    )}
+                                    onChange={(event) => {
+                                        if (event.target.checked) {
+                                            setNewPermissions(
+                                                grantPermission(
+                                                    newPermissions,
+                                                    permissionData.permission[
+                                                        name as keyof typeof permissionData.permission
+                                                    ]
+                                                )
+                                            );
+
+                                            return;
+                                        }
+
                                         setNewPermissions(
-                                            grantPermission(
+                                            removePermission(
                                                 newPermissions,
                                                 permissionData.permission[
                                                     name as keyof typeof permissionData.permission
                                                 ]
                                             )
                                         );
-
-                                        return;
-                                    }
-
-                                    setNewPermissions(
-                                        removePermission(
-                                            newPermissions,
+                                    }}
+                                    disabled={
+                                        !(
+                                            permissionData.function as (
+                                                p: bigint,
+                                                id: number
+                                            ) => boolean
+                                        )(
+                                            editor_permission,
                                             permissionData.permission[
                                                 name as keyof typeof permissionData.permission
                                             ]
                                         )
-                                    );
-                                }}
-                                disabled={
-                                    !(
-                                        permissionData.function as (
-                                            p: bigint,
-                                            id: number
-                                        ) => boolean
-                                    )(
-                                        editor_permission,
-                                        permissionData.permission[
-                                            name as keyof typeof permissionData.permission
-                                        ]
-                                    )
-                                }
-                            />
-                            <span>{name}</span>
-                        </div>
-                    ))}
+                                    }
+                                />
+                                <span>{t(`permissions.${keyName}`)}</span>
+                            </div>
+                        ))}
                 </div>
                 <SimpleButton
                     tw={"w-1/3 self-end"}
@@ -121,7 +132,7 @@ export const PermissionsModal: FC<Modal.Props & Properties> = ({
                         onSave(newPermissions);
                     }}
                 >
-                    Save
+                    {t("contests.management.individual.participants.permissions.modal.saveButton")}
                 </SimpleButton>
             </div>
         </Modal>

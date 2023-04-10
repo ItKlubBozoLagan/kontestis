@@ -254,6 +254,13 @@ export default {
                         proposeRemoval: "Ukloni",
                         confirm: "Potvrdi",
                     },
+                    permissions: {
+                        editButton: "Uredi dozvole",
+                        modal: {
+                            title: "Dozvole",
+                            saveButton: "Spremi",
+                        },
+                    },
                 },
                 results: {
                     gradingScale: {
@@ -408,6 +415,36 @@ export default {
                 loginToggleNewUsers: "nove",
                 loginToggleUnique: "unikatne",
             },
+        },
+    },
+    permissions: {
+        contest_member: {
+            ADMIN: "Administrator",
+            VIEW_PRIVATE: "Pregled (admin)",
+            ADD_USER: "Dodavanje korisnika",
+            EDIT_USER_PERMISSIONS: "Uređivanje dozvola",
+            ANSWER_QUESTIONS: "Odgovaranje pitanja",
+            VIEW: "Pregled",
+            EDIT: "Uređivanje",
+            REMOVE_USER: "Brisanje korisnika",
+            VIEW_QUESTIONS: "Pregled pitanja",
+            CREATE_ANNOUNCEMENT: "Kreiranje obavjesti",
+        },
+        admin: {
+            ADMIN: "Admin",
+            VIEW_USER: "Pregled korisnika",
+            EDIT_USER: "Uređivanje korisnika",
+            DELETE_USER: "Brisanje korisnika",
+            ADD_CONTEST: "Dodavanje natjecanja",
+            VIEW_CONTEST: "Pregled natjecanja",
+            EDIT_CONTEST: "Uređivanje natjecanja",
+            DELETE_CONTEST: "Brisanje natjecanja",
+            ADD_ALERTS: "Dodavanje obavjesti",
+            EDIT_ALERTS: "Uređivanje obavjesti",
+            DELETE_ALERTS: "Brisanje obavjesti",
+            VIEW_ORGANISATIONS: "Pregled organizacija",
+            EDIT_ORGANISATIONS: "Uređivanje organizacija",
+            DELETE_ORGANISATIONS: "Brisanje organizacija",
         },
     },
     errorMessages: {
