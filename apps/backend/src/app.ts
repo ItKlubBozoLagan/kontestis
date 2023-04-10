@@ -25,6 +25,7 @@ import RedisStore from "rate-limit-redis";
 import { startEloTask } from "./tasks/eloTask";
 import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 import { StatsHandler } from "./routes/stats/StatsHandler";
+import expressPackageJson from "express/package.json";
 
 declare global {
     interface BigInt {
@@ -124,7 +125,7 @@ Promise.allSettled([
     Logger.info("Ready");
 
     app.listen(Globals.port, () => {
-        Logger.info("Listening on " + Globals.port);
+        Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
 
         for (const task of [startEloTask, startInfluxFlushTask]) task();
     });
