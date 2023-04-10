@@ -63,7 +63,10 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
 
     for (const s of submissions) submissionsByProblemId[s.problem_id.toString()] = s;
 
-    const score = submissions.reduce((a, s) => a + s.awarded_score, 0);
+    const score = submissions.reduce(
+        (a, s) => a + (finalSubmissions.find((fs) => fs.submission_id === s.id)?.final_score ?? 0),
+        0
+    );
 
     const totalScore = problemsWithScore.reduce((a, p) => a + p.score, 0);
 
@@ -78,7 +81,12 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
             border: { top: { style: BorderStyle.DOTTED, space: 10 } },
         }),
         new Paragraph({
-            text: (submissionsByProblemId[p.id.toString()]?.awarded_score ?? 0) + "/" + p.score,
+            text:
+                (finalSubmissions.find(
+                    (fs) => (submissionsByProblemId[p.id.toString()]?.id ?? 0n) === fs.submission_id
+                )?.final_score ?? 0) +
+                "/" +
+                p.score,
             heading: HeadingLevel.HEADING_3,
             alignment: AlignmentType.RIGHT,
         }),
