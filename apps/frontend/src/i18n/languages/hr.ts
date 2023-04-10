@@ -390,11 +390,11 @@ export default {
         },
     },
     admin: {
-        title: "Admin stranica",
+        title: "Administracija",
         routes: {
             overview: "Pregled",
-            users: "korisnici",
-            alerts: "Uzbune",
+            users: "Korisnici",
+            alerts: "Obavijesti",
             contests: "Natjecanja",
             organizations: "Organizacije",
         },

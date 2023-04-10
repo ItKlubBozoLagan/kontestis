@@ -390,11 +390,11 @@ const I18nEn = {
         },
     },
     admin: {
-        title: "Admin page",
+        title: "Administration area",
         routes: {
             overview: "Overview",
             users: "Users",
-            alerts: "Alerts",
+            alerts: "Site alerts",
             contests: "Contests",
             organizations: "Organisations",
         },
