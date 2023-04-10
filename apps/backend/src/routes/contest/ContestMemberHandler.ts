@@ -127,14 +127,15 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
         ? BigInt(req.body.contest_permissions)
         : undefined;
 
-    if (!newPermissions) throw new SafeError(StatusCodes.BAD_REQUEST);
+    if (typeof newPermissions === "undefined") throw new SafeError(StatusCodes.BAD_REQUEST);
 
     if (
-        !contestMember ||
-        !hasContestPermission(
-            contestMember.contest_permissions,
-            ContestMemberPermissions.EDIT_USER_PERMISSIONS
-        )
+        !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST) &&
+        (!contestMember ||
+            !hasContestPermission(
+                contestMember.contest_permissions,
+                ContestMemberPermissions.EDIT_USER_PERMISSIONS
+            ))
     )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
