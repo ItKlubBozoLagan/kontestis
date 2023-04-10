@@ -14,14 +14,23 @@ export class CachedValue<T, Parameters extends unknown[] = []> {
         this.lastUpdate = 0;
     }
 
+    // force cast to promise
+    async #callGetter(...paramaters: Parameters): Promise<T> {
+        return this.getter(...paramaters);
+    }
+
     async get(...parameters: Parameters) {
         if (!this.value || Date.now() - this.lastUpdate > this.timeout) {
-            const value = await this.getter(...parameters);
+            const refresh = this.#callGetter(...parameters).then((value) => {
+                this.value = value;
+                this.lastUpdate = Date.now();
 
-            this.value = value;
-            this.lastUpdate = Date.now();
+                return value;
+            });
 
-            return value;
+            if (!this.value) return await refresh;
+
+            return this.value;
         }
 
         return this.value;
