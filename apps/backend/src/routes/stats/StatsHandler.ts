@@ -36,7 +36,7 @@ StatsHandler.get("/elo", useValidation(RangeQuerySchema, { query: true }), async
 
     const { range } = req.query;
 
-    const stats = respond(
+    respond(
         res,
         StatusCodes.OK,
         fillIfEmpty(
