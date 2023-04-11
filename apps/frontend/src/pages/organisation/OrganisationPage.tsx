@@ -9,6 +9,7 @@ import { useAllOrganisations } from "../../hooks/organisation/useAllOrganisation
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 import { useOrganisationStore } from "../../state/organisation";
+import { useTokenStore } from "../../state/token";
 import { CreateOrganisationModal } from "./CreateOrganisationModal";
 
 export const OrganisationPage: FC = () => {
@@ -16,6 +17,7 @@ export const OrganisationPage: FC = () => {
         useOrganisationStore();
 
     const { user } = useAuthStore();
+    const { setToken } = useTokenStore();
 
     const { data: organisations } = useAllOrganisations();
 
@@ -80,6 +82,9 @@ export const OrganisationPage: FC = () => {
                         ))}
                 </tbody>
             </Table>
+            <SimpleButton type={"button"} onClick={() => setToken("")}>
+                {t("login.logout")}
+            </SimpleButton>
         </div>
     );
 };

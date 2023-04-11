@@ -13,6 +13,7 @@ export default {
     },
     login: {
         label: "Prijava",
+        logout: "Odjava",
         siteRestriction: "Prijava je trenutno dostupna samo za %1 i %2 račune",
     },
     navbar: {
