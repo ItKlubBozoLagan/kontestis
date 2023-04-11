@@ -9,6 +9,7 @@ import { PermissionsModal } from "../../../components/PermissionsModal";
 import { useAllUsers } from "../../../hooks/user/useAllUsers";
 import { useModifyUser } from "../../../hooks/user/useModifyUser";
 import { useAuthStore } from "../../../state/auth";
+import { R } from "../../../util/remeda";
 
 type Properties = {
     user: FullUser;
@@ -72,7 +73,11 @@ export const AdminUsersPage: FC = () => {
         <div tw={"w-full flex flex-col gap-5"}>
             <span tw={"text-3xl"}>Users</span>
             <div tw={"w-full flex flex-col gap-5"}>
-                {(users ?? []).map((user) => (
+                {R.sortBy(
+                    users ?? [],
+                    (u) => !hasAdminPermission(u.permissions, AdminPermissions.ADMIN),
+                    (u) => u.full_name
+                ).map((user) => (
                     <MemberBox user={user} key={user.id.toString()} />
                 ))}
             </div>
