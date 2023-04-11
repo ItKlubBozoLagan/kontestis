@@ -10,7 +10,6 @@ import { extractUser } from "../../extractors/extractUser";
 import { processUserFromTokenData, verifyToken } from "../../lib/google";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
-import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
 const AuthHandler = Router();
@@ -89,26 +88,14 @@ AuthHandler.get("/", async (req, res) => {
     return respond(
         res,
         StatusCodes.OK,
-        R.map(
-            R.filter(
-                users,
-                (user) => typeof knownUsersByUserId[user.id.toString()] !== "undefined"
-            ),
-            (user) =>
-                R.addProp(
-                    R.addProp(
-                        R.addProp(
-                            user,
-                            "full_name",
-                            knownUsersByUserId[user.id.toString()].full_name
-                        ),
-                        "email",
-                        knownUsersByUserId[user.id.toString()].email
-                    ),
-                    "picture_url",
-                    knownUsersByUserId[user.id.toString()].picture_url
-                )
-        )
+        users
+            .filter((user) => typeof knownUsersByUserId[user.id.toString()] !== "undefined")
+            .map((user) => ({
+                ...user,
+                full_name: knownUsersByUserId[user.id.toString()].full_name,
+                email: knownUsersByUserId[user.id.toString()].email,
+                picture_url: knownUsersByUserId[user.id.toString()].picture_url,
+            }))
     );
 });
 
