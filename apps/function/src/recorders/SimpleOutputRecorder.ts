@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer";
 import { ChildProcessWithoutNullStreams } from "node:child_process";
+import { performance } from "node:perf_hooks";
 
 export type OutputRecord =
     | {
