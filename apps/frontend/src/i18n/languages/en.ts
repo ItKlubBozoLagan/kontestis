@@ -162,6 +162,13 @@ const I18nEn = {
                         statement: "Description",
                         timeLimit: "Time limit",
                         memoryLimit: "Memory limit",
+                        evaluationVariant: {
+                            label: "Evaluation variant",
+                            plain: "Plain",
+                            checker: "Checker",
+                            interactive: "Interactive",
+                        },
+                        evaluationLanguage: "Evaluation language",
                         evaluationScript: "Evaluation script (optional)",
                         solutionLanguage: "Solution language",
                         solutionCode: "Solution code",

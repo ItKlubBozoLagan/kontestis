@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledInput } from "../../../../components/TitledInput";
+import { TitledSwitch } from "../../../../components/TitledSwitch";
 import { Translated } from "../../../../components/Translated";
 import { useContestContext } from "../../../../context/constestContext";
 import { useCreateProblem } from "../../../../hooks/problem/useCreateProblem";
@@ -16,6 +17,8 @@ import { ModalStyles } from "../../../../util/ModalStyles";
 const CreateProblemSchema = z.object({
     title: z.string().min(1),
     description: z.string().min(1),
+    evaluation_variant: z.string(),
+    evaluation_language: z.string(),
     evaluation_script: z.string(),
     time_limit_millis: z.coerce.number(),
     memory_limit_megabytes: z.coerce.number(),
@@ -37,6 +40,9 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
         resolver: zodResolver(CreateProblemSchema),
         defaultValues: {
             solution_language: "python",
+            evaluation_variant: "plain",
+            evaluation_language: "python",
+            evaluation_script: "",
             tags: [],
         },
     });
@@ -50,13 +56,10 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
 
-        createMutation.mutate({
-            ...data,
-            evaluation_script:
-                data.evaluation_script.trim().length > 0 ? data.evaluation_script : undefined,
-            evaluation_variant: data.evaluation_script.trim().length > 0 ? "script" : "plain",
-        });
+        createMutation.mutate(data);
     });
+
+    const [variant, setVariant] = useState("plain");
 
     useEffect(() => {
         if (!createMutation.isSuccess) return;
@@ -102,7 +105,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         {t("contests.management.individual.problems.createModal.statement")}
                     </span>
                     <textarea
-                        tw={"w-full h-28 resize-none font-mono text-sm"}
+                        tw={"w-full h-24 resize-none font-mono text-sm"}
                         {...register("description")}
                     ></textarea>
                     <div tw={"flex gap-2"}>
@@ -125,12 +128,56 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                     </div>
 
                     <span tw={"mt-2"}>
-                        {t("contests.management.individual.problems.createModal.evaluationScript")}
+                        {t(
+                            "contests.management.individual.problems.createModal.evaluationVariant.label"
+                        )}
                     </span>
-                    <textarea
-                        tw={"w-full h-32 resize-none font-mono text-sm"}
-                        {...register("evaluation_script")}
-                    ></textarea>
+                    <TitledSwitch
+                        choice={["Plain", "Checker"]}
+                        onChange={(value) => {
+                            setValue("evaluation_variant", value === "Plain" ? "plain" : "checker");
+                            setVariant(value === "Plain" ? "plain" : "checker");
+                        }}
+                    />
+                    {variant !== "plain" && (
+                        <div tw={"flex flex-col gap-2"}>
+                            <TitledSwitch
+                                choice={["Standard", "Interactive"]}
+                                defaultIndex={0}
+                                onChange={(value) => {
+                                    setValue(
+                                        "evaluation_variant",
+                                        value === "Standard" ? "checker" : "interactive"
+                                    );
+                                    setVariant(value === "Standard" ? "checker" : "interactive");
+                                }}
+                            />
+                            <span tw={"mt-2"}>
+                                {t(
+                                    "contests.management.individual.problems.createModal.evaluationLanguage"
+                                )}
+                            </span>
+                            <select
+                                name={"evaluation_language"}
+                                onChange={(event) => {
+                                    setValue("evaluation_language", event.target.value);
+                                }}
+                            >
+                                <option value="python">Python</option>
+                                <option value="cpp">C++</option>
+                                <option value="c">C</option>
+                            </select>
+                            <span tw={"mt-2"}>
+                                {t(
+                                    "contests.management.individual.problems.createModal.evaluationScript"
+                                )}
+                            </span>
+                            <textarea
+                                tw={"w-full h-24 resize-none font-mono text-sm"}
+                                {...register("evaluation_script")}
+                            ></textarea>
+                        </div>
+                    )}
                     <span tw={"mt-2"}>
                         {t("contests.management.individual.problems.createModal.solutionLanguage")}
                     </span>
@@ -146,13 +193,13 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         {t("contests.management.individual.problems.createModal.solutionCode")}
                     </span>
                     <textarea
-                        tw={"w-full h-32 resize-none font-mono text-sm"}
+                        tw={"w-full h-24 resize-none font-mono text-sm"}
                         {...register("solution_code")}
                     ></textarea>
-                    <SimpleButton tw={"mt-2"}>
-                        {t("contests.management.individual.problems.createModal.createButton")}
-                    </SimpleButton>
                 </div>
+                <SimpleButton tw={"mt-2"}>
+                    {t("contests.management.individual.problems.createModal.createButton")}
+                </SimpleButton>
             </form>
         </Modal>
     );

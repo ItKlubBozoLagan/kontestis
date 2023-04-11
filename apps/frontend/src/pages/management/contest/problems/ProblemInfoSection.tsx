@@ -27,6 +27,8 @@ const ModifyProblemSchema = z.object({
     evaluation_script: z.string(),
     time_limit_millis: z.coerce.number(),
     memory_limit_megabytes: z.coerce.number(),
+    evaluation_language: z.string(),
+    evaluation_variant: z.string(),
     solution_code: z.string(),
     solution_language: z.string(),
     tags: z.array(z.string()),
@@ -50,6 +52,8 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             memory_limit_megabytes: problem?.memory_limit_megabytes ?? 0,
             solution_language: problem?.solution_language ?? "",
             solution_code: problem?.solution_code ?? "",
+            evaluation_variant: problem.evaluation_variant,
+            evaluation_language: problem.evaluation_language,
         },
     });
 
@@ -60,12 +64,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
 
-        modifyMutation.mutate({
-            ...data,
-            evaluation_script:
-                data.evaluation_script.trim().length > 0 ? data.evaluation_script : undefined,
-            evaluation_variant: data.evaluation_script.trim().length > 0 ? "script" : "plain",
-        });
+        modifyMutation.mutate(data);
     });
 
     useEffect(() => {

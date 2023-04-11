@@ -1,6 +1,6 @@
 export type EvaluationLanguage = "c" | "cpp" | "python";
 
-export type EvaluationVariant = "plain" | "script" | "interactive";
+export type EvaluationVariant = "plain" | "checker" | "interactive";
 
 export type SuccessfulEvaluationResult =
     | {

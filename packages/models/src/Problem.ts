@@ -23,8 +23,12 @@ export type ProblemV3 = ProblemV2 & {
     tags: string[];
 };
 
+export type ProblemV4 = ProblemV3 & {
+    evaluation_language?: EvaluationLanguage;
+};
+
+export type Problem = ProblemV4;
+
 export type ProblemWithScore = Problem & {
     score: number;
 };
-
-export type Problem = ProblemV3;

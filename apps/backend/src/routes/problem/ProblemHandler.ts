@@ -20,17 +20,17 @@ import ClusterHandler from "./cluster/ClusterHandler";
 const ProblemHandler = Router();
 
 ProblemHandler.use("/:problem_id/cluster", ClusterHandler);
-
-enum EvaluationSchema {
-    plain = "plain",
-    script = "script",
-    interactive = "interactive",
-}
-
 const problemSchema = Type.Object({
     title: Type.String(),
     description: Type.String(),
-    evaluation_variant: Type.Enum(EvaluationSchema),
+    evaluation_variant: Type.Union([
+        Type.Literal("plain"),
+        Type.Literal("checker"),
+        Type.Literal("interactive"),
+    ]),
+    evaluation_language: Type.Optional(
+        Type.Union([Type.Literal("python"), Type.Literal("c"), Type.Literal("cpp")])
+    ),
     evaluation_script: Type.Optional(Type.String()),
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10_000 }),
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 10_240 }),
@@ -42,7 +42,10 @@ const problemSchema = Type.Object({
 ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, res) => {
     const contest = await extractModifiableContest(req);
 
-    if (req.body.evaluation_variant !== "plain" && !req.body.evaluation_script)
+    if (
+        req.body.evaluation_variant !== "plain" &&
+        (!req.body.evaluation_script || !req.body.evaluation_language)
+    )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const problem: Problem = {
@@ -52,6 +55,7 @@ ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, re
         description: req.body.description,
         evaluation_variant: req.body.evaluation_variant,
         evaluation_script: req.body.evaluation_script,
+        evaluation_language: req.body.evaluation_language,
         time_limit_millis: req.body.time_limit_millis,
         memory_limit_megabytes: req.body.memory_limit_megabytes,
         solution_language: req.body.solution_language,
@@ -118,7 +122,10 @@ ProblemHandler.delete("/:problem_id", async (req, res) => {
 ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
-    if (req.body.evaluation_variant !== "plain" && !req.body.evaluation_script)
+    if (
+        req.body.evaluation_variant !== "plain" &&
+        (!req.body.evaluation_script || !req.body.evaluation_language)
+    )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     await Database.update(
@@ -129,6 +136,7 @@ ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, r
             time_limit_millis: req.body.time_limit_millis,
             memory_limit_megabytes: req.body.memory_limit_megabytes,
             evaluation_variant: req.body.evaluation_variant,
+            evaluation_language: req.body.evaluation_language,
             evaluation_script: req.body.evaluation_script,
             solution_language: req.body.solution_language,
             solution_code: req.body.solution_code,
