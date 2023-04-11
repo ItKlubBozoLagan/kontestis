@@ -114,7 +114,7 @@ export const YearActivityCalendar = <T extends string>({
     return (
         <div
             tw={
-                "w-full flex flex-col gap-2 bg-neutral-100 border border-solid border-neutral-200 p-3"
+                "w-full flex flex-col gap-2 bg-neutral-100 border border-solid border-neutral-400 p-3"
             }
         >
             <div tw={"flex justify-between items-center gap-4"}>

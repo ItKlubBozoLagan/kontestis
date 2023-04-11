@@ -17,10 +17,11 @@ export type Dataset = {
     value: number;
 };
 
+// woah, that's a lot of props
+//  TODO: clean up
 export type Properties<T extends string> = {
     title: string;
     dataset: Dataset[];
-    activeRange: StatisticRange;
     previousPeriodChange?: number;
     loading?: boolean;
     onRangeChange?: (range: StatisticRange) => void;
@@ -30,16 +31,23 @@ export type Properties<T extends string> = {
     tension?: number;
 } & (
     | {
-          toggles?: undefined;
-          onToggleUpdate?: undefined;
+          live?: false;
+          activeRange: StatisticRange;
       }
-    | {
-          // toggles are supposed to be settings that can be turned on or off (true of false)
-          //  e.g. logins can show a graph of non-unique (all) and unique logins, here unique is a toggle
-          toggles: T[];
-          onToggleUpdate?: (toggle: T, value: boolean) => void;
-      }
-);
+    | { live: true; activeRange?: undefined }
+) &
+    (
+        | {
+              toggles?: undefined;
+              onToggleUpdate?: undefined;
+          }
+        | {
+              // toggles are supposed to be settings that can be turned on or off (true of false)
+              //  e.g. logins can show a graph of non-unique (all) and unique logins, here unique is a toggle
+              toggles: T[];
+              onToggleUpdate?: (toggle: T, value: boolean) => void;
+          }
+    );
 
 export const HistoryLineChart = <T extends string>({
     title,
@@ -49,6 +57,7 @@ export const HistoryLineChart = <T extends string>({
     onRangeChange,
     previousPeriodChange,
     dark,
+    live,
     toggles,
     onToggleUpdate,
     yMin,
@@ -64,9 +73,9 @@ export const HistoryLineChart = <T extends string>({
         () =>
             R.pipe(
                 dataset,
-                R.reverse(),
+                !live ? R.reverse() : R.identity,
                 R.map.indexed(({ time, value }, index) => ({
-                    x: RangeFormatters[activeRange](time, index, t),
+                    x: !live ? RangeFormatters[activeRange](time, index, t) : time.toISOString(),
                     y: value,
                 }))
             ),
@@ -95,7 +104,7 @@ export const HistoryLineChart = <T extends string>({
     return (
         <div
             tw={
-                "w-full flex flex-col gap-4 bg-neutral-100 border border-solid border-neutral-200 p-2"
+                "w-full flex flex-col gap-4 bg-neutral-100 border border-solid border-neutral-400 p-2"
             }
             css={dark ? tw`bg-neutral-200 border-2 border-neutral-400` : ""}
         >
@@ -148,23 +157,25 @@ export const HistoryLineChart = <T extends string>({
                             ))}
                         </div>
                     )}
-                    <div tw={"flex"}>
-                        {(["24h", "7d", "30d", "1y"] as const).map((it, index) => (
-                            <div
-                                key={it}
-                                tw={
-                                    "px-1.5 p-0.5 bg-neutral-300 border border-solid border-neutral-400 text-sm select-none cursor-pointer"
-                                }
-                                css={[
-                                    range === it ? tw`bg-neutral-200` : "",
-                                    index !== 0 ? tw`border-l-0` : "",
-                                ]}
-                                onClick={() => setRange(it)}
-                            >
-                                {it}
-                            </div>
-                        ))}
-                    </div>
+                    {!live && (
+                        <div tw={"flex"}>
+                            {(["24h", "7d", "30d", "1y"] as const).map((it, index) => (
+                                <div
+                                    key={it}
+                                    tw={
+                                        "px-1.5 p-0.5 bg-neutral-300 border border-solid border-neutral-400 text-sm select-none cursor-pointer"
+                                    }
+                                    css={[
+                                        range === it ? tw`bg-neutral-200` : "",
+                                        index !== 0 ? tw`border-l-0` : "",
+                                    ]}
+                                    onClick={() => setRange(it)}
+                                >
+                                    {it}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
             <div tw={"w-full relative flex pr-2"}>
@@ -192,6 +203,9 @@ export const HistoryLineChart = <T extends string>({
                                 y: {
                                     min: yMin ?? 0,
                                     max: yMax,
+                                },
+                                x: {
+                                    display: live ? false : undefined,
                                 },
                             },
                         }}
