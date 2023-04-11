@@ -70,6 +70,7 @@ const evaluateTestcases = async (
         .post<EvaluationResult>(
             "",
             {
+                problem_type: "checker",
                 language: problemDetails.language,
                 code: problemDetails.code,
                 time_limit: problem.time_limit_millis,

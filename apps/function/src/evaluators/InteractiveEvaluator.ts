@@ -7,8 +7,8 @@ import { TestcaseV1 } from "../types/TestcaseV1";
 import { getEvaluationResultFromCheckerFunction } from "./SimpleCheckerEvaluator";
 
 export const evaluateInteractive = async (
-    processRunner: () => ChildProcessWithoutNullStreams,
-    checkerRunner: () => ChildProcessWithoutNullStreams,
+    processRunner: () => Promise<ChildProcessWithoutNullStreams>,
+    checkerRunner: () => Promise<ChildProcessWithoutNullStreams>,
     testcases: TestcaseV1[],
     timeLimit: number,
     memoryLimit: number
@@ -30,8 +30,8 @@ export const evaluateInteractive = async (
         continueEvaluation = false;
 
         const result = await recordInteractiveOutput(
-            processRunner(),
-            checkerRunner(),
+            await processRunner(),
+            await checkerRunner(),
             Buffer.from(testcase.in, "utf8")
         );
 

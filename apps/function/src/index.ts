@@ -4,6 +4,7 @@ import { json } from "express";
 import Express from "express";
 
 import { getSimplePythonCheckerFunction } from "./checkers/SimpleChecker";
+import { evaluateInteractive } from "./evaluators/InteractiveEvaluator";
 import { evaluateSimpleChecker } from "./evaluators/SimpleCheckerEvaluator";
 import { recordOutputWithMemory } from "./recorders/RecordOutputWithMemory";
 import { recordSimpleOutput } from "./recorders/SimpleOutputRecorder";
@@ -12,8 +13,14 @@ import { getRunnerFunction } from "./runners/GenericRunner";
 const app = Express();
 
 const LanguageSchema = Type.Union([Type.Literal("python"), Type.Literal("c"), Type.Literal("cpp")]);
+const TypeSchema = Type.Union([
+    Type.Literal("plain"),
+    Type.Literal("checker"),
+    Type.Literal("interactive"),
+]);
 
 const schema = Type.Object({
+    problem_type: TypeSchema,
     language: LanguageSchema,
     code: Type.String(),
     time_limit: Type.Number(),
@@ -25,6 +32,8 @@ const schema = Type.Object({
             out: Type.String(),
         })
     ),
+    evaluator: Type.Optional(Type.String()),
+    evaluator_language: Type.Optional(LanguageSchema),
 });
 
 const typeCheck = TypeCompiler.Compile(schema);
@@ -64,7 +73,7 @@ app.use(json({ limit: "50mb" }), (req, _, next) => {
 app.post("/", async (req, res) => {
     if (!typeCheck.Check(req.body)) return res.status(400).end();
 
-    const submission: Static<typeof schema> & { evaluator?: string } = req.body;
+    const submission: Static<typeof schema> = req.body;
 
     const runnerFunction = await getRunnerFunction(submission.code, submission.language);
 
@@ -79,6 +88,37 @@ app.post("/", async (req, res) => {
         );
     }
 
+    if (req.body.problem_type === "interactive") {
+        if (!submission.evaluator || !submission.evaluator_language) return res.status(400);
+
+        const checkerRunnerFunction = await getRunnerFunction(
+            submission.evaluator,
+            submission.evaluator_language
+        );
+
+        if (checkerRunnerFunction.type !== "success") {
+            return res.status(200).send(
+                submission.testcases.map((testcase) => ({
+                    testCaseId: testcase.id,
+                    type: "error",
+                    verdict: "evaluation_error",
+                }))
+            );
+        }
+
+        return res
+            .status(200)
+            .json(
+                await evaluateInteractive(
+                    runnerFunction.runner,
+                    checkerRunnerFunction.runner,
+                    submission.testcases,
+                    submission.time_limit,
+                    submission.memory_limit
+                )
+            );
+    }
+
     return res
         .status(200)
         .json(
@@ -87,7 +127,12 @@ app.post("/", async (req, res) => {
                     recordOutputWithMemory(await runnerFunction.runner(), b, recordSimpleOutput),
                 submission.testcases,
                 getSimplePythonCheckerFunction(
-                    Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
+                    Buffer.from(
+                        req.body.problem_type === "plain"
+                            ? plainTextEvaluatorBase64
+                            : submission.evaluator ?? plainTextEvaluatorBase64,
+                        "base64"
+                    )
                 ),
                 submission.time_limit,
                 submission.memory_limit
