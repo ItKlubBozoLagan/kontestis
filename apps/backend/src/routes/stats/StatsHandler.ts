@@ -82,36 +82,29 @@ StatsHandler.get("/elo", useValidation(RangeQuerySchema, { query: true }), async
 StatsHandler.get(
     "/submissions",
     useValidation(
-        Type.Intersect([
-            RangeQuerySchema,
-            Type.Object({
-                accepted: Type.Optional(BooleanStringSchema),
-            }),
-        ]),
+        Type.Object({
+            accepted: Type.Optional(BooleanStringSchema),
+        }),
         { query: true }
     ),
     async (req, res) => {
         const user = await extractUser(req);
         const organisation = await extractCurrentOrganisation(req);
 
-        const { range, accepted } = req.query;
+        const { accepted } = req.query;
 
         respond(
             res,
             StatusCodes.OK,
-            fillIfEmpty(
-                await Influx.aggregateCountPerWindow(
-                    "submissions",
-                    getWindowFromRange(range),
-                    {
-                        userId: user.id.toString(),
-                        orgId: organisation.id.toString(),
-                        successful: !accepted || accepted === "false" ? undefined : accepted,
-                    },
-                    `-${range}`
-                ),
-                "count",
-                range
+            await Influx.aggregateCountPerWindow(
+                "submissions",
+                "1d",
+                {
+                    userId: user.id.toString(),
+                    orgId: organisation.id.toString(),
+                    successful: !accepted || accepted === "false" ? undefined : accepted,
+                },
+                "-1y"
             )
         );
     }

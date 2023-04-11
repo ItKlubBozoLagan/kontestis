@@ -16,5 +16,5 @@ export const RangeFormatters: Record<StatisticRange, ChartDateFormatFunction> = 
     "30d": (date, _, t) =>
         `${date.getDate() + 1}. ${splitAndIndex(t("helper.shortMonthNames"), date.getMonth())}`,
     "1y": (date, _, t) =>
-        `${splitAndIndex(t("helper.shortMonthNames"), date.getMonth())}. ${date.getFullYear()}.`,
+        `${splitAndIndex(t("helper.shortMonthNames"), date.getMonth())} ${date.getFullYear()}.`,
 };

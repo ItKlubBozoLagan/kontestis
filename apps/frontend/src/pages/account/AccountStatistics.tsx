@@ -1,14 +1,16 @@
 import { FC, useMemo, useState } from "react";
 
 import { HistoryLineChart } from "../../components/HistoryLineChart";
+import { YearActivityCalendar } from "../../components/YearActivityCalendar";
 import { StatisticRange } from "../../hooks/stats/types";
 import { useEloStat } from "../../hooks/stats/useEloStat";
+import { useSubmissionStat } from "../../hooks/stats/useSubmissionStat";
 import { useFormatCountStat } from "../../hooks/useFormatCountStat";
 
 export const AccountStatistics: FC = () => {
     const [eloRange, setEloRange] = useState<StatisticRange>("24h");
 
-    const { data: elo, isLoading: isEloLoading } = useEloStat(eloRange);
+    const { data: elo, isLoading: isEloLoading } = useEloStat({ range: eloRange });
 
     const eloDataset = useFormatCountStat(elo);
 
@@ -23,8 +25,23 @@ export const AccountStatistics: FC = () => {
         return [min - 50, max + 50];
     }, [eloDataset]);
 
+    const [submissionsAccepted, setSubmissionsAccepted] = useState(false);
+
+    const { data: submissions, isLoading: isSubmissionsLoading } = useSubmissionStat({
+        accepted: submissionsAccepted,
+    });
+
+    const submissionDataset = useFormatCountStat(submissions);
+
     return (
-        <div tw={"w-2/3 mt-4 flex flex-col items-center gap-2"}>
+        <div tw={"w-max min-w-[90%] mt-4 flex flex-col items-center gap-8"}>
+            <YearActivityCalendar
+                title={"Submissions"}
+                dataset={submissionDataset}
+                loading={isSubmissionsLoading}
+                toggles={["show accepted"]}
+                onToggleUpdate={(_, value) => setSubmissionsAccepted(value)}
+            />
             <HistoryLineChart
                 title={"Elo"}
                 dataset={eloDataset}

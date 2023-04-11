@@ -1,11 +1,4 @@
-import {
-    CategoryScale,
-    Chart as ChartJS,
-    LinearScale,
-    LineElement,
-    PointElement,
-    Tooltip,
-} from "chart.js";
+import { CategoryScale, Chart as ChartJS, LinearScale, LineElement, PointElement } from "chart.js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { FiMinus, FiTrendingDown, FiTrendingUp } from "react-icons/all";
@@ -17,7 +10,7 @@ import { RangeFormatters } from "../util/charts";
 import { R } from "../util/remeda";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale);
 
 export type Dataset = {
     time: Date;
@@ -32,7 +25,6 @@ export type Properties<T extends string> = {
     loading?: boolean;
     onRangeChange?: (range: StatisticRange) => void;
     dark?: boolean;
-    baseline?: number;
     yMin?: number;
     yMax?: number;
     tension?: number;
@@ -103,9 +95,9 @@ export const HistoryLineChart = <T extends string>({
     return (
         <div
             tw={
-                "w-full flex flex-col gap-4 bg-neutral-50 border-2 border-solid border-neutral-400 p-2"
+                "w-full flex flex-col gap-4 bg-neutral-100 border border-solid border-neutral-200 p-2"
             }
-            css={dark ? tw`bg-neutral-200` : ""}
+            css={dark ? tw`bg-neutral-200 border-2 border-neutral-400` : ""}
         >
             <div tw={"flex justify-between items-center gap-4"}>
                 <div tw={"flex items-center gap-3"}>
@@ -196,11 +188,6 @@ export const HistoryLineChart = <T extends string>({
                         options={{
                             responsive: true,
                             animation: false,
-                            plugins: {
-                                tooltip: {
-                                    enabled: true,
-                                },
-                            },
                             scales: {
                                 y: {
                                     min: yMin ?? 0,
