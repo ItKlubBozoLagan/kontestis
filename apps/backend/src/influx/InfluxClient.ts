@@ -33,6 +33,8 @@ const InfluxUIntegerSymbol = Symbol.for("influxdb/types/uinteger");
 
 export type InfluxUInteger = { [InfluxUIntegerSymbol]: bigint; asBigInt: bigint };
 
+export type StringLiteral<T extends string> = string extends T ? never : T;
+
 export const createInfluxUInt = (value: bigint | number): InfluxUInteger => {
     if (typeof value === "number" && value > Number.MAX_SAFE_INTEGER)
         throw new Error("createInfluxUInt: number is too big (number unsafe)");
@@ -108,10 +110,11 @@ export type InfluxDataSchema = Record<string, InfluxMeasurement>;
 export type InfluxQueryResult<T extends InfluxDataSchema, K extends keyof T> = (T[K]["values"] & {
     time: Date;
 })[];
-export type InfluxCountResult = {
+export type InfluxAggregateNumberResult<K extends string> = ({
     time: Date;
-    count: number;
-}[];
+} & {
+    [key in StringLiteral<K>]: number;
+})[];
 
 export type AllowedCountWindows = "1h" | "1d" | "1mo";
 
@@ -147,13 +150,24 @@ export type InfluxClient<T extends InfluxDataSchema> = {
         tags?: Partial<Record<T[K]["tags"][number], string>>,
         range?: DateRange,
         uniqueBy?: T[K]["tags"][number]
-    ): Promise<InfluxCountResult>;
+    ): Promise<InfluxAggregateNumberResult<"count">>;
+    aggregateLastPerWindow<K extends keyof T & string>(
+        measurement: K,
+        window: AllowedCountWindows,
+        tags?: Partial<Record<T[K]["tags"][number], string>>,
+        range?: DateRange
+    ): Promise<InfluxAggregateNumberResult<"last">>;
     totalInRange<K extends keyof T & string>(
         measurement: K,
         tags?: Partial<Record<T[K]["tags"][number], string>>,
         range?: DateRange,
         uniqueBy?: T[K]["tags"][number]
     ): Promise<bigint>;
+    lastNumberInRange<K extends keyof T & string>(
+        measurement: K,
+        tags?: Partial<Record<T[K]["tags"][number], string>>,
+        range?: DateRange
+    ): Promise<number>;
     // will add more complex delete mechanics as we need them
     dropMeasurement<K extends keyof T & string>(measurement: K): Promise<void>;
     flush(): Promise<void>;
@@ -175,6 +189,29 @@ const defaultRowMapper = (
             ])
         )
     );
+};
+
+const formatAggregateNumberResult = <K extends string>(
+    source: Record<string, unknown>[],
+    valueKey: StringLiteral<K>
+): InfluxAggregateNumberResult<K> => {
+    return R.pipe(
+        source,
+        R.filter((it) => "_time" in it && it["_time"] instanceof Date),
+        R.groupBy((it) => (it["_time"] as Date).toISOString()),
+        R.toPairs,
+        R.map(([date, entries]) => ({
+            time: new Date(date),
+            [valueKey]: Number(
+                ((value: number | bigint | InfluxUInteger) =>
+                    typeof value === "number" || typeof value === "bigint"
+                        ? value
+                        : value.asBigInt)(
+                    entries.find((it) => "_value" in it)!._value as number | InfluxUInteger
+                )
+            ),
+        }))
+    ) as InfluxAggregateNumberResult<K>;
 };
 
 export const createInfluxClient = <T extends InfluxDataSchema>(
@@ -346,16 +383,29 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
 
             const result = await influxReadApi.collectRows(query, defaultRowMapper);
 
-            return R.pipe(
-                result,
-                R.filter((it) => "_time" in it && it["_time"] instanceof Date),
-                R.groupBy((it) => (it["_time"] as Date).toISOString()),
-                R.toPairs,
-                R.map(([date, entries]) => ({
-                    time: new Date(date),
-                    count: Number(entries.find((it) => "_value" in it)!._value),
-                }))
-            ) as InfluxCountResult;
+            return formatAggregateNumberResult(result, "count");
+        },
+        aggregateLastPerWindow: async <K extends keyof T & string>(
+            measurement: K,
+            window: AllowedCountWindows,
+            tags?: Partial<Record<T[K]["tags"][number], string>>,
+            range?: DateRange
+        ) => {
+            const query =
+                generateBaseQuery(measurement, tags, range) +
+                `
+                    |> group(columns: ["_start"])
+                    |> aggregateWindow(every: ${fluxExpression(
+                        window
+                    )}, fn: last, timeSrc: "_start")
+                    |> sort(columns: ["_time"], desc: true)                    
+                `;
+
+            debugFunction("[InfluxDB] Querying", query.toString());
+
+            const result = await influxReadApi.collectRows(query, defaultRowMapper);
+
+            return formatAggregateNumberResult(result, "last");
         },
         totalInRange: async <K extends keyof T & string>(
             measurement: K,
@@ -378,15 +428,33 @@ export const createInfluxClient = <T extends InfluxDataSchema>(
                 |> count()
             `;
 
-            const result = await influxReadApi.collectRows(query, defaultRowMapper);
-
             debugFunction("[InfluxDB] Querying", query.toString());
+
+            const result = await influxReadApi.collectRows(query, defaultRowMapper);
 
             if (result.length === 0) return 0n;
 
             if (result.length !== 1) throw new Error("influx: totalInRange: invalid result length");
 
             return result[0]["_value"] as bigint;
+        },
+        lastNumberInRange: async <K extends keyof T & string>(
+            measurement: K,
+            tags?: Partial<Record<T[K]["tags"][number], string>>,
+            range?: DateRange
+        ) => {
+            const query = generateBaseQuery(measurement, tags, range) + "|> last()";
+
+            debugFunction("[InfluxDB] Querying", query.toString());
+
+            const result = await influxReadApi.collectRows(query, defaultRowMapper);
+
+            if (result.length === 0) return -1;
+
+            // TODO: unsafe assumption, fix
+            const value = result[0]["_value"] as number | InfluxUInteger;
+
+            return typeof value !== "number" ? Number(value.asBigInt) : value;
         },
         dropMeasurement: <K extends keyof T & string>(measurement: K) => {
             return influxDeleteApi.postDelete({

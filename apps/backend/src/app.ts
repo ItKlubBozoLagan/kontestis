@@ -26,6 +26,7 @@ import { startEloTask } from "./tasks/eloTask";
 import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
+import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 
 declare global {
     interface BigInt {
@@ -133,6 +134,6 @@ Promise.allSettled([
     app.listen(Globals.port, () => {
         Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
 
-        for (const task of [startEloTask, startInfluxFlushTask]) task();
+        for (const task of [startEloTask, startInfluxFlushTask, startEloInfluxTask]) task();
     });
 });

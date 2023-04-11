@@ -1,3 +1,9 @@
+import { Snowflake } from "@kontestis/models";
+
+import { Database } from "../database/Database";
+import { Influx } from "../influx/Influx";
+import { createInfluxUInt } from "../influx/InfluxClient";
+
 export type ContestMemberLeaderboardInfo = {
     currentGlobalElo: number;
 
@@ -35,7 +41,6 @@ export const computeELODifference = (
     if (leaderboard.length === 0) return 0;
 
     const userScores = leaderboard.map((mem) => mem.problemPoints.reduce((sum, p) => sum + p, 0));
-
     const userRatings = leaderboard.map((mem) => mem.currentGlobalElo);
 
     const score = targetMember.problemPoints.reduce((sum, p) => sum + p, 0);
@@ -55,4 +60,34 @@ export const computeELODifference = (
     const result = Math.round((performanceRating - currentRating) / 2);
 
     return Number.isNaN(result) ? 0 : result;
+};
+
+export const applyUserEloInInflux = async (userId: Snowflake) => {
+    const organisations = await Database.selectOneFrom(
+        "organisation_members",
+        ["organisation_id", "elo"],
+        {
+            user_id: userId,
+        }
+    );
+
+    for (const { organisation_id, elo } of [organisations!]) {
+        const tags = {
+            userId: userId.toString(),
+            orgId: organisation_id.toString(),
+        };
+
+        const last = await Influx.lastNumberInRange("elo", tags);
+
+        // if it's not matched
+        if (last !== elo)
+            await Influx.insert(
+                "elo",
+                tags,
+                {
+                    score: createInfluxUInt(elo),
+                },
+                new Date()
+            );
+    }
 };

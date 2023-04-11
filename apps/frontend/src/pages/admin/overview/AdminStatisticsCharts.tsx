@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 
 import { HistoryLineChart } from "../../../components/HistoryLineChart";
-import { CountStatisticRange } from "../../../hooks/stats/types";
+import { StatisticRange } from "../../../hooks/stats/types";
 import { useAdminActivityStat } from "../../../hooks/stats/useAdminActivityStat";
 import {
     AdminLoginStatParamaters,
@@ -11,7 +11,7 @@ import { useFormatCountStat } from "../../../hooks/useFormatCountStat";
 import { useTranslation } from "../../../hooks/useTranslation";
 
 export const AdminStatisticsCharts: FC = () => {
-    const [activityRange, setActivityRange] = useState<CountStatisticRange>("24h");
+    const [activityRange, setActivityRange] = useState<StatisticRange>("24h");
     const [loginParameters, setLoginParameters] = useState<AdminLoginStatParamaters>({
         range: "24h",
         unique: false,

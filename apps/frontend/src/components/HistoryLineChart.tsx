@@ -11,7 +11,7 @@ import { Line } from "react-chartjs-2";
 import { FiMinus, FiTrendingDown, FiTrendingUp } from "react-icons/all";
 import tw, { theme } from "twin.macro";
 
-import { CountStatisticRange } from "../hooks/stats/types";
+import { StatisticRange } from "../hooks/stats/types";
 import { useTranslation } from "../hooks/useTranslation";
 import { RangeFormatters } from "../util/charts";
 import { R } from "../util/remeda";
@@ -27,12 +27,15 @@ export type Dataset = {
 export type Properties<T extends string> = {
     title: string;
     dataset: Dataset[];
-    activeRange: CountStatisticRange;
+    activeRange: StatisticRange;
     previousPeriodChange?: number;
     loading?: boolean;
-    onRangeChange?: (range: CountStatisticRange) => void;
+    onRangeChange?: (range: StatisticRange) => void;
     dark?: boolean;
     baseline?: number;
+    yMin?: number;
+    yMax?: number;
+    tension?: number;
 } & (
     | {
           toggles?: undefined;
@@ -56,8 +59,11 @@ export const HistoryLineChart = <T extends string>({
     dark,
     toggles,
     onToggleUpdate,
+    yMin,
+    yMax,
+    tension,
 }: Properties<T>) => {
-    const [range, setRange] = useState<CountStatisticRange>("24h");
+    const [range, setRange] = useState<StatisticRange>("24h");
     const [toggleStates, setToggleStates] = useState(!toggles ? [] : toggles.map(() => false));
 
     const { t } = useTranslation();
@@ -183,7 +189,7 @@ export const HistoryLineChart = <T extends string>({
                                     data: formattedDataset,
                                     borderColor: theme`colors.neutral.600`,
                                     pointRadius: 0,
-                                    tension: 0.2,
+                                    tension: tension ?? 0.2,
                                 },
                             ],
                         }}
@@ -197,7 +203,8 @@ export const HistoryLineChart = <T extends string>({
                             },
                             scales: {
                                 y: {
-                                    min: 0,
+                                    min: yMin ?? 0,
+                                    max: yMax,
                                 },
                             },
                         }}

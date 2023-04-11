@@ -1,6 +1,6 @@
 import { Static } from "@sinclair/typebox";
 
-import { AllowedCountWindows, InfluxCountResult } from "../influx/InfluxClient";
+import { AllowedCountWindows, InfluxAggregateNumberResult } from "../influx/InfluxClient";
 import { RangeQueryUnion } from "../routes/stats/schemas";
 
 type Range = Static<typeof RangeQueryUnion>;
@@ -18,7 +18,11 @@ const rangeItemLengthMap: Record<Range, number> = {
 // very simple, if empty, give array where count = 0
 //  influx will usually handle all the sorting and making the array nice
 //  unless there is no data at all, it then returns nothing
-export const fillIfEmpty = (source: InfluxCountResult, range: Range): InfluxCountResult => {
+export const fillIfEmpty = <K extends string>(
+    source: InfluxAggregateNumberResult<K>,
+    key: K,
+    range: Range
+): InfluxAggregateNumberResult<K> => {
     if (source.length > 0) return source.slice(0, rangeItemLengthMap[range]);
 
     const now = new Date();
@@ -32,18 +36,18 @@ export const fillIfEmpty = (source: InfluxCountResult, range: Range): InfluxCoun
                     now.getDate(),
                     now.getHours() - index
                 ),
-                count: 0,
-            }));
+                [key]: 0,
+            })) as InfluxAggregateNumberResult<K>;
         case "7d":
         case "30d":
             return Array.from({ length: range === "7d" ? 7 : 30 }, (_, index) => ({
                 time: new Date(now.getFullYear(), now.getMonth(), now.getDate() - index),
-                count: 0,
-            }));
+                [key]: 0,
+            })) as InfluxAggregateNumberResult<K>;
         case "1y":
             return Array.from({ length: 12 }, (_, index) => ({
                 time: new Date(now.getFullYear(), now.getMonth() - index),
-                count: 0,
-            }));
+                [key]: 0,
+            })) as InfluxAggregateNumberResult<K>;
     }
 };

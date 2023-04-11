@@ -1,4 +1,4 @@
-import { AdminPermissions } from "@kontestis/models";
+import { AdminPermissions, DEFAULT_ELO } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -9,6 +9,7 @@ import { extractCurrentOrganisation } from "../../extractors/extractOrganisation
 import { extractUser } from "../../extractors/extractUser";
 import { Influx } from "../../influx/Influx";
 import { useValidation } from "../../middlewares/useValidation";
+import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import { fillIfEmpty, getWindowFromRange } from "../../utils/stats";
 import { BooleanStringSchema } from "../../utils/types";
@@ -36,22 +37,46 @@ StatsHandler.get("/elo", useValidation(RangeQuerySchema, { query: true }), async
 
     const { range } = req.query;
 
-    respond(
-        res,
-        StatusCodes.OK,
-        fillIfEmpty(
-            await Influx.aggregateCountPerWindow(
-                "elo",
-                getWindowFromRange(range),
-                {
-                    userId: user.id.toString(),
-                    orgId: organisation.id.toString(),
-                },
-                `-${range}`
-            ),
-            range
-        )
+    const stats = fillIfEmpty(
+        await Influx.aggregateLastPerWindow(
+            "elo",
+            getWindowFromRange(range),
+            {
+                userId: user.id.toString(),
+                orgId: organisation.id.toString(),
+            },
+            `-${range}`
+        ),
+        "last",
+        range
     );
+
+    const lastBefore = await Influx.lastNumberInRange(
+        "elo",
+        {
+            userId: user.id.toString(),
+            orgId: organisation.id.toString(),
+        },
+        {
+            start: new Date(0),
+            end: `-${range}`,
+        }
+    );
+
+    const starting = lastBefore === -1 ? DEFAULT_ELO : lastBefore;
+
+    let lastEncountered = 0;
+
+    for (const stat of R.reverse(stats)) {
+        if (stat.last === 0) {
+            stat.last = lastEncountered === 0 ? starting : lastEncountered;
+            continue;
+        }
+
+        lastEncountered = stat.last;
+    }
+
+    respond(res, StatusCodes.OK, stats);
 });
 
 StatsHandler.get(
@@ -85,6 +110,7 @@ StatsHandler.get(
                     },
                     `-${range}`
                 ),
+                "count",
                 range
             )
         );

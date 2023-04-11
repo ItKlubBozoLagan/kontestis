@@ -3,7 +3,7 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Influx } from "../../influx/Influx";
-import { InfluxCountResult } from "../../influx/InfluxClient";
+import { InfluxAggregateNumberResult } from "../../influx/InfluxClient";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
 import { fillIfEmpty, getWindowFromRange } from "../../utils/stats";
@@ -18,7 +18,7 @@ AdminStatsHandler.use("/metrics", MetricsHandlers);
 const calculateDifferencePercentage = (current: number, previous: number): number =>
     previous === 0 ? (current !== 0 ? 9.99 : 0) : current / previous - 1;
 
-const sumCounts = (data: InfluxCountResult) =>
+const sumCounts = (data: InfluxAggregateNumberResult<"count">) =>
     data.reduce((accumulator, current) => accumulator + current.count, 0);
 
 AdminStatsHandler.get(
@@ -44,6 +44,7 @@ AdminStatsHandler.get(
                 `-${range}`,
                 unique === "true" ? "userId" : undefined
             ),
+            "count",
             range
         );
 
@@ -83,6 +84,7 @@ AdminStatsHandler.get(
                 undefined,
                 `-${range}`
             ),
+            "count",
             range
         );
 
