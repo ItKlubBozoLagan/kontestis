@@ -11,6 +11,7 @@ import { Breadcrumb } from "../../../../components/Breadcrumb";
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
 import { TitledInput } from "../../../../components/TitledInput";
 import { TitledSection } from "../../../../components/TitledSection";
+import { TitledSwitch } from "../../../../components/TitledSwitch";
 import { Translated } from "../../../../components/Translated";
 import { useContestContext } from "../../../../context/constestContext";
 import { useModifyProblem } from "../../../../hooks/problem/useCreateProblem";
@@ -54,6 +55,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             solution_code: problem?.solution_code ?? "",
             evaluation_variant: problem.evaluation_variant,
             evaluation_language: problem.evaluation_language,
+            tags: [],
         },
     });
 
@@ -82,6 +84,8 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             new Event("submit", { cancelable: true, bubbles: true })
         );
     };
+
+    const [variant, setVariant] = useState(problem.evaluation_variant);
 
     const { t } = useTranslation();
 
@@ -120,18 +124,67 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     <TitledInput {...register("memory_limit_megabytes")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={t(
-                        "contests.management.individual.problems.individual.info.evaluationScript"
-                    )}
-                    value={
-                        problem.evaluation_script ??
-                        t("contests.management.individual.problems.individual.info.empty")
-                    }
+                    title={"Evaluation variant"}
+                    value={problem.evaluation_variant}
                     submitFunction={submitForm}
-                    largeTextValue
                 >
-                    <textarea {...register("evaluation_script")} />
+                    <TitledSwitch
+                        choice={["Plain", "Checker"]}
+                        defaultIndex={variant === "plain" ? 0 : 1}
+                        onChange={(value) => {
+                            setValue("evaluation_variant", value === "Plain" ? "plain" : "checker");
+                            setVariant(value === "Plain" ? "plain" : "checker");
+                        }}
+                    />
+                    {variant !== "plain" && (
+                        <TitledSwitch
+                            choice={["Standard", "Interactive"]}
+                            defaultIndex={variant === "checker" ? 0 : 1}
+                            onChange={(value) => {
+                                setValue(
+                                    "evaluation_variant",
+                                    value === "Standard" ? "checker" : "interactive"
+                                );
+                                setVariant(value === "Standard" ? "checker" : "interactive");
+                            }}
+                        />
+                    )}
                 </EditableDisplayBox>
+                {problem.evaluation_variant !== "plain" && (
+                    <EditableDisplayBox
+                        title={"Evaluation language"}
+                        value={problem.evaluation_language}
+                        submitFunction={submitForm}
+                    >
+                        <select
+                            name={"evaluation_language"}
+                            defaultValue={problem.evaluation_language}
+                            onChange={(event) => {
+                                setValue("evaluation_language", event.target.value);
+                            }}
+                        >
+                            <option value="python">Python</option>
+                            <option value="cpp">C++</option>
+                            <option value="c">C</option>
+                        </select>
+                    </EditableDisplayBox>
+                )}
+                {problem.evaluation_variant !== "plain" && (
+                    <EditableDisplayBox
+                        title={t(
+                            "contests.management.individual.problems.individual.info.evaluationScript"
+                        )}
+                        value={
+                            problem.evaluation_script ??
+                            t("contests.management.individual.problems.individual.info.empty")
+                        }
+                        submitFunction={submitForm}
+                        largeTextValue
+                    >
+                        <textarea {...register("evaluation_script")} />
+                    </EditableDisplayBox>
+                )}
+
                 <EditableDisplayBox
                     title={t(
                         "contests.management.individual.problems.individual.info.solutionLanguage"
