@@ -1,6 +1,8 @@
 import {
+    AdminPermissions,
     ContestMemberPermissions,
     ExamGradingScale,
+    hasAdminPermission,
     hasContestPermission,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
@@ -9,7 +11,10 @@ import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
+import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
+import { extractModifiableContest } from "../../extractors/extractModifiableContest";
+import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
@@ -22,27 +27,31 @@ const gradingSchema = Type.Object({
 });
 
 ContestGradingHandler.get("/", async (req, res) => {
-    const member = await extractContestMember(req);
-
-    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    const user = await extractUser(req);
+    const contest = await extractContest(req);
 
     const gradingScales = await Database.selectFrom("exam_grading_scales", "*", {
-        contest_id: member.contest_id,
+        contest_id: contest.id,
     });
+
+    if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
+        return respond(res, StatusCodes.OK, gradingScales);
+
+    const member = await extractContestMember(req);
+
+    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE)) {
+        throw new SafeError(StatusCodes.FORBIDDEN);
+    }
 
     return respond(res, StatusCodes.OK, gradingScales);
 });
 
 ContestGradingHandler.post("/", useValidation(gradingSchema), async (req, res) => {
-    const member = await extractContestMember(req);
-
-    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT))
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    const contest = await extractModifiableContest(req);
 
     const gradingScale: ExamGradingScale = {
         id: generateSnowflake(),
-        contest_id: member.contest_id,
+        contest_id: contest.id,
         percentage: req.body.percentage,
         grade: req.body.grade,
     };
