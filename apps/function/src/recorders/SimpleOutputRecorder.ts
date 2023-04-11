@@ -5,6 +5,7 @@ export type OutputRecord =
     | {
           success: true;
           output: Buffer;
+          timeMills: number;
       }
     | {
           success: false;
@@ -25,6 +26,7 @@ export const recordSimpleOutput: OutputRecorderFunction = (
 
     process.stdin.write(input);
     process.stdin.end();
+    const startTime = performance.now();
 
     return new Promise<OutputRecord>((resolve) => {
         const stdError: Buffer[] = [];
@@ -40,6 +42,7 @@ export const recordSimpleOutput: OutputRecorderFunction = (
             resolve({
                 success: true,
                 output: Buffer.concat(stdOut),
+                timeMills: 6000,
             });
         }, 6000);
 
@@ -70,6 +73,7 @@ export const recordSimpleOutput: OutputRecorderFunction = (
             resolve({
                 success: true,
                 output: Buffer.concat(stdOut),
+                timeMills: performance.now() - startTime,
             });
         });
     });

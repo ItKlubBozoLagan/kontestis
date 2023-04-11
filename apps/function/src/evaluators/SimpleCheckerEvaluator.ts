@@ -4,7 +4,6 @@ import { EvaluationResult } from "@kontestis/models";
 
 import { MemoryRecord } from "../recorders/RecordOutputWithMemory";
 import { OutputRecord } from "../recorders/SimpleOutputRecorder";
-import { timeFunction } from "../recorders/TimeRecorder";
 import { TestcaseV1 } from "../types/TestcaseV1";
 
 export type RunnerFunction = (testcaseInput: Buffer) => Promise<OutputRecord & MemoryRecord>;
@@ -39,9 +38,7 @@ export const evaluateSimpleChecker = async (
 
         continueEvaluation = false;
 
-        const { timeMillis, value: result } = await timeFunction(
-            async () => await runnerFunction(Buffer.from(testcase.in, "utf8"))
-        );
+        const result = await runnerFunction(Buffer.from(testcase.in, "utf8"));
 
         if (!result.success) {
             evaluated.push({
@@ -53,12 +50,12 @@ export const evaluateSimpleChecker = async (
             continue;
         }
 
-        if (timeMillis >= timeLimit) {
+        if (result.timeMills >= timeLimit) {
             evaluated.push({
                 type: "success",
                 testCaseId: testcase.id,
                 verdict: "time_limit_exceeded",
-                time: timeMillis,
+                time: result.timeMills,
                 memory: result.memory_usage_megabytes,
             });
             continue;
@@ -69,7 +66,7 @@ export const evaluateSimpleChecker = async (
                 type: "success",
                 testCaseId: testcase.id,
                 verdict: "memory_limit_exceeded",
-                time: timeMillis,
+                time: result.timeMills,
                 memory: result.memory_usage_megabytes,
             });
             continue;
@@ -97,7 +94,7 @@ export const evaluateSimpleChecker = async (
                 type: "success",
                 testCaseId: testcase.id,
                 verdict: "accepted",
-                time: timeMillis,
+                time: result.timeMills,
                 memory: result.memory_usage_megabytes,
             });
             continueEvaluation = true;
@@ -109,7 +106,7 @@ export const evaluateSimpleChecker = async (
                 type: "success",
                 testCaseId: testcase.id,
                 verdict: "wrong_answer",
-                time: timeMillis,
+                time: result.timeMills,
                 memory: result.memory_usage_megabytes,
             });
             continue;
@@ -122,7 +119,7 @@ export const evaluateSimpleChecker = async (
                 type: "success",
                 testCaseId: testcase.id,
                 verdict: "custom",
-                time: timeMillis,
+                time: result.timeMills,
                 memory: result.memory_usage_megabytes,
                 extra: checkerOutput,
             });
