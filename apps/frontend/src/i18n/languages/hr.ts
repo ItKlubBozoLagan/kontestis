@@ -340,7 +340,7 @@ export default {
             body: {
                 final: "Konačno",
                 notFinal: "Postavi kao konačno",
-                notExam: "Ingorirano",
+                notExam: "Nije predano",
                 pointsAchieved: " %1 bodova",
                 clusterIndex: "Klaster %1",
                 testcaseIndex: "Test podatak %1",

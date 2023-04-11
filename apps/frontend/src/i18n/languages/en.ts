@@ -338,9 +338,9 @@ const I18nEn = {
                 testcase: "Testcase",
             },
             body: {
-                final: "final",
+                final: "Final",
                 notFinal: "Set final",
-                notExam: "Ignored",
+                notExam: "Not submitted",
                 pointsAchieved: " %1 points",
                 clusterIndex: "Cluster %1",
                 testcaseIndex: "Testcase %1",
