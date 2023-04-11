@@ -333,7 +333,7 @@ export default {
                 memory: "Memorija",
                 language: "Jezik",
                 points: "Bodovi",
-                final: "Ukupno",
+                final: "Finalno",
                 cluster: "Klaster",
                 testcase: "Test podatak",
             },
