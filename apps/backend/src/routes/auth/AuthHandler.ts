@@ -89,16 +89,25 @@ AuthHandler.get("/", async (req, res) => {
     return respond(
         res,
         StatusCodes.OK,
-        R.map(users, (user) =>
-            R.addProp(
+        R.map(
+            R.filter(
+                users,
+                (user) => typeof knownUsersByUserId[user.id.toString()] !== "undefined"
+            ),
+            (user) =>
                 R.addProp(
-                    R.addProp(user, "full_name", knownUsersByUserId[user.id.toString()].full_name),
-                    "email",
-                    knownUsersByUserId[user.id.toString()].email
-                ),
-                "picture_url",
-                knownUsersByUserId[user.id.toString()].picture_url
-            )
+                    R.addProp(
+                        R.addProp(
+                            user,
+                            "full_name",
+                            knownUsersByUserId[user.id.toString()].full_name
+                        ),
+                        "email",
+                        knownUsersByUserId[user.id.toString()].email
+                    ),
+                    "picture_url",
+                    knownUsersByUserId[user.id.toString()].picture_url
+                )
         )
     );
 });
