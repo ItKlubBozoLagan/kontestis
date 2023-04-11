@@ -18,10 +18,17 @@ export const AdminStatisticsCharts: FC = () => {
         newLogins: false,
     });
 
-    const { data: activity, isLoading: activityIsLoading } = useAdminActivityStat({
-        range: activityRange,
+    const { data: activity, isLoading: activityIsLoading } = useAdminActivityStat(
+        {
+            range: activityRange,
+        },
+        {
+            refetchInterval: 5000,
+        }
+    );
+    const { data: logins, isLoading: loginsIsLoading } = useAdminLoginsStat(loginParameters, {
+        refetchInterval: 5000,
     });
-    const { data: logins, isLoading: loginsIsLoading } = useAdminLoginsStat(loginParameters);
 
     const activityDataset = useFormatCountStat(activity?.stats);
 
