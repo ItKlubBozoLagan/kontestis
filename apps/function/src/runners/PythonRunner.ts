@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 
-export const runPython = (python: Buffer) => {
+export const runPython = async (python: Buffer) => {
     const fName = randomBytes(16).toString("hex");
 
     fs.writeFileSync(`/tmp/${fName}`, python);

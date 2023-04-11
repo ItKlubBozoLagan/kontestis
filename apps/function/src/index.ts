@@ -7,9 +7,7 @@ import { getSimplePythonCheckerFunction } from "./checkers/SimpleChecker";
 import { evaluateSimpleChecker } from "./evaluators/SimpleCheckerEvaluator";
 import { recordOutputWithMemory } from "./recorders/RecordOutputWithMemory";
 import { recordSimpleOutput } from "./recorders/SimpleOutputRecorder";
-import { runBinary } from "./runners/BinaryRunner";
-import { runPython } from "./runners/PythonRunner";
-import { transformToBinary } from "./transformers/CPPCompiledTransformer";
+import { getRunnerFunction } from "./runners/GenericRunner";
 
 const app = Express();
 
@@ -68,64 +66,33 @@ app.post("/", async (req, res) => {
 
     const submission: Static<typeof schema> & { evaluator?: string } = req.body;
 
-    if (submission.language === "cpp" || submission.language === "c") {
-        const compileResult = await transformToBinary(
-            submission.language === "cpp" ? "c++" : "c",
-            Buffer.from(submission.code, "base64")
+    const runnerFunction = await getRunnerFunction(submission.code, submission.language);
+
+    if (runnerFunction.type !== "success") {
+        return res.status(200).send(
+            submission.testcases.map((testcase) => ({
+                testCaseId: testcase.id,
+                type: "error",
+                verdict: "compilation_error",
+                error: runnerFunction.error,
+            }))
         );
-
-        if (!compileResult.success)
-            return res.status(200).send(
-                submission.testcases.map((testcase) => ({
-                    testCaseId: testcase.id,
-                    type: "error",
-                    verdict: "compilation_error",
-                    error: compileResult.stdErr.toString(),
-                }))
-            );
-
-        return res
-            .status(200)
-            .json(
-                await evaluateSimpleChecker(
-                    async (b) =>
-                        recordOutputWithMemory(
-                            await runBinary(compileResult.binary),
-                            b,
-                            recordSimpleOutput
-                        ),
-                    submission.testcases,
-                    getSimplePythonCheckerFunction(
-                        Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
-                    ),
-                    submission.time_limit,
-                    submission.memory_limit
-                )
-            );
     }
 
-    if (submission.language === "python") {
-        return res
-            .status(200)
-            .json(
-                await evaluateSimpleChecker(
-                    async (b) =>
-                        recordOutputWithMemory(
-                            await runPython(Buffer.from(submission.code, "base64")),
-                            b,
-                            recordSimpleOutput
-                        ),
-                    submission.testcases,
-                    getSimplePythonCheckerFunction(
-                        Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
-                    ),
-                    submission.time_limit,
-                    submission.memory_limit
-                )
-            );
-    }
-
-    return res.status(403).end();
+    return res
+        .status(200)
+        .json(
+            await evaluateSimpleChecker(
+                async (b) =>
+                    recordOutputWithMemory(await runnerFunction.runner(), b, recordSimpleOutput),
+                submission.testcases,
+                getSimplePythonCheckerFunction(
+                    Buffer.from(submission.evaluator ?? plainTextEvaluatorBase64, "base64")
+                ),
+                submission.time_limit,
+                submission.memory_limit
+            )
+        );
 });
 
 const _PORT = process.env.PORT || 8080;

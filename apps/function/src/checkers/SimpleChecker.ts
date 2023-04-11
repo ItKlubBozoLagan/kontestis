@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { randomInt } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import { CheckerFunction } from "../evaluators/SimpleCheckerEvaluator";
 import { recordSimpleOutput } from "../recorders/SimpleOutputRecorder";
@@ -9,10 +9,11 @@ import { runPython } from "../runners/PythonRunner";
 type CheckerFunctionGenerator = (checker: Buffer) => CheckerFunction;
 
 export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (pythonChecker: Buffer) => {
-    const separator = randomInt(1, 3000);
+    const separator = randomBytes(32).toString("hex");
+
     const separatorBuffer = Buffer.from("\n[" + separator + "]\n", "utf8");
 
-    return (testcaseInput: Buffer, testcaseOutput: Buffer, runnerOutput: Buffer) => {
+    return async (testcaseInput: Buffer, testcaseOutput: Buffer, runnerOutput: Buffer) => {
         const input = Buffer.concat([
             separatorBuffer,
             testcaseInput,
@@ -23,7 +24,7 @@ export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (pythonC
             separatorBuffer,
         ]);
 
-        return recordSimpleOutput(runPython(pythonChecker), input);
+        return await recordSimpleOutput(await runPython(pythonChecker), input);
     };
 };
 

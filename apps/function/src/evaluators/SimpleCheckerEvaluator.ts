@@ -14,6 +14,51 @@ export type CheckerFunction = (
     runnerOutput: Buffer
 ) => Promise<OutputRecord>;
 
+export const getEvaluationResultFromCheckerFunction = (
+    checkerResult: string,
+    testcase: TestcaseV1,
+    result: OutputRecord & { success: true } & MemoryRecord
+) => {
+    if (checkerResult === "ac" || checkerResult === "accepted") {
+        return {
+            type: "success",
+            testCaseId: testcase.id,
+            verdict: "accepted",
+            time: result.timeMills,
+            memory: result.memory_usage_megabytes,
+        };
+    }
+
+    if (checkerResult === "wa" || checkerResult === "wrong_answer") {
+        return {
+            type: "success",
+            testCaseId: testcase.id,
+            verdict: "wrong_answer",
+            time: result.timeMills,
+            memory: result.memory_usage_megabytes,
+        };
+    }
+
+    if (checkerResult.startsWith("custom:")) {
+        const checkerOutput = checkerResult.slice("custom:".length);
+
+        return {
+            type: "success",
+            testCaseId: testcase.id,
+            verdict: "custom",
+            time: result.timeMills,
+            memory: result.memory_usage_megabytes,
+            extra: checkerOutput,
+        };
+    }
+
+    return {
+        type: "error",
+        verdict: "system_error",
+        testCaseId: testcase.id,
+    };
+};
+
 export const evaluateSimpleChecker = async (
     runnerFunction: RunnerFunction,
     testcases: TestcaseV1[],
@@ -89,51 +134,19 @@ export const evaluateSimpleChecker = async (
 
         const checkerResult = checkerRecord.output.toString("utf8").trim().toLowerCase();
 
-        if (checkerResult === "ac" || checkerResult === "accepted") {
-            evaluated.push({
-                type: "success",
-                testCaseId: testcase.id,
-                verdict: "accepted",
-                time: result.timeMills,
-                memory: result.memory_usage_megabytes,
-            });
-            continueEvaluation = true;
-            continue;
-        }
+        const checkerEvaluationResult = getEvaluationResultFromCheckerFunction(
+            checkerResult,
+            testcase,
+            result
+        ) as EvaluationResult;
 
-        if (checkerResult === "wa" || checkerResult === "wrong_answer") {
-            evaluated.push({
-                type: "success",
-                testCaseId: testcase.id,
-                verdict: "wrong_answer",
-                time: result.timeMills,
-                memory: result.memory_usage_megabytes,
-            });
-            continue;
-        }
-
-        if (checkerResult.startsWith("custom:")) {
-            const checkerOutput = checkerResult.slice("custom:".length);
-
-            evaluated.push({
-                type: "success",
-                testCaseId: testcase.id,
-                verdict: "custom",
-                time: result.timeMills,
-                memory: result.memory_usage_megabytes,
-                extra: checkerOutput,
-            });
-
+        if (
+            checkerEvaluationResult.verdict === "accepted" ||
+            checkerEvaluationResult.verdict === "custom"
+        )
             continueEvaluation = true;
 
-            continue;
-        }
-
-        evaluated.push({
-            type: "error",
-            verdict: "system_error",
-            testCaseId: testcase.id,
-        });
+        evaluated.push(checkerEvaluationResult);
     }
 
     return evaluated;

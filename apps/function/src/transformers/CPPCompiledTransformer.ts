@@ -2,6 +2,8 @@ import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
+import { EvaluationLanguage } from "@kontestis/models";
+
 type CompileResult =
     | {
           success: true;
@@ -14,13 +16,13 @@ type CompileResult =
       };
 
 export const transformToBinary = async (
-    variant: "c++" | "c",
+    variant: EvaluationLanguage,
     code: Buffer
 ): Promise<CompileResult> => {
     const fName = randomBytes(16).toString("hex");
 
     const compile = spawn(
-        variant === "c++" ? "/usr/bin/g++" : "/usr/bin/gcc",
+        variant === "cpp" ? "/usr/bin/g++" : "/usr/bin/gcc",
         ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", variant, "-"],
         {
             shell: true,
