@@ -1,5 +1,4 @@
 import { Globals } from "../globals";
-import { Logger } from "../lib/logger";
 import { createInfluxClient, InfluxUInteger } from "./InfluxClient";
 
 // schema here could be improved, but it would require some changes to the client
@@ -37,7 +36,6 @@ export const Influx = createInfluxClient<{
     token: Globals.influxToken,
     org: Globals.influxOrg,
     bucket: Globals.influxBucket,
-    debug: Logger.influx,
 });
 
 export const initInflux = () => Promise.resolve();
