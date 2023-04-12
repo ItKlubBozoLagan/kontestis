@@ -73,7 +73,9 @@ export const AdminKubernetesSystemMetricsCharts: FC<Properties> = ({ metrics }) 
                 </MetricsInfoBox>
                 <MetricsInfoBox title={"Memory"}>
                     <div tw={"flex gap-2 justify-between text-base"}>
-                        <span tw={"font-bold"}>Memory - {metrics.memoryMegabytes >> 10} GiB</span>
+                        <span tw={"font-bold"}>
+                            Memory - {Math.ceil(metrics.memoryMegabytes / 1024)} GiB
+                        </span>
                         <span tw={"font-mono"}>
                             {(
                                 (metrics.memoryUsageMegabytes / metrics.memoryMegabytes) *

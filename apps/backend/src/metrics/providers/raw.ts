@@ -6,6 +6,7 @@ import { CachedValue } from "../../utils/CachedValue";
 export const fetchRawSystemMetrics = async (): Promise<RawSystemMetrics> => {
     const cpuData = await systemInformation.currentLoad();
     const memoryData = await systemInformation.mem();
+    const osInfo = await systemInformation.osInfo();
 
     return {
         type: "raw",
@@ -13,6 +14,8 @@ export const fetchRawSystemMetrics = async (): Promise<RawSystemMetrics> => {
         memoryMegabytes: Number(BigInt(memoryData.total) >> 20n),
         cpuUsage: cpuData.currentLoad * cpuData.cpus.length,
         memoryUsageMegabytes: Number(BigInt(memoryData.active) >> 20n),
+        osPrettyName: osInfo.distro,
+        hostname: osInfo.hostname,
     };
 };
 

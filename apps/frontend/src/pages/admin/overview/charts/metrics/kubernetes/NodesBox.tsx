@@ -89,7 +89,8 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
                                         </div>
                                         <div tw={"flex gap-2 justify-between"}>
                                             <span tw={"font-bold"}>
-                                                Memory - {node.memoryMegabytes >> 10} GiB
+                                                Memory - {Math.ceil(node.memoryMegabytes / 1024)}{" "}
+                                                GiB
                                             </span>
                                             <span tw={"font-mono"}>
                                                 {(

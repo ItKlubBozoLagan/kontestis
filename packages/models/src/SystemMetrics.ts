@@ -22,6 +22,8 @@ export type KubernetesSystemMetrics = BaseSystemMetrics & {
 
 export type RawSystemMetrics = BaseSystemMetrics & {
     type: "raw";
+    osPrettyName: string;
+    hostname: string;
 };
 
 export type SystemMetrics = RawSystemMetrics | KubernetesSystemMetrics;
