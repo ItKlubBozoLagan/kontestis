@@ -1,10 +1,15 @@
 import { createLogger, shimLog } from "@lvksh/logger";
 import chalk from "chalk";
 
+import { Globals } from "../globals";
+
 export const Logger = createLogger(
     {
         info: chalk.blue` INFO `,
-        debug: chalk.yellow` DEBUG `,
+        debug: {
+            label: chalk.yellow` DEBUG `,
+            tags: ["debug"],
+        },
         error: chalk.red` ERROR `,
         database: chalk.cyan` DATABASE `,
         redis: chalk.redBright` REDIS `,
@@ -13,6 +18,7 @@ export const Logger = createLogger(
         panic: chalk.bgRed.white`!! PANIC !!`,
     },
     {
+        exclude: Globals.mode !== "development" ? ["debug"] : [],
         postProcessors: [
             (lines, method) => {
                 if (method.name !== "panic") return lines;
