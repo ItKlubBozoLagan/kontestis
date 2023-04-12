@@ -44,7 +44,7 @@ export const AccountStatistics: FC = () => {
             />
             <HistoryLineChart
                 title={"Elo"}
-                dataset={eloDataset}
+                datasets={[eloDataset]}
                 activeRange={eloRange}
                 onRangeChange={setEloRange}
                 loading={isEloLoading}

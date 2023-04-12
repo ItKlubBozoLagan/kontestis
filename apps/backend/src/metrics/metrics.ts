@@ -10,6 +10,6 @@ export const getSystemMetrics = async (): Promise<SystemMetrics> => {
     // must be kubernetes
     //  in case more providers are added, change this function accordingly
     // ----
-    // also, this feels weird, but basic fall back to raw metrics
+    // this feels weird, but basic fall back to raw metrics
     return getKubernetesSystemMetrics().catch(getRawSystemMetrics);
 };

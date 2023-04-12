@@ -35,3 +35,13 @@ export const darkenHex = (hex: string, magnitude: number) => {
 
     return "#" + parts.reverse().join("");
 };
+
+export const hexToRgba = (hex: string, alpha: number) => {
+    const [r, g, b] = hex.match(/[\dA-f]{2}/g)?.map((v) => Number.parseInt(v, 16)) as [
+        number,
+        number,
+        number
+    ];
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};

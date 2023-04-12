@@ -1,27 +1,38 @@
-import { CategoryScale, Chart as ChartJS, LinearScale, LineElement, PointElement } from "chart.js";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { hexToRgba } from "@kontestis/utils";
+import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement } from "chart.js";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
+import { ChartJSOrUndefined } from "react-chartjs-2/dist/types";
 import { FiMinus, FiTrendingDown, FiTrendingUp } from "react-icons/all";
 import tw, { theme } from "twin.macro";
 
 import { StatisticRange } from "../hooks/stats/types";
 import { useTranslation } from "../hooks/useTranslation";
+import { useWindowEvent } from "../hooks/useWindowEvent";
 import { RangeFormatters } from "../util/charts";
 import { R } from "../util/remeda";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale);
+ChartJS.register(LineElement, LinearScale, CategoryScale, Legend);
 
 export type Dataset = {
     time: Date;
     value: number;
 };
 
+type ChartDataset = {
+    x: number | string;
+    y: number;
+};
+
+const DatasetColors = [theme`colors.neutral.600`, theme`colors.sky.500`];
+
 // woah, that's a lot of props
 //  TODO: clean up
 export type Properties<T extends string> = {
     title: string;
-    dataset: Dataset[];
+    datasets: Dataset[][];
+    datasetLabels?: string[];
     previousPeriodChange?: number;
     loading?: boolean;
     onRangeChange?: (range: StatisticRange) => void;
@@ -51,7 +62,8 @@ export type Properties<T extends string> = {
 
 export const HistoryLineChart = <T extends string>({
     title,
-    dataset,
+    datasets,
+    datasetLabels,
     activeRange,
     loading,
     onRangeChange,
@@ -64,27 +76,40 @@ export const HistoryLineChart = <T extends string>({
     yMax,
     tension,
 }: Properties<T>) => {
+    const chartReference = useRef<ChartJSOrUndefined<"line", ChartDataset[]>>();
+
     const [range, setRange] = useState<StatisticRange>("24h");
     const [toggleStates, setToggleStates] = useState(!toggles ? [] : toggles.map(() => false));
+
+    const [labelSelected, setLabelSelected] = useState(datasetLabels?.map(() => false) ?? []);
 
     const { t } = useTranslation();
 
     const formattedDataset = useMemo(
         () =>
-            R.pipe(
-                dataset,
-                !live ? R.reverse() : R.identity,
-                R.map.indexed(({ time, value }, index) => ({
-                    x: !live ? RangeFormatters[activeRange](time, index, t) : time.toISOString(),
-                    y: value,
-                }))
+            datasets.map((dataset) =>
+                R.pipe(
+                    dataset,
+                    !live ? R.reverse() : R.identity,
+                    R.map.indexed(({ time, value }, index) => ({
+                        x: !live
+                            ? RangeFormatters[activeRange](time, index, t)
+                            : time.toISOString(),
+                        y: value,
+                    }))
+                )
             ),
-        [dataset, t]
+
+        [datasets, t]
     );
 
     useEffect(() => {
         onRangeChange?.(range);
     }, [range]);
+
+    useWindowEvent("resize", () => {
+        chartReference.current?.resize();
+    });
 
     // nice name lol
     const toggleToggle = useCallback(
@@ -185,16 +210,19 @@ export const HistoryLineChart = <T extends string>({
                     </div>
                 ) : (
                     <Line
+                        ref={chartReference}
                         tw={"max-w-full"}
                         data={{
-                            datasets: [
-                                {
-                                    data: formattedDataset,
-                                    borderColor: theme`colors.neutral.600`,
-                                    pointRadius: 0,
-                                    tension: tension ?? 0.2,
-                                },
-                            ],
+                            labels: datasetLabels,
+                            datasets: formattedDataset.map((dataset, index) => ({
+                                data: dataset,
+                                borderColor: ((color) =>
+                                    labelSelected[index] && labelSelected.some(R.identity)
+                                        ? hexToRgba(color, 0.4)
+                                        : color)(DatasetColors[index] ?? theme`colors.neutral.400`),
+                                pointRadius: 0,
+                                tension: tension ?? 0.2,
+                            })),
                         }}
                         options={{
                             responsive: true,
@@ -206,6 +234,47 @@ export const HistoryLineChart = <T extends string>({
                                 },
                                 x: {
                                     display: live ? false : undefined,
+                                },
+                            },
+                            plugins: {
+                                legend: {
+                                    display: datasets.length > 1,
+                                    align: "end",
+                                    position: "bottom",
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxHeight: 6,
+                                        generateLabels: (chart) => {
+                                            return datasets.map((it, index) => ({
+                                                text:
+                                                    (chart.data.labels?.[index] as string) ??
+                                                    `Dataset ${index + 1}`,
+                                                fontColor:
+                                                    DatasetColors[index] ??
+                                                    theme`colors.neutral.400`,
+                                                fillStyle:
+                                                    DatasetColors[index] ??
+                                                    theme`colors.neutral.400`,
+                                                lineWidth: 0,
+                                                hidden: labelSelected[index],
+                                            }));
+                                        },
+                                    },
+                                    onClick: (_, legendItem) => {
+                                        const index = datasetLabels?.indexOf(legendItem.text) ?? -1;
+
+                                        setLabelSelected((selected) =>
+                                            selected.map((_, labelIndex) =>
+                                                labelIndex === index ? !selected[index] : false
+                                            )
+                                        );
+                                    },
+                                    onHover: (event) => {
+                                        const target = event.native?.target;
+
+                                        if (target instanceof HTMLElement)
+                                            target.style["cursor"] = "pointer";
+                                    },
                                 },
                             },
                         }}

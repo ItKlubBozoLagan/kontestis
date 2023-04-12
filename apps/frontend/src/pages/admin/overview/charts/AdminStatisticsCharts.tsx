@@ -1,14 +1,14 @@
 import { FC, useState } from "react";
 
-import { HistoryLineChart } from "../../../components/HistoryLineChart";
-import { StatisticRange } from "../../../hooks/stats/types";
-import { useAdminActivityStat } from "../../../hooks/stats/useAdminActivityStat";
+import { HistoryLineChart } from "../../../../components/HistoryLineChart";
+import { StatisticRange } from "../../../../hooks/stats/types";
+import { useAdminActivityStat } from "../../../../hooks/stats/useAdminActivityStat";
 import {
     AdminLoginStatParamaters,
     useAdminLoginsStat,
-} from "../../../hooks/stats/useAdminLoginsStat";
-import { useFormatCountStat } from "../../../hooks/useFormatCountStat";
-import { useTranslation } from "../../../hooks/useTranslation";
+} from "../../../../hooks/stats/useAdminLoginsStat";
+import { useFormatCountStat } from "../../../../hooks/useFormatCountStat";
+import { useTranslation } from "../../../../hooks/useTranslation";
 
 export const AdminStatisticsCharts: FC = () => {
     const [activityRange, setActivityRange] = useState<StatisticRange>("24h");
@@ -42,7 +42,7 @@ export const AdminStatisticsCharts: FC = () => {
                 <HistoryLineChart
                     title={t("admin.overview.charts.activityLabel")}
                     dark
-                    dataset={activityDataset}
+                    datasets={[activityDataset]}
                     loading={activityIsLoading}
                     onRangeChange={setActivityRange}
                     activeRange={activityRange}
@@ -53,7 +53,7 @@ export const AdminStatisticsCharts: FC = () => {
                 <HistoryLineChart
                     title={t("admin.overview.charts.loginLabel")}
                     dark
-                    dataset={loginsDataset}
+                    datasets={[loginsDataset]}
                     loading={loginsIsLoading}
                     onRangeChange={(range) =>
                         setLoginParameters((parameters) => ({ ...parameters, range }))
