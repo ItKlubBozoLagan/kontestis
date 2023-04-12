@@ -17,7 +17,7 @@ export const recordInteractiveOutput = (
     const separatorBuffer = Buffer.from(separatorString, "utf8");
 
     checkerProcess.stdin.on("error", () => {});
-    checkerProcess.stdin.write(Buffer.concat([separatorBuffer, input]));
+    checkerProcess.stdin.write(Buffer.concat([separatorBuffer, input, separatorBuffer]));
 
     const startTime = performance.now();
 
@@ -58,14 +58,31 @@ export const recordInteractiveOutput = (
                 return;
             }
 
-            if (Buffer.isBuffer(data) && data.toString().includes(separatorString)) {
+            const stringData = data.toString().split("\n");
+
+            if (stringData.some((s: string) => s.includes(separatorString.trim()))) {
                 redirectChecker = true;
 
-                return;
-            }
+                for (let index = 0; index < stringData.length; ++index) {
+                    if (!stringData[index].includes(separatorString.trim())) continue;
 
-            if (typeof data === "string" && data.includes(separatorString)) {
-                redirectChecker = true;
+                    if (index !== 0) {
+                        process.stdin.write(
+                            Buffer.from(stringData.slice(0, index).join("\n"), "utf8")
+                        );
+                    }
+
+                    if (index !== stringData.length + 1) {
+                        stdOut.push(
+                            Buffer.from(
+                                stringData.slice(index + 1, stringData.length).join("\n"),
+                                "utf8"
+                            )
+                        );
+                    }
+
+                    break;
+                }
 
                 return;
             }

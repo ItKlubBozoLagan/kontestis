@@ -72,6 +72,8 @@ const generateTestcaseInput = async (cluster: Cluster, count: number) => {
             language: cluster.generator_language ?? "python",
             code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
             evaluator: returnOutputEvaluatorBase64,
+            evaluation_variant: "checker",
+            evaluator_language: "python",
         },
         Array.from({ length: count }).map((_, index) => ({
             id: BigInt(index),
@@ -125,6 +127,8 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
             language: problem.solution_language ?? "python",
             code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
             evaluator: returnOutputEvaluatorBase64,
+            evaluation_variant: "checker",
+            evaluator_language: "python",
         },
         R.map(testcaseInputs, (t) => R.addProp(t, "correct_output", "")),
         {

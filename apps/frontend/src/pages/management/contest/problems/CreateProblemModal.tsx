@@ -27,6 +27,28 @@ const CreateProblemSchema = z.object({
     tags: z.array(z.string()),
 });
 
+const DEFAULT_CHECKER = `
+def read_until(separator):
+    out = ""
+    while True:
+        line = input()
+        if line == separator:
+            return out
+        out += " " + line.strip()
+
+while True:
+    separator = input()
+    if len(separator.strip()) > 0:
+        break
+
+read_until(separator)
+out = read_until(separator)
+subOut = read_until(separator)
+
+print("AC" if out.strip() == subOut.strip() else "WA")
+
+`;
+
 export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     const { contest } = useContestContext();
 
@@ -42,7 +64,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
             solution_language: "python",
             evaluation_variant: "plain",
             evaluation_language: "python",
-            evaluation_script: "",
+            evaluation_script: DEFAULT_CHECKER,
             tags: [],
         },
     });

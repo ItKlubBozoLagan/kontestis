@@ -4,6 +4,7 @@ import {
     CompilationErrorResult,
     EvaluationLanguage,
     EvaluationResult,
+    EvaluationVariant,
     PendingSubmission,
     Problem,
     Snowflake,
@@ -28,7 +29,9 @@ type ProblemDetails = {
     problemId: bigint;
     language: EvaluationLanguage;
     code: string;
+    evaluation_variant: EvaluationVariant;
     evaluator?: string;
+    evaluator_language?: string;
 };
 
 export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
@@ -70,7 +73,7 @@ const evaluateTestcases = async (
         .post<EvaluationResult>(
             "",
             {
-                problem_type: "checker",
+                problem_type: problemDetails.evaluation_variant,
                 language: problemDetails.language,
                 code: problemDetails.code,
                 time_limit: problem.time_limit_millis,
@@ -80,7 +83,8 @@ const evaluateTestcases = async (
                     in: testcase.input,
                     out: testcase.correct_output,
                 })),
-                evaluator: problemDetails.evaluator,
+                evaluator_language: problemDetails.evaluator_language,
+                evaluator: Buffer.from(problemDetails.evaluator ?? "", "utf8").toString("base64"),
             },
             {
                 timeout: 60_000,

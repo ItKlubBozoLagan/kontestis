@@ -57,12 +57,23 @@ SubmissionHandler.post("/:problem_id", useValidation(submissionSchema), async (r
         );
     };
 
+    const problemWithFullData = await Database.selectOneFrom(
+        "problems",
+        ["evaluation_script", "evaluation_variant", "evaluation_language"],
+        { id: problem.id }
+    );
+
+    if (!problemWithFullData) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
     const submissionId = await beginEvaluation(
         user,
         {
             problemId: problem.id,
             language: req.body.language,
             code: req.body.code,
+            evaluation_variant: problemWithFullData.evaluation_variant,
+            evaluator_language: problemWithFullData.evaluation_language,
+            evaluator: problemWithFullData.evaluation_script,
         },
         endListener
     );
