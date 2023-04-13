@@ -81,7 +81,7 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
                                         <div tw={"flex gap-2 justify-between"}>
                                             <span tw={"font-bold"}>OS</span>
                                             <span tw={"font-mono"}>
-                                                {cutText(node.osPrettyName, 18)}
+                                                {cutText(node.osPrettyName, 20)}
                                             </span>
                                         </div>
                                         <div tw={"flex gap-2 justify-between"}>
