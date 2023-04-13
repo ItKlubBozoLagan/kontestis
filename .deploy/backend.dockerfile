@@ -4,6 +4,7 @@ WORKDIR /app
 
 RUN npm install --global pnpm
 
+# can't really cache this without making the dockerfile unusable outside of github actions
 COPY . .
 
 RUN pnpm --filter=@kontestis/backend... install

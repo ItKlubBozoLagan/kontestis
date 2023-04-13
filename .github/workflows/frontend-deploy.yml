@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy:
-    name: "🛠 Build & 🚚 Deploy"
+    name: "🛠 Build & Deploy"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
         run: pnpm --filter=@kontestis/frontend... install
 
       - name: Build
-        run: pnpm --filter=@kontestis/frontend... build
+        run: pnpm --filter=@kontestis/frontend build
 
       - name: Edgeserver Upload
         uses: v3xlabs/edgeserver-upload@master
