@@ -81,7 +81,7 @@ export const fetchKubernetesSystemMetrics = async (
         osPrettyName: node.status?.nodeInfo?.osImage!,
         cpus: Number(node.status?.capacity?.cpu ?? "0"),
         memoryMegabytes: Number(node.status?.capacity?.memory.slice(0, -2) ?? "0") >> 10,
-        cpuUsage: Number(node.usage.cpu.slice(0, -1)) / 1e9,
+        cpuUsage: Number(node.usage.cpu.slice(0, -1)) / 1e7,
         memoryUsageMegabytes: Number(node.usage.memory.slice(0, -2)) >> 10,
     }));
 
@@ -93,7 +93,7 @@ export const fetchKubernetesSystemMetrics = async (
             name: pod.metadata.name,
             ...pod.containers.reduce(
                 (accumulator, current) => ({
-                    cpuUsage: accumulator.cpuUsage + Number(current.usage.cpu.slice(0, -1)) / 1e9,
+                    cpuUsage: accumulator.cpuUsage + Number(current.usage.cpu.slice(0, -1)) / 1e7,
                     memoryUsageMegabytes:
                         accumulator.memoryUsageMegabytes +
                         (Number(current.usage.memory.slice(0, -2)) >> 10),
