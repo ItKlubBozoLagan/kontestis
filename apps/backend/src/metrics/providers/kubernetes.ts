@@ -71,18 +71,13 @@ export const fetchKubernetesSystemMetrics = async (
         ...nodes.find((node) => node.metadata?.name === it.metadata.name),
     }));
 
-    const nodesAvailable = nodes.map((node) => ({
-        cpus: Number(node.status?.capacity?.cpu ?? "0"),
-        memory: Number(node.status?.capacity?.memory.slice(0, -2) ?? "0") >> 10,
-    }));
-
     const nodeInfoWithUsage = nodeMetrics.map((node) => ({
         name: node.metadata.name!,
         osPrettyName: node.status?.nodeInfo?.osImage!,
         cpus: Number(node.status?.capacity?.cpu ?? "0"),
-        memoryMegabytes: Number(node.status?.capacity?.memory.slice(0, -2) ?? "0") >> 10,
+        memoryMegabytes: Number(node.status?.capacity?.memory.slice(0, -2) ?? "0") / 1024,
         cpuUsage: Number(node.usage.cpu.slice(0, -1)) / 1e7,
-        memoryUsageMegabytes: Number(node.usage.memory.slice(0, -2)) >> 10,
+        memoryUsageMegabytes: Number(node.usage.memory.slice(0, -2)) / 1024,
     }));
 
     const podMetrics = (await metrics.getPodMetrics(namespace)).items;
@@ -96,7 +91,7 @@ export const fetchKubernetesSystemMetrics = async (
                     cpuUsage: accumulator.cpuUsage + Number(current.usage.cpu.slice(0, -1)) / 1e7,
                     memoryUsageMegabytes:
                         accumulator.memoryUsageMegabytes +
-                        (Number(current.usage.memory.slice(0, -2)) >> 10),
+                        Number(current.usage.memory.slice(0, -2)) / 1024,
                 }),
                 { cpuUsage: 0, memoryUsageMegabytes: 0 }
             ),
@@ -104,9 +99,9 @@ export const fetchKubernetesSystemMetrics = async (
 
     return {
         type: "kubernetes",
-        cpus: nodesAvailable.reduce((accumulator, current) => accumulator + current.cpus, 0),
-        memoryMegabytes: nodesAvailable.reduce(
-            (accumulator, current) => accumulator + current.memory,
+        cpus: nodeInfoWithUsage.reduce((accumulator, current) => accumulator + current.cpus, 0),
+        memoryMegabytes: nodeInfoWithUsage.reduce(
+            (accumulator, current) => accumulator + current.memoryMegabytes,
             0
         ),
         cpuUsage: nodeInfoWithUsage.reduce(
