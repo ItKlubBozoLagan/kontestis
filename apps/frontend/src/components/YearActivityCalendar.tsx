@@ -157,7 +157,11 @@ export const YearActivityCalendar = <T extends string>({
             </div>
             <div tw={"w-full relative flex"}>
                 {loading ? (
-                    <div tw={"flex w-full h-full justify-center items-center min-h-[92px]"}>
+                    <div
+                        tw={
+                            "flex w-full h-full justify-center items-center min-h-[92px] min-w-[46rem]"
+                        }
+                    >
                         <LoadingSpinner size={"base"} />
                     </div>
                 ) : (

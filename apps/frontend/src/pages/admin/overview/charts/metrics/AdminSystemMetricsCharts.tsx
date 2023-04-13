@@ -6,10 +6,11 @@ import { FiHardDrive } from "react-icons/all";
 import { SiKubernetes } from "react-icons/si";
 import { theme } from "twin.macro";
 
-import { LoadingSpinner } from "../../../../components/LoadingSpinner";
-import { useSystemMetrics } from "../../../../hooks/stats/metrics/useSystemMetrics";
-import { AdminRawSystemMetricsCharts } from "./metrics/AdminRawSystemMetricsCharts";
-import { AdminKubernetesSystemMetricsCharts } from "./metrics/kubernetes/AdminKubernetesSystemMetricsCharts";
+import { BigTitledSection } from "../../../../../components/BigTitledSection";
+import { LoadingSpinner } from "../../../../../components/LoadingSpinner";
+import { useSystemMetrics } from "../../../../../hooks/stats/metrics/useSystemMetrics";
+import { AdminRawSystemMetricsCharts } from "./AdminRawSystemMetricsCharts";
+import { AdminKubernetesSystemMetricsCharts } from "./kubernetes/AdminKubernetesSystemMetricsCharts";
 
 export const MetricIconMap: Record<
     SystemMetrics["type"],
@@ -43,25 +44,22 @@ export const AdminSystemMetricsCharts: FC = () => {
 
     return (
         <div tw={"flex flex-col gap-2"}>
-            <div tw={"flex flex-col gap-2 bg-neutral-200 border-2 border-solid border-neutral-400"}>
-                <div
-                    tw={
-                        "w-full bg-neutral-100 p-2 text-xl flex gap-2 justify-start border border-solid border-neutral-300 border-t-0 border-r-0 border-l-0"
-                    }
-                >
+            <BigTitledSection
+                header={
                     <div tw={"flex gap-2 items-center"}>
                         <Icon color={iconColor} size={iconSize} />
                         <span>{capitalize(metrics.type === "raw" ? "Server" : metrics.type)}</span>
                     </div>
-                </div>
-                <div tw={"p-4"}>
+                }
+            >
+                <div tw={"w-full"}>
                     {metrics.type === "raw" ? (
                         <AdminRawSystemMetricsCharts metrics={metrics} />
                     ) : (
                         <AdminKubernetesSystemMetricsCharts metrics={metrics} />
                     )}
                 </div>
-            </div>
+            </BigTitledSection>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 import { AdminStatisticsCharts } from "./charts/AdminStatisticsCharts";
-import { AdminSystemMetricsCharts } from "./charts/AdminSystemMetricsCharts";
+import { AdminSystemMetricsCharts } from "./charts/metrics/AdminSystemMetricsCharts";
 
 export const AdminOverviewPage: FC = () => {
     return (
