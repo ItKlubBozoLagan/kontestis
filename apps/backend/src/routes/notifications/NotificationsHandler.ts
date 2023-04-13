@@ -26,6 +26,7 @@ NotificationsHandler.get("/", async (req, res) => {
                 (notification) =>
                     Date.now() - notification.created_at.getTime() <= 2 * 24 * 60 * 60 * 1000
             )
+            .filter((notification) => notification.created_at.getTime() <= Date.now())
             .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
     );
 });

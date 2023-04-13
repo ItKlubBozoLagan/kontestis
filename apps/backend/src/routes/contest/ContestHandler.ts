@@ -25,6 +25,7 @@ import {
     extractOrganisation,
 } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
+import { pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
@@ -126,6 +127,8 @@ ContestHandler.post("/:contest_id/copy", useValidation(copySchema), async (req, 
         contest_permissions: grantPermission(0n, ContestMemberPermissions.ADMIN),
     });
 
+    const _ = pushContestNotifications(contest, [user.id]);
+
     // I'm adding an artificial delay here because I don't want this to be fast
     //  since it's something you wouldn't want to do often,
     //  a slower response time will give people less incentive to spam it
@@ -173,6 +176,8 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
         }),
     ]);
 
+    const _ = pushContestNotifications(contest, [user.id]);
+
     return respond(res, StatusCodes.OK, contest);
 });
 
@@ -190,10 +195,12 @@ ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, r
     )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
+    const newName = req.body.name;
+
     await Database.update(
         "contests",
         {
-            name: req.body.name,
+            name: newName,
             start_time: date,
             duration_seconds: req.body.duration_seconds,
             public: req.body.public,
@@ -201,6 +208,36 @@ ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, r
             exam: req.body.exam,
         },
         { id: contest.id }
+    );
+
+    const members = await Database.selectFrom("contest_members", ["user_id"], {
+        contest_id: contest.id,
+    });
+
+    // yes ik, very hacky
+    const oldContestNotifications = await Database.selectFrom(
+        "notifications",
+        ["id"],
+        {
+            data: contest.name,
+        },
+        // eslint-disable-next-line sonarjs/no-duplicate-string
+        "ALLOW FILTERING"
+    );
+
+    await Promise.all(
+        oldContestNotifications.map((it) =>
+            Database.deleteFrom("notifications", "*", { id: it.id })
+        )
+    );
+
+    const _ = pushContestNotifications(
+        {
+            name: newName,
+            start_time: date,
+            duration_seconds: req.body.duration_seconds,
+        },
+        members.map((it) => it.user_id)
     );
 
     respond(res, StatusCodes.OK);

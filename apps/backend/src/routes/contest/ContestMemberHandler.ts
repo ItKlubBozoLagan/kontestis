@@ -14,6 +14,7 @@ import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractUser } from "../../extractors/extractUser";
+import { pushContestNotifications } from "../../lib/contest";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
@@ -66,8 +67,9 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
         user_id: targetUser ? targetUser.user_id : user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
-        // score will default to {}
     });
+
+    const _ = pushContestNotifications(contest, [targetUser ? targetUser.user_id : user.id]);
 
     return respond(res, StatusCodes.OK);
 });

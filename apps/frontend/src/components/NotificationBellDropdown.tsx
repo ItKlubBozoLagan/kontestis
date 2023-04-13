@@ -109,7 +109,7 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
                     ) : (
                         <>
                             {sortedNotifications
-                                .slice(0, listExpanded ? sortedNotifications.length : 4)
+                                .slice(0, listExpanded ? 8 : 4)
                                 .map((it, index, _, Icon = NotificationTypeIconMap[it.type]) => (
                                     <div
                                         key={it.id.toString()}
