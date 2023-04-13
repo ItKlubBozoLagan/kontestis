@@ -7,3 +7,4 @@ global.env
 
 tools/**
 !tools/.gitkeep
+tsconfig.tsbuildinfo
