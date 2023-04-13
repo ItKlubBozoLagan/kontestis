@@ -1,0 +1,34 @@
+name: "🔎 Dependency mismatch check"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "apps/**/package.json"
+      - "packages/**/package.json"
+
+jobs:
+  deploy:
+    name: "🔎 Dependency mismatch check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 7.25.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install packages
+        run: pnpm --filter=@kontestis/scripts... install
+
+      - name: Check mismatched dependencies
+        run: pnpm --filter=@kontestis/scripts exec-script dependency-check
+

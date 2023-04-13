@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { performance } from "node:perf_hooks";
 
 import chalk from "chalk";
 import { glob } from "glob";
@@ -139,6 +140,8 @@ const joinMatchedCollectionMapInPlace = (
     return first;
 };
 
+const start = performance.now();
+
 // main content
 // eslint-disable-next-line sonarjs/cognitive-complexity
 (async () => {
@@ -272,7 +275,9 @@ const joinMatchedCollectionMapInPlace = (
             )
         );
     }
+})().finally(() => {
+    Logger.info(`Finished in ${(performance.now() - start).toFixed(2)}ms`);
 
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
-})();
+});
