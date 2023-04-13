@@ -14,6 +14,7 @@ import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractUser } from "../../extractors/extractUser";
+import { pushNotificationsToMany } from "../../lib/notifications";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
@@ -27,6 +28,7 @@ const questionSchema = Type.Object({
 
 ContestQuestionHandler.post("/", useValidation(questionSchema), async (req, res) => {
     const member = await extractContestMember(req);
+    const contest = await extractContest(req);
 
     const question: ContestQuestion = {
         id: generateSnowflake(),
@@ -36,6 +38,27 @@ ContestQuestionHandler.post("/", useValidation(questionSchema), async (req, res)
     };
 
     await Database.insertInto("contest_questions", question);
+
+    const members = await Database.selectFrom(
+        "contest_members",
+        ["user_id", "contest_permissions"],
+        {
+            contest_id: member.contest_id,
+        }
+    );
+
+    // can't really do this filter on the database level
+    const privileged = members.filter((member) =>
+        hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS)
+    );
+
+    const _ = pushNotificationsToMany(
+        {
+            type: "new-question",
+            data: contest.name,
+        },
+        privileged.map((it) => it.user_id)
+    );
 
     return respond(res, StatusCodes.OK, question);
 });
@@ -74,6 +97,8 @@ ContestQuestionHandler.patch(
         const questionId = extractIdFromParameters(req, "question_id");
         const question = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
 
+        const contest = await extractContest(req);
+
         if (!question) throw new SafeError(StatusCodes.NOT_FOUND);
 
         const member = await extractContestMember(req, question.contest_id);
@@ -93,6 +118,20 @@ ContestQuestionHandler.patch(
                 response_author_id: member.id,
             },
             { id: question.id }
+        );
+
+        const targetMember = await Database.selectOneFrom("contest_members", ["user_id"], {
+            id: question.contest_member_id,
+        });
+
+        if (!targetMember) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+        const _ = pushNotificationsToMany(
+            {
+                type: "question-answer",
+                data: contest.name,
+            },
+            [targetMember.user_id]
         );
 
         return respond(res, StatusCodes.OK);

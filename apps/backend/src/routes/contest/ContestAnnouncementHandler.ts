@@ -11,6 +11,7 @@ import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
+import { pushNotificationsToMany } from "../../lib/notifications";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
@@ -23,6 +24,7 @@ const announcementSchema = Type.Object({
 
 ContestAnnouncementHandler.post("/", useValidation(announcementSchema), async (req, res) => {
     const member = await extractContestMember(req);
+    const contest = await extractContest(req);
 
     if (
         !hasContestPermission(
@@ -39,6 +41,18 @@ ContestAnnouncementHandler.post("/", useValidation(announcementSchema), async (r
     };
 
     await Database.insertInto("contest_announcements", contestAnnouncement);
+
+    const members = await Database.selectFrom("contest_members", ["user_id"], {
+        contest_id: member.contest_id,
+    });
+
+    const _ = pushNotificationsToMany(
+        {
+            type: "new-announcement",
+            data: contest.name,
+        },
+        members.filter((it) => it.user_id !== member.user_id).map((it) => it.user_id)
+    );
 
     return respond(res, StatusCodes.OK, contestAnnouncement);
 });

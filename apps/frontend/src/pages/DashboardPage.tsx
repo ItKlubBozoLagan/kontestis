@@ -63,6 +63,9 @@ export const DashboardPage: FC = () => {
                     </MetricsInfoBox>
                 </div>
             </BigTitledSection>
+            <BigTitledSection header={t("dashboard.alerts.title")} tw={"border-neutral-300"}>
+                <span tw={"text-center text-lg opacity-80"}>{t("dashboard.alerts.none")}</span>
+            </BigTitledSection>
             <BigTitledSection header={t("dashboard.activity.title")} tw={"border-neutral-300"}>
                 <div tw={"w-fit"}>
                     <YearActivityCalendar
@@ -73,11 +76,6 @@ export const DashboardPage: FC = () => {
                         onToggleUpdate={(_, value) => setSubmissionsAccepted(value)}
                     />
                 </div>
-            </BigTitledSection>
-            <BigTitledSection header={t("dashboard.notifications.title")} tw={"border-neutral-300"}>
-                <span tw={"text-center text-lg opacity-80"}>
-                    {t("dashboard.notifications.none")}
-                </span>
             </BigTitledSection>
         </div>
     );

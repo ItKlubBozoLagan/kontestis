@@ -39,7 +39,7 @@ export default {
         activity: {
             title: "Vaša aktivnost",
         },
-        notifications: {
+        alerts: {
             title: "Obavijesti",
             none: "Nema za sada!",
         },

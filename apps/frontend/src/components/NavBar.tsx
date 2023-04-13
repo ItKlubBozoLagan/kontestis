@@ -12,6 +12,7 @@ import {
 } from "react-icons/all";
 import tw from "twin.macro";
 
+import { useNotifications } from "../hooks/notifications/useNotifications";
 import { useOrganisation } from "../hooks/organisation/useOrganisation";
 import { useTranslation } from "../hooks/useTranslation";
 import { useAuthStore } from "../state/auth";
@@ -21,6 +22,7 @@ import { useTokenStore } from "../state/token";
 import { Breadcrumb } from "./Breadcrumb";
 import { CanAdmin } from "./CanAdmin";
 import { NavElement } from "./NavElement";
+import { NotificationBellDropdown } from "./NotificationBellDropdown";
 
 export const NavBar: FC = () => {
     const { user } = useAuthStore();
@@ -31,6 +33,10 @@ export const NavBar: FC = () => {
     const { data, isSuccess } = useOrganisation(organisationId);
 
     const { t } = useTranslation();
+
+    const { data: notifications } = useNotifications({
+        refetchInterval: 1000,
+    });
 
     const navbarItems = useMemo(
         () => [
@@ -84,6 +90,7 @@ export const NavBar: FC = () => {
                     tw={"opacity-0 transition-opacity"}
                     css={processingCount > 0 ? tw`opacity-100` : ""}
                 ></div>
+                {notifications && <NotificationBellDropdown notifications={notifications} />}
                 <NavElement
                     item={{
                         display: t("navbar.management"),

@@ -27,6 +27,7 @@ import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
 import { startEloInfluxTask } from "./tasks/eloInfluxTask";
+import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
 
 declare global {
     interface BigInt {
@@ -90,6 +91,7 @@ app.use("/api/contest", ContestHandler);
 app.use("/api/problem", ProblemHandler);
 app.use("/api/submission", SubmissionHandler);
 app.use("/api/stats", StatsHandler);
+app.use("/api/notifications", NotificationsHandler);
 
 app.get("/", (req, res) => respond(res, StatusCodes.OK));
 

@@ -9,6 +9,7 @@ import {
     Organisation,
     OrganisationMember,
     Problem,
+    SiteNotification,
 } from "@kontestis/models";
 import { ClusterSubmission } from "@kontestis/models";
 import { Contest } from "@kontestis/models";
@@ -56,6 +57,7 @@ import { migration_add_final_score_to_exam_final_submissions } from "./migration
 import { migration_add_exam_scores_to_contest_member } from "./migrations/0034_add_exam_scores_to_contest_member";
 import { migration_add_reviewed_to_exam_final_submissions } from "./migrations/0035_add_reviewed_to_exam_final_submissions";
 import { migration_add_evaluation_language_to_problem } from "./migrations/0036_add_evaluation_language_to_problem";
+import { migration_add_notifications } from "./migrations/0037_add_notifications";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -74,6 +76,7 @@ export const Database = new ScylloClient<{
     organisation_members: OrganisationMember;
     exam_final_submissions: ExamFinalSubmission;
     exam_grading_scales: ExamGradingScale;
+    notifications: SiteNotification;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -123,6 +126,7 @@ const migrations: Migration<any>[] = [
     migration_add_exam_scores_to_contest_member,
     migration_add_reviewed_to_exam_final_submissions,
     migration_add_evaluation_language_to_problem,
+    migration_add_notifications,
 ];
 
 export const initDatabase = async () => {

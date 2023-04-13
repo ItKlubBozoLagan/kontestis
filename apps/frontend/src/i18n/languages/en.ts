@@ -24,6 +24,14 @@ const I18nEn = {
         management: "Management",
         admin: "Admin",
     },
+    notifications: {
+        "contest-start": "Contest %1 has started!",
+        "contest-end": "Contest %1 has ended!",
+        "new-question": "A new question has been posted in %1",
+        "new-announcement": "There's a new announcement in %1",
+        "question-answer": "Your question has been answered in %1",
+        alert: "%1",
+    },
     helper: {
         tableNoContents: "None so far",
         shortWeekDayNames: "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
@@ -39,8 +47,8 @@ const I18nEn = {
         activity: {
             title: "Your activity",
         },
-        notifications: {
-            title: "Notifications & alerts",
+        alerts: {
+            title: "Site alerts",
             none: "None so far!",
         },
     },

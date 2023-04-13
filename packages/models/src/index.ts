@@ -13,6 +13,7 @@ export * from "./Organisation";
 export * from "./OrganisationMember";
 export * from "./permissions";
 export * from "./Problem";
+export * from "./SiteNotification";
 export * from "./Snowflake";
 export * from "./Submission";
 export * from "./SystemMetrics";
