@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import { FiArrowLeft } from "react-icons/all";
-import { useParams } from "react-router";
-import { Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 
 import { PageTitle } from "../../../components/PageTitle";
 import { Translated } from "../../../components/Translated";
@@ -21,12 +20,17 @@ export const OrganisationManagementPage: FC = () => {
 
     const { t } = useTranslation();
 
+    const navigate = useNavigate();
+
     return (
         <div tw={"w-full flex flex-col"}>
             <div tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}>
-                <Link to={"/"} tw={"flex gap-2 items-center text-lg"}>
+                <div
+                    onClick={() => navigate(-1)}
+                    tw={"flex gap-2 items-center text-lg cursor-pointer"}
+                >
                     <FiArrowLeft size={"16px"} /> {t("organisations.management.backButton")}
-                </Link>
+                </div>
             </div>
             <PageTitle>
                 <Translated translationKey="organisations.management.title">

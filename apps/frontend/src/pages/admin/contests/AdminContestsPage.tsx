@@ -8,7 +8,7 @@ export const AdminContestsPage: FC = () => {
 
     return (
         <div tw={"w-full flex flex-col items-center gap-4"}>
-            <span tw={"text-lg"}>Admin can manage contests in the management page</span>
+            <span tw={"text-lg"}>Admins can manage contests in the management page</span>
             <SimpleButton onClick={() => navigate("/management")}>Go to management</SimpleButton>
         </div>
     );
