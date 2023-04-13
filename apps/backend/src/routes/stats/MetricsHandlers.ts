@@ -16,8 +16,13 @@ MetricsHandlers.get("/", async (req, res) => {
     if (!hasPermission(user.permissions, AdminPermissions.ADMIN))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
+    const metrics = await getSystemMetrics();
+
     res.header("Cache-Control", "no-store");
-    respond(res, StatusCodes.OK, await getSystemMetrics());
+    respond(res, StatusCodes.OK, {
+        ...metrics,
+        unix_time: Math.floor(Date.now() / 1000),
+    });
 });
 
 export { MetricsHandlers };
