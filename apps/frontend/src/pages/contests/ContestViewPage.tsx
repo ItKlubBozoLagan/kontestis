@@ -97,7 +97,7 @@ export const ContestViewPage: FC = () => {
                 <div tw={"w-full flex justify-stretch gap-4"}>
                     <TitledSection
                         title={t("contests.individual.announcements.label")}
-                        tw={"gap-y-0 w-full"}
+                        tw={"gap-y-2 w-full"}
                     >
                         {(announcements ?? []).map((announcement) => (
                             <span

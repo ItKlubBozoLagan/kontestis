@@ -1,6 +1,6 @@
 import { SiteNotification, SiteNotificationType } from "@kontestis/models";
 import { toCroatianLocale } from "@kontestis/utils";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import {
     AiFillCaretDown,
@@ -14,6 +14,7 @@ import {
 import tw from "twin.macro";
 
 import { useReadNotifications } from "../hooks/notifications/useReadNotifications";
+import { useDocumentEvent } from "../hooks/useDocumentEvent";
 import { R } from "../util/remeda";
 import { Translated } from "./Translated";
 
@@ -31,6 +32,8 @@ const NotificationTypeIconMap: Record<SiteNotificationType, IconType> = {
 };
 
 export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
+    const expandedReference = useRef<HTMLDivElement | null>(null);
+
     const [expanded, setExpanded] = useState(false);
     const [listExpanded, setListExpanded] = useState(false);
     const [readTimeout, setReadTimeout] = useState<ReturnType<typeof setTimeout>>();
@@ -67,6 +70,22 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
         );
     }, [expanded]);
 
+    useDocumentEvent("click", (event) => {
+        const { current } = expandedReference;
+
+        if (!current || !(event.target instanceof HTMLElement)) return;
+
+        if (current.contains(event.target)) return;
+
+        setExpanded(false);
+    });
+
+    useEffect(() => {
+        if (expanded) return;
+
+        setListExpanded(false);
+    }, [expanded]);
+
     return (
         <div>
             <div tw={"flex items-center text-neutral-600 cursor-pointer relative"}>
@@ -77,6 +96,7 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
             </div>
             {expanded && (
                 <div
+                    ref={expandedReference}
                     tw={
                         "absolute z-10 top-14 w-[300px] bg-neutral-100 border-2 border-solid border-neutral-300 flex flex-col"
                     }
