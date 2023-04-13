@@ -31,7 +31,7 @@ const MemberBox: FC<Properties> = ({ user }) => {
     }, [modifyMutation]);
 
     return (
-        <div tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-black"}>
+        <div tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-neutral-400"}>
             <PermissionsModal
                 isOpen={modalOpen}
                 onRequestClose={() => setModalOpen(false)}

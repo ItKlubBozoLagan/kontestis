@@ -17,7 +17,7 @@ export const TitledSection: FC<Properties> = ({
 }) => {
     return (
         <div
-            tw={"w-full flex flex-col items-center border-solid border-2 border-neutral-200"}
+            tw={"w-full flex flex-col items-center border-solid border-2 border-neutral-300"}
             css={small ? { width: "min-content" } : ""}
             style={parentStyle}
         >

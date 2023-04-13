@@ -75,7 +75,7 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
     return (
         <div
             key={member.id.toString()}
-            tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-black"}
+            tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-neutral-400"}
         >
             <PermissionsModal
                 isOpen={modalOpen}
