@@ -1,4 +1,5 @@
 import { KubernetesSystemMetrics } from "@kontestis/models";
+import { cutText } from "@kontestis/utils";
 import { FC, useState } from "react";
 import { FiMinus, FiPlus } from "react-icons/all";
 
@@ -39,7 +40,7 @@ export const PodsBox: FC<Properties> = ({ kubeData }) => {
                     <div tw={"flex flex-col pl-2"}>
                         {kubeData.sisterPodNames.map((it) => (
                             <span key={it} tw={"text-base"}>
-                                {it}
+                                {cutText(it, 22)}
                             </span>
                         ))}
                     </div>

@@ -1,4 +1,5 @@
 import { KubernetesSystemMetrics } from "@kontestis/models";
+import { cutText } from "@kontestis/utils";
 import { FC, useState } from "react";
 import { FiMinus, FiPlus } from "react-icons/all";
 
@@ -79,7 +80,9 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
                                     >
                                         <div tw={"flex gap-2 justify-between"}>
                                             <span tw={"font-bold"}>OS</span>
-                                            <span tw={"font-mono"}>{node.osPrettyName}</span>
+                                            <span tw={"font-mono"}>
+                                                {cutText(node.osPrettyName, 18)}
+                                            </span>
                                         </div>
                                         <div tw={"flex gap-2 justify-between"}>
                                             <span tw={"font-bold"}>CPUs - {node.cpus}</span>
