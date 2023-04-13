@@ -21,15 +21,16 @@ const rangeItemLengthMap: Record<Range, number> = {
 export const fillIfEmpty = <K extends string>(
     source: InfluxAggregateNumberResult<K>,
     key: K,
-    range: Range
+    range: Range,
+    alternateSize?: number
 ): InfluxAggregateNumberResult<K> => {
-    if (source.length > 0) return source.slice(0, rangeItemLengthMap[range]);
+    if (source.length > 0) return source.slice(0, alternateSize ?? rangeItemLengthMap[range]);
 
     const now = new Date();
 
     switch (range) {
         case "24h":
-            return Array.from({ length: 24 }, (_, index) => ({
+            return Array.from({ length: alternateSize ?? 24 }, (_, index) => ({
                 time: new Date(
                     now.getFullYear(),
                     now.getMonth(),
@@ -40,12 +41,15 @@ export const fillIfEmpty = <K extends string>(
             })) as InfluxAggregateNumberResult<K>;
         case "7d":
         case "30d":
-            return Array.from({ length: range === "7d" ? 7 : 30 }, (_, index) => ({
-                time: new Date(now.getFullYear(), now.getMonth(), now.getDate() - index),
-                [key]: 0,
-            })) as InfluxAggregateNumberResult<K>;
+            return Array.from(
+                { length: alternateSize ?? (range === "7d" ? 7 : 30) },
+                (_, index) => ({
+                    time: new Date(now.getFullYear(), now.getMonth(), now.getDate() - index),
+                    [key]: 0,
+                })
+            ) as InfluxAggregateNumberResult<K>;
         case "1y":
-            return Array.from({ length: 12 }, (_, index) => ({
+            return Array.from({ length: alternateSize ?? 12 }, (_, index) => ({
                 time: new Date(now.getFullYear(), now.getMonth() - index),
                 [key]: 0,
             })) as InfluxAggregateNumberResult<K>;

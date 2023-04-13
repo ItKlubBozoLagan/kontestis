@@ -90,7 +90,7 @@ export const YearActivityCalendar = <T extends string>({
         [dataset]
     );
 
-    const maxDay = useMemo(() => Math.max(...dataset.map((it) => it.value)), [dataset]);
+    const maxDay = useMemo(() => Math.max(1, ...dataset.map((it) => it.value)), [dataset]);
 
     const total = useMemo(
         () => dataset.reduce((accumulator, current) => accumulator + current.value, 0),

@@ -96,15 +96,20 @@ StatsHandler.get(
         respond(
             res,
             StatusCodes.OK,
-            await Influx.aggregateCountPerWindow(
-                "submissions",
-                "1d",
-                {
-                    userId: user.id.toString(),
-                    orgId: organisation.id.toString(),
-                    successful: !accepted || accepted === "false" ? undefined : accepted,
-                },
-                "-1y"
+            fillIfEmpty(
+                await Influx.aggregateCountPerWindow(
+                    "submissions",
+                    "1d",
+                    {
+                        userId: user.id.toString(),
+                        orgId: organisation.id.toString(),
+                        successful: !accepted || accepted === "false" ? undefined : accepted,
+                    },
+                    "-1y"
+                ),
+                "count",
+                "30d",
+                365
             )
         );
     }
