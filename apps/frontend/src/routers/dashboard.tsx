@@ -24,6 +24,7 @@ import { ContestResultsPage } from "../pages/management/contest/results/ContestR
 import { FinalSubmissionReviewPage } from "../pages/management/contest/results/FinalSubmissionReviewPage";
 import { FinalSubmissionsPage } from "../pages/management/contest/results/FinalSubmissionsPage";
 import { ManagementPage } from "../pages/management/ManagementPage";
+import { OrganisationManagementPage } from "../pages/organisation/management/OrganisationManagementPage";
 import { ProblemsPage } from "../pages/problems/ProblemsPage";
 import { ProblemViewPage } from "../pages/problems/ProblemViewPage";
 import { Root } from "../pages/Root";
@@ -65,6 +66,10 @@ export const dashboardRoutes: RouteObject[] = [
             {
                 path: "review/:final_submission_id",
                 element: <FinalSubmissionReviewPage />,
+            },
+            {
+                path: "manage/:organisationId",
+                element: <OrganisationManagementPage />,
             },
             {
                 path: "admin",

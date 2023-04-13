@@ -1,22 +1,18 @@
 import { FC, useEffect, useState } from "react";
-import { FiEdit, FiPlus } from "react-icons/all";
-import { Link } from "react-router-dom";
+import { FiPlus } from "react-icons/all";
 
 import { PageTitle } from "../../components/PageTitle";
 import { SimpleButton } from "../../components/SimpleButton";
-import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllOrganisations } from "../../hooks/organisation/useAllOrganisations";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useAuthStore } from "../../state/auth";
 import { useOrganisationStore } from "../../state/organisation";
 import { useTokenStore } from "../../state/token";
 import { CreateOrganisationModal } from "./CreateOrganisationModal";
+import { OrganisationTable } from "./OrganisationsTable";
 
 export const OrganisationPage: FC = () => {
     const { setIsSelected, setOrganisationId, skipOrganisationSelect, setSkipOrganisationSelect } =
         useOrganisationStore();
-
-    const { user } = useAuthStore();
     const { setToken } = useTokenStore();
 
     const { data: organisations } = useAllOrganisations();
@@ -44,44 +40,16 @@ export const OrganisationPage: FC = () => {
                 onRequestClose={() => setModalOpen(false)}
                 onAfterClose={() => setModalOpen(false)}
             />
-            <Table tw={"w-full"}>
-                <thead>
-                    <TableHeadRow>
-                        <TableHeadItem>{t("organisations.page.table.name")}</TableHeadItem>
-                        <TableHeadItem>{t("organisations.page.table.details")}</TableHeadItem>
-                    </TableHeadRow>
-                </thead>
-                <tbody>
-                    {(organisations ?? [])
-                        .sort((a, b) => Number(a.id) - Number(b.id))
-                        .map((organisation) => (
-                            <TableRow key={organisation.id + ""}>
-                                <TableItem
-                                    tw={"cursor-pointer hover:text-sky-800 w-full"}
-                                    onClick={async () => {
-                                        setIsSelected(true);
-                                        setOrganisationId(organisation.id);
-                                        setSkipOrganisationSelect(false);
-                                    }}
-                                >
-                                    {organisation.name}
-                                </TableItem>
-                                <TableItem tw={"cursor-pointer hover:text-sky-800"}>
-                                    {organisation.owner !== user.id ? (
-                                        <></>
-                                    ) : (
-                                        <Link
-                                            to={"/manage/" + organisation.id}
-                                            tw={"flex items-center"}
-                                        >
-                                            <FiEdit size={"18px"} />
-                                        </Link>
-                                    )}
-                                </TableItem>
-                            </TableRow>
-                        ))}
-                </tbody>
-            </Table>
+            {organisations && (
+                <OrganisationTable
+                    organisations={organisations}
+                    clickFunc={async (organisation) => {
+                        setIsSelected(true);
+                        setOrganisationId(organisation.id);
+                        setSkipOrganisationSelect(false);
+                    }}
+                />
+            )}
             <SimpleButton type={"button"} onClick={() => setToken("")}>
                 {t("login.logout")}
             </SimpleButton>
