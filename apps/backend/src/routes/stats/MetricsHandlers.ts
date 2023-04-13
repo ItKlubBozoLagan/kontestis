@@ -16,7 +16,7 @@ MetricsHandlers.get("/", async (req, res) => {
     if (!hasPermission(user.permissions, AdminPermissions.ADMIN))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    res.header("Cache-Control", "no-cache");
+    res.header("Cache-Control", "no-store");
     respond(res, StatusCodes.OK, await getSystemMetrics());
 });
 
