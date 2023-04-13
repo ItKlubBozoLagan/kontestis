@@ -254,7 +254,31 @@ const start = performance.now();
         );
     }
 
-    const entries = Object.entries(ambiguousDependencies);
+    const entries = Object.entries(ambiguousDependencies).map(
+        ([match, items]) =>
+            [
+                match,
+                items
+                    .sort((a, b) => {
+                        if (a.version !== b.version) return a.version.localeCompare(b.version);
+
+                        if (a.source !== b.source) return a.source.localeCompare(b.source);
+
+                        if (a.dev !== b.dev) return a.dev ? 1 : -1;
+
+                        return 0;
+                    })
+                    .filter((it, index, array) =>
+                        index === 0
+                            ? true
+                            : !(
+                                  it.source === array[index - 1].source &&
+                                  it.version === array[index - 1].version &&
+                                  it.dev === array[index - 1].dev
+                              )
+                    ),
+            ] as const
+    );
 
     if (entries.length === 0) {
         Logger.info("All good!");
