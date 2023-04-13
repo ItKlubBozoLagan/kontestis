@@ -1,4 +1,4 @@
-name: "GCP auto-deployment"
+name: "🚚 GCP auto-deployment"
 
 on:
   push:

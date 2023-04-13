@@ -1,4 +1,4 @@
-name: Deploy to Edgeserver
+name: "🚚 Deploy to Edgeserver"
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy:
-    name: "🛠 Build & Deploy"
+    name: "🚚 Build & Deploy"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
