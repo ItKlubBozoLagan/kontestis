@@ -148,12 +148,14 @@ export const YearActivityCalendar = <T extends string>({
                                 css={!useRandomData ? tw`bg-neutral-200` : ""}
                                 onClick={() => setUseRandomData((data) => !data)}
                             >
-                                random data
+                                {t("account.stats.submissions.toggles.showRandom")}
                             </div>
                         </div>
                     )}
                 </div>
-                <span>Total: {total}</span>
+                <span>
+                    {t("account.stats.submissions.total")}: {total}
+                </span>
             </div>
             <div tw={"w-full relative flex"}>
                 {loading ? (
@@ -185,7 +187,23 @@ export const YearActivityCalendar = <T extends string>({
                                                 transform: "translateX(-50%)",
                                             }}
                                         >
-                                            <span tw={"font-bold"}>{value} submissions</span> on{" "}
+                                            <span tw={"font-bold"}>
+                                                {value}{" "}
+                                                {value % 10 === 1
+                                                    ? t(
+                                                          "account.stats.submissions.hover.oneSubmission"
+                                                      )
+                                                    : value % 10 >= 2 &&
+                                                      value % 10 <= 4 &&
+                                                      value < 11 &&
+                                                      value > 14
+                                                    ? t(
+                                                          "account.stats.submissions.hover.fewSubmissions"
+                                                      )
+                                                    : t(
+                                                          "account.stats.submissions.hover.moreSubmissions"
+                                                      )}
+                                            </span>{" "}
                                             {time.getDate() + 1}.{" "}
                                             {RangeFormatters["1y"](time, index, t)}
                                         </div>

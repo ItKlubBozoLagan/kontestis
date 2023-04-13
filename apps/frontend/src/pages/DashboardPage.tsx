@@ -50,32 +50,34 @@ export const DashboardPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col gap-6 px-8"}>
             <Header />
-            <BigTitledSection header={"Basic information"} tw={"border-neutral-300"}>
+            <BigTitledSection header={t("dashboard.basicInfo.title")} tw={"border-neutral-300"}>
                 <div tw={"w-full grid grid-cols-3 gap-8 px-12"}>
-                    <MetricsInfoBox title={t("dashboard.total.contests")}>
+                    <MetricsInfoBox title={t("dashboard.basicInfo.contests")}>
                         {contests?.length ?? 0}
                     </MetricsInfoBox>
-                    <MetricsInfoBox title={t("dashboard.total.problems")}>
+                    <MetricsInfoBox title={t("dashboard.basicInfo.problems")}>
                         {totalProblems}
                     </MetricsInfoBox>
-                    <MetricsInfoBox title={t("dashboard.total.submissions")}>
+                    <MetricsInfoBox title={t("dashboard.basicInfo.submissions")}>
                         {submissions?.length ?? 0}
                     </MetricsInfoBox>
                 </div>
             </BigTitledSection>
-            <BigTitledSection header={"Your activity"} tw={"border-neutral-300"}>
+            <BigTitledSection header={t("dashboard.activity.title")} tw={"border-neutral-300"}>
                 <div tw={"w-fit"}>
                     <YearActivityCalendar
-                        title={"Submissions"}
+                        title={t("account.stats.submissions.title")}
                         dataset={submissionDataset}
                         loading={isSubmissionsLoading}
-                        toggles={["show accepted"]}
+                        toggles={[t("account.stats.submissions.toggles.showAccepted")]}
                         onToggleUpdate={(_, value) => setSubmissionsAccepted(value)}
                     />
                 </div>
             </BigTitledSection>
-            <BigTitledSection header={"Notifications & alerts"} tw={"border-neutral-300"}>
-                <span tw={"text-center text-lg opacity-80"}>None so far!</span>
+            <BigTitledSection header={t("dashboard.notifications.title")} tw={"border-neutral-300"}>
+                <span tw={"text-center text-lg opacity-80"}>
+                    {t("dashboard.notifications.none")}
+                </span>
             </BigTitledSection>
         </div>
     );

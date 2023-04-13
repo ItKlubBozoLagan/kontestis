@@ -30,10 +30,18 @@ export default {
         shortMonthNames: "Sij,Velj,Ožu,Tra,Svi,Lip,Srp,Kol,Ruj,Lis,Stu,Pro",
     },
     dashboard: {
-        total: {
+        basicInfo: {
+            title: "Osnovne informacije",
             contests: "Ukupno natjecanja",
             problems: "Ukupno zadataka",
             submissions: "Ukupno rješenja",
+        },
+        activity: {
+            title: "Vaša aktivnost",
+        },
+        notifications: {
+            title: "Obavijesti",
+            none: "Nema za sada!",
         },
     },
     contests: {
@@ -361,6 +369,24 @@ export default {
             admin: "Administrator",
             owner: "Vlasnik",
         },
+        stats: {
+            submissions: {
+                title: "Poslana rješenja",
+                toggles: {
+                    showAccepted: "prikaži točna",
+                    showRandom: "nasumično",
+                },
+                total: "Ukupno",
+                hover: {
+                    oneSubmission: "Poslano rješenje, ",
+                    fewSubmissions: "Poslana rješenja, ",
+                    moreSubmissions: "Poslanih rješenja, ",
+                },
+            },
+            elo: {
+                title: "Elo",
+            },
+        },
     },
     organisations: {
         page: {
@@ -415,6 +441,31 @@ export default {
                 loginLabel: "Prijave",
                 loginToggleNewUsers: "nove",
                 loginToggleUnique: "unikatne",
+            },
+            metrics: {
+                rawSystem: {
+                    title: "Server",
+                    memory: "Memorija",
+                    hostname: "Ime hosta",
+                    operatingSystem: "Operativni sustav",
+                },
+                kubernetes: {
+                    memory: "Memorija",
+                    datasets: {
+                        kontestis: "Kontestis",
+                        cluster: "Klaster",
+                    },
+                    nodes: {
+                        title: "Čvorovi",
+                        stats: {
+                            memory: "Memorija",
+                        },
+                    },
+                    pods: {
+                        title: "Razmjer aplikacije",
+                        label: "Čahure",
+                    },
+                },
             },
         },
     },

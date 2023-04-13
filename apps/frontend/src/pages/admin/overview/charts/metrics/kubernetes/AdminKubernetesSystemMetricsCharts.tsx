@@ -2,6 +2,7 @@ import { KubernetesSystemMetrics } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
 
 import { Dataset, HistoryLineChart } from "../../../../../../components/HistoryLineChart";
+import { useTranslation } from "../../../../../../hooks/useTranslation";
 import { formatNewUsageDataset, generateEmptyDataset } from "../datasets";
 import { MetricsInfoBox } from "./MetricsInfoBox";
 import { NodesBox } from "./NodesBox";
@@ -58,6 +59,8 @@ export const AdminKubernetesSystemMetricsCharts: FC<Properties> = ({ metrics }) 
         );
     }, [metrics]);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"flex flex-col gap-4"}>
             <div tw={"grid grid-cols-4 gap-4"}>
@@ -71,10 +74,11 @@ export const AdminKubernetesSystemMetricsCharts: FC<Properties> = ({ metrics }) 
                         </span>
                     </div>
                 </MetricsInfoBox>
-                <MetricsInfoBox title={"Memory"}>
+                <MetricsInfoBox title={t("admin.overview.metrics.kubernetes.memory")}>
                     <div tw={"flex gap-2 justify-between text-base"}>
                         <span tw={"font-bold"}>
-                            Memory - {Math.ceil(metrics.memoryMegabytes / 1024)} GiB
+                            {t("admin.overview.metrics.kubernetes.memory")} -{" "}
+                            {Math.ceil(metrics.memoryMegabytes / 1024)} GiB
                         </span>
                         <span tw={"font-mono"}>
                             {(
@@ -91,16 +95,22 @@ export const AdminKubernetesSystemMetricsCharts: FC<Properties> = ({ metrics }) 
                     title={"CPU"}
                     live
                     datasets={[datasets.cpu, kontestisDatasets.memory]}
-                    datasetLabels={["Cluster", "Kontestis"]}
+                    datasetLabels={[
+                        t("admin.overview.metrics.kubernetes.datasets.cluster"),
+                        t("admin.overview.metrics.kubernetes.datasets.kontestis"),
+                    ]}
                     loading={datasets.cpu.length === 0 || datasets.cpu.length === 3}
                     yMin={0}
                     yMax={100}
                 />
                 <HistoryLineChart
-                    title={"Memory"}
+                    title={t("admin.overview.metrics.kubernetes.memory")}
                     live
                     datasets={[datasets.memory, kontestisDatasets.memory]}
-                    datasetLabels={["Cluster", "Kontestis"]}
+                    datasetLabels={[
+                        t("admin.overview.metrics.kubernetes.datasets.cluster"),
+                        t("admin.overview.metrics.kubernetes.datasets.kontestis"),
+                    ]}
                     loading={datasets.memory.length === 0 || kontestisDatasets.memory.length === 0}
                     yMin={0}
                     yMax={100}

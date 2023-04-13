@@ -3,6 +3,7 @@ import { cutText } from "@kontestis/utils";
 import { FC, useState } from "react";
 import { FiMinus, FiPlus } from "react-icons/all";
 
+import { useTranslation } from "../../../../../../hooks/useTranslation";
 import { MetricsInfoBox } from "./MetricsInfoBox";
 
 type Properties = {
@@ -12,8 +13,10 @@ type Properties = {
 export const PodsBox: FC<Properties> = ({ kubeData }) => {
     const [expanded, setExpanded] = useState(false);
 
+    const { t } = useTranslation();
+
     return (
-        <MetricsInfoBox title={"Application scale"}>
+        <MetricsInfoBox title={t("admin.overview.metrics.kubernetes.pods.title")}>
             <div tw={"flex flex-col gap-1"}>
                 <div tw={"flex justify-between gap-2"}>
                     <div tw={"flex items-center gap-1"}>
@@ -32,7 +35,9 @@ export const PodsBox: FC<Properties> = ({ kubeData }) => {
                                 style={{ opacity: expanded ? 0 : 1 }}
                             />
                         </div>
-                        <span tw={"font-bold text-base pl-5"}>Pods</span>
+                        <span tw={"font-bold text-base pl-5"}>
+                            {t("admin.overview.metrics.kubernetes.pods.label")}
+                        </span>
                     </div>
                     <span tw={"text-base font-mono"}>{kubeData.appScale}</span>
                 </div>

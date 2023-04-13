@@ -3,6 +3,7 @@ import { cutText } from "@kontestis/utils";
 import { FC, useState } from "react";
 import { FiMinus, FiPlus } from "react-icons/all";
 
+import { useTranslation } from "../../../../../../hooks/useTranslation";
 import { R } from "../../../../../../util/remeda";
 import { MetricsInfoBox } from "./MetricsInfoBox";
 
@@ -17,8 +18,10 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
         R.fromPairs(kubeData.nodes.map((it) => [it.name, false]))
     );
 
+    const { t } = useTranslation();
+
     return (
-        <MetricsInfoBox title={"Nodes"}>
+        <MetricsInfoBox title={t("admin.overview.metrics.kubernetes.nodes.title")}>
             <div tw={"flex flex-col gap-1"}>
                 <div tw={"flex justify-between gap-2"}>
                     <div tw={"flex items-center gap-1"}>
@@ -37,7 +40,9 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
                                 style={{ opacity: expanded ? 0 : 1 }}
                             />
                         </div>
-                        <span tw={"font-bold text-base pl-5"}>Nodes</span>
+                        <span tw={"font-bold text-base pl-5"}>
+                            {t("admin.overview.metrics.kubernetes.nodes.title")}
+                        </span>
                     </div>
                     <span tw={"text-base font-mono"}>{kubeData.appScale}</span>
                 </div>
@@ -92,8 +97,10 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
                                         </div>
                                         <div tw={"flex gap-2 justify-between"}>
                                             <span tw={"font-bold"}>
-                                                Memory - {Math.ceil(node.memoryMegabytes / 1024)}{" "}
-                                                GiB
+                                                {t(
+                                                    "admin.overview.metrics.kubernetes.nodes.stats.memory"
+                                                )}{" "}
+                                                - {Math.ceil(node.memoryMegabytes / 1024)} GiB
                                             </span>
                                             <span tw={"font-mono"}>
                                                 {(

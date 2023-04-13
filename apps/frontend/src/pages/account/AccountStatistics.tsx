@@ -6,6 +6,7 @@ import { StatisticRange } from "../../hooks/stats/types";
 import { useEloStat } from "../../hooks/stats/useEloStat";
 import { useSubmissionStat } from "../../hooks/stats/useSubmissionStat";
 import { useFormatCountStat } from "../../hooks/useFormatCountStat";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export const AccountStatistics: FC = () => {
     const [eloRange, setEloRange] = useState<StatisticRange>("24h");
@@ -33,17 +34,19 @@ export const AccountStatistics: FC = () => {
 
     const submissionDataset = useFormatCountStat(submissions);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-max min-w-[90%] mt-4 flex flex-col items-center gap-8"}>
             <YearActivityCalendar
-                title={"Submissions"}
+                title={t("account.stats.elo.title")}
                 dataset={submissionDataset}
                 loading={isSubmissionsLoading}
-                toggles={["show accepted"]}
+                toggles={[t("account.stats.submissions.toggles.showAccepted")]}
                 onToggleUpdate={(_, value) => setSubmissionsAccepted(value)}
             />
             <HistoryLineChart
-                title={"Elo"}
+                title={t("account.stats.elo.title")}
                 datasets={[eloDataset]}
                 activeRange={eloRange}
                 onRangeChange={setEloRange}

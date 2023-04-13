@@ -9,6 +9,7 @@ import { theme } from "twin.macro";
 import { BigTitledSection } from "../../../../../components/BigTitledSection";
 import { LoadingSpinner } from "../../../../../components/LoadingSpinner";
 import { useSystemMetrics } from "../../../../../hooks/stats/metrics/useSystemMetrics";
+import { useTranslation } from "../../../../../hooks/useTranslation";
 import { AdminRawSystemMetricsCharts } from "./AdminRawSystemMetricsCharts";
 import { AdminKubernetesSystemMetricsCharts } from "./kubernetes/AdminKubernetesSystemMetricsCharts";
 
@@ -33,6 +34,8 @@ export const AdminSystemMetricsCharts: FC = () => {
         refetchInterval: 1000,
     });
 
+    const { t } = useTranslation();
+
     if (!metrics || isMetricsLoading)
         return (
             <div tw={"w-full h-64 flex items-center justify-center"}>
@@ -48,7 +51,13 @@ export const AdminSystemMetricsCharts: FC = () => {
                 header={
                     <div tw={"flex gap-2 items-center"}>
                         <Icon color={iconColor} size={iconSize} />
-                        <span>{capitalize(metrics.type === "raw" ? "Server" : metrics.type)}</span>
+                        <span>
+                            {capitalize(
+                                metrics.type === "raw"
+                                    ? t("admin.overview.metrics.rawSystem.title")
+                                    : metrics.type
+                            )}
+                        </span>
                     </div>
                 }
             >

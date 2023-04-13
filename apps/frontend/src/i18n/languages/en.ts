@@ -30,10 +30,18 @@ const I18nEn = {
         shortMonthNames: "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
     },
     dashboard: {
-        total: {
+        basicInfo: {
+            title: "Basic information",
             contests: "Total Contests",
             problems: "Total Problems",
             submissions: "Total Submissions",
+        },
+        activity: {
+            title: "Your activity",
+        },
+        notifications: {
+            title: "Notifications & alerts",
+            none: "None so far!",
         },
     },
     contests: {
@@ -368,6 +376,24 @@ const I18nEn = {
             admin: "Admin",
             owner: "Owner",
         },
+        stats: {
+            submissions: {
+                title: "Submissions",
+                toggles: {
+                    showAccepted: "show accepted",
+                    showRandom: "random data",
+                },
+                total: "Total",
+                hover: {
+                    oneSubmission: "Submission on",
+                    fewSubmissions: "Submissions on",
+                    moreSubmissions: "Submissions on",
+                },
+            },
+            elo: {
+                title: "Elo",
+            },
+        },
     },
     organisations: {
         page: {
@@ -422,6 +448,31 @@ const I18nEn = {
                 loginLabel: "Logins",
                 loginToggleNewUsers: "new users",
                 loginToggleUnique: "unique",
+            },
+            metrics: {
+                rawSystem: {
+                    title: "Server",
+                    memory: "Memory",
+                    hostname: "Hostname",
+                    operatingSystem: "Operating system",
+                },
+                kubernetes: {
+                    memory: "Memory",
+                    datasets: {
+                        kontestis: "Kontestis",
+                        cluster: "Cluster",
+                    },
+                    nodes: {
+                        title: "Nodes",
+                        stats: {
+                            memory: "Memory",
+                        },
+                    },
+                    pods: {
+                        title: "Application scale",
+                        label: "Pods",
+                    },
+                },
             },
         },
     },

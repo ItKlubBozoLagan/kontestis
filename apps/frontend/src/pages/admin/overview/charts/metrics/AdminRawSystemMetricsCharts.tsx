@@ -2,6 +2,7 @@ import { RawSystemMetrics } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
 
 import { HistoryLineChart } from "../../../../../components/HistoryLineChart";
+import { useTranslation } from "../../../../../hooks/useTranslation";
 import { formatNewUsageDataset, generateEmptyDataset, UsageDatasetsState } from "./datasets";
 import { MetricsInfoBox } from "./kubernetes/MetricsInfoBox";
 
@@ -19,6 +20,8 @@ export const AdminRawSystemMetricsCharts: FC<Properties> = ({ metrics }) => {
         setDatasets((oldDataset) => formatNewUsageDataset(new Date(), oldDataset, metrics, 40));
     }, [metrics]);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"flex flex-col gap-4"}>
             <div tw={"grid grid-cols-4 gap-4"}>
@@ -30,11 +33,12 @@ export const AdminRawSystemMetricsCharts: FC<Properties> = ({ metrics }) => {
                         </span>
                     </div>
                 </MetricsInfoBox>
-                <MetricsInfoBox title={"Memory"}>
+                <MetricsInfoBox title={t("admin.overview.metrics.rawSystem.memory")}>
                     <div tw={"flex gap-2 justify-between text-base"}>
                         <span tw={"font-bold"}>
                             {/* not bit-shifting because precision */}
-                            Memory - {Math.ceil(metrics.memoryMegabytes / 1024)} GiB
+                            {t("admin.overview.metrics.rawSystem.memory")} -{" "}
+                            {Math.ceil(metrics.memoryMegabytes / 1024)} GiB
                         </span>
                         <span tw={"font-mono"}>
                             {(
@@ -45,12 +49,12 @@ export const AdminRawSystemMetricsCharts: FC<Properties> = ({ metrics }) => {
                         </span>
                     </div>
                 </MetricsInfoBox>
-                <MetricsInfoBox title={"Operating System"}>
+                <MetricsInfoBox title={t("admin.overview.metrics.rawSystem.operatingSystem")}>
                     <div tw={"flex gap-2 justify-between text-base"}>
                         <span tw={"font-mono"}>{metrics.osPrettyName}</span>
                     </div>
                 </MetricsInfoBox>
-                <MetricsInfoBox title={"Hostname"}>
+                <MetricsInfoBox title={t("admin.overview.metrics.rawSystem.hostname")}>
                     <div tw={"flex gap-2 justify-between text-base"}>
                         <span tw={"font-mono"}>{metrics.hostname}</span>
                     </div>
@@ -66,7 +70,7 @@ export const AdminRawSystemMetricsCharts: FC<Properties> = ({ metrics }) => {
                     yMax={100}
                 />
                 <HistoryLineChart
-                    title={"Memory"}
+                    title={t("admin.overview.metrics.rawSystem.memory")}
                     live
                     datasets={[datasets.memory]}
                     loading={datasets.memory.length === 0}
