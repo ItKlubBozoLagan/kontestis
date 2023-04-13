@@ -468,6 +468,10 @@ export default {
                 },
             },
         },
+        users: {
+            title: "Korisnici",
+            editPermission: "Uredi dozvole",
+        },
     },
     permissions: {
         contest_member: {

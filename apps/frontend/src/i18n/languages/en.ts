@@ -475,6 +475,10 @@ const I18nEn = {
                 },
             },
         },
+        users: {
+            title: "Users",
+            editPermission: "Edit permissions",
+        },
     },
     permissions: {
         contest_member: {
