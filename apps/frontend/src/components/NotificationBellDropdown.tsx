@@ -6,16 +6,17 @@ import {
     AiFillCaretDown,
     AiFillCaretUp,
     FiAlertCircle,
-    FiAlertTriangle,
+    FiAlertOctagon,
     FiBell,
     FiClock,
     FiHelpCircle,
 } from "react-icons/all";
-import tw from "twin.macro";
+import tw, { theme } from "twin.macro";
 
 import { useReadNotifications } from "../hooks/notifications/useReadNotifications";
 import { useDocumentEvent } from "../hooks/useDocumentEvent";
 import { R } from "../util/remeda";
+import { Breadcrumb } from "./Breadcrumb";
 import { Translated } from "./Translated";
 
 type Properties = {
@@ -28,7 +29,7 @@ const NotificationTypeIconMap: Record<SiteNotificationType, IconType> = {
     "new-question": FiHelpCircle,
     "new-announcement": FiAlertCircle,
     "question-answer": FiHelpCircle,
-    alert: FiAlertTriangle,
+    alert: FiAlertOctagon,
 };
 
 export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
@@ -44,11 +45,7 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
     );
 
     const sortedNotifications = useMemo(
-        () =>
-            R.sortBy(
-                notifications.filter((it) => it.type !== "alert"),
-                [(it) => it.created_at, "desc"]
-            ),
+        () => R.sortBy(notifications, [(it) => it.created_at, "desc"]),
         [notifications]
     );
 
@@ -133,11 +130,34 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
                                             <Icon size={"16px"} />
                                             {toCroatianLocale(it.created_at)}
                                         </div>
-                                        <div>
-                                            {newNotificationIds.includes(it.id) && <span>* </span>}
-                                            <Translated translationKey={`notifications.${it.type}`}>
-                                                <span tw={"font-bold"}>{it.data}</span>
-                                            </Translated>
+                                        <div
+                                            css={
+                                                it.type === "alert"
+                                                    ? tw`flex flex-col gap-1 mt-1`
+                                                    : ""
+                                            }
+                                        >
+                                            {it.type === "alert" && (
+                                                <Breadcrumb color={theme`colors.red.300`}>
+                                                    Official
+                                                </Breadcrumb>
+                                            )}
+                                            <div>
+                                                {newNotificationIds.includes(it.id) && (
+                                                    <span>* </span>
+                                                )}
+                                                <Translated
+                                                    translationKey={`notifications.${it.type}`}
+                                                >
+                                                    <span
+                                                        css={
+                                                            it.type !== "alert" ? tw`font-bold` : ""
+                                                        }
+                                                    >
+                                                        {it.data + " "}
+                                                    </span>
+                                                </Translated>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

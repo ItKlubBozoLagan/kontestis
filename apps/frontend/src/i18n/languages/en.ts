@@ -30,7 +30,9 @@ const I18nEn = {
         "new-question": "A new question has been posted in %1",
         "new-announcement": "There's a new announcement in %1",
         "question-answer": "Your question has been answered in %1",
-        alert: "%1",
+        // must begin with a space, Translated component currently
+        //  has a bug where it doesn't handle messages beginning with a placeholder
+        alert: " %1",
     },
     helper: {
         tableNoContents: "None so far",

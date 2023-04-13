@@ -1,6 +1,8 @@
 import { Problem } from "@kontestis/models";
+import { toCroatianLocale } from "@kontestis/utils";
 import { useMemo, useState } from "react";
 import { FC } from "react";
+import { AiFillCaretDown, AiFillCaretUp } from "react-icons/all";
 import { useQueries } from "react-query";
 
 import { http, wrapAxios } from "../api/http";
@@ -11,6 +13,7 @@ import { useAllContests } from "../hooks/contest/useAllContests";
 import { useSubmissionStat } from "../hooks/stats/useSubmissionStat";
 import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
 import { useFormatCountStat } from "../hooks/useFormatCountStat";
+import { useSiteAlerts } from "../hooks/useSiteAlerts";
 import { useTranslation } from "../hooks/useTranslation";
 import { useAuthStore } from "../state/auth";
 import { MetricsInfoBox } from "./admin/overview/charts/metrics/kubernetes/MetricsInfoBox";
@@ -27,6 +30,10 @@ export const DashboardPage: FC = () => {
                 wrapAxios<Problem[]>(http.get("/problem", { params: { contest_id: contest.id } })),
         }))
     );
+
+    const [alertsExpanded, setAlertsExpanded] = useState(false);
+
+    const alerts = useSiteAlerts();
 
     const totalProblems = useMemo(
         () =>
@@ -64,7 +71,42 @@ export const DashboardPage: FC = () => {
                 </div>
             </BigTitledSection>
             <BigTitledSection header={t("dashboard.alerts.title")} tw={"border-neutral-300"}>
-                <span tw={"text-center text-lg opacity-80"}>{t("dashboard.alerts.none")}</span>
+                {alerts.length === 0 && (
+                    <span tw={"text-center text-lg opacity-80"}>{t("dashboard.alerts.none")}</span>
+                )}
+                <div tw={"w-full px-12 flex flex-col items-center gap-4"}>
+                    {alerts.slice(0, alertsExpanded ? 8 : 2).map((alert) => (
+                        <div
+                            key={alert.id.toString()}
+                            tw={
+                                "w-full text-lg flex flex-col bg-neutral-100 border border-solid border-neutral-400 p-2"
+                            }
+                        >
+                            <span tw={"text-neutral-600 text-sm"}>
+                                {toCroatianLocale(alert.created_at)}
+                            </span>
+                            <span tw={"text-base"}>{alert.data}</span>
+                        </div>
+                    ))}
+                    {alerts.length > 2 && (
+                        <div
+                            tw={"w-fit flex justify-center items-center gap-2 cursor-pointer"}
+                            onClick={() => setAlertsExpanded((previous) => !previous)}
+                        >
+                            {alertsExpanded ? (
+                                <>
+                                    <AiFillCaretUp />
+                                    Collapse
+                                </>
+                            ) : (
+                                <>
+                                    <AiFillCaretDown />
+                                    View older
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </BigTitledSection>
             <BigTitledSection header={t("dashboard.activity.title")} tw={"border-neutral-300"}>
                 <div tw={"w-fit"}>
