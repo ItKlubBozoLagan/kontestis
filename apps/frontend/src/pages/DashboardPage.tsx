@@ -39,7 +39,7 @@ export const DashboardPage: FC = () => {
 
     const [submissionsAccepted, setSubmissionsAccepted] = useState(false);
 
-    const { data: submissionStat, isLoading: isSubmissionsLoading } = useSubmissionStat({
+    const { data: submissionStat } = useSubmissionStat({
         accepted: submissionsAccepted,
     });
 
@@ -68,7 +68,7 @@ export const DashboardPage: FC = () => {
                     <YearActivityCalendar
                         title={t("account.stats.submissions.title")}
                         dataset={submissionDataset}
-                        loading={isSubmissionsLoading}
+                        loading={!submissionStat}
                         toggles={[t("account.stats.submissions.toggles.showAccepted")]}
                         onToggleUpdate={(_, value) => setSubmissionsAccepted(value)}
                     />
