@@ -40,7 +40,7 @@ export const PodsBox: FC<Properties> = ({ kubeData }) => {
                     <div tw={"flex flex-col pl-2"}>
                         {kubeData.sisterPodNames.map((it) => (
                             <span key={it} tw={"text-base"}>
-                                {cutText(it, 24)}
+                                {cutText(it, 26)}
                             </span>
                         ))}
                     </div>
