@@ -160,7 +160,7 @@ const start = performance.now();
     if (!rootInfo) {
         Logger.error("Couldn't find project root");
 
-        return;
+        throw undefined;
     }
 
     const [rootDirectory, workspaceFile] = rootInfo;
@@ -173,7 +173,7 @@ const start = performance.now();
     if (!parsed.success) {
         Logger.error(`Invalid workspace configuration: ${workspaceFile}`);
 
-        return;
+        throw undefined;
     }
 
     const packageGlobs = parsed.data.packages.map((it) => it.replace(/\/+$/, "") + "/package.json");
@@ -294,14 +294,18 @@ const start = performance.now();
             ...matches.map(
                 (match) =>
                     `  ${match.version} ${chalk.gray("from")} ${match.source}${
-                        match.dev ? chalk.yellowBright(" - Dev") : ""
+                        match.dev ? chalk.gray(" - ") + chalk.yellowBright("Dev") : ""
                     }`
             )
         );
     }
-})().finally(() => {
-    Logger.info(`Finished in ${(performance.now() - start).toFixed(2)}ms`);
 
-    // eslint-disable-next-line unicorn/no-process-exit
-    process.exit(1);
-});
+    throw undefined;
+})()
+    .finally(() => {
+        Logger.info(`Finished in ${(performance.now() - start).toFixed(2)}ms`);
+    })
+    .catch(() => {
+        // eslint-disable-next-line unicorn/no-process-exit
+        process.exit(1);
+    });
