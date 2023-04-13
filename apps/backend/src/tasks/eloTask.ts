@@ -6,6 +6,8 @@ import { Influx } from "../influx/Influx";
 import { createInfluxUInt } from "../influx/InfluxClient";
 import { computeELODifference, ContestMemberLeaderboardInfo } from "../lib/elo";
 import { Logger } from "../lib/logger";
+import { Redis } from "../redis/Redis";
+import { RedisKeys } from "../redis/RedisKeys";
 import { R } from "../utils/remeda";
 
 const calculateSolvingProbability = (rating: number, difficulty: number) => {
@@ -67,6 +69,12 @@ const calculateProblemDifficulties = (
 };
 
 const handleContest = async (contest: Contest) => {
+    const cacheKey = RedisKeys.TASK_ELO_PROCESSING(contest.id);
+
+    if (await Redis.exists(cacheKey)) return;
+
+    await Redis.set(cacheKey, contest.id.toString(), { EX: 60 });
+
     const members = await Database.selectFrom(
         "contest_members",
         "*",
@@ -218,6 +226,8 @@ const handleContest = async (contest: Contest) => {
             id: contest.id,
         }
     );
+
+    await Redis.del(cacheKey);
 };
 
 export const startEloTask = async () => {

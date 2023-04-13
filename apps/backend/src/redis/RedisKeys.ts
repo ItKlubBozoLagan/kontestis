@@ -11,4 +11,5 @@ export const RedisKeys = {
         `cluster:${clusterId}:testcase:${testcase}:data-input`,
     CACHED_TESTCASE_OUTPUT: (clusterId: Snowflake, testcase: Snowflake) =>
         `cluster:${clusterId}:testcase:${testcase}:data-output`,
+    TASK_ELO_PROCESSING: (contestId: Snowflake) => `tasks:elo:${contestId}`,
 };

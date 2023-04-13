@@ -98,7 +98,7 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
             shouldCloseOnEsc
             shouldCloseOnOverlayClick
             contentLabel={"Create problem Modal"}
-            style={ModalStyles}
+            style={{ ...ModalStyles, content: { ...ModalStyles.content, top: "6%" } }}
         >
             <div tw={"text-xl"}>
                 <Translated translationKey="contests.management.individual.problems.createModal.title">
