@@ -53,7 +53,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             solution_language: problem?.solution_language ?? "",
             solution_code: problem?.solution_code ?? "",
             evaluation_variant: problem.evaluation_variant,
-            evaluation_language: problem.evaluation_language,
+            evaluation_language: problem.evaluation_language ?? "python",
             tags: [],
         },
     });
