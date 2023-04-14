@@ -28,7 +28,7 @@ export const DashboardPage: FC = () => {
 
     useInterval(() => {
         setHackyPleaseUpdateState((previous) => !previous);
-    }, 1000);
+    }, 200);
 
     const { data: contests } = useAllContests();
     const { data: submissions } = useAllSubmissions(user.id);

@@ -81,8 +81,7 @@ export const YearActivityCalendar = <T extends string>({
                 R.reduce((accumulator, current) => {
                     if (current.time.getDay() === 0 || accumulator.length === 0)
                         accumulator.push([current]);
-
-                    accumulator.at(-1)!.push(current);
+                    else accumulator.at(-1)!.push(current);
 
                     return accumulator;
                 }, [] as Dataset[][])
@@ -203,7 +202,7 @@ export const YearActivityCalendar = <T extends string>({
                                                           "account.stats.submissions.hover.moreSubmissions"
                                                       )}
                                             </span>{" "}
-                                            {time.getDate() + 1}.{" "}
+                                            {time.getDate()}.{" "}
                                             {RangeFormatters["1y"](time, index, t)}
                                         </div>
                                     </div>
