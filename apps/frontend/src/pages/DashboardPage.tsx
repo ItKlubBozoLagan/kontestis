@@ -22,6 +22,8 @@ import { MetricsInfoBox } from "./admin/overview/charts/metrics/kubernetes/Metri
 export const DashboardPage: FC = () => {
     const { user } = useAuthStore();
 
+    // loading this page right after login causes the data from react-query not to propagate for some reason,
+    //  and everything stays on loading, this will force the state to render and hence update the page
     const [_, setHackyPleaseUpdateState] = useState(false);
 
     useInterval(() => {
