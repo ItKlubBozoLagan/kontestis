@@ -13,6 +13,7 @@ import { useAllContests } from "../hooks/contest/useAllContests";
 import { useSubmissionStat } from "../hooks/stats/useSubmissionStat";
 import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
 import { useFormatCountStat } from "../hooks/useFormatCountStat";
+import { useInterval } from "../hooks/useInterval";
 import { useSiteAlerts } from "../hooks/useSiteAlerts";
 import { useTranslation } from "../hooks/useTranslation";
 import { useAuthStore } from "../state/auth";
@@ -20,6 +21,12 @@ import { MetricsInfoBox } from "./admin/overview/charts/metrics/kubernetes/Metri
 
 export const DashboardPage: FC = () => {
     const { user } = useAuthStore();
+
+    const [hackyPleaseUpdateState, setHackyPleaseUpdateState] = useState(false);
+
+    useInterval(() => {
+        setHackyPleaseUpdateState((previous) => !previous);
+    }, 1000);
 
     const { data: contests } = useAllContests();
     const { data: submissions } = useAllSubmissions(user.id);
