@@ -38,7 +38,7 @@ import ContestQuestionHandler from "./ContestQuestionHandler";
 
 const ContestHandler = Router();
 
-const contestSchema = Type.Object({
+const ContestSchema = Type.Object({
     name: Type.String(),
     past_contest: Type.Optional(Type.Boolean({ default: false })),
     start_time_millis: Type.Number(),
@@ -56,11 +56,11 @@ ContestHandler.use("/:contest_id/question", ContestQuestionHandler);
 ContestHandler.use("/:contest_id/announcement", ContestAnnouncementHandler);
 ContestHandler.use("/:contest_id/grade", ContestGradingHandler);
 
-const copySchema = Type.Object({
+const CopySchema = Type.Object({
     organisation_id: Type.String(),
 });
 
-ContestHandler.post("/:contest_id/copy", useValidation(copySchema), async (req, res) => {
+ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, res) => {
     const user = await extractUser(req);
     const contest = await extractModifiableContest(req);
 
@@ -137,7 +137,7 @@ ContestHandler.post("/:contest_id/copy", useValidation(copySchema), async (req, 
     return respond(res, StatusCodes.OK, newContest);
 });
 
-ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
+ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
     const user = await extractUser(req);
 
     const organisation = await extractCurrentOrganisation(req);
@@ -181,7 +181,7 @@ ContestHandler.post("/", useValidation(contestSchema), async (req, res) => {
     return respond(res, StatusCodes.OK, contest);
 });
 
-ContestHandler.patch("/:contest_id", useValidation(contestSchema), async (req, res) => {
+ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, res) => {
     const contest = await extractModifiableContest(req);
     const user = await extractUser(req);
 
@@ -255,7 +255,7 @@ ContestHandler.get("/", async (req, res) => {
         try {
             contests.push(await extractContest(req, id.id));
         } catch {
-            // TODO: Clean this up a bit
+            // TODO: clean this up a bit
         }
     }
 
@@ -287,11 +287,11 @@ ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
 
     const filename = contest.name + " " + userData.full_name;
 
-    res.set(
+    res.header(
         "Content-Disposition",
         "attachment; filename=" + filename.replace(/[^\dA-Za-z]/g, "_") + ".docx"
     );
-    res.set(
+    res.header(
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     );

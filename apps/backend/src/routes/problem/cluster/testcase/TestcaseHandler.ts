@@ -17,11 +17,11 @@ const TestcaseHandler = Router({ mergeParams: true });
 // Around 8MB
 const TESTCASE_MAX_SIZE = 1 << 23;
 
-const testcaseSchema = Type.Object({
+const TestcaseSchema = Type.Object({
     input: Type.String({ maxLength: TESTCASE_MAX_SIZE }),
 });
 
-TestcaseHandler.post("/", useValidation(testcaseSchema), async (req, res) => {
+TestcaseHandler.post("/", useValidation(TestcaseSchema), async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
     const testcase: Testcase = {
@@ -52,7 +52,7 @@ TestcaseHandler.get("/:testcase_id", async (req, res) => {
     return respond(res, StatusCodes.OK, testcase);
 });
 
-TestcaseHandler.patch("/:testcase_id", useValidation(testcaseSchema), async (req, res) => {
+TestcaseHandler.patch("/:testcase_id", useValidation(TestcaseSchema), async (req, res) => {
     const testcase = await extractModifiableTestcase(req);
 
     await Database.update(

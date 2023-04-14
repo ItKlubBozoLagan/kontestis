@@ -21,7 +21,7 @@ import { respond } from "../../utils/response";
 
 const ContestGradingHandler = Router({ mergeParams: true });
 
-const gradingSchema = Type.Object({
+const GradingSchema = Type.Object({
     percentage: Type.Number(),
     grade: Type.String(),
 });
@@ -46,7 +46,7 @@ ContestGradingHandler.get("/", async (req, res) => {
     return respond(res, StatusCodes.OK, gradingScales);
 });
 
-ContestGradingHandler.post("/", useValidation(gradingSchema), async (req, res) => {
+ContestGradingHandler.post("/", useValidation(GradingSchema), async (req, res) => {
     const contest = await extractModifiableContest(req);
 
     const gradingScale: ExamGradingScale = {
@@ -61,10 +61,10 @@ ContestGradingHandler.post("/", useValidation(gradingSchema), async (req, res) =
     return respond(res, StatusCodes.OK, gradingScale);
 });
 
-// TODO: Make an extractor
+// TODO: make an extractor
 ContestGradingHandler.patch(
     "/:grading_scale_id",
-    useValidation(gradingSchema),
+    useValidation(GradingSchema),
     async (req, res) => {
         const member = await extractContestMember(req);
 

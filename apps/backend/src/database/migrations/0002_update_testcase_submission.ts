@@ -33,9 +33,10 @@ export const migration_update_testcase_submission: Migration<MigrationType> = as
             {
                 cluster_submission_id:
                     clusterSubmissionData.find(
-                        (cs) =>
-                            cs.cluster_id ===
-                            (testcaseData.find((t) => t.id === it.testcase_id)?.cluster_id ?? 0n)
+                        (submission) =>
+                            submission.cluster_id ===
+                            (testcaseData.find((testcase) => testcase.id === it.testcase_id)
+                                ?.cluster_id ?? 0n)
                     )?.id ?? 0n,
                 awarded_score: it.awardedscore,
             },

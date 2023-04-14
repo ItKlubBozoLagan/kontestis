@@ -18,11 +18,11 @@ import { respond } from "../../utils/response";
 
 const ContestAnnouncementHandler = Router({ mergeParams: true });
 
-const announcementSchema = Type.Object({
+const AnnouncementSchema = Type.Object({
     message: Type.String(),
 });
 
-ContestAnnouncementHandler.post("/", useValidation(announcementSchema), async (req, res) => {
+ContestAnnouncementHandler.post("/", useValidation(AnnouncementSchema), async (req, res) => {
     const member = await extractContestMember(req);
     const contest = await extractContest(req);
 

@@ -85,7 +85,7 @@ const handleContest = async (contest: Contest) => {
 
     if (members.length === 0) return;
 
-    const organisation_members = await Database.selectFrom(
+    const organisationMembers = await Database.selectFrom(
         "organisation_members",
         "*",
         { organisation_id: contest.organisation_id },
@@ -101,11 +101,12 @@ const handleContest = async (contest: Contest) => {
                 user,
                 R.addProp(
                     "organisationMemberId",
-                    organisation_members.find((om) => om.user_id === user.id)!.id
+                    organisationMembers.find((member) => member.user_id === user.id)!.id
                 ),
                 R.addProp(
                     "elo",
-                    organisation_members.find((om) => om.user_id === user.id)?.elo ?? DEFAULT_ELO
+                    organisationMembers.find((member) => member.user_id === user.id)?.elo ??
+                        DEFAULT_ELO
                 )
             )
     );
@@ -140,7 +141,7 @@ const handleContest = async (contest: Contest) => {
         }))
         .sort((a, b) => b.currentGlobalElo - a.currentGlobalElo);
 
-    const treshold = Math.min(leaderboard.length, 3 * Math.sqrt(leaderboard.length));
+    const threshold = Math.min(leaderboard.length, 3 * Math.sqrt(leaderboard.length));
 
     const eloValuesAfterChange = leaderboard.map((user) => ({
         user_id: user.user_id.toString(),
@@ -155,18 +156,18 @@ const handleContest = async (contest: Contest) => {
         ),
     }));
 
-    const ratingSumBeforeChange = leaderboard.reduce((sum, user, ind) => {
-        return ind < treshold ? sum + user.currentGlobalElo : sum;
+    const ratingSumBeforeChange = leaderboard.reduce((sum, user, index) => {
+        return index < threshold ? sum + user.currentGlobalElo : sum;
     }, 0);
 
-    const ratingSumAfterChange = eloValuesAfterChange.reduce((sum, user, ind) => {
-        return ind < treshold ? sum + user.newGlobalElo : sum;
+    const ratingSumAfterChange = eloValuesAfterChange.reduce((sum, user, index) => {
+        return index < threshold ? sum + user.newGlobalElo : sum;
     }, 0);
 
-    const finalNewRatings = eloValuesAfterChange.map((user, ind) => ({
+    const finalNewRatings = eloValuesAfterChange.map((user, index) => ({
         id: user.user_id.toString(),
         elo: Math.trunc(
-            ind < treshold
+            index < threshold
                 ? user.newGlobalElo * (ratingSumBeforeChange / ratingSumAfterChange)
                 : user.newGlobalElo
         ),

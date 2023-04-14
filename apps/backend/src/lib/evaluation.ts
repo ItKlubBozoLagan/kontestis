@@ -51,7 +51,6 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
 
     if (!isContestRunning(contest)) return;
 
-    // TODO: figure out how to do contest_id, user_id queries in scylla
     const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
         contest_id: contest.id,
         user_id: userId,
@@ -289,8 +288,9 @@ export const beginEvaluation = async (
             verdict: verdict,
             error:
                 verdict === "compilation_error"
-                    ? clusterSubmissions.find((cs) => cs?.verdict === "compilation_error")
-                          ?.compilationError
+                    ? clusterSubmissions.find(
+                          (submission) => submission?.verdict === "compilation_error"
+                      )?.compilationError
                     : undefined,
             time_used_millis: time,
             memory_used_megabytes: memory,

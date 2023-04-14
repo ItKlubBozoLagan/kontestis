@@ -22,7 +22,7 @@ const ClusterHandler = Router({ mergeParams: true });
 
 ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 
-const clusterSchema = Type.Object({
+const ClusterSchema = Type.Object({
     awarded_score: Type.Number({ minimum: 1, maximum: 1000 }),
     generator: Type.Boolean(),
     generator_language: Type.Optional(
@@ -39,14 +39,14 @@ ClusterHandler.get("/", async (req, res) => {
             await Database.selectFrom("clusters", "*", {
                 problem_id: problem.id,
             }),
-            async (c) => R.addProp(c, "status", await getClusterStatus(c.id))
+            async (cluster) => R.addProp(cluster, "status", await getClusterStatus(cluster.id))
         )
     );
 
     return respond(res, StatusCodes.OK, clusters);
 });
 
-ClusterHandler.post("/", useValidation(clusterSchema), async (req, res) => {
+ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
     if (req.body.generator && (!req.body.generator_language || !req.body.generator_code))
@@ -90,13 +90,13 @@ ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
 
     await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
 
-    // TODO: Fix count here
-    generateTestcaseBatch(cluster, 10);
+    // TODO: fix count here
+    const _ = generateTestcaseBatch(cluster, 10);
 
     return respond(res, StatusCodes.OK);
 });
 
-ClusterHandler.patch("/:cluster_id", useValidation(clusterSchema), async (req, res) => {
+ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
     if (req.body.generator && (!req.body.generator_language || !req.body.generator_code))

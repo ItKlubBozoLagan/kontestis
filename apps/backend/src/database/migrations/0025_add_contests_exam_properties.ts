@@ -13,8 +13,8 @@ export const migration_add_contests_exam_properties: Migration<MigrationType> = 
 
     const contests = await database.selectFrom("contests", ["id"], {});
 
-    for (const c of contests) {
-        await database.update("contests", { exam: false }, { id: c.id });
+    for (const contest of contests) {
+        await database.update("contests", { exam: false }, { id: contest.id });
     }
 
     log("Done");

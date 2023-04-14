@@ -15,7 +15,7 @@ import OrganisationMemberHandler from "./OrganisationMemberHandler";
 
 const OrganisationHandler = Router();
 
-const organisationSchema = Type.Object({
+const OrganisationSchema = Type.Object({
     name: Type.String({ minLength: 1 }),
 });
 
@@ -50,7 +50,7 @@ OrganisationHandler.get("/:organisation_id", async (req, res) => {
     return respond(res, StatusCodes.OK, organisation);
 });
 
-OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res) => {
+OrganisationHandler.post("/", useValidation(OrganisationSchema), async (req, res) => {
     const user = await extractUser(req);
 
     const exists = await Database.selectOneFrom("organisations", ["id"], { name: req.body.name });
@@ -61,7 +61,7 @@ OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res
         id: generateSnowflake(),
         name: req.body.name,
         owner: user.id,
-        // TODO: Make a way to add this and also store it
+        // TODO: make a way to add this and also store it
         avatar_url: "",
     };
 
@@ -77,7 +77,7 @@ OrganisationHandler.post("/", useValidation(organisationSchema), async (req, res
 
 OrganisationHandler.patch(
     "/:organisation_id",
-    useValidation(organisationSchema),
+    useValidation(OrganisationSchema),
     async (req, res) => {
         const organisation = await extractModifiableOrganisation(req);
 

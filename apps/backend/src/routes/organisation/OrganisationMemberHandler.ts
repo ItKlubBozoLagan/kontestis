@@ -58,13 +58,13 @@ OrganisationMemberHandler.get("/:user_id", async (req, res) => {
     return respond(res, StatusCodes.OK, member);
 });
 
-// TODO: Make this more robust
+// TODO: make this more robust
 
-const memberSchema = Type.Object({
+const MemberSchema = Type.Object({
     email: Type.String(),
 });
 
-OrganisationMemberHandler.post("/", useValidation(memberSchema), async (req, res) => {
+OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res) => {
     const organisation = await extractModifiableOrganisation(
         req,
         extractIdFromParameters(req, "organisation_id")

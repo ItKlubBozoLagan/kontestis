@@ -27,37 +27,37 @@ export const migration_fix_column_names: Migration<MigrationType> = async (datab
     await database.raw("ALTER TABLE cluster_submissions ADD awarded_score int");
 
     await Promise.all(
-        testcases.map((t) =>
+        testcases.map((testcase) =>
             database.update(
                 "testcases",
                 {
-                    correct_output: t.correctoutput,
+                    correct_output: testcase.correctoutput,
                 },
-                { id: t.id }
+                { id: testcase.id }
             )
         )
     );
 
     await Promise.all(
-        submissions.map((s) =>
+        submissions.map((submission) =>
             database.update(
                 "submissions",
                 {
-                    awarded_score: s.awardedscore,
+                    awarded_score: submission.awardedscore,
                 },
-                { id: s.id }
+                { id: submission.id }
             )
         )
     );
 
     await Promise.all(
-        clusterSubmissions.map((cs) =>
+        clusterSubmissions.map((submission) =>
             database.update(
                 "cluster_submissions",
                 {
-                    awarded_score: cs.awardedscore,
+                    awarded_score: submission.awardedscore,
                 },
-                { id: cs.id }
+                { id: submission.id }
             )
         )
     );

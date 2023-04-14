@@ -13,8 +13,8 @@ export const migration_add_organisation_id_to_contest: Migration<MigrationType> 
 
     const contests = await database.selectFrom("contests", ["id"], {});
 
-    for (const c of contests) {
-        await database.update("contests", { organisation_id: 1n }, { id: c.id });
+    for (const contest of contests) {
+        await database.update("contests", { organisation_id: 1n }, { id: contest.id });
     }
 
     log("Done");

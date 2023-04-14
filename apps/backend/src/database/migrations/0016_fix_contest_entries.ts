@@ -10,8 +10,12 @@ type MigrationType = {
 export const migration_fix_contest_entries: Migration<MigrationType> = async (database, log) => {
     const contests = await database.selectFrom("contests", "*");
 
-    for (const c of contests) {
-        await Database.update("contests", { elo_applied: false, official: false }, { id: c.id });
+    for (const contest of contests) {
+        await Database.update(
+            "contests",
+            { elo_applied: false, official: false },
+            { id: contest.id }
+        );
     }
 
     log("Done");

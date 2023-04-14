@@ -14,11 +14,11 @@ import { respond } from "../../utils/response";
 
 const AuthHandler = Router();
 
-const oauthSchema = Type.Object({
+const OAuthSchema = Type.Object({
     credential: Type.String(),
 });
 
-AuthHandler.post("/google-login", useValidation(oauthSchema), async (req, res) => {
+AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) => {
     const { credential } = req.body;
 
     const googleResponse = await verifyToken(credential).catch(() => null);

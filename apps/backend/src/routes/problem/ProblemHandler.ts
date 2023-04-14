@@ -20,7 +20,8 @@ import ClusterHandler from "./cluster/ClusterHandler";
 const ProblemHandler = Router();
 
 ProblemHandler.use("/:problem_id/cluster", ClusterHandler);
-const problemSchema = Type.Object({
+
+const ProblemSchema = Type.Object({
     title: Type.String(),
     description: Type.String(),
     evaluation_variant: Type.Union([
@@ -39,7 +40,7 @@ const problemSchema = Type.Object({
     tags: Type.Optional(Type.Array(Type.String())),
 });
 
-ProblemHandler.post("/:contest_id", useValidation(problemSchema), async (req, res) => {
+ProblemHandler.post("/:contest_id", useValidation(ProblemSchema), async (req, res) => {
     const contest = await extractModifiableContest(req);
 
     if (
@@ -107,9 +108,9 @@ ProblemHandler.delete("/:problem_id", async (req, res) => {
             });
 
             await Promise.all(
-                clusterSubmissions.map((cs) =>
+                clusterSubmissions.map((submission) =>
                     Database.deleteFrom("testcase_submissions", "*", {
-                        cluster_submission_id: cs.id,
+                        cluster_submission_id: submission.id,
                     })
                 )
             );
@@ -119,7 +120,7 @@ ProblemHandler.delete("/:problem_id", async (req, res) => {
     return respond(res, StatusCodes.OK);
 });
 
-ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, res) => {
+ProblemHandler.patch("/:problem_id", useValidation(ProblemSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
     if (
@@ -148,11 +149,11 @@ ProblemHandler.patch("/:problem_id", useValidation(problemSchema), async (req, r
     return respond(res, StatusCodes.OK);
 });
 
-const getSchema = Type.Object({
+const GetSchema = Type.Object({
     contest_id: Type.String(),
 });
 
-ProblemHandler.get("/", useValidation(getSchema, { query: true }), async (req, res) => {
+ProblemHandler.get("/", useValidation(GetSchema, { query: true }), async (req, res) => {
     const contestId = BigInt(req.query.contest_id as string);
 
     await extractContest(req, contestId);
@@ -196,10 +197,10 @@ ProblemHandler.get("/scores", async (req, res) => {
 
     const problemScores: Record<string, number> = {};
 
-    for (const s of submissions) {
-        problemScores[s.problem_id.toString()] = Math.max(
-            s.awarded_score,
-            problemScores[s.problem_id.toString()] ?? 0
+    for (const submission of submissions) {
+        problemScores[submission.problem_id.toString()] = Math.max(
+            submission.awarded_score,
+            problemScores[submission.problem_id.toString()] ?? 0
         );
     }
 
@@ -217,7 +218,7 @@ ProblemHandler.get("/score/:problem_id", async (req, res) => {
 
     let score = 0;
 
-    for (const s of submissions) score = Math.max(score, s.awarded_score);
+    for (const submission of submissions) score = Math.max(score, submission.awarded_score);
 
     return respond(res, StatusCodes.OK, {
         score,

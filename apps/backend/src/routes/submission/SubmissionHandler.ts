@@ -35,12 +35,12 @@ import { respond } from "../../utils/response";
 
 const SubmissionHandler = Router();
 
-const submissionSchema = Type.Object({
+const SubmissionSchema = Type.Object({
     language: Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")]),
     code: Type.String({ maxLength: 64_000 }),
 });
 
-SubmissionHandler.post("/:problem_id", useValidation(submissionSchema), async (req, res) => {
+SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (req, res) => {
     const problem = await extractProblem(req);
     const user = await extractUser(req);
     const org = await extractCurrentOrganisation(req);
@@ -81,13 +81,12 @@ SubmissionHandler.post("/:problem_id", useValidation(submissionSchema), async (r
     return respond(res, StatusCodes.CREATED, { submission: submissionId });
 });
 
-// TODO: Permissions return full response
-
-const getSchema = Type.Object({
+// TODO: permissions return full response
+const GetSchema = Type.Object({
     user_id: Type.String(),
 });
 
-SubmissionHandler.get("/", useValidation(getSchema, { query: true }), async (req, res) => {
+SubmissionHandler.get("/", useValidation(GetSchema, { query: true }), async (req, res) => {
     const submissions = await Database.selectFrom("submissions", ["id"], {
         user_id: req.query.user_id,
     });
@@ -133,8 +132,7 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
 
     if (!contest.exam) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    // TODO: See if there is a better way to structure this data to make the updates simpler but also allow for the needed queries
-
+    // TODO: see if there is a better way to structure this data to make the updates simpler but also allow for the needed queries
     const finalSubmissionsRecords = await Database.selectFrom("exam_final_submissions", "*", {
         contest_id: contest.id,
         user_id: user.id,
@@ -148,7 +146,7 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
 
     if (existingSubmission) {
         const existingFinalSubmissionRecord = finalSubmissionsRecords.find(
-            (r) => r.submission_id === existingSubmission.id
+            (record) => record.submission_id === existingSubmission.id
         );
 
         await Database.deleteFrom("exam_final_submissions", "*", {
@@ -181,14 +179,14 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
     return respond(res, StatusCodes.OK, finalSubmission);
 });
 
-const finalSubmissionSchema = Type.Object({
+const FinalSubmissionSchema = Type.Object({
     final_score: Type.Number(),
     reviewed: Type.Boolean(),
 });
 
 SubmissionHandler.patch(
     "/final/:final_submission_id",
-    useValidation(finalSubmissionSchema),
+    useValidation(FinalSubmissionSchema),
     async (req, res) => {
         const finalSubmissionId = extractIdFromParameters(req, "final_submission_id");
 
@@ -236,14 +234,14 @@ SubmissionHandler.get("/final/:final_submission_id", async (req, res) => {
     return respond(res, StatusCodes.OK, finalSubmission);
 });
 
-const getFinalSubmissionSchema = Type.Object({
+const GetFinalSubmissionSchema = Type.Object({
     user_id: Type.String(),
     contest_id: Type.String(),
 });
 
 SubmissionHandler.get(
     "/final/",
-    useValidation(getFinalSubmissionSchema, { query: true }),
+    useValidation(GetFinalSubmissionSchema, { query: true }),
     async (req, res) => {
         const user = await extractUser(req);
         const contest = await extractContest(req, BigInt(req.query.contest_id));
@@ -281,7 +279,9 @@ SubmissionHandler.get(
                 R.addProp(
                     finalSubmission,
                     "problem_id",
-                    submissions.find((s) => s.id === finalSubmission.submission_id)?.problem_id ?? 0
+                    submissions.find(
+                        (submission) => submission.id === finalSubmission.submission_id
+                    )?.problem_id ?? 0
                 )
             )
         );

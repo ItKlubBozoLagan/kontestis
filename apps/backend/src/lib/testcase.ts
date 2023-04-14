@@ -27,7 +27,6 @@ out = read_until(separator)
 subOut = read_until(separator)
 
 print("custom:" + subOut.strip())
-
 `;
 
 const returnOutputEvaluatorBase64 = Buffer.from(RETURN_OUTPUT_EVALUATOR, "utf8").toString("base64");
@@ -36,7 +35,7 @@ export const getClusterStatus = async (clusterId: Snowflake) => {
     return ((await Redis.get(RedisKeys.CLUSTER_STATUS(clusterId))) ?? "uncached") as ClusterStatus;
 };
 
-// TODO: Number of tests
+// TODO: number of tests
 export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithOutput[]> = async (
     cluster: Cluster
 ) => {

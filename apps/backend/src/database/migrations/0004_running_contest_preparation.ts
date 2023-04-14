@@ -34,13 +34,13 @@ export const migration_running_contest_preparation: Migration<MigrationType> = a
     await database.createIndex("contest_members", "contest_members_by_user_id", "user_id");
 
     await Promise.all(
-        submissions.map((s) =>
+        submissions.map((submission) =>
             database.update(
                 "submissions",
                 {
-                    created_at: getSnowflakeTime(s.id),
+                    created_at: getSnowflakeTime(submission.id),
                 },
-                { id: s.id }
+                { id: submission.id }
             )
         )
     );

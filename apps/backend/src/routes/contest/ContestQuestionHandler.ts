@@ -22,11 +22,11 @@ import { respond } from "../../utils/response";
 
 const ContestQuestionHandler = Router({ mergeParams: true });
 
-const questionSchema = Type.Object({
+const QuestionSchema = Type.Object({
     question: Type.String(),
 });
 
-ContestQuestionHandler.post("/", useValidation(questionSchema), async (req, res) => {
+ContestQuestionHandler.post("/", useValidation(QuestionSchema), async (req, res) => {
     const member = await extractContestMember(req);
     const contest = await extractContest(req);
 
@@ -86,13 +86,13 @@ ContestQuestionHandler.get("/", async (req, res) => {
     );
 });
 
-const questionAnswerSchema = Type.Object({
+const QuestionAnswerSchema = Type.Object({
     response: Type.String(),
 });
 
 ContestQuestionHandler.patch(
     "/:question_id",
-    useValidation(questionAnswerSchema),
+    useValidation(QuestionAnswerSchema),
     async (req, res) => {
         const questionId = extractIdFromParameters(req, "question_id");
         const question = await Database.selectOneFrom("contest_questions", "*", { id: questionId });

@@ -27,7 +27,7 @@ export const useValidation = <TS extends TSchema, S extends SchemaOptions = { bo
     return (req, res, next) => {
         if (
             Object.entries(options)
-                .filter(([, v]) => v)
+                .filter(([, value]) => value)
                 .some(([key]) => !check.Check(req[key as keyof SchemaOptions]))
         )
             throw new SafeError(StatusCodes.BAD_REQUEST);
