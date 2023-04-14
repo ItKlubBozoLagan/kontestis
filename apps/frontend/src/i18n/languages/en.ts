@@ -23,6 +23,16 @@ const I18nEn = {
         account: "Account",
         management: "Management",
         admin: "Admin",
+        alerts: {
+            noContentMessage: "You're up to date!",
+            breadcrumbs: {
+                official: "Official",
+            },
+            overflow: {
+                expand: "Expand",
+                collapse: "Collapse",
+            },
+        },
     },
     notifications: {
         "contest-start": "Contest %1 has started!",
@@ -483,6 +493,14 @@ const I18nEn = {
                         label: "Pods",
                     },
                 },
+            },
+            alerts: {
+                label: "Alert",
+                pushButton: "Push",
+            },
+            contests: {
+                message: "Admins can manage contests in menagement page",
+                goToMangement: "Got to management",
             },
         },
         users: {

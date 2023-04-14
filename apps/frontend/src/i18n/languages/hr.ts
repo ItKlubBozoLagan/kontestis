@@ -23,6 +23,26 @@ export default {
         account: "Račun",
         management: "Upravljanje",
         admin: "Admin",
+        alerts: {
+            noContentMessage: "U tijeku ste sa svime!",
+            breadcrumbs: {
+                official: "Službeno",
+            },
+            overflow: {
+                expand: "Proširi",
+                collapse: "Sažmi",
+            },
+        },
+    },
+    notifications: {
+        "contest-start": "Natjecanje %1 je počelo!",
+        "contest-end": "Natjecanje %1 je završilo!",
+        "new-question": "Novo pitanje je bilo postavljeno u %1",
+        "new-announcement": "Došla je nova obavijest u %1",
+        "question-answer": "Vaše pitanje je bilo odgovoreno u %1",
+        // must begin with a space, Translated component currently
+        //  has a bug where it doesn't handle messages beginning with a placeholder
+        alert: " %1",
     },
     helper: {
         tableNoContents: "Nema ničega za sada",
@@ -170,6 +190,13 @@ export default {
                         statement: "Opis problema",
                         timeLimit: "Vremensko ograničenje",
                         memoryLimit: "Memorijsko ograničenje",
+                        evaluationVariant: {
+                            label: "Varijanta evaluacije",
+                            plain: "Obično",
+                            checker: "Skripta za provjeru",
+                            interactive: "Interaktivni",
+                        },
+                        evaluationLanguage: "Jezik evaluacijske skripte",
                         evaluationScript: "Evaluacijska skripta (opcionalna)",
                         solutionLanguage: "Jezik rješenja",
                         solutionCode: "Kod rješenja",
@@ -466,6 +493,15 @@ export default {
                         label: "Čahure",
                     },
                 },
+            },
+            alerts: {
+                label: "Obavijest",
+                pushButton: "Objavi",
+            },
+            contests: {
+                message:
+                    "Administratori mogu upravljati natjecanjima putem stranice za upravljanje",
+                goToMangement: "Odvedi me na stranicu za upravljanje",
             },
         },
         users: {

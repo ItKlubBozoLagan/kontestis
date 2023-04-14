@@ -15,6 +15,7 @@ import tw, { theme } from "twin.macro";
 
 import { useReadNotifications } from "../hooks/notifications/useReadNotifications";
 import { useDocumentEvent } from "../hooks/useDocumentEvent";
+import { useTranslation } from "../hooks/useTranslation";
 import { R } from "../util/remeda";
 import { Breadcrumb } from "./Breadcrumb";
 import { Translated } from "./Translated";
@@ -83,6 +84,8 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
         setListExpanded(false);
     }, [expanded]);
 
+    const { t } = useTranslation();
+
     return (
         <div>
             <div tw={"flex items-center text-neutral-600 cursor-pointer relative"}>
@@ -102,7 +105,7 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
                     }}
                 >
                     {notifications.length === 0 ? (
-                        <span tw={"p-4 text-center"}>You&apos;re up to date!</span>
+                        <span tw={"p-4 text-center"}>{t("navbar.alerts.noContentMessage")}</span>
                     ) : (
                         <>
                             {sortedNotifications
@@ -139,7 +142,7 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
                                         >
                                             {it.type === "alert" && (
                                                 <Breadcrumb color={theme`colors.red.300`}>
-                                                    Official
+                                                    {t("navbar.alerts.breadcrumbs.official")}
                                                 </Breadcrumb>
                                             )}
                                             <div>
@@ -171,12 +174,12 @@ export const NotificationBellDropdown: FC<Properties> = ({ notifications }) => {
                                     {listExpanded ? (
                                         <>
                                             <AiFillCaretUp />
-                                            Collapse
+                                            {t("navbar.alerts.overflow.collapse")}
                                         </>
                                     ) : (
                                         <>
                                             <AiFillCaretDown />
-                                            Expand
+                                            {t("navbar.alerts.overflow.expand")}
                                         </>
                                     )}
                                 </div>

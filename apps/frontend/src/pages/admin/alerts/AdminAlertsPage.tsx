@@ -9,6 +9,7 @@ import { CanAdmin } from "../../../components/CanAdmin";
 import { SimpleButton } from "../../../components/SimpleButton";
 import { useCreateAlert } from "../../../hooks/notifications/useCreateAlert";
 import { useSiteAlerts } from "../../../hooks/useSiteAlerts";
+import { useTranslation } from "../../../hooks/useTranslation";
 
 const AlertSchema = z.object({
     message: z.string(),
@@ -38,18 +39,22 @@ export const AdminAlertsPage: FC = () => {
         reset();
     }, [createMutation.isSuccess]);
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"flex gap-2 w-full justify-center"}>
             <div tw={"flex flex-col items-center gap-6 w-full"}>
                 <CanAdmin permission={AdminPermissions.ADD_ALERTS}>
                     <form onSubmit={onSubmit}>
                         <div tw={"flex flex-col gap-2 w-96"}>
-                            <label htmlFor={"message"}>Alert</label>
+                            <label htmlFor={"message"}>{t("admin.overview.alerts.label")}</label>
                             <textarea
                                 {...register("message")}
                                 tw={"resize-y min-h-[8rem] text-base"}
                             />
-                            <SimpleButton tw={"mt-2"}>Push</SimpleButton>
+                            <SimpleButton tw={"mt-2"}>
+                                {t("admin.overview.alerts.pushButton")}
+                            </SimpleButton>
                         </div>
                     </form>
                 </CanAdmin>
