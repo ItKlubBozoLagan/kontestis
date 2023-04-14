@@ -8,7 +8,7 @@ type Properties = {
 export const BigTitledSection: FC<Properties> = React.forwardRef<
     HTMLDivElement,
     Properties & React.HTMLAttributes<HTMLDivElement>
->(({ header, children, className, ...properties }, reference) => {
+>(({ header, children, ...properties }, reference) => {
     return (
         <div
             tw={"flex flex-col border-2 border-solid border-neutral-400 bg-neutral-200"}

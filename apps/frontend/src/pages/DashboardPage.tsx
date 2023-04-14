@@ -22,7 +22,7 @@ import { MetricsInfoBox } from "./admin/overview/charts/metrics/kubernetes/Metri
 export const DashboardPage: FC = () => {
     const { user } = useAuthStore();
 
-    const [hackyPleaseUpdateState, setHackyPleaseUpdateState] = useState(false);
+    const [_, setHackyPleaseUpdateState] = useState(false);
 
     useInterval(() => {
         setHackyPleaseUpdateState((previous) => !previous);
