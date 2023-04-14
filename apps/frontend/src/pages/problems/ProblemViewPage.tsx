@@ -61,11 +61,9 @@ export const ProblemViewPage: FC = () => {
     const textAreaReference = useRef<HTMLTextAreaElement | null>(null);
 
     const [language, setLanguage] = useState<EvaluationLanguage>("python");
-
     const [code, setCode] = useState("");
 
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
-
     const { data: submissions } = useAllProblemSubmissions(BigInt(problemId ?? 0), {
         refetchInterval: 1000,
     });

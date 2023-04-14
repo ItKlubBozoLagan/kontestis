@@ -3,7 +3,6 @@ import { Snowflake, Testcase } from "@kontestis/models";
 import { cutText } from "@kontestis/utils";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../../../../components/EditableDisplayBox";
@@ -40,20 +39,9 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
         modifyMutation.mutate(data);
     });
 
-    const queryClient = useQueryClient();
-
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["testcases", problemId, testcase.cluster_id]);
-        queryClient.invalidateQueries([
-            "problem",
-            problemId,
-            "cluster",
-            testcase.cluster_id,
-            "testcase",
-            testcase.id,
-        ]);
         modifyMutation.reset();
     }, [modifyMutation.isSuccess]);
 

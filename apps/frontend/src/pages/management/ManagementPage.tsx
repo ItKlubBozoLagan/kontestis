@@ -65,8 +65,8 @@ export const ManagementPage: FC = () => {
                 </thead>
                 <tbody>
                     <EmptyRow contents={myContests} />
-                    {myContests.map((c) => (
-                        <ContestListItem adminView contest={c} key={c.id.toString()} />
+                    {myContests.map((contest) => (
+                        <ContestListItem adminView contest={contest} key={contest.id.toString()} />
                     ))}
                 </tbody>
             </Table>

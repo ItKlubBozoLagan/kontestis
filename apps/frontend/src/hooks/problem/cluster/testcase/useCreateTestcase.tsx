@@ -1,7 +1,7 @@
 import { Snowflake, Testcase } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../../api/http";
 
 type CreateTestcaseVariables = {
     input: string;
@@ -15,7 +15,7 @@ export const useCreateTestcase: MutationHandler<
     useMutation(
         (variables) =>
             wrapAxios(http.post(`/problem/${problemId}/cluster/${clusterId}/testcase/`, variables)),
-        options
+        invalidateOnSuccess([["testcases", problemId, clusterId]], options)
     );
 
 export const useModifyTestcase: MutationHandler<
@@ -31,5 +31,11 @@ export const useModifyTestcase: MutationHandler<
                     variables
                 )
             ),
-        options
+        invalidateOnSuccess(
+            [
+                ["testcases", problemId, testcaseId],
+                ["problem", problemId, "cluster", clusterId, "testcase", testcaseId],
+            ],
+            options
+        )
     );

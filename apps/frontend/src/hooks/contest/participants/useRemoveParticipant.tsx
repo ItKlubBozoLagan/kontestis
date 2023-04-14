@@ -1,7 +1,7 @@
 import { Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
 export const useRemoveParticipant: MutationHandler<Snowflake, undefined, Snowflake> = (
     contestId,
@@ -9,5 +9,5 @@ export const useRemoveParticipant: MutationHandler<Snowflake, undefined, Snowfla
 ) =>
     useMutation(
         (userId) => wrapAxios(http.delete(`/contest/${contestId}/members/${userId}`)),
-        options
+        invalidateOnSuccess([["contests", contestId, "members"]], options)
     );

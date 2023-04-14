@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiList } from "react-icons/all";
-import { useQueryClient } from "react-query";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import { z } from "zod";
@@ -59,7 +58,6 @@ export const ContestViewPage: FC = () => {
     });
 
     const createQuestionMutation = useCreateQuestion(contest?.id ?? 0n);
-    const queryClient = useQueryClient();
 
     const onQuestionSubmit = handleSubmit((data) => {
         createQuestionMutation.mutate(data);
@@ -68,7 +66,6 @@ export const ContestViewPage: FC = () => {
     useEffect(() => {
         if (!createQuestionMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests", contest?.id, "questions"]);
         reset();
     }, [createQuestionMutation.isSuccess]);
 

@@ -1,7 +1,7 @@
 import { Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../api/http";
 
 export const useRemoveOrganisationMember: MutationHandler<Snowflake, undefined, Snowflake> = (
     organisationId,
@@ -9,5 +9,5 @@ export const useRemoveOrganisationMember: MutationHandler<Snowflake, undefined, 
 ) =>
     useMutation(
         (userId) => wrapAxios(http.delete(`/organisation/${organisationId}/member/${userId}`)),
-        options
+        invalidateOnSuccess([["organisations", organisationId, "members"]], options)
     );

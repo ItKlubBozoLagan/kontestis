@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ExamFinalSubmission } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
@@ -42,12 +41,9 @@ export const FinalSubmissionInfoSection: FC<Parameters> = ({ finalSubmission }) 
         modifyMutation.mutate(data);
     });
 
-    const queryClient = useQueryClient();
-
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["submission", "final", "submission", finalSubmission.id]);
         modifyMutation.reset();
     });
 

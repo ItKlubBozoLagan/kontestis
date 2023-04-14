@@ -1,5 +1,12 @@
 import { hexToRgba } from "@kontestis/utils";
-import { CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement } from "chart.js";
+import {
+    CategoryScale,
+    Chart as ChartJS,
+    Legend,
+    LinearScale,
+    LineElement,
+    Tooltip,
+} from "chart.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { ChartJSOrUndefined } from "react-chartjs-2/dist/types";
@@ -13,7 +20,7 @@ import { RangeFormatters } from "../util/charts";
 import { R } from "../util/remeda";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-ChartJS.register(LineElement, LinearScale, CategoryScale, Legend);
+ChartJS.register(LineElement, LinearScale, CategoryScale, Legend, Tooltip);
 
 export type Dataset = {
     time: Date;

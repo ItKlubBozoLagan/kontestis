@@ -5,7 +5,6 @@ import {
 } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
 import { AiFillCaretDown, AiFillCaretUp } from "react-icons/all";
-import { useQueryClient } from "react-query";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
@@ -33,21 +32,16 @@ export const SubmissionListTable: FC<Properties> = ({
     const { user } = useAuthStore();
 
     const { data: contest } = useContest(problem?.contest_id ?? 0n, { enabled: !!problem });
-
     const { data: finalSubmissions } = useAllFinalSubmissions([contest?.id ?? 0n, user.id], {
         enabled: !!contest && contest.exam && !adminView,
     });
 
-    const setFinalSubmission = useSetFinalSubmission();
-
-    const queryClient = useQueryClient();
+    const setFinalSubmission = useSetFinalSubmission([contest?.id ?? 0n, user.id]);
 
     const { t } = useTranslation();
 
     useEffect(() => {
         if (!setFinalSubmission.isSuccess) return;
-
-        queryClient.invalidateQueries(["submission", "final", contest!.id, user.id]);
 
         setFinalSubmission.reset();
     }, [setFinalSubmission.isSuccess]);
@@ -83,37 +77,40 @@ export const SubmissionListTable: FC<Properties> = ({
                     </TableRow>
                 )}
                 {submissions
-                    ?.sort((b, a) => Number(BigInt(a.id) - BigInt(b.id)))
+                    ?.sort((a, b) => Number(BigInt(b.id) - BigInt(a.id)))
                     .slice(0, expanded || submissions.length <= 4 ? submissions.length : 3)
-                    .map((s) => (
-                        <TableRow key={s.id.toString()}>
-                            {!("completed" in s) || s.completed ? (
+                    .map((submission) => (
+                        <TableRow key={submission.id.toString()}>
+                            {!("completed" in submission) || submission.completed ? (
                                 <>
-                                    {adminView && !("completed" in s) && (
-                                        <TableItem>{s.full_name}</TableItem>
+                                    {adminView && !("completed" in submission) && (
+                                        <TableItem>{submission.full_name}</TableItem>
                                     )}
                                     <TableItem
                                         css={
-                                            s.verdict === "accepted"
+                                            submission.verdict === "accepted"
                                                 ? tw`text-green-600`
                                                 : tw`text-red-600`
                                         }
                                     >
-                                        <Link to={"/submission/" + s.id}>{s.verdict}</Link>
+                                        <Link to={"/submission/" + submission.id}>
+                                            {submission.verdict}
+                                        </Link>
                                     </TableItem>
-                                    <TableItem>{`${s.time_used_millis} ms`}</TableItem>
-                                    <TableItem>{`${s.memory_used_megabytes} MiB`}</TableItem>
-                                    <TableItem>{s.language}</TableItem>
+                                    <TableItem>{`${submission.time_used_millis} ms`}</TableItem>
+                                    <TableItem>{`${submission.memory_used_megabytes} MiB`}</TableItem>
+                                    <TableItem>{submission.language}</TableItem>
                                     <TableItem>
                                         <ProblemScoreBox
-                                            score={s.awarded_score}
+                                            score={submission.awarded_score}
                                             maxScore={problem.score}
                                         />
                                     </TableItem>
                                     {!adminView && contest && contest.exam && (
                                         <TableItem>
                                             {(finalSubmissions ?? []).some(
-                                                (fs) => fs.submission_id === s.id
+                                                (finalSubmission) =>
+                                                    finalSubmission.submission_id === submission.id
                                             ) ? (
                                                 <span tw={"text-green-600"}>
                                                     {t("submissions.table.body.final")}
@@ -125,7 +122,7 @@ export const SubmissionListTable: FC<Properties> = ({
                                                 <span
                                                     tw={"text-red-500 cursor-pointer"}
                                                     onClick={() => {
-                                                        setFinalSubmission.mutate(s.id);
+                                                        setFinalSubmission.mutate(submission.id);
                                                     }}
                                                 >
                                                     {t("submissions.table.body.notFinal")}

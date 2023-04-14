@@ -13,13 +13,10 @@ type Properties = {
 export const ProblemListItem: FC<Properties> = ({ problem }) => {
     const { data: submissions } = useGlobalProblemSubmissions(problem.id);
 
-    const unique = useMemo(() => {
-        const unique = new Set();
-
-        for (const s of submissions ?? []) unique.add(s.user_id);
-
-        return unique;
-    }, [submissions]);
+    const unique = useMemo(
+        () => new Set((submissions ?? []).map((submission) => submission.user_id)),
+        [submissions]
+    );
 
     return (
         <TableRow>
@@ -32,7 +29,11 @@ export const ProblemListItem: FC<Properties> = ({ problem }) => {
             <TableItem>{unique.size}</TableItem>
             <TableItem>
                 <ProblemScoreBox
-                    score={(submissions ?? []).filter((s) => s.verdict === "accepted").length}
+                    score={
+                        (submissions ?? []).filter(
+                            (submission) => submission.verdict === "accepted"
+                        ).length
+                    }
                     maxScore={(submissions ?? []).length}
                 />
             </TableItem>

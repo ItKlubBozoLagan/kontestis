@@ -44,10 +44,12 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                     type={"button"}
                     color={theme`colors.red.300`!}
                     onClick={async () => {
+                        // TODO: mutations
                         await http.post(
                             `/problem/${cluster.problem_id}/cluster/${cluster.id}/cache/drop`
                         );
-                        queryClient.invalidateQueries([
+
+                        const _ = queryClient.invalidateQueries([
                             "problem",
                             cluster.problem_id,
                             "cluster",
@@ -64,7 +66,8 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                         await http.post(
                             `/problem/${cluster.problem_id}/cluster/${cluster.id}/cache/regenerate`
                         );
-                        queryClient.invalidateQueries([
+
+                        const _ = queryClient.invalidateQueries([
                             "problem",
                             cluster.problem_id,
                             "cluster",

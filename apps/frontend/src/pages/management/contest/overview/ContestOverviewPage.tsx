@@ -4,7 +4,6 @@ import { parseTime, toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
-import { useQueryClient } from "react-query";
 import { useNavigate } from "react-router";
 import { z } from "zod";
 
@@ -75,8 +74,6 @@ export const ContestOverviewPage: FC = () => {
 
     const [selectedOrgId, setSelectedOrgId] = useState(1n);
 
-    const queryClient = useQueryClient();
-
     // I guess we could make a route to get this info without getting all data, but it should be fine
     const questions = useAllContestQuestions(contest.id);
     const members = useAllContestMembers(contest.id);
@@ -108,7 +105,6 @@ export const ContestOverviewPage: FC = () => {
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests"]);
         modifyMutation.reset();
     }, [modifyMutation.isSuccess]);
 
@@ -128,7 +124,6 @@ export const ContestOverviewPage: FC = () => {
     useEffect(() => {
         if (!copyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests"]);
         copyMutation.reset();
 
         setOrganisationId(selectedOrgId);

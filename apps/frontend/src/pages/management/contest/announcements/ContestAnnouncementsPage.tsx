@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { CanContestMember } from "../../../../components/CanContestMember";
@@ -26,8 +25,6 @@ export const ContestAnnouncementsPage: FC = () => {
         },
     });
 
-    const queryClient = useQueryClient();
-
     const createMutation = useCreateContestAnnouncement(contest.id);
 
     const { data: announcements } = useAllContestAnnouncements(contest.id);
@@ -43,7 +40,6 @@ export const ContestAnnouncementsPage: FC = () => {
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests", contest.id, "announcements"]);
         createMutation.reset();
         reset();
     }, [createMutation.isSuccess]);

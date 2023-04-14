@@ -1,6 +1,5 @@
 import { AdminPermissions, FullUser, hasAdminPermission } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
-import { useQueryClient } from "react-query";
 import { theme } from "twin.macro";
 
 import { Breadcrumb } from "../../../components/Breadcrumb";
@@ -22,12 +21,10 @@ const MemberBox: FC<Properties> = ({ user }) => {
     const { user: editor } = useAuthStore();
 
     const modifyMutation = useModifyUser(user.id);
-    const queryClient = useQueryClient();
 
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["users"]);
         modifyMutation.reset();
     }, [modifyMutation]);
 

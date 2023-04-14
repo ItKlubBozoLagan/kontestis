@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ClusterWithStatus } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../../../components/EditableDisplayBox";
@@ -50,13 +49,9 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
 
     const [generator, setGenerator] = useState(cluster.generator);
 
-    const queryClient = useQueryClient();
-
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["clusters", cluster.problem_id]);
-        queryClient.invalidateQueries(["problem", cluster.problem_id, "cluster", cluster.id]);
         modifyMutation.reset();
     }, [modifyMutation.isSuccess]);
 

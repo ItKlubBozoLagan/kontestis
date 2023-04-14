@@ -25,7 +25,6 @@ type Properties = {
 export const SubmissionViewPage: FC = () => {
     const { submissionId } = useParams<Properties>();
 
-    // TODO: maybe verify submission_id
     const { isSuccess: isSubmissionSuccess, data: submission } = useSubmission(
         BigInt(submissionId ?? 0)
     );
@@ -86,12 +85,12 @@ export const SubmissionViewPage: FC = () => {
                     <tbody>
                         {submissionCluster
                             ?.sort((a, b) => Number(BigInt(a.cluster_id) - BigInt(b.cluster_id)))
-                            .map((c, index) => (
-                                <TableRow key={c.id.toString()}>
+                            .map((submission, index) => (
+                                <TableRow key={submission.id.toString()}>
                                     <TableItem
                                         tw={"hover:(text-sky-800 cursor-pointer)"}
                                         onClick={() => {
-                                            setSelectedCluster(c);
+                                            setSelectedCluster(submission);
                                             setDisplayTestcase(true);
                                         }}
                                     >
@@ -101,18 +100,18 @@ export const SubmissionViewPage: FC = () => {
                                     </TableItem>
                                     <TableItem
                                         css={
-                                            c.verdict === "accepted"
+                                            submission.verdict === "accepted"
                                                 ? tw`text-green-600`
                                                 : tw`text-red-600`
                                         }
                                     >
-                                        {c.verdict}
+                                        {submission.verdict}
                                     </TableItem>
-                                    <TableItem>{c.time_used_millis} ms</TableItem>
-                                    <TableItem>{c.memory_used_megabytes} MiB</TableItem>
+                                    <TableItem>{submission.time_used_millis} ms</TableItem>
+                                    <TableItem>{submission.memory_used_megabytes} MiB</TableItem>
                                     <TableItem>
                                         <Translated translationKey="submissions.table.body.pointsAchieved">
-                                            {c.awarded_score}
+                                            {submission.awarded_score}
                                         </Translated>
                                     </TableItem>
                                 </TableRow>

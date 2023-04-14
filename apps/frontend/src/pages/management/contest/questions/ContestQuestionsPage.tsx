@@ -11,12 +11,12 @@ export const ContestQuestionsPage: FC = () => {
     const { data: questions } = useAllContestQuestions(contest.id);
 
     const answered = useMemo(
-        () => questions?.filter((q) => (q.response?.length ?? 0) > 0),
+        () => questions?.filter((question) => (question.response?.length ?? 0) > 0),
         [questions]
     );
 
     const notAnswered = useMemo(
-        () => questions?.filter((q) => (q.response?.length ?? 0) === 0),
+        () => questions?.filter((question) => (question.response?.length ?? 0) === 0),
         [questions]
     );
 

@@ -188,15 +188,14 @@ export const YearActivityCalendar = <T extends string>({
                                             }}
                                         >
                                             <span tw={"font-bold"}>
-                                                {value}{" "}
-                                                {value % 10 === 1
+                                                {value} {/* got to love languages and plurals */}
+                                                {value % 10 === 1 && (value < 10 || value > 20)
                                                     ? t(
                                                           "account.stats.submissions.hover.oneSubmission"
                                                       )
                                                     : value % 10 >= 2 &&
                                                       value % 10 <= 4 &&
-                                                      value < 11 &&
-                                                      value > 14
+                                                      (value < 11 || value > 14)
                                                     ? t(
                                                           "account.stats.submissions.hover.fewSubmissions"
                                                       )

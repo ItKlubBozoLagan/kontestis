@@ -14,7 +14,7 @@ const recordMemoryPeriodically = (processId: number, saveFunction: (value: numbe
     return () => clearInterval(intervalId);
 };
 
-export const recordMemory: (pid: number) => () => number = (processId: number) => {
+export const recordMemory = (processId: number) => {
     let maxMemory = 0;
 
     const stop = recordMemoryPeriodically(processId, (v) => {

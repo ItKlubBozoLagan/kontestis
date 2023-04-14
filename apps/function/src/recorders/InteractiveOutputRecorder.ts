@@ -58,9 +58,9 @@ export const recordInteractiveOutput = (
                 return;
             }
 
-            const stringData = data.toString().split("\n");
+            const stringData = data.toString().split("\n") as string[];
 
-            if (stringData.some((s: string) => s.includes(separatorString.trim()))) {
+            if (stringData.some((line) => line.includes(separatorString.trim()))) {
                 redirectChecker = true;
 
                 for (let index = 0; index < stringData.length; ++index) {

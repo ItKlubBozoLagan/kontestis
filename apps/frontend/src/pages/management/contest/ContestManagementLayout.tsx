@@ -115,8 +115,8 @@ export const ContestManagementLayout: FC = () => {
                     <div tw={"flex flex-col w-full"}>
                         <SubRouteNavBar
                             routes={SubRoutes.filter(
-                                (r) =>
-                                    r.href !== "results" ||
+                                (route) =>
+                                    route.href !== "results" ||
                                     (contest.exam &&
                                         contest.start_time.getTime() +
                                             contest.duration_seconds * 1000 <=

@@ -1,6 +1,6 @@
 import { KubernetesSystemMetrics } from "@kontestis/models";
 import { cutText } from "@kontestis/utils";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { FiMinus, FiPlus } from "react-icons/all";
 
 import { useTranslation } from "../../../../../../hooks/useTranslation";
@@ -17,6 +17,13 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
     const [eachExpanded, setEachExpanded] = useState(
         R.fromPairs(kubeData.nodes.map((it) => [it.name, false]))
     );
+
+    useEffect(() => {
+        if (expanded) return;
+
+        // reset
+        setEachExpanded(() => R.fromPairs(kubeData.nodes.map((it) => [it.name, false])));
+    }, [expanded]);
 
     const { t } = useTranslation();
 

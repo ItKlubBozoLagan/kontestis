@@ -1,7 +1,7 @@
 import { Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
 export const useAddParticipant: MutationHandler<string, undefined, Snowflake> = (
     contestId,
@@ -14,5 +14,5 @@ export const useAddParticipant: MutationHandler<string, undefined, Snowflake> = 
                     email,
                 })
             ),
-        options
+        invalidateOnSuccess([["contests", contestId, "members"]], options)
     );

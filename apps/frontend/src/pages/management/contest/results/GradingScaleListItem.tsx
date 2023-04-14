@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ExamGradingScale } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
@@ -38,19 +37,16 @@ export const GradingScaleListItem: FC<Properties> = ({ gradingScale }) => {
 
     const modifyMutation = useModifyGradingScale([contest.id, gradingScale.id]);
 
+    useEffect(() => {
+        if (!modifyMutation.isSuccess) return;
+
+        modifyMutation.reset();
+    }, [modifyMutation.isSuccess]);
+
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
         modifyMutation.mutate(data);
     });
-
-    const queryClient = useQueryClient();
-
-    useEffect(() => {
-        if (!modifyMutation.isSuccess) return;
-
-        queryClient.invalidateQueries(["contest", contest.id, "grades"]);
-        modifyMutation.reset();
-    }, [modifyMutation.isSuccess]);
 
     const formReference = React.useRef<HTMLFormElement>(null);
 

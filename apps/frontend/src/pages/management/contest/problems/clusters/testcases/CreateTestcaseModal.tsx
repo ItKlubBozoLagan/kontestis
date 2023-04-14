@@ -3,7 +3,6 @@ import { Cluster } from "@kontestis/models";
 import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { SimpleButton } from "../../../../../../components/SimpleButton";
@@ -38,12 +37,9 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
         createMutation.mutate(data);
     });
 
-    const queryClient = useQueryClient();
-
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["testcases", cluster.problem_id, cluster.id]);
         createMutation.reset();
         reset();
         properties.onAfterClose?.();

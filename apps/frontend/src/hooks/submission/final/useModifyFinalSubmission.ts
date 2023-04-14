@@ -1,7 +1,7 @@
 import { Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
 type FinalSubmissionVariables = {
     final_score: number;
@@ -15,5 +15,8 @@ export const useModifyFinalSubmission: MutationHandler<
 > = (finalSubmissionId, options) =>
     useMutation(
         (variables) => wrapAxios(http.patch(`/submission/final/${finalSubmissionId}`, variables)),
-        options
+        invalidateOnSuccess(
+            [["submission", "final", "submission", finalSubmissionId.toString()]],
+            options
+        )
     );

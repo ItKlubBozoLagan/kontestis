@@ -1,10 +1,14 @@
 import { Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../api/http";
 
-export const useSetFinalSubmission: MutationHandler<Snowflake, undefined> = (options) =>
+export const useSetFinalSubmission: MutationHandler<
+    Snowflake,
+    undefined,
+    [Snowflake, Snowflake]
+> = ([contestId, userId], options) =>
     useMutation(
         (submissionId) => wrapAxios(http.post(`/submission/final/${submissionId}`)),
-        options
+        invalidateOnSuccess([["submission", "final", contestId, userId]], options)
     );

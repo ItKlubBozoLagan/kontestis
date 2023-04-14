@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Organisation, OrganisationMemberWithInfo } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import tw, { theme } from "twin.macro";
 import { z } from "zod";
 
@@ -26,8 +25,6 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
 
     const deleteMutation = useRemoveOrganisationMember(organisation.id);
 
-    const queryClient = useQueryClient();
-
     const { t } = useTranslation();
 
     const onDeleteClick = () => {
@@ -41,12 +38,6 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
 
         deleteMutation.mutate(member.user_id);
     };
-
-    useEffect(() => {
-        if (!deleteMutation.isSuccess) return;
-
-        queryClient.invalidateQueries(["organisations", organisation.id, "members"]);
-    }, [deleteMutation]);
 
     return (
         <div
@@ -112,16 +103,13 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
 
     const [netError, setNetError] = useState(false);
 
-    const queryClient = useQueryClient();
-
     const { t } = useTranslation();
 
     useEffect(() => {
-        if (addMutation.isError) setNetError(true);
+        if (!addMutation.isError) return;
 
-        if (addMutation.isSuccess)
-            queryClient.invalidateQueries(["organisations", organisation.id, "members"]);
-    }, [addMutation.isSuccess, addMutation.isError]);
+        setNetError(true);
+    }, [addMutation.isError]);
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>

@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminPermissions, ContestMemberPermissions, ContestQuestion } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { CanContestMember } from "../../../../components/CanContestMember";
@@ -32,8 +31,6 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
         },
     });
 
-    const queryClient = useQueryClient();
-
     const answerMutation = useAnswerQuestion([contest.id, question.id]);
 
     const onSubmit = handleSubmit((data) => {
@@ -48,7 +45,6 @@ export const ContestQuestionItem: FC<Properties> = ({ question }) => {
     useEffect(() => {
         if (!answerMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests", contest.id, "questions"]);
         answerMutation.reset();
     }, [answerMutation.isSuccess]);
 

@@ -1,7 +1,7 @@
 import { Cluster, Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
 type CreateClusterVariables = {
     awarded_score: number;
@@ -16,7 +16,7 @@ export const useCreateCluster: MutationHandler<CreateClusterVariables, Cluster, 
 ) =>
     useMutation(
         (variables) => wrapAxios(http.post(`/problem/${problemId}/cluster/`, variables)),
-        options
+        invalidateOnSuccess([["clusters", problemId]], options)
     );
 
 export const useModifyCluster: MutationHandler<
@@ -27,5 +27,11 @@ export const useModifyCluster: MutationHandler<
     useMutation(
         (variables) =>
             wrapAxios(http.patch(`/problem/${problemId}/cluster/${clusterId}`, variables)),
-        options
+        invalidateOnSuccess(
+            [
+                ["clusters", problemId],
+                ["problem", problemId, "cluster", clusterId],
+            ],
+            options
+        )
     );

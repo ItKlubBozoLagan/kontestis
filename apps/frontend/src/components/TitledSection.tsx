@@ -1,4 +1,4 @@
-import { CSSProperties, FC, ReactNode } from "react";
+import React, { CSSProperties, FC, ReactNode } from "react";
 
 type Properties = {
     className?: string;
@@ -8,13 +8,10 @@ type Properties = {
     children: ReactNode;
 };
 
-export const TitledSection: FC<Properties> = ({
-    className,
-    parentStyle,
-    small,
-    title,
-    children,
-}) => {
+export const TitledSection: FC<Properties> = React.forwardRef<
+    HTMLDivElement,
+    Properties & React.HTMLAttributes<HTMLDivElement>
+>(({ parentStyle, small, title, children, ...properties }, reference) => {
     return (
         <div
             tw={"w-full flex flex-col items-center border-solid border-2 border-neutral-300"}
@@ -26,10 +23,13 @@ export const TitledSection: FC<Properties> = ({
             </div>
             <div
                 tw={"w-full h-full flex flex-col items-center gap-2 p-4 bg-white"}
-                className={className}
+                ref={reference}
+                {...properties}
             >
                 {children}
             </div>
         </div>
     );
-};
+});
+
+TitledSection.displayName = "TitledSection";

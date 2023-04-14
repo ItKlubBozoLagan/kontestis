@@ -12,7 +12,7 @@ export const parseTime = (timeInMillis: number) => {
 
     timeLeft -= days * 3600 * 24;
 
-    if (days) {
+    if (days > 0) {
         timeString += days + "d ";
     }
 
@@ -20,7 +20,7 @@ export const parseTime = (timeInMillis: number) => {
 
     timeLeft -= hours * 3600;
 
-    if (hours) {
+    if (hours > 0) {
         timeString += hours + "h ";
     }
 
@@ -28,11 +28,11 @@ export const parseTime = (timeInMillis: number) => {
 
     timeLeft -= minutes * 60;
 
-    if (minutes) {
+    if (minutes > 0) {
         timeString += minutes + "m ";
     }
 
-    if (timeLeft) {
+    if (timeLeft > 0) {
         timeString += timeLeft + "s";
     }
 

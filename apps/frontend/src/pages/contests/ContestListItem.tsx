@@ -58,6 +58,7 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                             <span
                                 tw={"text-yellow-600 hover:(text-yellow-700 cursor-pointer)"}
                                 onClick={async () => {
+                                    // TODO: mutations
                                     await http
                                         .post("/contest/" + contest.id + "/members/register/")
                                         .then(() =>

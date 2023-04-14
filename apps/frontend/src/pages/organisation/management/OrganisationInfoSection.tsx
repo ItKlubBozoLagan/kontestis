@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Organisation } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../components/EditableDisplayBox";
@@ -39,13 +38,9 @@ export const OrganisationInfoSection: FC<Properties> = ({ organisation }) => {
         modifyMutation.mutate(data);
     });
 
-    const queryClient = useQueryClient();
-
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["organisations"]);
-        queryClient.invalidateQueries(["organisations", organisation.id]);
         modifyMutation.reset();
     }, [modifyMutation.isSuccess]);
 

@@ -4,6 +4,7 @@ import contentType from "content-type";
 import {
     UseMutationOptions,
     UseMutationResult,
+    useQueryClient,
     UseQueryOptions,
     UseQueryResult,
 } from "react-query";
@@ -108,6 +109,24 @@ http.interceptors.response.use(
         return Promise.reject(new HttpError(error));
     }
 );
+
+export const invalidateOnSuccess = <TData, TError, TVariables>(
+    keys: unknown[][],
+    options?: UseMutationOptions<TData, TError, TVariables>
+): UseMutationOptions<TData, TError, TVariables> => {
+    const queryClient = useQueryClient();
+
+    return {
+        ...options,
+        onSuccess: (data, variables, context) => {
+            const invalidations = keys.map((key) => queryClient.invalidateQueries(key));
+
+            const _ = Promise.all(invalidations);
+
+            options?.onSuccess?.(data, variables, context);
+        },
+    };
+};
 
 export const wrapAxios = <T>(request: Promise<AxiosResponse<ServerData<T>>>): Promise<T> =>
     request.then((data) => data.data.data);

@@ -19,7 +19,7 @@ const TypeSchema = Type.Union([
     Type.Literal("interactive"),
 ]);
 
-const schema = Type.Object({
+const EvaluationSchema = Type.Object({
     problem_type: TypeSchema,
     language: LanguageSchema,
     code: Type.String(),
@@ -36,7 +36,7 @@ const schema = Type.Object({
     evaluator_language: Type.Optional(LanguageSchema),
 });
 
-const typeCheck = TypeCompiler.Compile(schema);
+const schemaCompiled = TypeCompiler.Compile(EvaluationSchema);
 
 const PLAIN_TEXT_EVALUATOR = `
 def read_until(separator):
@@ -57,7 +57,6 @@ out = read_until(separator)
 subOut = read_until(separator)
 
 print("AC" if out.strip() == subOut.strip() else "WA")
-
 `;
 
 const plainTextEvaluatorBase64 = Buffer.from(PLAIN_TEXT_EVALUATOR, "utf8").toString("base64");
@@ -71,9 +70,9 @@ app.use(json({ limit: "50mb" }), (req, _, next) => {
 });
 
 app.post("/", async (req, res) => {
-    if (!typeCheck.Check(req.body)) return res.status(400).end();
+    if (!schemaCompiled.Check(req.body)) return res.status(400).end();
 
-    const submission: Static<typeof schema> = req.body;
+    const submission: Static<typeof EvaluationSchema> = req.body;
 
     const runnerFunction = await getRunnerFunction(submission.code, submission.language);
 

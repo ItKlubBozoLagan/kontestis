@@ -3,7 +3,7 @@ import { DeepPartial, RecurringRecord } from "@kontestis/utils";
 import type { I18nEn_Type } from "./languages/en";
 
 // preferably don't change the default language
-//  but if it's changed, make sure to also, change the type
+//  but if it's changed, make sure to also change the type
 export const I18N_DEFAULT_LANGUAGE = "en" as const;
 type DefaultLanguageType = I18nEn_Type;
 
@@ -57,7 +57,7 @@ export type DefaultValueFromKey<Key extends I18NDefaultKeys> = ValueFromKey<
 >;
 
 // WebStorm parses the above insanity of a type wrong
-//  and for some off reason, this fixes it
+//  and for some odd reason, this fixes it
 //  VS Code users are unaffected
 type FixWebstormBug<T> = {
     [k in keyof T]: T[k];

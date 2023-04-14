@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { SimpleButton } from "../../../../components/SimpleButton";
@@ -71,8 +70,6 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
 
     const createMutation = useCreateProblem(contest.id);
 
-    const queryClient = useQueryClient();
-
     const { t } = useTranslation();
 
     const onSubmit = handleSubmit((data) => {
@@ -86,7 +83,6 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests", contest.id, "problems"]);
         createMutation.reset();
         reset();
         properties.onAfterClose?.();

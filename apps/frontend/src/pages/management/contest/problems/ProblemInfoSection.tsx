@@ -4,7 +4,6 @@ import { textToColor } from "@kontestis/utils";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiCheckSquare, FiX } from "react-icons/all";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { Breadcrumb } from "../../../../components/Breadcrumb";
@@ -59,23 +58,13 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
         },
     });
 
-    const modifyMutation = useModifyProblem(BigInt(problem?.id ?? 0));
-
-    const queryClient = useQueryClient();
+    const modifyMutation = useModifyProblem([contest.id, BigInt(problem?.id ?? 0)]);
 
     const onSubmit = handleSubmit((data) => {
         modifyMutation.reset();
 
         modifyMutation.mutate(data);
     });
-
-    useEffect(() => {
-        if (!modifyMutation.isSuccess) return;
-
-        queryClient.invalidateQueries(["contests", contest.id, "problems"]);
-        queryClient.invalidateQueries(["problem", problem.id]);
-        modifyMutation.reset();
-    }, [modifyMutation.isSuccess]);
 
     const formReference = React.useRef<HTMLFormElement>(null);
 
@@ -84,6 +73,12 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
             new Event("submit", { cancelable: true, bubbles: true })
         );
     };
+
+    useEffect(() => {
+        if (!modifyMutation.isSuccess) return;
+
+        modifyMutation.reset();
+    }, [modifyMutation.isSuccess]);
 
     const [variant, setVariant] = useState(problem.evaluation_variant);
 

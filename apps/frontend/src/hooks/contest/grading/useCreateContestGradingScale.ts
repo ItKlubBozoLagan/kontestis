@@ -1,7 +1,7 @@
 import { ExamGradingScale, Snowflake } from "@kontestis/models";
 import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
 export type GradingScaleVariables = {
     percentage: number;
@@ -15,7 +15,7 @@ export const useCreateContestGradingScale: MutationHandler<
 > = (contestId, options) =>
     useMutation(
         (variables) => wrapAxios(http.post(`/contest/${contestId}/grade/`, variables)),
-        options
+        invalidateOnSuccess([["contest", contestId, "grades"]], options)
     );
 
 export const useModifyGradingScale: MutationHandler<
@@ -26,7 +26,7 @@ export const useModifyGradingScale: MutationHandler<
     useMutation(
         (variables) =>
             wrapAxios(http.patch(`/contest/${contestId}/grade/${gradingScaleId}/`, variables)),
-        options
+        invalidateOnSuccess([["contest", contestId, "grades"]], options)
     );
 
 export const useDeleteGradingScale: MutationHandler<

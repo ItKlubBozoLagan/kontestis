@@ -25,12 +25,12 @@ import { GradingScaleListItem } from "./GradingScaleListItem";
 import { ResultsTableReviewedItem } from "./ResultsTableReviewedItem";
 
 const calculateGradeFromScale = (
-    scale: ExamGradingScale[],
+    scales: ExamGradingScale[],
     [score, totalScore]: [number, number]
 ) => {
-    return scale
+    return scales
         .sort((a, b) => b.percentage - a.percentage)
-        .find((s) => score >= Math.floor((s.percentage / 100) * totalScore))?.grade;
+        .find((scale) => score >= Math.floor((scale.percentage / 100) * totalScore))?.grade;
 };
 
 export const ContestResultsPage: FC = () => {
@@ -42,7 +42,10 @@ export const ContestResultsPage: FC = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
 
-    const maxScore = useMemo(() => (problems ?? []).reduce((a, it) => a + it.score, 0), [problems]);
+    const maxScore = useMemo(
+        () => (problems ?? []).reduce((accumulator, it) => accumulator + it.score, 0),
+        [problems]
+    );
 
     const memberScores = useMemo(
         () =>

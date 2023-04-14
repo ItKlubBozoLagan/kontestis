@@ -8,7 +8,6 @@ import {
 } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
 import tw, { theme } from "twin.macro";
 import { z } from "zod";
 
@@ -39,8 +38,6 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
 
     const deleteMutation = useRemoveParticipant(contest.id);
 
-    const queryClient = useQueryClient();
-
     const onDeleteClick = () => {
         if (deleteMutation.isLoading) return;
 
@@ -58,15 +55,8 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
     const modifyMutation = useModifyContestMember([contest.id, member.user_id]);
 
     useEffect(() => {
-        if (!deleteMutation.isSuccess) return;
-
-        queryClient.invalidateQueries(["contests", contest.id, "members"]);
-    }, [deleteMutation]);
-
-    useEffect(() => {
         if (!modifyMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests", contest.id, "members"]);
         modifyMutation.reset();
     }, [modifyMutation]);
 
@@ -169,14 +159,11 @@ export const ContestParticipantsPage: FC = () => {
 
     const [netError, setNetError] = useState(false);
 
-    const queryClient = useQueryClient();
-
     useEffect(() => {
-        if (addMutation.isError) setNetError(true);
+        if (!addMutation.isError) return;
 
-        if (addMutation.isSuccess)
-            queryClient.invalidateQueries(["contests", contest.id, "members"]);
-    }, [addMutation.isSuccess, addMutation.isError]);
+        setNetError(true);
+    }, [addMutation.isError]);
 
     const { t } = useTranslation();
 

@@ -3,7 +3,6 @@ import { AdminPermissions } from "@kontestis/models";
 import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
-import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { CanAdmin } from "../../components/CanAdmin";
@@ -51,8 +50,6 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
 
     const createMutation = useCreateContest();
 
-    const queryClient = useQueryClient();
-
     const { t } = useTranslation();
 
     const onSubmit = handleSubmit((data) => {
@@ -76,7 +73,6 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
-        queryClient.invalidateQueries(["contests"]);
         createMutation.reset();
         reset();
         properties.onAfterClose?.();

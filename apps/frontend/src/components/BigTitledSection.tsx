@@ -1,16 +1,19 @@
-import { FC, ReactNode } from "react";
+import React, { FC, ReactNode } from "react";
 
 type Properties = {
     header: ReactNode;
     children: ReactNode;
-    className?: string;
 };
 
-export const BigTitledSection: FC<Properties> = ({ header, children, className }) => {
+export const BigTitledSection: FC<Properties> = React.forwardRef<
+    HTMLDivElement,
+    Properties & React.HTMLAttributes<HTMLDivElement>
+>(({ header, children, className, ...properties }, reference) => {
     return (
         <div
             tw={"flex flex-col border-2 border-solid border-neutral-400 bg-neutral-200"}
-            className={className}
+            ref={reference}
+            {...properties}
         >
             <div
                 tw={
@@ -22,4 +25,6 @@ export const BigTitledSection: FC<Properties> = ({ header, children, className }
             <div tw={"flex flex-col items-center p-4"}>{children}</div>
         </div>
     );
-};
+});
+
+BigTitledSection.displayName = "BigTitledSection";
