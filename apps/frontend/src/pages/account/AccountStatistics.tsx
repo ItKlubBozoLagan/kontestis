@@ -39,7 +39,7 @@ export const AccountStatistics: FC = () => {
     return (
         <div tw={"w-max min-w-[90%] mt-4 flex flex-col items-center gap-8"}>
             <YearActivityCalendar
-                title={t("account.stats.elo.title")}
+                title={t("account.stats.submissions.title")}
                 dataset={submissionDataset}
                 loading={isSubmissionsLoading}
                 toggles={[t("account.stats.submissions.toggles.showAccepted")]}
