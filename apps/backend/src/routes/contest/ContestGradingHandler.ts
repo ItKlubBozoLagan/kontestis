@@ -66,9 +66,13 @@ ContestGradingHandler.patch(
     "/:grading_scale_id",
     useValidation(GradingSchema),
     async (req, res) => {
+        const user = await extractUser(req);
         const member = await extractContestMember(req);
 
-        if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT))
+        if (
+            !hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT) &&
+            !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
+        )
             throw new SafeError(StatusCodes.FORBIDDEN);
 
         const exists = await Database.selectOneFrom("exam_grading_scales", "*", {
