@@ -3,3 +3,4 @@
 
 pnpm lint
 pnpm --filter=@kontestis/scripts exec-script dependency-check
+pnpm test
