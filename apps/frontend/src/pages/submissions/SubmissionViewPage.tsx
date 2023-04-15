@@ -95,7 +95,7 @@ export const SubmissionViewPage: FC = () => {
                                         }}
                                     >
                                         <Translated translationKey="submissions.table.body.clusterIndex">
-                                            {String(index + 1) + ":"}
+                                            {String(index + 1)}
                                         </Translated>
                                     </TableItem>
                                     <TableItem
