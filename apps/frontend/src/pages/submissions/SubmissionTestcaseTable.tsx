@@ -40,7 +40,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({ cluster_submission_id,
                     <TableRow key={ts.id.toString()}>
                         <TableItem>
                             <Translated translationKey="submissions.table.body.testcaseIndex">
-                                {String(index + 1) + ":"}
+                                {String(index + 1)}
                             </Translated>
                         </TableItem>
                         <TableItem
