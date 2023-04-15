@@ -264,9 +264,13 @@ ContestHandler.get("/", async (req, res) => {
 ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
     const contest = await extractContest(req);
 
+    const user = await extractUser(req);
     const member = await extractContestMember(req);
 
-    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
+    if (
+        !hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE) &&
+        !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
+    )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     const targetUser = await Database.selectOneFrom("users", ["id"], { id: req.params.user_id });
