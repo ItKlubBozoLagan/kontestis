@@ -176,7 +176,7 @@ const I18nEn = {
                     clone: {
                         title: "Copy",
                         cloneButton: "Clone",
-                        inOrganisation: "in organisation",
+                        inOrganisation: "to organisation",
                     },
                 },
                 problems: {

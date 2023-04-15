@@ -176,7 +176,7 @@ export default {
                     clone: {
                         title: "Kloniranje",
                         cloneButton: "Kloniraj",
-                        inOrganisation: "u organizaciji",
+                        inOrganisation: "u organizaciju",
                     },
                 },
                 problems: {
