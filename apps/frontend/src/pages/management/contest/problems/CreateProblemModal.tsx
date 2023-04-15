@@ -151,23 +151,64 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         )}
                     </span>
                     <TitledSwitch
-                        choice={["Plain", "Checker"]}
+                        choice={[
+                            t(
+                                "contests.management.individual.problems.createModal.evaluationVariant.plain"
+                            ),
+                            t(
+                                "contests.management.individual.problems.createModal.evaluationVariant.checker"
+                            ),
+                        ]}
                         onChange={(value) => {
-                            setValue("evaluation_variant", value === "Plain" ? "plain" : "checker");
-                            setVariant(value === "Plain" ? "plain" : "checker");
+                            setValue(
+                                "evaluation_variant",
+                                value ===
+                                    t(
+                                        "contests.management.individual.problems.createModal.evaluationVariant.plain"
+                                    )
+                                    ? "plain"
+                                    : "checker"
+                            );
+                            setVariant(
+                                value ===
+                                    t(
+                                        "contests.management.individual.problems.createModal.evaluationVariant.plain"
+                                    )
+                                    ? "plain"
+                                    : "checker"
+                            );
                         }}
                     />
                     {variant !== "plain" && (
                         <div tw={"flex flex-col gap-2"}>
                             <TitledSwitch
-                                choice={["Standard", "Interactive"]}
+                                choice={[
+                                    t(
+                                        "contests.management.individual.problems.createModal.evaluationVariant.checkers.standard"
+                                    ),
+                                    t(
+                                        "contests.management.individual.problems.createModal.evaluationVariant.checkers.interactive"
+                                    ),
+                                ]}
                                 defaultIndex={0}
                                 onChange={(value) => {
                                     setValue(
                                         "evaluation_variant",
-                                        value === "Standard" ? "checker" : "interactive"
+                                        value ===
+                                            t(
+                                                "contests.management.individual.problems.createModal.evaluationVariant.checkers.standard"
+                                            )
+                                            ? "checker"
+                                            : "interactive"
                                     );
-                                    setVariant(value === "Standard" ? "checker" : "interactive");
+                                    setVariant(
+                                        value ===
+                                            t(
+                                                "contests.management.individual.problems.createModal.evaluationVariant.checkers.standard"
+                                            )
+                                            ? "checker"
+                                            : "interactive"
+                                    );
                                 }}
                             />
                             <span tw={"mt-2"}>

@@ -6,6 +6,7 @@ import { theme } from "twin.macro";
 
 import { http } from "../../../../../api/http";
 import { SimpleButton } from "../../../../../components/SimpleButton";
+import { useTranslation } from "../../../../../hooks/useTranslation";
 import { LimitBox } from "../../../../problems/ProblemViewPage";
 
 type Properties = {
@@ -15,26 +16,63 @@ type Properties = {
 export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
     const queryClient = useQueryClient();
 
+    const { t } = useTranslation();
+
     return (
         <div tw={"w-full self-center flex flex-col gap-2"}>
             {cluster.status === "cached" ? (
                 <LimitBox
-                    title={"Status"}
-                    value={"Ready (cached)"}
+                    title={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.title"
+                    )}
+                    value={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.cached"
+                    )}
                     icon={FiCheck}
                     tw={"bg-green-100"}
                 />
             ) : cluster.status === "generator_error" ? (
-                <LimitBox title={"Status"} value={"Generator error"} icon={FiX} tw={"bg-red-200"} />
+                <LimitBox
+                    title={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.title"
+                    )}
+                    value={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.errors.generator"
+                    )}
+                    icon={FiX}
+                    tw={"bg-red-200"}
+                />
             ) : cluster.status === "solution_error" ? (
-                <LimitBox title={"Status"} value={"Solution error"} icon={FiX} tw={"bg-red-200"} />
+                <LimitBox
+                    title={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.title"
+                    )}
+                    value={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.errors.solution"
+                    )}
+                    icon={FiX}
+                    tw={"bg-red-200"}
+                />
             ) : cluster.status === "pending" ? (
-                <LimitBox icon={FiClock} title={"Status"} value={"Pending"} tw={"bg-yellow-100"} />
+                <LimitBox
+                    icon={FiClock}
+                    title={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.title"
+                    )}
+                    value={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.pending"
+                    )}
+                    tw={"bg-yellow-100"}
+                />
             ) : (
                 <LimitBox
                     icon={FiLayers}
-                    title={"Status"}
-                    value={"Ready (uncached)"}
+                    title={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.title"
+                    )}
+                    value={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.uncached"
+                    )}
                     tw={"bg-blue-100"}
                 />
             )}
@@ -57,7 +95,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                         ]);
                     }}
                 >
-                    Drop cache
+                    {t("contests.management.individual.problems.cluster.info.generator.dropCache")}
                 </SimpleButton>
                 <SimpleButton
                     tw={"w-full"}
@@ -75,7 +113,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                         ]);
                     }}
                 >
-                    Generate
+                    {t("contests.management.individual.problems.cluster.info.generator.generate")}
                 </SimpleButton>
             </div>
         </div>

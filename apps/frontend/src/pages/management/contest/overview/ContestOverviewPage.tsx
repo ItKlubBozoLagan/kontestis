@@ -309,7 +309,10 @@ export const ContestOverviewPage: FC = () => {
                     </div>
                 </div>
                 <div tw={"flex flex-col w-full gap-2"}>
-                    <TitledSection title={"Statistics"} tw={"gap-4"}>
+                    <TitledSection
+                        title={t("contests.management.individual.overview.statistics.title")}
+                        tw={"gap-4"}
+                    >
                         <LimitBox
                             icon={FiUsers}
                             title={t(
@@ -335,7 +338,7 @@ export const ContestOverviewPage: FC = () => {
                             }
                         />
                     </TitledSection>
-                    <TitledSection title={"Copy"}>
+                    <TitledSection title={t("contests.management.individual.overview.clone.title")}>
                         <div tw={"w-full flex justify-center gap-2"}>
                             <SimpleButton
                                 disabled={copyMutation.isLoading}
@@ -344,8 +347,11 @@ export const ContestOverviewPage: FC = () => {
                                     copyMutation.mutate({ organisation_id: selectedOrgId });
                                 }}
                             >
-                                Clone
-                            </SimpleButton>
+                                {t("contests.management.individual.overview.clone.cloneButton")}
+                            </SimpleButton>{" "}
+                            <span>
+                                {t("contests.management.individual.overview.clone.inOrganisation")}
+                            </span>{" "}
                             <select
                                 onChange={(event) => setSelectedOrgId(BigInt(event.target.value))}
                             >

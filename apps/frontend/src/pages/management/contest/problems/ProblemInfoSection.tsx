@@ -112,42 +112,80 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     <TitledInput {...register("time_limit_millis")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={t("contests.management.individual.problems.individual.info.timeLimit")}
-                    value={problem.memory_limit_megabytes + ""}
-                    submitFunction={submitForm}
-                >
-                    <TitledInput {...register("memory_limit_megabytes")} />
-                </EditableDisplayBox>
-                <EditableDisplayBox
-                    title={"Evaluation variant"}
+                    title={t(
+                        "contests.management.individual.problems.individual.info.evaluationVariant.label"
+                    )}
                     value={problem.evaluation_variant}
                     submitFunction={submitForm}
                 >
                     <TitledSwitch
-                        choice={["Plain", "Checker"]}
+                        choice={[
+                            t(
+                                "contests.management.individual.problems.individual.info.evaluationVariant.plain"
+                            ),
+                            t(
+                                "contests.management.individual.problems.individual.info.evaluationVariant.checker"
+                            ),
+                        ]}
                         defaultIndex={variant === "plain" ? 0 : 1}
                         onChange={(value) => {
-                            setValue("evaluation_variant", value === "Plain" ? "plain" : "checker");
-                            setVariant(value === "Plain" ? "plain" : "checker");
+                            setValue(
+                                "evaluation_variant",
+                                value ===
+                                    t(
+                                        "contests.management.individual.problems.individual.info.evaluationVariant.plain"
+                                    )
+                                    ? "plain"
+                                    : "checker"
+                            );
+                            setVariant(
+                                value ===
+                                    t(
+                                        "contests.management.individual.problems.individual.info.evaluationVariant.plain"
+                                    )
+                                    ? "plain"
+                                    : "checker"
+                            );
                         }}
                     />
                     {variant !== "plain" && (
                         <TitledSwitch
-                            choice={["Standard", "Interactive"]}
+                            choice={[
+                                t(
+                                    "contests.management.individual.problems.individual.info.evaluationVariant.checkers.standard"
+                                ),
+                                t(
+                                    "contests.management.individual.problems.individual.info.evaluationVariant.checkers.interactive"
+                                ),
+                            ]}
                             defaultIndex={variant === "checker" ? 0 : 1}
                             onChange={(value) => {
                                 setValue(
                                     "evaluation_variant",
-                                    value === "Standard" ? "checker" : "interactive"
+                                    value ===
+                                        t(
+                                            "contests.management.individual.problems.individual.info.evaluationVariant.checkers.standard"
+                                        )
+                                        ? "checker"
+                                        : "interactive"
                                 );
-                                setVariant(value === "Standard" ? "checker" : "interactive");
+                                setVariant(
+                                    value ===
+                                        t(
+                                            "contests.management.individual.problems.individual.info.evaluationVariant.checkers.standard"
+                                        )
+                                        ? "checker"
+                                        : "interactive"
+                                );
                             }}
                         />
                     )}
                 </EditableDisplayBox>
                 {problem.evaluation_variant !== "plain" && (
                     <EditableDisplayBox
-                        title={"Evaluation language"}
+                        title={t(
+                            "contests.management.individual.problems.individual.info.solutionLanguage"
+                        )}
                         value={problem.evaluation_language}
                         submitFunction={submitForm}
                     >
@@ -211,7 +249,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     <textarea {...register("solution_code")} />
                 </EditableDisplayBox>
                 <EditableDisplayBox
-                    title={"Tags"}
+                    title={t("contests.management.individual.problems.individual.info.tags")}
                     value={
                         <div tw={"flex gap-1 flex-wrap"}>
                             {problem.tags.map((tag) => (

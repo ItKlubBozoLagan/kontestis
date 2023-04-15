@@ -168,10 +168,15 @@ export default {
                         },
                     },
                     statistics: {
-                        label: "Statistika",
+                        title: "Statistika",
                         registeredParticipants: "Registrirani sudionici",
                         announcements: "Obavijesti",
                         unansweredQuestions: "Neodgovorena pitanja",
+                    },
+                    clone: {
+                        title: "Kloniranje",
+                        cloneButton: "Kloniraj",
+                        inOrganisation: "u organizaciji",
                     },
                 },
                 problems: {
@@ -194,7 +199,10 @@ export default {
                             label: "Varijanta evaluacije",
                             plain: "Obično",
                             checker: "Skripta za provjeru",
-                            interactive: "Interaktivni",
+                            checkers: {
+                                standard: "Standardan",
+                                interactive: "Interaktivni",
+                            },
                         },
                         evaluationLanguage: "Jezik evaluacijske skripte",
                         evaluationScript: "Evaluacijska skripta (opcionalna)",
@@ -209,9 +217,19 @@ export default {
                             description: "Opis",
                             timeLimit: "Vremensko ograničenje",
                             memoryLimit: "Ograničenje memorije",
+                            evaluationVariant: {
+                                label: "Varijanta evaluacije",
+                                plain: "Obično",
+                                checker: "Skripta za provjeru",
+                                checkers: {
+                                    standard: "Standardan",
+                                    interactive: "Interaktivni",
+                                },
+                            },
                             evaluationScript: "Skripta za evaluaciju (u Pythonu)",
                             solutionLanguage: "Jezik rješenja",
                             solutionCode: "Kod rješenja",
+                            tags: "Oznake",
                             score: "Bodovi",
                             empty: "Nema",
                         },
@@ -219,12 +237,24 @@ export default {
                     cluster: {
                         createButton: "Stvori klaster",
                         info: {
-                            title: "info",
+                            title: "Info",
                             score: "Bodovi",
                             generator: {
                                 label: "Generator",
                                 plain: "Obican",
                                 generator: "Generator",
+                                status: {
+                                    title: "Status",
+                                    cached: "Spremno (u predmemoriji)",
+                                    uncached: "Spremno (nije u predmemoriji)",
+                                    errors: {
+                                        generator: "Greška generatora",
+                                        solution: "Greška rješenja",
+                                    },
+                                    pending: "U tijeku",
+                                },
+                                dropCache: "Izbriši predmemoriju",
+                                generate: "Generiraj",
                             },
                             generator_language: "Jezik generatora",
                             generator_code: "Kod generatora",

@@ -168,10 +168,15 @@ const I18nEn = {
                         },
                     },
                     statistics: {
-                        label: "Statistics",
+                        title: "Statistics",
                         registeredParticipants: "Registered participants",
                         announcements: "Announcements",
                         unansweredQuestions: "Unanswered questions",
+                    },
+                    clone: {
+                        title: "Copy",
+                        cloneButton: "Clone",
+                        inOrganisation: "in organisation",
                     },
                 },
                 problems: {
@@ -194,7 +199,10 @@ const I18nEn = {
                             label: "Evaluation variant",
                             plain: "Plain",
                             checker: "Checker",
-                            interactive: "Interactive",
+                            checkers: {
+                                standard: "Standardan",
+                                interactive: "Interaktivni",
+                            },
                         },
                         evaluationLanguage: "Evaluation language",
                         evaluationScript: "Evaluation script (optional)",
@@ -209,9 +217,19 @@ const I18nEn = {
                             description: "Description",
                             timeLimit: "Time limit",
                             memoryLimit: "Memory limit",
+                            evaluationVariant: {
+                                label: "Evaluation variant",
+                                plain: "Plain",
+                                checker: "Checker",
+                                checkers: {
+                                    standard: "Standardan",
+                                    interactive: "Interaktivni",
+                                },
+                            },
                             evaluationScript: "Evaluation script (python)",
                             solutionLanguage: "Solution language",
                             solutionCode: "Solution code",
+                            tags: "Tags",
                             score: "Score",
                             empty: "None",
                         },
@@ -219,12 +237,24 @@ const I18nEn = {
                     cluster: {
                         createButton: "Create cluster",
                         info: {
-                            title: "info",
+                            title: "Info",
                             score: "Score",
                             generator: {
                                 label: "Generator",
                                 plain: "Plain",
                                 generator: "Generator",
+                                status: {
+                                    title: "Status",
+                                    cached: "Ready (cached)",
+                                    uncached: "Ready (uncached)",
+                                    errors: {
+                                        generator: "Generator error",
+                                        solution: "Solution error",
+                                    },
+                                    pending: "Pending",
+                                },
+                                dropCache: "Drop cache",
+                                generate: "Generate",
                             },
                             generator_language: "Generator language",
                             generator_code: "Generator code",
