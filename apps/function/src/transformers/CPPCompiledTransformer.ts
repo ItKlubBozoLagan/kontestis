@@ -23,7 +23,7 @@ export const transformToBinary = async (
 
     const compile = spawn(
         variant === "cpp" ? "/usr/bin/g++" : "/usr/bin/gcc",
-        ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", variant, "-"],
+        ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", variant === "cpp" ? "c++" : "c", "-"],
         {
             shell: true,
         }
