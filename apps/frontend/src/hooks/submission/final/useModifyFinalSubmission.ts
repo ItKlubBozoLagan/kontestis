@@ -15,8 +15,5 @@ export const useModifyFinalSubmission: MutationHandler<
 > = (finalSubmissionId, options) =>
     useMutation(
         (variables) => wrapAxios(http.patch(`/submission/final/${finalSubmissionId}`, variables)),
-        invalidateOnSuccess(
-            [["submission", "final", "submission", finalSubmissionId.toString()]],
-            options
-        )
+        invalidateOnSuccess([["submission", "final", "submission", finalSubmissionId]], options)
     );

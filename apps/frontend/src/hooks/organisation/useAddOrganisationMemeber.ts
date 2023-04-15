@@ -9,5 +9,5 @@ export const useAddOrganisationMember: MutationHandler<string, undefined, Snowfl
 ) =>
     useMutation(
         (email) => wrapAxios(http.post(`/organisation/${organisationId}/member`, { email })),
-        invalidateOnSuccess([["organisations", organisationId.toString(), "members"]], options)
+        invalidateOnSuccess([["organisations", organisationId, "members"]], options)
     );
