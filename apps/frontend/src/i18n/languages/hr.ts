@@ -37,9 +37,9 @@ export default {
     notifications: {
         "contest-start": "Natjecanje %1 je počelo!",
         "contest-end": "Natjecanje %1 je završilo!",
-        "new-question": "Novo pitanje je bilo postavljeno u %1",
-        "new-announcement": "Došla je nova obavijest u %1",
-        "question-answer": "Vaše pitanje je bilo odgovoreno u %1",
+        "new-question": "Novo pitanje je postavljeno u %1",
+        "new-announcement": "Stigla je nova obavijest u %1",
+        "question-answer": "Vaše pitanje je odgovoreno u %1",
         // must begin with a space, Translated component currently
         //  has a bug where it doesn't handle messages beginning with a placeholder
         alert: " %1",
