@@ -1,5 +1,5 @@
 import { ProblemWithScore } from "@kontestis/models";
-import { textToColor, toCroatianLocale } from "@kontestis/utils";
+import { textToHexColor, toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useQueries } from "react-query";
@@ -102,7 +102,7 @@ export const ProblemsPage: FC = () => {
                                                     alternateText={tag}
                                                 />
                                             ) : (
-                                                <Breadcrumb color={textToColor(tag)}>
+                                                <Breadcrumb color={textToHexColor(tag)}>
                                                     {tag}
                                                 </Breadcrumb>
                                             )}

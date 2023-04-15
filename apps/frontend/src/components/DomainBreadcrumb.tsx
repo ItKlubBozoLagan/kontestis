@@ -1,4 +1,4 @@
-import { darkenHex, textToColor } from "@kontestis/utils";
+import { darkenHex, textToHexColor } from "@kontestis/utils";
 import React, { FC, useMemo } from "react";
 
 import { useAuthStore } from "../state/auth";
@@ -16,8 +16,8 @@ export const DomainBreadcrumb: FC<Properties> = ({ email }) => {
 
     return emailDomain ? (
         <Breadcrumb
-            color={textToColor(emailDomain)}
-            borderColor={darkenHex(textToColor(emailDomain), 40)}
+            color={textToHexColor(emailDomain)}
+            borderColor={darkenHex(textToHexColor(emailDomain), 40)}
         >
             {emailDomain}
         </Breadcrumb>

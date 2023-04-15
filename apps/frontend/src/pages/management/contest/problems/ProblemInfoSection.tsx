@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProblemWithScore } from "@kontestis/models";
-import { textToColor } from "@kontestis/utils";
+import { textToHexColor } from "@kontestis/utils";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiCheckSquare, FiX } from "react-icons/all";
@@ -215,7 +215,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                     value={
                         <div tw={"flex gap-1 flex-wrap"}>
                             {problem.tags.map((tag) => (
-                                <Breadcrumb key={tag} color={textToColor(tag)}>
+                                <Breadcrumb key={tag} color={textToHexColor(tag)}>
                                     {tag}
                                     <FiX
                                         tw={"hover:text-red-600 cursor-pointer"}

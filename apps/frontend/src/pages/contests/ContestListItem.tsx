@@ -1,5 +1,5 @@
 import { ContestWithPermissions } from "@kontestis/models";
-import { cutText, parseTime, toCroatianLocale } from "@kontestis/utils";
+import { cutText, formatDuration, toCroatianLocale } from "@kontestis/utils";
 import { FC, useState } from "react";
 import { FiCheck, FiList, FiX } from "react-icons/all";
 import { useQueryClient } from "react-query";
@@ -45,7 +45,9 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                 )}
             </TableItem>
             <TableItem>
-                {status === "running" ? rawTimeFormat : parseTime(contest.duration_seconds * 1000)}
+                {status === "running"
+                    ? rawTimeFormat
+                    : formatDuration(contest.duration_seconds * 1000)}
             </TableItem>
             {!adminView && (
                 <TableItem>

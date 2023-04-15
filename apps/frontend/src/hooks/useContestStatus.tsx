@@ -1,5 +1,5 @@
 import { Contest } from "@kontestis/models";
-import { parseTime } from "@kontestis/utils";
+import { formatDuration } from "@kontestis/utils";
 import { useEffect, useState } from "react";
 import { theme } from "twin.macro";
 
@@ -53,11 +53,11 @@ export const useContestStatus = <
     if (contest.start_time.getTime() > time)
         return {
             status: "pending",
-            rawTimeFormat: parseTime(contest.start_time.getTime() - time),
+            rawTimeFormat: formatDuration(contest.start_time.getTime() - time),
             timeFormat:
                 t("contests.management.individual.overview.status.pending") +
                 ": " +
-                parseTime(contest.start_time.getTime() - time),
+                formatDuration(contest.start_time.getTime() - time),
         } as Return;
 
     if (time > endTime)
@@ -69,10 +69,10 @@ export const useContestStatus = <
 
     return {
         status: "running",
-        rawTimeFormat: parseTime(endTime - time),
+        rawTimeFormat: formatDuration(endTime - time),
         timeFormat:
             t("contests.management.individual.overview.status.running") +
             ": " +
-            parseTime(endTime - time),
+            formatDuration(endTime - time),
     } as Return;
 };

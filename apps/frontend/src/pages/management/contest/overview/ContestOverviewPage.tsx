@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminPermissions } from "@kontestis/models";
-import { parseTime, toCroatianLocale } from "@kontestis/utils";
+import { formatDuration, toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
@@ -163,7 +163,7 @@ export const ContestOverviewPage: FC = () => {
                             </EditableDisplayBox>
                             <EditableDisplayBox
                                 title={t("contests.management.individual.overview.info.duration")}
-                                value={parseTime(contest.duration_seconds * 1000)}
+                                value={formatDuration(contest.duration_seconds * 1000)}
                                 submitFunction={submitForm}
                             >
                                 <div tw={"flex gap-4"}>

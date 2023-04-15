@@ -8,7 +8,8 @@
         "preinstall": "npx only-allow pnpm",
         "prepare": "husky install",
         "lint": "eslint --ignore-pattern '**/node_modules/**' --ext .tsx,.ts ./apps ./packages",
-        "typecheck": "pnpm -r typecheck"
+        "typecheck": "pnpm -r typecheck",
+        "test": "pnpm -r test"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^5.57.0",

@@ -4,6 +4,7 @@ node_modules/
 pruned/
 .fleet/
 global.env
+coverage/
 
 tools/**
 !tools/.gitkeep
