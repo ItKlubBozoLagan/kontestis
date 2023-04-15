@@ -156,10 +156,8 @@ export const ContestViewPage: FC = () => {
                     </TitledSection>
                 </div>
             )}
-            {!(
-                contestStatus.status === "pending" &&
-                !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
-            ) && (
+            {(contestStatus.status !== "pending" ||
+                hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) && (
                 <Table tw={"w-full"}>
                     <thead>
                         <TableHeadRow>
