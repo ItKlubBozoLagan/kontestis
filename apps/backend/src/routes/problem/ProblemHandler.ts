@@ -45,7 +45,7 @@ ProblemHandler.post("/:contest_id", useValidation(ProblemSchema), async (req, re
 
     if (
         req.body.evaluation_variant !== "plain" &&
-        (!req.body.evaluation_script || !req.body.evaluation_language)
+        (req.body.evaluation_script === undefined || !req.body.evaluation_language)
     )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
@@ -55,8 +55,8 @@ ProblemHandler.post("/:contest_id", useValidation(ProblemSchema), async (req, re
         title: req.body.title,
         description: req.body.description,
         evaluation_variant: req.body.evaluation_variant,
-        evaluation_script: req.body.evaluation_script,
-        evaluation_language: req.body.evaluation_language,
+        evaluation_script: req.body.evaluation_script ?? "",
+        evaluation_language: req.body.evaluation_language ?? "python",
         time_limit_millis: req.body.time_limit_millis,
         memory_limit_megabytes: req.body.memory_limit_megabytes,
         solution_language: req.body.solution_language,
@@ -125,7 +125,7 @@ ProblemHandler.patch("/:problem_id", useValidation(ProblemSchema), async (req, r
 
     if (
         req.body.evaluation_variant !== "plain" &&
-        (!req.body.evaluation_script || !req.body.evaluation_language)
+        (req.body.evaluation_script === undefined || !req.body.evaluation_language)
     )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
