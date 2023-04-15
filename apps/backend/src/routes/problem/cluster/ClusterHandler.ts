@@ -49,7 +49,10 @@ ClusterHandler.get("/", async (req, res) => {
 ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
-    if (req.body.generator && (!req.body.generator_language || !req.body.generator_code))
+    if (
+        req.body.generator &&
+        (!req.body.generator_language || req.body.generator_code === undefined)
+    )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const cluster: Cluster = {
@@ -99,7 +102,10 @@ ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
 ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
-    if (req.body.generator && (!req.body.generator_language || !req.body.generator_code))
+    if (
+        req.body.generator &&
+        (!req.body.generator_language || req.body.generator_code === undefined)
+    )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
     await Database.update(
