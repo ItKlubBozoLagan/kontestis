@@ -29,8 +29,6 @@ subOut = read_until(separator)
 print("custom:" + subOut.strip())
 `;
 
-const returnOutputEvaluatorBase64 = Buffer.from(RETURN_OUTPUT_EVALUATOR, "utf8").toString("base64");
-
 export const getClusterStatus = async (clusterId: Snowflake) => {
     return ((await Redis.get(RedisKeys.CLUSTER_STATUS(clusterId))) ?? "uncached") as ClusterStatus;
 };
@@ -70,7 +68,7 @@ const generateTestcaseInput = async (cluster: Cluster, count: number) => {
             problemId: 0n,
             language: cluster.generator_language ?? "python",
             code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
-            evaluator: returnOutputEvaluatorBase64,
+            evaluator: RETURN_OUTPUT_EVALUATOR,
             evaluation_variant: "checker",
             evaluator_language: "python",
         },
@@ -125,7 +123,7 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
             problemId: problem.id,
             language: problem.solution_language ?? "python",
             code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
-            evaluator: returnOutputEvaluatorBase64,
+            evaluator: RETURN_OUTPUT_EVALUATOR,
             evaluation_variant: "checker",
             evaluator_language: "python",
         },
