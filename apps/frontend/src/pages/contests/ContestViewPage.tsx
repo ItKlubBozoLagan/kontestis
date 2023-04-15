@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiList } from "react-icons/all";
@@ -19,6 +20,7 @@ import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 import { ContestStatusStyleColorMap, useContestStatus } from "../../hooks/useContestStatus";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useAuthStore } from "../../state/auth";
 import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
@@ -31,6 +33,8 @@ const QuestionSchema = z.object({
 
 export const ContestViewPage: FC = () => {
     const { contestId } = useParams<Properties>();
+
+    const { user } = useAuthStore();
 
     const { data: contest } = useContest(BigInt(contestId ?? 0n));
     const { data: problems } = useAllProblems(contest?.id, {
@@ -152,41 +156,47 @@ export const ContestViewPage: FC = () => {
                     </TitledSection>
                 </div>
             )}
-            <Table tw={"w-full"}>
-                <thead>
-                    <TableHeadRow>
-                        <TableHeadItem>
-                            {contest?.exam
-                                ? t("contests.individual.problems_table.examProblem")
-                                : t("contests.individual.problems_table.problem")}
-                        </TableHeadItem>
-                        <TableHeadItem>
-                            {t("contests.individual.problems_table.score")}
-                        </TableHeadItem>
-                    </TableHeadRow>
-                </thead>
-                <tbody>
-                    {problems?.map((p) => (
-                        <TableRow key={p.id.toString()}>
-                            <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                                <Link to={"/problem/" + p.id} tw={"flex items-center gap-2"}>
-                                    <FiList tw={"text-xl"} /> {p.title}
-                                </Link>
-                            </TableItem>
-                            <TableItem>
-                                <ProblemScoreBox
-                                    score={
-                                        problemScores.data
-                                            ? problemScores.data[p.id.toString()] ?? 0
-                                            : 0
-                                    }
-                                    maxScore={p.score}
-                                />
-                            </TableItem>
-                        </TableRow>
-                    ))}
-                </tbody>
-            </Table>
+            {contestStatus.status !== "pending" ||
+                (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST) && (
+                    <Table tw={"w-full"}>
+                        <thead>
+                            <TableHeadRow>
+                                <TableHeadItem>
+                                    {contest?.exam
+                                        ? t("contests.individual.problems_table.examProblem")
+                                        : t("contests.individual.problems_table.problem")}
+                                </TableHeadItem>
+                                <TableHeadItem>
+                                    {t("contests.individual.problems_table.score")}
+                                </TableHeadItem>
+                            </TableHeadRow>
+                        </thead>
+                        <tbody>
+                            {problems?.map((p) => (
+                                <TableRow key={p.id.toString()}>
+                                    <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
+                                        <Link
+                                            to={"/problem/" + p.id}
+                                            tw={"flex items-center gap-2"}
+                                        >
+                                            <FiList tw={"text-xl"} /> {p.title}
+                                        </Link>
+                                    </TableItem>
+                                    <TableItem>
+                                        <ProblemScoreBox
+                                            score={
+                                                problemScores.data
+                                                    ? problemScores.data[p.id.toString()] ?? 0
+                                                    : 0
+                                            }
+                                            maxScore={p.score}
+                                        />
+                                    </TableItem>
+                                </TableRow>
+                            ))}
+                        </tbody>
+                    </Table>
+                ))}
             <Leaderboard contest={contest} problems={problems ?? []} />
         </div>
     );
