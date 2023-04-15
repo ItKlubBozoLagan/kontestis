@@ -349,7 +349,7 @@ export const ContestOverviewPage: FC = () => {
                             >
                                 {t("contests.management.individual.overview.clone.cloneButton")}
                             </SimpleButton>{" "}
-                            <span>
+                            <span tw={"pt-1"}>
                                 {t("contests.management.individual.overview.clone.inOrganisation")}
                             </span>{" "}
                             <select
