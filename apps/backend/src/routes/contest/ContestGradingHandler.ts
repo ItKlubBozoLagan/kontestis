@@ -70,7 +70,11 @@ ContestGradingHandler.patch(
         const member = await extractContestMember(req);
 
         if (
-            !hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT) &&
+            !hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.EDIT,
+                user.permissions
+            ) &&
             !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
         )
             throw new SafeError(StatusCodes.FORBIDDEN);
@@ -96,7 +100,11 @@ ContestGradingHandler.delete("/:grading_scale_id", async (req, res) => {
     const member = await extractContestMember(req);
 
     if (
-        !hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT) &&
+        !hasContestPermission(
+            member.contest_permissions,
+            ContestMemberPermissions.EDIT,
+            user.permissions
+        ) &&
         !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
     )
         throw new SafeError(StatusCodes.FORBIDDEN);

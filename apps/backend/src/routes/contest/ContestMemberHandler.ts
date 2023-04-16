@@ -45,7 +45,8 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
         if (
             !hasContestPermission(
                 contestMember.contest_permissions,
-                ContestMemberPermissions.ADD_USER
+                ContestMemberPermissions.ADD_USER,
+                user.permissions
             ) &&
             !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
         )
@@ -136,7 +137,8 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
         (!contestMember ||
             !hasContestPermission(
                 contestMember.contest_permissions,
-                ContestMemberPermissions.EDIT_USER_PERMISSIONS
+                ContestMemberPermissions.EDIT_USER_PERMISSIONS,
+                user.permissions
             ))
     )
         throw new SafeError(StatusCodes.FORBIDDEN);
@@ -158,6 +160,7 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
 });
 
 ContestMemberHandler.delete("/:user_id", async (req, res) => {
+    const user = await extractUser(req);
     const contest = await extractContest(req);
     const targetId = BigInt(req.params.user_id);
     const contestMember = await extractContestMember(req);
@@ -165,7 +168,8 @@ ContestMemberHandler.delete("/:user_id", async (req, res) => {
     if (
         !hasContestPermission(
             contestMember.contest_permissions,
-            ContestMemberPermissions.REMOVE_USER
+            ContestMemberPermissions.REMOVE_USER,
+            user.permissions
         )
     )
         throw new SafeError(StatusCodes.FORBIDDEN);

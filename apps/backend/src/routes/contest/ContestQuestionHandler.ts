@@ -95,6 +95,7 @@ ContestQuestionHandler.patch(
     useValidation(QuestionAnswerSchema),
     async (req, res) => {
         const questionId = extractIdFromParameters(req, "question_id");
+        const user = await extractUser(req);
         const question = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
 
         const contest = await extractContest(req);
@@ -106,7 +107,8 @@ ContestQuestionHandler.patch(
         if (
             !hasContestPermission(
                 member.contest_permissions,
-                ContestMemberPermissions.ANSWER_QUESTIONS
+                ContestMemberPermissions.ANSWER_QUESTIONS,
+                user.permissions
             )
         )
             throw new SafeError(StatusCodes.FORBIDDEN);

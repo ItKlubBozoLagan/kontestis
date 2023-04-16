@@ -119,7 +119,13 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
 
     const member = await extractContestMember(req, problem.contest_id);
 
-    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE))
+    if (
+        !hasContestPermission(
+            member.contest_permissions,
+            ContestMemberPermissions.VIEW_PRIVATE,
+            user.permissions
+        )
+    )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     respond(res, StatusCodes.OK, submissionsWithInfo);
@@ -257,7 +263,8 @@ SubmissionHandler.get(
             if (
                 !hasContestPermission(
                     member.contest_permissions,
-                    ContestMemberPermissions.VIEW_PRIVATE
+                    ContestMemberPermissions.VIEW_PRIVATE,
+                    user.permissions
                 ) &&
                 !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
             )

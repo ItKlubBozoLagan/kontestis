@@ -21,7 +21,13 @@ export const extractContestMember = (
 
         if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW))
+        if (
+            !hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.VIEW,
+                user.permissions
+            )
+        )
             throw new SafeError(StatusCodes.FORBIDDEN);
 
         return member;
