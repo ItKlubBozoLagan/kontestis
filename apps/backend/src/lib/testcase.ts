@@ -155,15 +155,18 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
 
     await Promise.all(
         testcases.map(async (tc) => {
-            await Redis.set(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, tc.id), tc.input);
+            await Redis.set(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, tc.id), tc.input, {
+                EX: 15 * 60,
+            });
             await Redis.set(
                 RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, tc.id),
-                tc.correct_output ?? ""
+                tc.correct_output ?? "",
+                { EX: 15 * 60 }
             );
         })
     );
 
-    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "cached");
+    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "cached", { EX: 15 * 60 });
 
     return testcases;
 };
