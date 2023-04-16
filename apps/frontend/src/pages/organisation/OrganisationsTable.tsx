@@ -2,6 +2,7 @@ import { AdminPermissions, hasAdminPermission, Organisation } from "@kontestis/m
 import { FC } from "react";
 import { FiEdit } from "react-icons/all";
 import { Link } from "react-router-dom";
+import tw from "twin.macro";
 
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -9,10 +10,10 @@ import { useAuthStore } from "../../state/auth";
 
 type Properties = {
     organisations: Organisation[];
-    clickFunc?: (o: Organisation) => void;
+    onClick?: (o: Organisation) => void;
 };
 
-export const OrganisationTable: FC<Properties> = ({ organisations, clickFunc }) => {
+export const OrganisationTable: FC<Properties> = ({ organisations, onClick }) => {
     const { t } = useTranslation();
     const { user } = useAuthStore();
 
@@ -30,9 +31,10 @@ export const OrganisationTable: FC<Properties> = ({ organisations, clickFunc }) 
                     .map((organisation) => (
                         <TableRow key={organisation.id + ""}>
                             <TableItem
-                                tw={"cursor-pointer hover:text-sky-800 w-full"}
+                                tw={"hover:text-sky-800 w-full"}
+                                css={onClick ? tw`cursor-pointer` : ""}
                                 onClick={() => {
-                                    if (clickFunc) clickFunc(organisation);
+                                    onClick?.(organisation);
                                 }}
                             >
                                 {organisation.name}

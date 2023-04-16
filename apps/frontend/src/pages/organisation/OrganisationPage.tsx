@@ -43,7 +43,7 @@ export const OrganisationPage: FC = () => {
             {organisations && (
                 <OrganisationTable
                     organisations={organisations}
-                    clickFunc={async (organisation) => {
+                    onClick={(organisation) => {
                         setIsSelected(true);
                         setOrganisationId(organisation.id);
                         setSkipOrganisationSelect(false);
