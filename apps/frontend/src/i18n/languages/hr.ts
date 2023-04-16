@@ -194,7 +194,7 @@ export default {
                         name: "Ime",
                         statement: "Opis problema",
                         timeLimit: "Vremensko ograničenje",
-                        memoryLimit: "Memorijsko ograničenje",
+                        memoryLimit: "Ograničenje memorije",
                         evaluationVariant: {
                             label: "Varijanta evaluacije",
                             plain: "Obično",

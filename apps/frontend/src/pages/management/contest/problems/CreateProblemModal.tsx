@@ -138,8 +138,9 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         <TitledInput
                             bigLabel
                             label={
-                                t("contests.management.individual.problems.createModal.timeLimit") +
-                                " (MiB)"
+                                t(
+                                    "contests.management.individual.problems.createModal.memoryLimit"
+                                ) + " (MiB)"
                             }
                             {...register("memory_limit_megabytes")}
                         />
