@@ -151,8 +151,7 @@ app.post("/", async (req, res) => {
                 generateCheckerFunction(
                     req.body.problem_type === "plain" || !compiledEvaluator
                         ? () => runPython(Buffer.from(plainTextEvaluatorBase64, "base64"))
-                        : compiledEvaluator.runner,
-                    submission.evaluator_language ?? "python"
+                        : compiledEvaluator.runner
                 ),
                 submission.time_limit,
                 submission.memory_limit
