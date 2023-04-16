@@ -1,11 +1,9 @@
-import { readFile } from "node:fs/promises";
-
-import { CompilationProcessInfo } from "../compilers/CLikeCompiler";
+import { CompilationProcessInfo } from "../runners/GenericRunner";
 
 type CompileResult =
     | {
           success: true;
-          binary: Buffer;
+          outFilePath: string;
       }
     | {
           success: false;
@@ -13,7 +11,7 @@ type CompileResult =
           stdErr: Buffer;
       };
 
-export const processCompiled = async (
+export const processCompilation = async (
     compilationInfo: CompilationProcessInfo
 ): Promise<CompileResult> => {
     const { startCompilation, outFile } = compilationInfo;
@@ -40,7 +38,7 @@ export const processCompiled = async (
             try {
                 resolve({
                     success: true,
-                    binary: await readFile(`/tmp/${outFile}`),
+                    outFilePath: `/tmp/${outFile}`,
                 });
             } catch {
                 resolve({

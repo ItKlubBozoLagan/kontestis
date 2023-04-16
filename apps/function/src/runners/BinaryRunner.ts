@@ -1,17 +1,18 @@
-import * as Buffer from "node:buffer";
 import { spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
-import fs from "node:fs";
+import { SpawnOptionsWithoutStdio } from "node:child_process";
 import { chmod } from "node:fs/promises";
 
-export const runBinary = async (binary: Buffer) => {
-    const fName = randomBytes(16).toString("hex");
+export const runBinary = async (
+    path: string,
+    spawnArguments?: string[],
+    spawnOptions?: SpawnOptionsWithoutStdio,
+    changePermissions: boolean = true
+) => {
+    if (changePermissions) await chmod(path, 0o111);
 
-    fs.writeFileSync(`/tmp/${fName}`, binary);
-    await chmod(`/tmp/${fName}`, 0o111);
-
-    return spawn(`/tmp/${fName}`, {
+    return spawn(path, spawnArguments, {
+        ...spawnOptions,
         shell: true,
-        timeout: 10_000,
+        timeout: 5000,
     });
 };

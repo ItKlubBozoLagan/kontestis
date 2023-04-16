@@ -4,11 +4,11 @@ import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 
 export const runPython = async (python: Buffer) => {
-    const fName = randomBytes(16).toString("hex");
+    const fileName = randomBytes(16).toString("hex");
 
-    fs.writeFileSync(`/tmp/${fName}`, python);
+    fs.writeFileSync(`/tmp/${fileName}`, python);
 
-    return spawn("/usr/bin/python3", [`/tmp/${fName}`], {
+    return spawn("/usr/bin/python3", [`/tmp/${fileName}`], {
         shell: true,
         timeout: 5000,
     });

@@ -1,10 +1,7 @@
 import { Buffer } from "node:buffer";
-import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 
-export type CompilationProcessInfo = {
-    outFile: string;
-    startCompilation: () => ChildProcessWithoutNullStreams;
-};
+import { CompilationProcessInfo } from "../runners/GenericRunner";
 
 export const compileRust =
     (code: Buffer, outFileName: string): CompilationProcessInfo["startCompilation"] =>

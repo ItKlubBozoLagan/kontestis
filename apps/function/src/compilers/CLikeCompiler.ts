@@ -1,12 +1,9 @@
 import { Buffer } from "node:buffer";
-import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 
 import { EvaluationLanguage } from "@kontestis/models";
 
-export type CompilationProcessInfo = {
-    outFile: string;
-    startCompilation: () => ChildProcessWithoutNullStreams;
-};
+import { CompilationProcessInfo } from "../runners/GenericRunner";
 
 export const compileCLike =
     (

@@ -2,7 +2,7 @@ import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 
-import { CompilationProcessInfo } from "./CLikeCompiler";
+import { CompilationProcessInfo } from "../runners/GenericRunner";
 
 export const compileGo =
     (code: Buffer, outFileName: string): CompilationProcessInfo["startCompilation"] =>

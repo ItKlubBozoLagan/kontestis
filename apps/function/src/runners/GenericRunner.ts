@@ -3,10 +3,11 @@ import { randomBytes } from "node:crypto";
 
 import { EvaluationLanguage } from "@kontestis/models";
 
-import { CompilationProcessInfo, compileCLike } from "../compilers/CLikeCompiler";
+import { compileCLike } from "../compilers/CLikeCompiler";
 import { compileGo } from "../compilers/GoCompiler";
+import { compileJava } from "../compilers/JavaCompiler";
 import { compileRust } from "../compilers/RustCompiler";
-import { processCompiled } from "../transformers/CPPCompiledTransformer";
+import { processCompilation } from "../transformers/CPPCompiledTransformer";
 import { runBinary } from "./BinaryRunner";
 import { runPython } from "./PythonRunner";
 
@@ -22,9 +23,14 @@ type RunnerFunctionResult =
           error: string;
       };
 
+export type CompilationProcessInfo = {
+    outFile: string;
+    startCompilation: () => ChildProcessWithoutNullStreams;
+};
+
 const getCompilationProcessForLanguage = (
     code: Buffer,
-    language: Exclude<EvaluationLanguage, "python" | "java">
+    language: Exclude<EvaluationLanguage, "python">
 ): CompilationProcessInfo => {
     const outFileName = randomBytes(16).toString("hex");
 
@@ -45,12 +51,17 @@ const getCompilationProcessForLanguage = (
                 outFile: outFileName,
                 startCompilation: compileRust(code, outFileName),
             };
+        case "java":
+            return {
+                outFile: outFileName,
+                startCompilation: compileJava(code, outFileName),
+            };
     }
 };
 
 export const compileCode: (
     code: string,
-    lang: EvaluationLanguage
+    language: EvaluationLanguage
 ) => Promise<RunnerFunctionResult> = async (code, language) => {
     const buffer = Buffer.from(code, "base64");
 
@@ -58,13 +69,11 @@ export const compileCode: (
         return { type: "success", runner: async () => await runPython(buffer) };
     }
 
-    if (language === "java") {
-        throw new Error("unsupported");
-    }
-
-    const compilationResult = await processCompiled(
+    const compilationResult = await processCompilation(
         getCompilationProcessForLanguage(buffer, language)
     );
+
+    if (!compilationResult.success) console.log(compilationResult.stdErr.toString());
 
     if (!compilationResult.success) {
         return {
@@ -73,8 +82,24 @@ export const compileCode: (
         };
     }
 
+    if (language === "java") {
+        return {
+            type: "success",
+            runner: () =>
+                runBinary(
+                    "/usr/bin/java",
+                    ["Main"],
+                    {
+                        // in case of java, this is the directory with the compiled class
+                        cwd: compilationResult.outFilePath,
+                    },
+                    false
+                ),
+        };
+    }
+
     return {
         type: "success",
-        runner: () => runBinary(compilationResult.binary),
+        runner: () => runBinary(compilationResult.outFilePath),
     };
 };
