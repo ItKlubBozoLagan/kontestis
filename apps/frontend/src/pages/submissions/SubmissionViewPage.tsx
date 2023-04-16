@@ -2,8 +2,8 @@ import "/public/css/prism-custom.css";
 
 import { ClusterSubmission } from "@kontestis/models";
 import Prism from "prismjs";
-import { FC, useEffect, useState } from "react";
-import { FiCopy } from "react-icons/all";
+import { FC, useCallback, useEffect, useState } from "react";
+import { FiCheck, FiCopy } from "react-icons/all";
 import { useParams } from "react-router";
 import tw from "twin.macro";
 
@@ -25,7 +25,7 @@ type Properties = {
 export const SubmissionViewPage: FC = () => {
     const { submissionId } = useParams<Properties>();
 
-    const { isSuccess: isSubmissionSuccess, data: submission } = useSubmission(
+    const { data: submission, isSuccess: isSubmissionSuccess } = useSubmission(
         BigInt(submissionId ?? 0)
     );
     const { data: submissionCluster } = useSubmissionClusters(BigInt(submissionId ?? 0));
@@ -41,6 +41,24 @@ export const SubmissionViewPage: FC = () => {
 
     const { t } = useTranslation();
 
+    const [copied, setCopied] = useState(false);
+    const [copyTimeout, setCopyTimeout] = useState<ReturnType<typeof setTimeout>>();
+
+    const copyCode = useCallback(() => {
+        if (!("clipboard" in navigator) || !submission) return;
+
+        navigator.clipboard.writeText(convertFromBase64(submission.code));
+
+        if (copyTimeout) clearTimeout(copyTimeout);
+
+        setCopied(true);
+        setCopyTimeout(setTimeout(() => setCopied(false), 2000));
+    }, [submission]);
+
+    useEffect(() => {
+        return () => copyTimeout && clearTimeout(copyTimeout);
+    });
+
     return (
         <div tw={"w-full h-full py-12 flex flex-col gap-5"}>
             <TitledSection title={"Code"}>
@@ -53,13 +71,19 @@ export const SubmissionViewPage: FC = () => {
                                 {convertFromBase64(submission.code)}
                             </code>
                         </pre>
-                        <div
-                            tw={"absolute top-4 right-2 p-2"}
-                            onClick={() =>
-                                navigator.clipboard.writeText(convertFromBase64(submission.code))
-                            }
-                        >
-                            <FiCopy tw={"cursor-pointer hover:opacity-75"} size={"24px"} />
+                        <div tw={"absolute top-4 right-2 p-2"}>
+                            {!copied ? (
+                                <FiCopy
+                                    tw={"cursor-pointer hover:opacity-75"}
+                                    size={"24px"}
+                                    onClick={copyCode}
+                                />
+                            ) : (
+                                <div tw={"text-green-800 flex justify-center gap-2"}>
+                                    <span>Copied</span>
+                                    <FiCheck size={"20px"} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
