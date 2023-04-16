@@ -1,4 +1,4 @@
-export type EvaluationLanguage = "c" | "cpp" | "python";
+export type EvaluationLanguage = "c" | "cpp" | "python" | "java" | "go" | "rust";
 
 export type EvaluationVariant = "plain" | "checker" | "interactive";
 
@@ -37,7 +37,7 @@ export type EvaluationResult = {
       }
     | {
           type: "error";
-          verdict: "evaluation_error" | "system_error";
+          verdict: "evaluation_error";
       }
     | {
           type: "skipped";

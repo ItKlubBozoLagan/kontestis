@@ -3,4 +3,4 @@
 
 FROM node:hydrogen-alpine
 
-RUN apk add python3 gcc g++ gcompat
+RUN apk add python3 gcc g++ go rust openjdk17-jre-headless gcompat

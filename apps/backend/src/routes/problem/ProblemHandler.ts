@@ -13,6 +13,7 @@ import { extractProblem } from "../../extractors/extractProblem";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import ClusterHandler from "./cluster/ClusterHandler";
@@ -29,9 +30,7 @@ const ProblemSchema = Type.Object({
         Type.Literal("checker"),
         Type.Literal("interactive"),
     ]),
-    evaluation_language: Type.Optional(
-        Type.Union([Type.Literal("python"), Type.Literal("c"), Type.Literal("cpp")])
-    ),
+    evaluation_language: EvaluationLanguageSchema,
     evaluation_script: Type.Optional(Type.String()),
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10_000 }),
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 10_240 }),

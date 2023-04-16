@@ -18,7 +18,7 @@ export const getEvaluationResultFromCheckerFunction = (
     checkerResult: string,
     testcase: TestcaseV1,
     result: OutputRecord & { success: true } & MemoryRecord
-) => {
+): EvaluationResult => {
     if (checkerResult === "ac" || checkerResult === "accepted") {
         return {
             type: "success",
@@ -54,7 +54,7 @@ export const getEvaluationResultFromCheckerFunction = (
 
     return {
         type: "error",
-        verdict: "system_error",
+        verdict: "evaluation_error",
         testCaseId: testcase.id,
     };
 };
@@ -122,6 +122,9 @@ export const evaluateSimpleChecker = async (
             Buffer.from(testcase.out, "utf8"),
             result.output
         );
+
+        if (!checkerRecord.success)
+            console.log(checkerRecord, checkerRecord.stdErr.toString("utf8"));
 
         if (!checkerRecord.success) {
             evaluated.push({

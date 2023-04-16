@@ -12,7 +12,14 @@ import { getRunnerFunction } from "./runners/GenericRunner";
 
 const app = Express();
 
-const LanguageSchema = Type.Union([Type.Literal("python"), Type.Literal("c"), Type.Literal("cpp")]);
+const EvaluationLanguageSchema = Type.Union([
+    Type.Literal("python"),
+    Type.Literal("c"),
+    Type.Literal("cpp"),
+    Type.Literal("java"),
+    Type.Literal("go"),
+    Type.Literal("rust"),
+]);
 const TypeSchema = Type.Union([
     Type.Literal("plain"),
     Type.Literal("checker"),
@@ -21,7 +28,7 @@ const TypeSchema = Type.Union([
 
 const EvaluationSchema = Type.Object({
     problem_type: TypeSchema,
-    language: LanguageSchema,
+    language: EvaluationLanguageSchema,
     code: Type.String(),
     time_limit: Type.Number(),
     memory_limit: Type.Number(),
@@ -33,7 +40,7 @@ const EvaluationSchema = Type.Object({
         })
     ),
     evaluator: Type.Optional(Type.String()),
-    evaluator_language: Type.Optional(LanguageSchema),
+    evaluator_language: Type.Optional(EvaluationLanguageSchema),
 });
 
 const schemaCompiled = TypeCompiler.Compile(EvaluationSchema);
