@@ -53,7 +53,7 @@ export default {
         basicInfo: {
             title: "Osnovne informacije",
             contests: "Ukupno natjecanja",
-            problems: "Ukupno problema",
+            problems: "Ukupno zadataka",
             submissions: "Ukupno rješenja",
         },
         activity: {
@@ -94,7 +94,7 @@ export default {
         },
         individual: {
             problems_table: {
-                problem: "Problem",
+                problem: "Zadatak",
                 examProblem: "Zadatak ispita",
                 score: "Bodovi",
             },
