@@ -11,16 +11,11 @@ export const compileGo =
 
         writeFileSync(outFilePath + ".go", code);
 
-        const process = spawn("/usr/bin/go", ["build", "-o", outFilePath, outFilePath + ".go"], {
+        return spawn("/usr/bin/go", ["build", "-o", outFilePath, outFilePath + ".go"], {
             shell: true,
             env: {
                 GOCACHE: "/home/node/.cache",
                 GOFLAGS: "-count=1",
             },
         });
-
-        process.stdin.write(code);
-        process.stdin.end();
-
-        return process;
     };

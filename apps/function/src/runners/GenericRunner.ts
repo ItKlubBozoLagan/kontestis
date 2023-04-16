@@ -5,6 +5,7 @@ import { EvaluationLanguage } from "@kontestis/models";
 
 import { CompilationProcessInfo, compileCLike } from "../compilers/CLikeCompiler";
 import { compileGo } from "../compilers/GoCompiler";
+import { compileRust } from "../compilers/RustCompiler";
 import { processCompiled } from "../transformers/CPPCompiledTransformer";
 import { runBinary } from "./BinaryRunner";
 import { runPython } from "./PythonRunner";
@@ -27,20 +28,24 @@ const getCompilationProcessForLanguage = (
 ): CompilationProcessInfo => {
     const outFileName = randomBytes(16).toString("hex");
 
-    if (language === "c" || language === "cpp")
-        return {
-            outFile: outFileName,
-            startCompilation: compileCLike(language, code, outFileName),
-        };
-
-    if (language === "go") {
-        return {
-            outFile: outFileName,
-            startCompilation: compileGo(code, outFileName),
-        };
+    switch (language) {
+        case "c":
+        case "cpp":
+            return {
+                outFile: outFileName,
+                startCompilation: compileCLike(language, code, outFileName),
+            };
+        case "go":
+            return {
+                outFile: outFileName,
+                startCompilation: compileGo(code, outFileName),
+            };
+        case "rust":
+            return {
+                outFile: outFileName,
+                startCompilation: compileRust(code, outFileName),
+            };
     }
-
-    throw new Error("unsupported");
 };
 
 export const compileCode: (
