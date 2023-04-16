@@ -11,7 +11,7 @@ export const migration_change_user_google_id_type: Migration<MigrationType> = as
     log
 ) => {
     await database.dropTable("users");
-    await database.dropTable("known_users");
+    await database.raw("TRUNCATE TABLE known_users");
 
     await database.createTable(
         "users",
