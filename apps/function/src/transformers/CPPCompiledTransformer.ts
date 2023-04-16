@@ -1,8 +1,6 @@
-import { spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-import { EvaluationLanguage } from "@kontestis/models";
+import { CompilationProcessInfo } from "../compilers/CLikeCompiler";
 
 type CompileResult =
     | {
@@ -15,33 +13,23 @@ type CompileResult =
           stdErr: Buffer;
       };
 
-export const transformToBinary = async (
-    variant: EvaluationLanguage,
-    code: Buffer
+export const processCompiled = async (
+    compilationInfo: CompilationProcessInfo
 ): Promise<CompileResult> => {
-    const fName = randomBytes(16).toString("hex");
+    const { startCompilation, outFile } = compilationInfo;
 
-    const compile = spawn(
-        variant === "cpp" ? "/usr/bin/g++" : "/usr/bin/gcc",
-        ["-O3", "-Wall", "-o", `/tmp/${fName}`, "-x", variant === "cpp" ? "c++" : "c", "-"],
-        {
-            shell: true,
-        }
-    );
-
-    compile.stdin.write(code);
-    compile.stdin.end();
+    const compilationProcess = startCompilation();
 
     return new Promise((resolve) => {
         const stdError: Buffer[] = [];
 
-        compile.stderr.on("data", (data) => {
+        compilationProcess.stderr.on("data", (data) => {
             if (Buffer.isBuffer(data)) stdError.push(data);
 
             if (typeof data === "string") stdError.push(Buffer.from(data, "utf8"));
         });
 
-        compile.on("close", async (code) => {
+        compilationProcess.on("close", async (code) => {
             if (code && code !== 0)
                 return resolve({
                     success: false,
@@ -52,7 +40,7 @@ export const transformToBinary = async (
             try {
                 resolve({
                     success: true,
-                    binary: await readFile(`/tmp/${fName}`),
+                    binary: await readFile(`/tmp/${outFile}`),
                 });
             } catch {
                 resolve({

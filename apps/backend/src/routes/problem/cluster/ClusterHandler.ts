@@ -14,6 +14,7 @@ import { generateTestcaseBatch, getClusterStatus } from "../../../lib/testcase";
 import { useValidation } from "../../../middlewares/useValidation";
 import { Redis } from "../../../redis/Redis";
 import { RedisKeys } from "../../../redis/RedisKeys";
+import { EvaluationLanguageSchema } from "../../../utils/evaluation.schema";
 import { R } from "../../../utils/remeda";
 import { respond } from "../../../utils/response";
 import TestcaseHandler from "./testcase/TestcaseHandler";
@@ -25,9 +26,7 @@ ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 const ClusterSchema = Type.Object({
     awarded_score: Type.Number({ minimum: 1, maximum: 1000 }),
     generator: Type.Boolean(),
-    generator_language: Type.Optional(
-        Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")])
-    ),
+    generator_language: Type.Optional(EvaluationLanguageSchema),
     generator_code: Type.Optional(Type.String()),
 });
 

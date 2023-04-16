@@ -131,6 +131,9 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                                 <option value="python">Python</option>
                                 <option value="cpp">C++</option>
                                 <option value="c">C</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                                <option value="java">Java</option>
                             </select>
                         </EditableDisplayBox>
                         <EditableDisplayBox

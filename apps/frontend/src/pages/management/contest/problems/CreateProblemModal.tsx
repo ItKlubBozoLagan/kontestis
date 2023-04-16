@@ -225,6 +225,9 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                                 <option value="python">Python</option>
                                 <option value="cpp">C++</option>
                                 <option value="c">C</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                                <option value="java">Java</option>
                             </select>
                             <span tw={"mt-2"}>
                                 {t(
@@ -247,6 +250,9 @@ export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {
                         <option value="python">Python</option>
                         <option value="cpp">C++</option>
                         <option value="c">C</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="java">Java</option>
                     </select>
                     <span tw={"mt-2"}>
                         {t("contests.management.individual.problems.createModal.solutionCode")}

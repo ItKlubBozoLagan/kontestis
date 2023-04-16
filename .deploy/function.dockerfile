@@ -14,7 +14,7 @@ FROM node:hydrogen-alpine
 
 WORKDIR /app
 
-RUN apk add python3 gcc g++ gcompat
+RUN apk add python3 gcc g++ go rust openjdk17-jre-headless gcompat
 
 COPY --from=workspace /app/pruned .
 

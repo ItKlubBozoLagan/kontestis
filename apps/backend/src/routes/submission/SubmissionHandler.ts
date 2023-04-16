@@ -29,6 +29,7 @@ import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
@@ -36,7 +37,7 @@ import { respond } from "../../utils/response";
 const SubmissionHandler = Router();
 
 const SubmissionSchema = Type.Object({
-    language: Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")]),
+    language: EvaluationLanguageSchema,
     code: Type.String({ maxLength: 64_000 }),
 });
 

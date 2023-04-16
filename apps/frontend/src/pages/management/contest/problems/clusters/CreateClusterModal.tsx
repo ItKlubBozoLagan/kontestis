@@ -137,6 +137,9 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                                     <option value="python">Python</option>
                                     <option value="cpp">C++</option>
                                     <option value="c">C</option>
+                                    <option value="go">Go</option>
+                                    <option value="rust">Rust</option>
+                                    <option value="java">Java</option>
                                 </select>
                             </div>
                             <span tw={"mt-2"}>

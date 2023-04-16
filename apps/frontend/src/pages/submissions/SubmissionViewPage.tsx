@@ -66,7 +66,7 @@ export const SubmissionViewPage: FC = () => {
             </TitledSection>
             {isSubmissionSuccess && submission.verdict === "compilation_error" && (
                 <TitledSection title={"Compile time error"}>
-                    <div tw={"bg-neutral-100 px-4 w-full rounded"}>
+                    <div tw={"bg-neutral-100 px-4 w-full rounded overflow-auto"}>
                         <pre>{submission.error}</pre>
                     </div>
                 </TitledSection>

@@ -141,10 +141,10 @@ app.post("/", async (req, res) => {
         .status(200)
         .json(
             await evaluateChecker(
-                async (b) =>
+                async (buffer) =>
                     recordOutputWithMemory(
                         await compiledSubmission.runner(),
-                        b,
+                        buffer,
                         recordSimpleOutput
                     ),
                 submission.testcases,

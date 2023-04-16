@@ -34,7 +34,7 @@ const ProblemSchema = Type.Object({
     evaluation_script: Type.Optional(Type.String()),
     time_limit_millis: Type.Number({ minimum: 50, maximum: 10_000 }),
     memory_limit_megabytes: Type.Number({ minimum: 32, maximum: 10_240 }),
-    solution_language: Type.Union([Type.Literal("c"), Type.Literal("cpp"), Type.Literal("python")]),
+    solution_language: EvaluationLanguageSchema,
     solution_code: Type.String(),
     tags: Type.Optional(Type.Array(Type.String())),
 });
