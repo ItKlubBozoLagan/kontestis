@@ -7,7 +7,7 @@ import { compileCLike } from "../compilers/CLikeCompiler";
 import { compileGo } from "../compilers/GoCompiler";
 import { compileJava } from "../compilers/JavaCompiler";
 import { compileRust } from "../compilers/RustCompiler";
-import { processCompilation } from "../transformers/CPPCompiledTransformer";
+import { processCompilation } from "../transformers/CompiledTransformer";
 import { runBinary } from "./BinaryRunner";
 import { runPython } from "./PythonRunner";
 
