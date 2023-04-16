@@ -1,12 +1,10 @@
 import { Buffer } from "node:buffer";
 import { randomBytes } from "node:crypto";
 
-import { EvaluationLanguage } from "@kontestis/models";
-
 import { recordSimpleOutput } from "../recorders/SimpleOutputRecorder";
 import { RunnableProcess } from "../runners/GenericRunner";
 
-export const generateCheckerFunction = (runner: RunnableProcess, language: EvaluationLanguage) => {
+export const generateCheckerFunction = (runner: RunnableProcess) => {
     const separator = randomBytes(32).toString("hex");
 
     const separatorBuffer = Buffer.from("[" + separator + "]\n", "utf8");
