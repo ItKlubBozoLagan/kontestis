@@ -6,17 +6,19 @@ import { transformToBinary } from "../transformers/CPPCompiledTransformer";
 import { runBinary } from "./BinaryRunner";
 import { runPython } from "./PythonRunner";
 
+export type RunnableProcess = () => Promise<ChildProcessWithoutNullStreams>;
+
 type RunnerFunctionResult =
     | {
           type: "success";
-          runner: () => Promise<ChildProcessWithoutNullStreams>;
+          runner: RunnableProcess;
       }
     | {
           type: "compilation_error";
           error: string;
       };
 
-export const getRunnerFunction: (
+export const compileCode: (
     code: string,
     lang: EvaluationLanguage
 ) => Promise<RunnerFunctionResult> = async (code, lang) => {

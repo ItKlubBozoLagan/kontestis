@@ -3,12 +3,13 @@ import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { json } from "express";
 import Express from "express";
 
-import { getSimplePythonCheckerFunction } from "./checkers/SimpleChecker";
+import { generateCheckerFunction } from "./checkers/SimpleChecker";
 import { evaluateInteractive } from "./evaluators/InteractiveEvaluator";
-import { evaluateSimpleChecker } from "./evaluators/SimpleCheckerEvaluator";
+import { evaluateChecker } from "./evaluators/SimpleCheckerEvaluator";
 import { recordOutputWithMemory } from "./recorders/RecordOutputWithMemory";
 import { recordSimpleOutput } from "./recorders/SimpleOutputRecorder";
-import { getRunnerFunction } from "./runners/GenericRunner";
+import { compileCode } from "./runners/GenericRunner";
+import { runPython } from "./runners/PythonRunner";
 
 const app = Express();
 
@@ -81,28 +82,29 @@ app.post("/", async (req, res) => {
 
     const submission: Static<typeof EvaluationSchema> = req.body;
 
-    const runnerFunction = await getRunnerFunction(submission.code, submission.language);
+    const compiledSubmission = await compileCode(submission.code, submission.language);
 
-    if (runnerFunction.type !== "success") {
+    if (compiledSubmission.type !== "success") {
         return res.status(200).send(
             submission.testcases.map((testcase) => ({
                 testCaseId: testcase.id,
                 type: "error",
                 verdict: "compilation_error",
-                error: runnerFunction.error,
+                error: compiledSubmission.error,
             }))
         );
     }
 
+    const compiledEvaluator = await (() => {
+        if (!submission.evaluator || !submission.evaluator_language) return;
+
+        return compileCode(submission.evaluator, submission.evaluator_language);
+    })();
+
     if (req.body.problem_type === "interactive") {
-        if (!submission.evaluator || !submission.evaluator_language) return res.status(400);
+        if (!compiledEvaluator) return res.status(400);
 
-        const checkerRunnerFunction = await getRunnerFunction(
-            submission.evaluator,
-            submission.evaluator_language
-        );
-
-        if (checkerRunnerFunction.type !== "success") {
+        if (compiledEvaluator.type !== "success") {
             return res.status(200).send(
                 submission.testcases.map((testcase) => ({
                     testCaseId: testcase.id,
@@ -116,8 +118,8 @@ app.post("/", async (req, res) => {
             .status(200)
             .json(
                 await evaluateInteractive(
-                    runnerFunction.runner,
-                    checkerRunnerFunction.runner,
+                    compiledSubmission.runner,
+                    compiledEvaluator.runner,
                     submission.testcases,
                     submission.time_limit,
                     submission.memory_limit
@@ -125,20 +127,32 @@ app.post("/", async (req, res) => {
             );
     }
 
+    if (compiledEvaluator && compiledEvaluator.type !== "success") {
+        return res.status(200).send(
+            submission.testcases.map((testcase) => ({
+                testCaseId: testcase.id,
+                type: "error",
+                verdict: "evaluation_error",
+            }))
+        );
+    }
+
     return res
         .status(200)
         .json(
-            await evaluateSimpleChecker(
+            await evaluateChecker(
                 async (b) =>
-                    recordOutputWithMemory(await runnerFunction.runner(), b, recordSimpleOutput),
+                    recordOutputWithMemory(
+                        await compiledSubmission.runner(),
+                        b,
+                        recordSimpleOutput
+                    ),
                 submission.testcases,
-                getSimplePythonCheckerFunction(
-                    Buffer.from(
-                        req.body.problem_type === "plain"
-                            ? plainTextEvaluatorBase64
-                            : submission.evaluator ?? plainTextEvaluatorBase64,
-                        "base64"
-                    )
+                generateCheckerFunction(
+                    req.body.problem_type === "plain" || !compiledEvaluator
+                        ? () => runPython(Buffer.from(plainTextEvaluatorBase64, "base64"))
+                        : compiledEvaluator.runner,
+                    submission.evaluator_language ?? "python"
                 ),
                 submission.time_limit,
                 submission.memory_limit

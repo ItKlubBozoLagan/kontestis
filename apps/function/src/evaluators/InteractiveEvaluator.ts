@@ -1,14 +1,13 @@
-import { ChildProcessWithoutNullStreams } from "node:child_process";
-
 import { EvaluationResult } from "@kontestis/models";
 
 import { recordInteractiveOutput } from "../recorders/InteractiveOutputRecorder";
+import { RunnableProcess } from "../runners/GenericRunner";
 import { TestcaseV1 } from "../types/TestcaseV1";
 import { getEvaluationResultFromCheckerFunction } from "./SimpleCheckerEvaluator";
 
 export const evaluateInteractive = async (
-    processRunner: () => Promise<ChildProcessWithoutNullStreams>,
-    checkerRunner: () => Promise<ChildProcessWithoutNullStreams>,
+    processRunner: RunnableProcess,
+    checkerRunner: RunnableProcess,
     testcases: TestcaseV1[],
     timeLimit: number,
     memoryLimit: number

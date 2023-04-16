@@ -59,7 +59,7 @@ export const getEvaluationResultFromCheckerFunction = (
     };
 };
 
-export const evaluateSimpleChecker = async (
+export const evaluateChecker = async (
     runnerFunction: RunnerFunction,
     testcases: TestcaseV1[],
     checkerFunction: CheckerFunction,
@@ -122,9 +122,6 @@ export const evaluateSimpleChecker = async (
             Buffer.from(testcase.out, "utf8"),
             result.output
         );
-
-        if (!checkerRecord.success)
-            console.log(checkerRecord, checkerRecord.stdErr.toString("utf8"));
 
         if (!checkerRecord.success) {
             evaluated.push({

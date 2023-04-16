@@ -1,14 +1,13 @@
 import { Buffer } from "node:buffer";
 import { randomBytes } from "node:crypto";
 
-import { CheckerFunction } from "../evaluators/SimpleCheckerEvaluator";
+import { EvaluationLanguage } from "@kontestis/models";
+
 import { recordSimpleOutput } from "../recorders/SimpleOutputRecorder";
 import { runBinary } from "../runners/BinaryRunner";
-import { runPython } from "../runners/PythonRunner";
+import { RunnableProcess } from "../runners/GenericRunner";
 
-type CheckerFunctionGenerator = (checker: Buffer) => CheckerFunction;
-
-export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (pythonChecker: Buffer) => {
+export const generateCheckerFunction = (runner: RunnableProcess, language: EvaluationLanguage) => {
     const separator = randomBytes(32).toString("hex");
 
     const separatorBuffer = Buffer.from("[" + separator + "]\n", "utf8");
@@ -31,11 +30,11 @@ export const getSimplePythonCheckerFunction: CheckerFunctionGenerator = (pythonC
             separatorBuffer,
         ]);
 
-        return await recordSimpleOutput(await runPython(pythonChecker), input);
+        return await recordSimpleOutput(await runner(), input);
     };
 };
 
-export const getSimpleCPPCheckerFunction: CheckerFunctionGenerator = (binaryChecker: Buffer) => {
+export const getSimpleCPPCheckerFunction = (binaryChecker: Buffer) => {
     return async (testcaseInput: Buffer, testcaseOutput: Buffer, runnerOutput: Buffer) => {
         const input = Buffer.concat([
             testcaseInput,
