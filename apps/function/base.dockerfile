@@ -3,4 +3,12 @@
 
 FROM node:hydrogen-alpine
 
-RUN apk add python3 gcc g++ go rust openjdk17 gcompat
+RUN apk add git make cmake python3 gcc g++ go rust openjdk17 gcompat
+
+RUN git clone https://github.com/Andre-404/ESL /tmp/ESL
+
+WORKDIR /tmp/ESL
+
+RUN cmake . && make
+
+RUN cp ./ESL /usr/bin/esl

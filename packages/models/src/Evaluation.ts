@@ -1,4 +1,4 @@
-export type EvaluationLanguage = "c" | "cpp" | "python" | "java" | "go" | "rust";
+export type EvaluationLanguage = "c" | "cpp" | "python" | "java" | "go" | "rust" | "esl";
 
 export type EvaluationVariant = "plain" | "checker" | "interactive";
 

@@ -202,6 +202,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                             <option value="go">Go</option>
                             <option value="rust">Rust</option>
                             <option value="java">Java</option>
+                            <option value="esl">ESL</option>
                         </select>
                     </EditableDisplayBox>
                 )}
@@ -239,6 +240,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                         <option value="go">Go</option>
                         <option value="rust">Rust</option>
                         <option value="java">Java</option>
+                        <option value="esl">ESL</option>
                     </select>
                 </EditableDisplayBox>
                 <EditableDisplayBox
