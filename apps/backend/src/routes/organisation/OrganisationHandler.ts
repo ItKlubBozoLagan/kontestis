@@ -1,4 +1,4 @@
-import { AdminPermissions, hasAdminPermission, Organisation } from "@kontestis/models";
+import { AdminPermissions, DEFAULT_ELO, hasAdminPermission, Organisation } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -70,6 +70,7 @@ OrganisationHandler.post("/", useValidation(OrganisationSchema), async (req, res
         id: generateSnowflake(),
         organisation_id: organisation.id,
         user_id: user.id,
+        elo: DEFAULT_ELO,
     });
 
     return respond(res, StatusCodes.OK, organisation);
