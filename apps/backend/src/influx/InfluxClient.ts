@@ -41,6 +41,8 @@ export const createInfluxUInt = (value: bigint | number): InfluxUInteger => {
 
     if (value > 1n << 64n) throw new Error("createInfluxUInt: number is too big (64 bit)");
 
+    if (value === null) value = 0;
+
     const asBigInt = BigInt(value);
 
     return {
