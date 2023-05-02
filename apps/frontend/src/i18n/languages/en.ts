@@ -222,8 +222,8 @@ const I18nEn = {
                                 plain: "Plain",
                                 checker: "Checker",
                                 checkers: {
-                                    standard: "Standardan",
-                                    interactive: "Interaktivni",
+                                    standard: "Standard",
+                                    interactive: "Interactive",
                                 },
                             },
                             evaluationScript: "Evaluation script (python)",
