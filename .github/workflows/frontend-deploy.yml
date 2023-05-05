@@ -37,7 +37,7 @@ jobs:
       - name: Edgeserver Upload
         uses: v3xlabs/edgeserver-upload@master
         with:
-          app_id: "138206523384926208"
+          app_id: "177185099509403648"
           server: https://api.edgeserver.io
           token: ${{ secrets.EDGESERVER_TOKEN }}
           directory: apps/frontend/dist
