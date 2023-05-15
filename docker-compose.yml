@@ -55,6 +55,10 @@ services:
       - ".:/app"
     working_dir: "/app/apps/function"
     command: "npm run dev"
+    ulimits:
+      stack:
+        soft: 20971520
+        hard: 20971520
     ports:
       - 8081:8080
 
