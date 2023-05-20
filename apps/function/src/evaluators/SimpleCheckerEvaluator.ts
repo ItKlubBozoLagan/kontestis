@@ -19,7 +19,9 @@ export const getEvaluationResultFromCheckerFunction = (
     testcase: TestcaseV1,
     result: OutputRecord & { success: true } & MemoryRecord
 ): EvaluationResult => {
-    if (checkerResult === "ac" || checkerResult === "accepted") {
+    const lowerCaseResult = checkerResult.toLowerCase();
+
+    if (lowerCaseResult === "ac" || lowerCaseResult === "accepted") {
         return {
             type: "success",
             testCaseId: testcase.id,
@@ -29,7 +31,7 @@ export const getEvaluationResultFromCheckerFunction = (
         };
     }
 
-    if (checkerResult === "wa" || checkerResult === "wrong_answer") {
+    if (lowerCaseResult === "wa" || lowerCaseResult === "wrong_answer") {
         return {
             type: "success",
             testCaseId: testcase.id,
@@ -39,7 +41,7 @@ export const getEvaluationResultFromCheckerFunction = (
         };
     }
 
-    if (checkerResult.startsWith("custom:")) {
+    if (lowerCaseResult.startsWith("custom:")) {
         const checkerOutput = checkerResult.slice("custom:".length);
 
         return {
@@ -132,7 +134,7 @@ export const evaluateChecker = async (
             continue;
         }
 
-        const checkerResult = checkerRecord.output.toString("utf8").trim().toLowerCase();
+        const checkerResult = checkerRecord.output.toString("utf8").trim();
 
         const checkerEvaluationResult = getEvaluationResultFromCheckerFunction(
             checkerResult,
