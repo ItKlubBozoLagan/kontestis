@@ -66,12 +66,6 @@ export const recordInteractiveOutput = (
                 for (let index = 0; index < stringData.length; ++index) {
                     if (!stringData[index].includes(separatorString.trim())) continue;
 
-                    if (index !== 0) {
-                        process.stdin.write(
-                            Buffer.from(stringData.slice(0, index).join("\n"), "utf8")
-                        );
-                    }
-
                     if (index !== stringData.length + 1) {
                         stdOut.push(
                             Buffer.from(
