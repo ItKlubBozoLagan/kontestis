@@ -56,9 +56,6 @@ export const verifyToken = async (token: string): Promise<NiceTokenResponse> => 
 
     if (niceGoogleResponse.email_verified !== "true") throw new Error("email not verified");
 
-    if (!Globals.oauthAllowedDomains.some((it) => niceGoogleResponse.email.endsWith("@" + it)))
-        throw new Error("domain not supported");
-
     return niceGoogleResponse;
 };
 
