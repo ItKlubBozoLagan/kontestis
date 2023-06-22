@@ -35,9 +35,10 @@ export const extractCluster = async (
             return cluster;
 
         const user = await extractUser(req);
-        const member = await extractContestMember(req, contest.id);
 
         if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return cluster;
+
+        const member = await extractContestMember(req, contest.id);
 
         if (
             !hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE)
