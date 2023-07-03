@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { CanAdmin } from "../../../../components/CanAdmin";
 import { EditableDisplayBox } from "../../../../components/EditableDisplayBox";
+import { LoadingSpinner } from "../../../../components/LoadingSpinner";
 import { SimpleButton } from "../../../../components/SimpleButton";
 import { TitledDateInput } from "../../../../components/TitledDateInput";
 import { TitledInput } from "../../../../components/TitledInput";
@@ -21,6 +22,7 @@ import { useAllContestMembers } from "../../../../hooks/contest/participants/use
 import { useAllContestQuestions } from "../../../../hooks/contest/questions/useAllContestQuestions";
 import { useCopyContest } from "../../../../hooks/contest/useCopyContest";
 import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
+import { useRotateContestCode } from "../../../../hooks/contest/useRotateContestCode";
 import { useAllOrganisations } from "../../../../hooks/organisation/useAllOrganisations";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
 import { useCopy } from "../../../../hooks/useCopy";
@@ -72,6 +74,22 @@ export const ContestOverviewPage: FC = () => {
     const { data: problems } = useAllProblems(contest.id);
 
     const { data: organisations } = useAllOrganisations();
+
+    const {
+        mutate: rotateContestCode,
+        data: contestRotateData,
+        isLoading: isContestCodeRotating,
+    } = useRotateContestCode(contest.id);
+
+    const [lastJoinCode, setLastJoinCode] = useState(contest.join_code);
+
+    useEffect(() => {
+        setLastJoinCode(contest.join_code);
+    }, [contest]);
+
+    useEffect(() => {
+        if (contestRotateData) setLastJoinCode(contestRotateData.code);
+    }, [contestRotateData]);
 
     const [selectedOrgId, setSelectedOrgId] = useState(1n);
 
@@ -375,11 +393,19 @@ export const ContestOverviewPage: FC = () => {
                                 tw={
                                     "w-full text-center font-bold text-lg border border-solid py-1 border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition-colors cursor-pointer"
                                 }
-                                onClick={() => !inviteCodeCopied && copy("a136c6dced495b7d")}
+                                onClick={() => !inviteCodeCopied && copy(lastJoinCode)}
                             >
-                                {inviteCodeCopied ? "Copied" : "a136c6dced495b7d"}
+                                {inviteCodeCopied ? "Copied" : lastJoinCode}
                             </span>
-                            <FiRotateCcw size={"20px"} tw={"text-neutral-800 cursor-pointer"} />
+                            {isContestCodeRotating ? (
+                                <LoadingSpinner size={"xs"} />
+                            ) : (
+                                <FiRotateCcw
+                                    size={"20px"}
+                                    tw={"text-neutral-800 cursor-pointer"}
+                                    onClick={() => rotateContestCode()}
+                                />
+                            )}
                         </div>
                     </TitledSection>
                 </div>

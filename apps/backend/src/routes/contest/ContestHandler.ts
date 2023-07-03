@@ -225,12 +225,14 @@ ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
 
     return respond(res, StatusCodes.OK, contest);
 });
-ContestHandler.patch("/:contest_id/join", useValidation(ContestSchema), async (req, res) => {
+ContestHandler.patch("/:contest_id/join", async (req, res) => {
     const contest = await extractModifiableContest(req);
 
-    await Database.update("contests", { join_code: randomSequence(8) }, { id: contest.id });
+    const code = randomSequence(8);
 
-    return respond(res, StatusCodes.OK);
+    await Database.update("contests", { join_code: code }, { id: contest.id });
+
+    return respond(res, StatusCodes.OK, { code });
 });
 
 ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, res) => {
