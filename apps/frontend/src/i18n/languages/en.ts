@@ -44,6 +44,11 @@ const I18nEn = {
         //  has a bug where it doesn't handle messages beginning with a placeholder
         alert: " %1",
     },
+    contestJoin: {
+        buttonText: "Join contest",
+        submitText: "Join",
+        inputTitle: "Code",
+    },
     helper: {
         tableNoContents: "None so far",
         shortWeekDayNames: "Mon,Tue,Wed,Thu,Fri,Sat,Sun",

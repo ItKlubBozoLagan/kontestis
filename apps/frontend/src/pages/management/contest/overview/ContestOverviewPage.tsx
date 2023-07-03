@@ -3,7 +3,7 @@ import { AdminPermissions } from "@kontestis/models";
 import { formatDuration, toCroatianLocale } from "@kontestis/utils";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FiAlertTriangle, FiMessageSquare, FiUsers } from "react-icons/all";
+import { FiAlertTriangle, FiMessageSquare, FiRotateCcw, FiUsers } from "react-icons/all";
 import { useNavigate } from "react-router";
 import { z } from "zod";
 
@@ -23,6 +23,7 @@ import { useCopyContest } from "../../../../hooks/contest/useCopyContest";
 import { useModifyContest } from "../../../../hooks/contest/useCreateContest";
 import { useAllOrganisations } from "../../../../hooks/organisation/useAllOrganisations";
 import { useAllProblems } from "../../../../hooks/problem/useAllProblems";
+import { useCopy } from "../../../../hooks/useCopy";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { useOrganisationStore } from "../../../../state/organisation";
 import { R } from "../../../../util/remeda";
@@ -129,6 +130,8 @@ export const ContestOverviewPage: FC = () => {
         setOrganisationId(selectedOrgId);
         navigate(`/contest/${copyMutation.data?.id}`);
     }, [copyMutation.isSuccess]);
+
+    const { copy, copied: inviteCodeCopied } = useCopy();
 
     return (
         <div tw={"w-full flex flex-col gap-4"}>
@@ -364,6 +367,19 @@ export const ContestOverviewPage: FC = () => {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+                    </TitledSection>
+                    <TitledSection title={"Invite"}>
+                        <div tw={"w-full flex items-center gap-4"}>
+                            <span
+                                tw={
+                                    "w-full text-center font-bold text-lg border border-solid py-1 border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition-colors cursor-pointer"
+                                }
+                                onClick={() => !inviteCodeCopied && copy("a136c6dced495b7d")}
+                            >
+                                {inviteCodeCopied ? "Copied" : "a136c6dced495b7d"}
+                            </span>
+                            <FiRotateCcw size={"20px"} tw={"text-neutral-800 cursor-pointer"} />
                         </div>
                     </TitledSection>
                 </div>

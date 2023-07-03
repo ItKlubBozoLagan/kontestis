@@ -2,7 +2,7 @@ import "/public/css/prism-custom.css";
 
 import { ClusterSubmission } from "@kontestis/models";
 import Prism from "prismjs";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/all";
 import { useParams } from "react-router";
 import tw from "twin.macro";
@@ -12,6 +12,7 @@ import { TitledSection } from "../../components/TitledSection";
 import { Translated } from "../../components/Translated";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
+import { useCopy } from "../../hooks/useCopy";
 import { useTranslation } from "../../hooks/useTranslation";
 import { convertFromBase64 } from "../../util/base";
 import { SubmissionTestcaseTable } from "./SubmissionTestcaseTable";
@@ -41,23 +42,7 @@ export const SubmissionViewPage: FC = () => {
 
     const { t } = useTranslation();
 
-    const [copied, setCopied] = useState(false);
-    const [copyTimeout, setCopyTimeout] = useState<ReturnType<typeof setTimeout>>();
-
-    const copyCode = useCallback(() => {
-        if (!("clipboard" in navigator) || !submission) return;
-
-        navigator.clipboard.writeText(convertFromBase64(submission.code));
-
-        if (copyTimeout) clearTimeout(copyTimeout);
-
-        setCopied(true);
-        setCopyTimeout(setTimeout(() => setCopied(false), 2000));
-    }, [submission]);
-
-    useEffect(() => {
-        return () => copyTimeout && clearTimeout(copyTimeout);
-    });
+    const { copy, copied } = useCopy();
 
     return (
         <div tw={"w-full h-full py-12 flex flex-col gap-5"}>
@@ -76,7 +61,7 @@ export const SubmissionViewPage: FC = () => {
                                 <FiCopy
                                     tw={"cursor-pointer hover:opacity-75"}
                                     size={"24px"}
-                                    onClick={copyCode}
+                                    onClick={() => copy(convertFromBase64(submission.code))}
                                 />
                             ) : (
                                 <div tw={"text-green-800 flex justify-center gap-2"}>

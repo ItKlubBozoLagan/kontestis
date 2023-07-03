@@ -44,6 +44,11 @@ export default {
         //  has a bug where it doesn't handle messages beginning with a placeholder
         alert: " %1",
     },
+    contestJoin: {
+        buttonText: "Pridruži se natjecanju",
+        submitText: "Pridruži se",
+        inputTitle: "Kod",
+    },
     helper: {
         tableNoContents: "Nema ničega za sada",
         shortWeekDayNames: "Pon,Uto,Sri,Čet,Pet,Sub,Ned",

@@ -7,6 +7,7 @@ import { useQueries } from "react-query";
 
 import { http, wrapAxios } from "../api/http";
 import { BigTitledSection } from "../components/BigTitledSection";
+import { ContestInvite } from "../components/ContestInvite";
 import { Header } from "../components/Header";
 import { YearActivityCalendar } from "../components/YearActivityCalendar";
 import { useAllContests } from "../hooks/contest/useAllContests";
@@ -66,6 +67,9 @@ export const DashboardPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col gap-6 px-8"}>
             <Header />
+            <div tw={"w-full flex justify-center"}>
+                <ContestInvite />
+            </div>
             <BigTitledSection header={t("dashboard.basicInfo.title")} tw={"border-neutral-300"}>
                 <div tw={"w-full grid grid-cols-3 gap-8 px-12"}>
                     <MetricsInfoBox title={t("dashboard.basicInfo.contests")}>
