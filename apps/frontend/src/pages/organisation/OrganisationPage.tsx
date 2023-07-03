@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
-import { ContestInvite } from "../../components/ContestInvite";
+import { ContestJoinButton } from "../../components/ContestJoinButton";
 import { PageTitle } from "../../components/PageTitle";
 import { SimpleButton } from "../../components/SimpleButton";
 import { useAllOrganisations } from "../../hooks/organisation/useAllOrganisations";
@@ -34,7 +34,7 @@ export const OrganisationPage: FC = () => {
         <div tw={"w-full flex flex-col items-end gap-4"}>
             <PageTitle>{t("organisations.page.title")}</PageTitle>
             <div tw={"w-full flex justify-between items-center gap-4"}>
-                <ContestInvite />
+                <ContestJoinButton />
                 <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
                     {t("organisations.page.createButton")}
                 </SimpleButton>

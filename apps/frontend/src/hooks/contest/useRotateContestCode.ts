@@ -3,7 +3,7 @@ import { useMutation } from "react-query";
 
 import { http, MutationHandler, wrapAxios } from "../../api/http";
 
-export type CodeRotateResult = {
+type CodeRotateResult = {
     code: string;
 };
 

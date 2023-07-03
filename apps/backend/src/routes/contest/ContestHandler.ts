@@ -197,7 +197,7 @@ ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
 
     if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const organisationMember = await Database.selectFrom("organisation_members", ["id"], {
+    const organisationMember = await Database.selectOneFrom("organisation_members", ["id"], {
         organisation_id: contest.organisation_id,
         user_id: user.id,
     });
@@ -223,7 +223,10 @@ ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
             contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
         });
 
-    return respond(res, StatusCodes.OK, contest);
+    return respond(res, StatusCodes.OK, {
+        contest_id: contest.id,
+        organisation_id: contest.organisation_id,
+    });
 });
 ContestHandler.patch("/:contest_id/join", async (req, res) => {
     const contest = await extractModifiableContest(req);

@@ -1,21 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
+import { useNavigate } from "react-router";
 import { z } from "zod";
 
+import { useJoinContest } from "../hooks/contest/useJoinContest";
 import { useTranslation } from "../hooks/useTranslation";
+import { useOrganisationStore } from "../state/organisation";
 import { ModalStyles } from "../util/ModalStyles";
 import { SimpleButton } from "./SimpleButton";
 import { TitledInput } from "./TitledInput";
 
 const FormSchema = z.object({
-    code: z.string().length(16),
+    code: z.string().length(16, { message: "Code must be 16 characters long" }),
 });
 
 type FormData = z.infer<typeof FormSchema>;
 
-export const ContestInvite: FC = () => {
+export const ContestJoinButton: FC = () => {
     const [visible, setVisible] = useState(false);
 
     const { t } = useTranslation();
@@ -28,9 +31,26 @@ export const ContestInvite: FC = () => {
         resolver: zodResolver(FormSchema),
     });
 
+    const { mutate, data, error, isLoading } = useJoinContest();
+
     const onSubmit = handleSubmit((data) => {
-        console.log("doing it", data);
+        mutate({
+            join_code: data.code,
+        });
     });
+
+    const navigate = useNavigate();
+    const { setOrganisationId, setIsSelected, setSkipOrganisationSelect } = useOrganisationStore();
+
+    useEffect(() => {
+        if (!data) return;
+
+        setIsSelected(true);
+        setOrganisationId(data.organisation_id);
+        setSkipOrganisationSelect(false);
+
+        navigate(`/contest/${data.contest_id}`);
+    }, [data]);
 
     return (
         <>
@@ -43,6 +63,11 @@ export const ContestInvite: FC = () => {
                 onAfterClose={() => setVisible(false)}
             >
                 <form onSubmit={onSubmit} tw={"flex flex-col gap-4 items-center"}>
+                    <span tw={"text-red-600"}>
+                        {error && !isLoading
+                            ? "Invalid code"
+                            : Object.values(errors).at(0)?.message}
+                    </span>
                     <TitledInput
                         label={t("contestJoin.inputTitle")}
                         bigLabel
