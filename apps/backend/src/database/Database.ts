@@ -58,6 +58,7 @@ import { migration_add_exam_scores_to_contest_member } from "./migrations/0034_a
 import { migration_add_reviewed_to_exam_final_submissions } from "./migrations/0035_add_reviewed_to_exam_final_submissions";
 import { migration_add_evaluation_language_to_problem } from "./migrations/0036_add_evaluation_language_to_problem";
 import { migration_add_notifications } from "./migrations/0037_add_notifications";
+import { migration_add_join_codes } from "./migrations/0038_add_join_codes";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -127,6 +128,7 @@ const migrations: Migration<any>[] = [
     migration_add_reviewed_to_exam_final_submissions,
     migration_add_evaluation_language_to_problem,
     migration_add_notifications,
+    migration_add_join_codes,
 ];
 
 export const initDatabase = async () => {
