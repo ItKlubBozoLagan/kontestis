@@ -5,6 +5,7 @@ import {
     Cluster,
     Contest,
     ContestMemberPermissions,
+    DEFAULT_ELO,
     hasAdminPermission,
     hasContestPermission,
     Problem,
@@ -29,6 +30,7 @@ import { pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { randomSequence } from "../../utils/random";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import ContestAnnouncementHandler from "./ContestAnnouncementHandler";
@@ -164,6 +166,7 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
         public: req.body.public,
         elo_applied: false,
         exam: req.body.exam,
+        join_code: randomSequence(8),
     };
 
     await Promise.all([
@@ -179,6 +182,55 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
     const _ = pushContestNotifications(contest, [user.id]);
 
     return respond(res, StatusCodes.OK, contest);
+});
+
+const JoinSchema = Type.Object({
+    join_code: Type.String(),
+});
+
+ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
+    const user = await extractUser(req);
+
+    const contest = await Database.selectOneFrom("contests", ["id", "organisation_id"], {
+        join_code: req.body.join_code,
+    });
+
+    if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    const organisationMember = await Database.selectFrom("organisation_members", ["id"], {
+        organisation_id: contest.organisation_id,
+        user_id: user.id,
+    });
+
+    if (!organisationMember)
+        await Database.insertInto("organisation_members", {
+            id: generateSnowflake(),
+            user_id: user.id,
+            organisation_id: contest.organisation_id,
+            elo: DEFAULT_ELO,
+        });
+
+    const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
+        contest_id: contest.id,
+        user_id: user.id,
+    });
+
+    if (!contestMember)
+        await Database.insertInto("contest_members", {
+            id: generateSnowflake(),
+            user_id: user.id,
+            contest_id: contest.id,
+            contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
+        });
+
+    return respond(res, StatusCodes.OK, contest);
+});
+ContestHandler.patch("/:contest_id/join", useValidation(ContestSchema), async (req, res) => {
+    const contest = await extractModifiableContest(req);
+
+    await Database.update("contests", { join_code: randomSequence(8) }, { id: contest.id });
+
+    return respond(res, StatusCodes.OK);
 });
 
 ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, res) => {

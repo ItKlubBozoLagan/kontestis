@@ -27,7 +27,11 @@ export type ContestV5 = ContestV4 & {
     exam: boolean;
 };
 
-export type Contest = ContestV5;
+export type ContestV6 = ContestV5 & {
+    join_code: string;
+};
+
+export type Contest = ContestV6;
 
 export type ContestWithPermissions = Contest & {
     registered: boolean;
