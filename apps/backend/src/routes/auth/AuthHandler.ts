@@ -10,6 +10,7 @@ import { extractUser } from "../../extractors/extractUser";
 import { processUserFromTokenData, verifyToken } from "../../lib/google";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
+import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
 const AuthHandler = Router();
@@ -76,9 +77,15 @@ AuthHandler.get("/", async (req, res) => {
 
     const users = await Database.selectFrom("users", "*", {});
 
-    const knownUsers = await Database.selectFrom("known_users", "*", {
-        user_id: eqIn(...users.map((user) => user.id)),
-    });
+    const knownUsers = (
+        await Promise.all(
+            R.chunk(users, 100).map((chunk) =>
+                Database.selectFrom("known_users", "*", {
+                    user_id: eqIn(...chunk.map((user) => user.id)),
+                })
+            )
+        )
+    ).flat();
 
     const knownUsersByUserId: Record<string, KnownUserData> = {};
 
