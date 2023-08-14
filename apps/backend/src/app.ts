@@ -106,7 +106,7 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
 
     if (error instanceof SafeError) return reject(res, error.code, error.message);
 
-    if (Globals.mode === "development") console.error(error);
+    console.error(error);
 
     return reject(res, StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR);
 });

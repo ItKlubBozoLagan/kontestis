@@ -89,7 +89,7 @@ AuthHandler.get("/", async (req, res) => {
         res,
         StatusCodes.OK,
         users
-            .filter((user) => typeof knownUsersByUserId[user.id.toString()] !== "undefined")
+            .filter((user) => !!knownUsersByUserId[user.id.toString()])
             .map((user) => ({
                 ...user,
                 full_name: knownUsersByUserId[user.id.toString()].full_name,
