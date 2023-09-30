@@ -157,6 +157,8 @@ export const ContestViewPage: FC = () => {
                 </div>
             )}
             {(contestStatus.status !== "pending" ||
+                // TODO: Replace with actual permission check
+                (problems && problems.length > 0) ||
                 hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) && (
                 <Table tw={"w-full"}>
                     <thead>
