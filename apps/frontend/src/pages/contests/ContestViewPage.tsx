@@ -174,25 +174,34 @@ export const ContestViewPage: FC = () => {
                         </TableHeadRow>
                     </thead>
                     <tbody>
-                        {problems?.map((p) => (
-                            <TableRow key={p.id.toString()}>
-                                <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
-                                    <Link to={"/problem/" + p.id} tw={"flex items-center gap-2"}>
-                                        <FiList tw={"text-xl"} /> {p.title}
-                                    </Link>
-                                </TableItem>
-                                <TableItem>
-                                    <ProblemScoreBox
-                                        score={
-                                            problemScores.data
-                                                ? problemScores.data[p.id.toString()] ?? 0
-                                                : 0
-                                        }
-                                        maxScore={p.score}
-                                    />
-                                </TableItem>
-                            </TableRow>
-                        ))}
+                        {problems
+                            ?.sort((a, b) => {
+                                if (a.score === b.score) return a.title.localeCompare(b.title);
+
+                                return a.score - b.score;
+                            })
+                            .map((p) => (
+                                <TableRow key={p.id.toString()}>
+                                    <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
+                                        <Link
+                                            to={"/problem/" + p.id}
+                                            tw={"flex items-center gap-2"}
+                                        >
+                                            <FiList tw={"text-xl"} /> {p.title}
+                                        </Link>
+                                    </TableItem>
+                                    <TableItem>
+                                        <ProblemScoreBox
+                                            score={
+                                                problemScores.data
+                                                    ? problemScores.data[p.id.toString()] ?? 0
+                                                    : 0
+                                            }
+                                            maxScore={p.score}
+                                        />
+                                    </TableItem>
+                                </TableRow>
+                            ))}
                     </tbody>
                 </Table>
             )}

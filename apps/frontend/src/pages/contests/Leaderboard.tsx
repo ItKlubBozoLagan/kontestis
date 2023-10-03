@@ -20,6 +20,12 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
 
     const maxScore = problems.reduce((accumulator, current) => accumulator + current.score, 0);
 
+    const sortedProblems = problems.sort((a, b) => {
+        if (a.score === b.score) return a.title.localeCompare(b.title);
+
+        return a.score - b.score;
+    });
+
     const { t } = useTranslation();
 
     const contestMembers = useMemo(() => {
@@ -88,7 +94,7 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
                                 >
                                     {member.full_name}
                                 </TableItem>
-                                {problems.map((problem) => (
+                                {sortedProblems.map((problem) => (
                                     <TableItem key={problem.id.toString()}>
                                         <ProblemScoreBox
                                             score={
