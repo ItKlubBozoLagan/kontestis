@@ -191,11 +191,18 @@ const JoinSchema = Type.Object({
 ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
     const user = await extractUser(req);
 
-    const contest = await Database.selectOneFrom("contests", ["id", "organisation_id"], {
-        join_code: req.body.join_code,
-    });
+    const contest = await Database.selectOneFrom(
+        "contests",
+        ["id", "organisation_id", "start_time", "duration_seconds"],
+        {
+            join_code: req.body.join_code,
+        }
+    );
 
     if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    if (contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now())
+        throw new SafeError(StatusCodes.NOT_FOUND);
 
     const organisationMember = await Database.selectOneFrom("organisation_members", ["id"], {
         organisation_id: contest.organisation_id,
