@@ -28,7 +28,7 @@ export const useMappedContests = (
 
                 if (a.start_time.getTime() === b.start_time.getTime()) return 0;
 
-                return a.start_time.getTime() > b.start_time.getTime() ? 1 : -1;
+                return b.start_time.getTime() - a.start_time.getTime();
             }),
             R.map((contest) =>
                 R.pipe(
