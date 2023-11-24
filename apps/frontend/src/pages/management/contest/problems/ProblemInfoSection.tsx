@@ -184,7 +184,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                 {problem.evaluation_variant !== "plain" && (
                     <EditableDisplayBox
                         title={t(
-                            "contests.management.individual.problems.individual.info.solutionLanguage"
+                            "contests.management.individual.problems.individual.info.evaluationScriptLanguage"
                         )}
                         value={problem.evaluation_language}
                         submitFunction={submitForm}
