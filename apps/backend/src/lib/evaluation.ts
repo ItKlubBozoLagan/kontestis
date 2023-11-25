@@ -155,6 +155,32 @@ const evaluateCluster = async (
         evaluationResult: results.find((response) => response.testCaseId === it.id.toString())!,
     }));
 
+    const testCaseScores: {
+        testCaseId: bigint;
+        score: number;
+    }[] = clusterTestcases.map((it) => {
+        return {
+            testCaseId: it.id,
+            score: (() => {
+                if (it.evaluationResult.verdict === "accepted") return cluster.awarded_score;
+
+                if (it.evaluationResult.verdict === "custom") {
+                    const { extra } = it.evaluationResult;
+
+                    if (!extra.startsWith("partial:")) return 0;
+
+                    const scoreString = extra.slice("partial:".length);
+
+                    if (Number.isNaN(Number(scoreString))) return 0;
+
+                    return Math.round(Number(scoreString) * cluster.awarded_score);
+                }
+
+                return 0;
+            })(),
+        };
+    });
+
     const clusterSubmission: ClusterSubmission = {
         id: generateSnowflake(),
         cluster_id: cluster.id,
@@ -162,9 +188,12 @@ const evaluateCluster = async (
         verdict:
             clusterTestcases.find((it) => it.evaluationResult.verdict !== "accepted")
                 ?.evaluationResult.verdict ?? "accepted",
-        awarded_score: clusterTestcases.every((it) => it.evaluationResult.verdict === "accepted")
-            ? cluster.awarded_score
-            : 0,
+        awarded_score: testCaseScores.reduce(
+            (a, b) => {
+                return Math.min(a, b.score);
+            },
+            testCaseScores.length > 0 ? testCaseScores[0].score : cluster.awarded_score
+        ),
         memory_used_megabytes: Math.max(
             0,
             ...clusterTestcases.map((it) =>
@@ -188,7 +217,9 @@ const evaluateCluster = async (
                 testcase_id: BigInt(result.testCaseId),
                 cluster_submission_id: clusterSubmission.id,
                 verdict: result.verdict,
-                awarded_score: result.verdict === "accepted" ? cluster.awarded_score : 0,
+                awarded_score:
+                    testCaseScores.find((it) => it.testCaseId.toString() === result.testCaseId)
+                        ?.score ?? 0,
                 memory_used_megabytes: result.type === "success" ? result.memory : 0,
                 time_used_millis: result.type === "success" ? result.time : 0,
             })
