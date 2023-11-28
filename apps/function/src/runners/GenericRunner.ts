@@ -31,7 +31,7 @@ export type CompilationProcessInfo = {
 
 const getCompilationProcessForLanguage = (
     code: Buffer,
-    language: Exclude<EvaluationLanguage, "python" | "esl">
+    language: Exclude<EvaluationLanguage, "python" | "esl" | "output-only">
 ): CompilationProcessInfo => {
     const outFileName = randomBytes(16).toString("hex");
 
@@ -74,6 +74,13 @@ export const compileCode: (
         return {
             type: "success",
             runner: () => runPython(buffer),
+        };
+    }
+
+    if (language === "output-only") {
+        return {
+            type: "compilation_error",
+            error: "Output only format is not supported here!",
         };
     }
 

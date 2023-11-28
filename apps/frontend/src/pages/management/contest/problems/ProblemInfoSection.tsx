@@ -126,29 +126,30 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                             t(
                                 "contests.management.individual.problems.individual.info.evaluationVariant.checker"
                             ),
+                            t(
+                                "contests.management.individual.problems.individual.info.evaluationVariant.outputOnly"
+                            ),
                         ]}
-                        defaultIndex={variant === "plain" ? 0 : 1}
+                        defaultIndex={variant === "plain" ? 0 : variant === "checker" ? 1 : 2}
                         onChange={(value) => {
-                            setValue(
-                                "evaluation_variant",
+                            const result =
                                 value ===
-                                    t(
-                                        "contests.management.individual.problems.individual.info.evaluationVariant.plain"
-                                    )
+                                t(
+                                    "contests.management.individual.problems.individual.info.evaluationVariant.plain"
+                                )
                                     ? "plain"
-                                    : "checker"
-                            );
-                            setVariant(
-                                value ===
-                                    t(
-                                        "contests.management.individual.problems.individual.info.evaluationVariant.plain"
-                                    )
-                                    ? "plain"
-                                    : "checker"
-                            );
+                                    : value ===
+                                      t(
+                                          "contests.management.individual.problems.individual.info.evaluationVariant.checker"
+                                      )
+                                    ? "checker"
+                                    : "output-only";
+
+                            setValue("evaluation_variant", result);
+                            setVariant(result);
                         }}
                     />
-                    {variant !== "plain" && (
+                    {variant !== "plain" && variant !== "output-only" && (
                         <TitledSwitch
                             choice={[
                                 t(
@@ -160,6 +161,8 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                             ]}
                             defaultIndex={variant === "checker" ? 0 : 1}
                             onChange={(value) => {
+                                console.log("HERE");
+                                console.log(variant);
                                 setValue(
                                     "evaluation_variant",
                                     value ===
@@ -241,6 +244,7 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                         <option value="rust">Rust</option>
                         <option value="java">Java</option>
                         <option value="esl">ESL</option>
+                        <option value="output-only">Output only</option>
                     </select>
                 </EditableDisplayBox>
                 <EditableDisplayBox

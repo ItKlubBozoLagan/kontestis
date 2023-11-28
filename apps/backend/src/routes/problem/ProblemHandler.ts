@@ -29,6 +29,7 @@ const ProblemSchema = Type.Object({
         Type.Literal("plain"),
         Type.Literal("checker"),
         Type.Literal("interactive"),
+        Type.Literal("output-only"),
     ]),
     evaluation_language: EvaluationLanguageSchema,
     evaluation_script: Type.Optional(Type.String()),

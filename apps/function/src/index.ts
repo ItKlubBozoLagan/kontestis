@@ -21,11 +21,14 @@ const EvaluationLanguageSchema = Type.Union([
     Type.Literal("go"),
     Type.Literal("rust"),
     Type.Literal("esl"),
+    // eslint-disable-next-line sonarjs/no-duplicate-string
+    Type.Literal("output-only"),
 ]);
 const TypeSchema = Type.Union([
     Type.Literal("plain"),
     Type.Literal("checker"),
     Type.Literal("interactive"),
+    Type.Literal("output-only"),
 ]);
 
 const EvaluationSchema = Type.Object({
@@ -78,14 +81,18 @@ app.use(json({ limit: "50mb" }), (req, _, next) => {
     next();
 });
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 app.post("/", async (req, res) => {
     if (!schemaCompiled.Check(req.body)) return res.status(400).end();
 
     const submission: Static<typeof EvaluationSchema> = req.body;
 
-    const compiledSubmission = await compileCode(submission.code, submission.language);
+    const compiledSubmission =
+        req.body.problem_type !== "output-only"
+            ? await compileCode(submission.code, submission.language)
+            : undefined;
 
-    if (compiledSubmission.type !== "success") {
+    if (compiledSubmission && compiledSubmission.type !== "success") {
         return res.status(200).send(
             submission.testcases.map((testcase) => ({
                 testCaseId: testcase.id,
@@ -119,7 +126,7 @@ app.post("/", async (req, res) => {
             .status(200)
             .json(
                 await evaluateInteractive(
-                    compiledSubmission.runner,
+                    compiledSubmission!.runner,
                     compiledEvaluator.runner,
                     submission.testcases,
                     submission.time_limit,
@@ -138,26 +145,33 @@ app.post("/", async (req, res) => {
         );
     }
 
-    return res
-        .status(200)
-        .json(
-            await evaluateChecker(
-                async (buffer) =>
-                    recordOutputWithMemory(
-                        await compiledSubmission.runner(),
-                        buffer,
-                        recordSimpleOutput
-                    ),
-                submission.testcases,
-                generateCheckerFunction(
-                    req.body.problem_type === "plain" || !compiledEvaluator
-                        ? () => runPython(Buffer.from(plainTextEvaluatorBase64, "base64"))
-                        : compiledEvaluator.runner
-                ),
-                submission.time_limit,
-                submission.memory_limit
-            )
-        );
+    return res.status(200).json(
+        await evaluateChecker(
+            compiledSubmission
+                ? async (buffer) =>
+                      recordOutputWithMemory(
+                          await compiledSubmission.runner(),
+                          buffer,
+                          recordSimpleOutput
+                      )
+                : async () => {
+                      return {
+                          success: true,
+                          output: Buffer.from(submission.code, "base64"),
+                          timeMills: 0,
+                          memory_usage_megabytes: 0,
+                      };
+                  },
+            submission.testcases,
+            generateCheckerFunction(
+                req.body.problem_type === "plain" || !compiledEvaluator
+                    ? () => runPython(Buffer.from(plainTextEvaluatorBase64, "base64"))
+                    : compiledEvaluator.runner
+            ),
+            submission.time_limit,
+            submission.memory_limit
+        )
+    );
 });
 
 const _PORT = process.env.PORT || 8080;

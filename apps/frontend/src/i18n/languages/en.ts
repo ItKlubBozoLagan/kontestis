@@ -204,6 +204,7 @@ const I18nEn = {
                             label: "Evaluation variant",
                             plain: "Plain",
                             checker: "Checker",
+                            outputOnly: "Output only",
                             checkers: {
                                 standard: "Standardan",
                                 interactive: "Interaktivni",
@@ -226,6 +227,7 @@ const I18nEn = {
                                 label: "Evaluation variant",
                                 plain: "Plain",
                                 checker: "Checker",
+                                outputOnly: "Output only",
                                 checkers: {
                                     standard: "Standard",
                                     interactive: "Interactive",

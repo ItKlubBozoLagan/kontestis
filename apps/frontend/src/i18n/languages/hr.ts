@@ -204,6 +204,7 @@ export default {
                             label: "Varijanta evaluacije",
                             plain: "Obično",
                             checker: "Skripta za provjeru",
+                            outputOnly: "Samo izlaz",
                             checkers: {
                                 standard: "Standardan",
                                 interactive: "Interaktivni",
@@ -226,6 +227,7 @@ export default {
                                 label: "Varijanta evaluacije",
                                 plain: "Obično",
                                 checker: "Skripta za provjeru",
+                                outputOnly: "Samo izlaz",
                                 checkers: {
                                     standard: "Standardan",
                                     interactive: "Interaktivni",

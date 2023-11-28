@@ -4,7 +4,7 @@ import tw from "twin.macro";
 type SwitchProperties<T extends string> = {
     label?: string;
     defaultIndex?: number;
-    choice: [T, T];
+    choice: T[];
     onChange: (value: T) => void;
 };
 
@@ -38,8 +38,9 @@ export const TitledSwitch = <T extends string>({
                 tw={"bg-neutral-100 text-base flex overflow-hidden w-[fit-content] w-full"}
                 {...properties}
             >
-                <ChoiceBox self={choice[0]} />
-                <ChoiceBox self={choice[1]} last />
+                {choice.map((a, b) => {
+                    return <ChoiceBox self={a} last={b === choice.length - 1} key={a} />;
+                })}
             </div>
         </div>
     );

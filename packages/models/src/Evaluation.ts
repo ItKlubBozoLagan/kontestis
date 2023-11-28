@@ -1,6 +1,14 @@
-export type EvaluationLanguage = "c" | "cpp" | "python" | "java" | "go" | "rust" | "esl";
+export type EvaluationLanguage =
+    | "c"
+    | "cpp"
+    | "python"
+    | "java"
+    | "go"
+    | "rust"
+    | "esl"
+    | "output-only";
 
-export type EvaluationVariant = "plain" | "checker" | "interactive";
+export type EvaluationVariant = "plain" | "checker" | "interactive" | "output-only";
 
 export type SuccessfulEvaluationResult =
     | {

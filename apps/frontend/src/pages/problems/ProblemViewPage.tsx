@@ -68,6 +68,10 @@ export const ProblemViewPage: FC = () => {
         refetchInterval: 1000,
     });
 
+    useEffect(() => {
+        if (problem && problem.evaluation_variant === "output-only") setLanguage("output-only");
+    }, [problem]);
+
     const { t } = useTranslation();
 
     useEffect(() => {
@@ -149,20 +153,22 @@ export const ProblemViewPage: FC = () => {
                             onChange={(event) => setCode(event.target.value)}
                             ref={textAreaReference}
                         />
-                        <select
-                            name="languages"
-                            onChange={(event) =>
-                                setLanguage(event.target.value as EvaluationLanguage)
-                            }
-                        >
-                            <option value="python">Python</option>
-                            <option value="cpp">C++</option>
-                            <option value="c">C</option>
-                            <option value="go">Go</option>
-                            <option value="rust">Rust</option>
-                            <option value="java">Java</option>
-                            <option value="esl">ESL</option>
-                        </select>
+                        {problem && problem.evaluation_variant !== "output-only" && (
+                            <select
+                                name="languages"
+                                onChange={(event) =>
+                                    setLanguage(event.target.value as EvaluationLanguage)
+                                }
+                            >
+                                <option value="python">Python</option>
+                                <option value="cpp">C++</option>
+                                <option value="c">C</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                                <option value="java">Java</option>
+                                <option value="esl">ESL</option>
+                            </select>
+                        )}
                         <SimpleButton
                             color={theme`colors.red.300`}
                             onClick={() => {

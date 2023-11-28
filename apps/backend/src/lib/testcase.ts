@@ -124,7 +124,8 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
             language: problem.solution_language ?? "python",
             code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
             evaluator: RETURN_OUTPUT_EVALUATOR,
-            evaluation_variant: "checker",
+            evaluation_variant:
+                problem.evaluation_variant === "output-only" ? "output-only" : "checker",
             evaluator_language: "python",
         },
         R.map(testcaseInputs, (t) => R.addProp(t, "correct_output", "")),
