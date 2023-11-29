@@ -77,7 +77,7 @@ app.use(async (req, res, next) => {
     next();
 });
 
-app.use(json(), (req, _, next) => {
+app.use(json({ limit: "50mb" }), (req, _, next) => {
     // json from express@5 yields undefined for empty bodies,
     //  this breaks validation, so we're falling back to an empty object
     if (req.body === undefined) req.body = {};
