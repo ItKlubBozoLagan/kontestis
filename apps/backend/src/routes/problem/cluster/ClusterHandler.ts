@@ -24,7 +24,7 @@ const ClusterHandler = Router({ mergeParams: true });
 ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 
 const ClusterSchema = Type.Object({
-    awarded_score: Type.Number({ minimum: 1, maximum: 1000 }),
+    awarded_score: Type.Number({ minimum: 1, maximum: 1_000_000 }),
     generator: Type.Boolean(),
     generator_language: Type.Optional(EvaluationLanguageSchema),
     generator_code: Type.Optional(Type.String()),
