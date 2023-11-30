@@ -38,13 +38,16 @@ const SubmissionHandler = Router();
 
 const SubmissionSchema = Type.Object({
     language: EvaluationLanguageSchema,
-    code: Type.String({ maxLength: 64_000 }),
+    code: Type.String({ maxLength: 1 << 23 }),
 });
 
 SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (req, res) => {
     const problem = await extractProblem(req);
     const user = await extractUser(req);
     const org = await extractCurrentOrganisation(req);
+
+    if (problem.evaluation_variant !== "output-only" && req.body.code.length >= 64_000)
+        throw new SafeError(StatusCodes.BAD_REQUEST);
 
     const endListener = async (submission: Submission) => {
         await Influx.insert(
