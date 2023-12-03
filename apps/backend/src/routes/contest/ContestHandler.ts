@@ -390,13 +390,16 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         contest_id: contest.id,
     });
 
-    const users = await Database.selectFrom("known_users", "*", {
-        user_id: eqIn(...contestMembers.map((it) => it.user_id)),
-    });
+    const users = (
+        await Promise.all(
+            R.chunk(contestMembers, 100).map((chunk) => {
+                return Database.selectFrom("known_users", "*", {
+                    user_id: eqIn(...chunk.map((it) => it.user_id)),
+                });
+            })
+        )
+    ).flat();
 
-    await Database.selectFrom("users", "*", {
-        id: eqIn(...contestMembers.map((it) => it.user_id)),
-    });
     const organisationMembers = await Database.selectFrom(
         "organisation_members",
         "*",

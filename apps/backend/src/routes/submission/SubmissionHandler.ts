@@ -103,9 +103,15 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     const contest = await extractContest(req, problem.contest_id);
     const submissions = await Database.selectFrom("submissions", "*", { problem_id: problem.id });
 
-    const users = await Database.selectFrom("known_users", "*", {
-        user_id: eqIn(...submissions.map((s) => s.user_id)),
-    });
+    const users = (
+        await Promise.all(
+            R.chunk(submissions, 100).map((chunk) =>
+                Database.selectFrom("known_users", "*", {
+                    user_id: eqIn(...chunk.map((s) => s.user_id)),
+                })
+            )
+        )
+    ).flat();
 
     const submissionsWithInfo = submissions.map((it) => ({
         ...it,
