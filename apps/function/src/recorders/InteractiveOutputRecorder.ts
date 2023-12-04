@@ -3,6 +3,7 @@ import { ChildProcessWithoutNullStreams } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { performance } from "node:perf_hooks";
 
+import { RunnableProcess } from "../runners/GenericRunner";
 import { recordMemory } from "./MemoryRecorder";
 import { MemoryRecord } from "./RecordOutputWithMemory";
 import { OutputRecord } from "./SimpleOutputRecorder";
@@ -10,7 +11,8 @@ import { OutputRecord } from "./SimpleOutputRecorder";
 export const recordInteractiveOutput = (
     process: ChildProcessWithoutNullStreams,
     checkerProcess: ChildProcessWithoutNullStreams,
-    input: Buffer
+    input: Buffer,
+    processRunner: RunnableProcess
 ) => {
     const separator = randomBytes(32).toString("hex");
     const separatorString = "\n[" + separator + "]\n";
@@ -23,103 +25,156 @@ export const recordInteractiveOutput = (
 
     const memoryRecordFunction = recordMemory(process.pid ?? 0);
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-    return new Promise<OutputRecord & MemoryRecord>((resolve) => {
-        const stdError: Buffer[] = [];
-        const stdOut: Buffer[] = [];
-        let closed = false;
-        let processClosed = false;
-        let redirectChecker = false;
+    return new Promise<OutputRecord & MemoryRecord>((resolve) =>
+        handleInteraction(
+            resolve,
+            startTime,
+            memoryRecordFunction,
+            separatorString,
+            checkerProcess,
+            process,
+            processRunner
+        )
+    );
+};
 
-        setTimeout(() => {
-            if (closed) return;
+const handleInteraction = (
+    resolve: any,
+    startTime: number,
+    memoryRecordFunction: () => number,
+    separatorString: String,
+    checkerProcess: ChildProcessWithoutNullStreams,
+    process: ChildProcessWithoutNullStreams,
+    processRunner: RunnableProcess
+) => {
+    const stdError: Buffer[] = [];
+    const stdOut: Buffer[] = [];
+    const separatorBuffer = Buffer.from(separatorString, "utf8");
+    const restartString = separatorString.trim() + "restart" + separatorString.trim();
+    let closed = false;
+    let processClosed = false;
+    let redirectChecker = false;
+    let delegated = false;
 
-            closed = true;
-            process.kill();
-            checkerProcess.kill();
-            resolve({
-                success: true,
-                output: Buffer.concat(stdOut),
-                timeMills: 6000,
-                memory_usage_megabytes: memoryRecordFunction(),
-            });
-        }, 6000);
+    setTimeout(() => {
+        if (closed) return;
 
-        process.stdout.on("data", (data) => {
-            checkerProcess.stdin.write(data);
+        if (delegated) return;
+
+        closed = true;
+        process.kill();
+        checkerProcess.kill();
+        resolve({
+            success: true,
+            output: Buffer.concat(stdOut),
+            timeMills: 6000,
+            memory_usage_megabytes: memoryRecordFunction(),
         });
+    }, 6000);
 
-        checkerProcess.stdout.on("data", (data) => {
-            if (redirectChecker) {
-                if (Buffer.isBuffer(data)) stdOut.push(data);
+    process.stdout.on("data", (data) => {
+        if (delegated) return;
 
-                if (typeof data === "string") stdOut.push(Buffer.from(data, "utf8"));
+        checkerProcess.stdin.write(data);
+    });
 
-                return;
-            }
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    checkerProcess.stdout.on("data", (data) => {
+        if (delegated) return;
 
-            const stringData = data.toString().split("\n") as string[];
+        if (redirectChecker) {
+            if (Buffer.isBuffer(data)) stdOut.push(data);
 
-            if (stringData.some((line) => line.includes(separatorString.trim()))) {
-                redirectChecker = true;
+            if (typeof data === "string") stdOut.push(Buffer.from(data, "utf8"));
 
-                for (let index = 0; index < stringData.length; ++index) {
-                    if (!stringData[index].includes(separatorString.trim())) continue;
+            return;
+        }
 
-                    if (index !== stringData.length + 1) {
-                        stdOut.push(
-                            Buffer.from(
-                                stringData.slice(index + 1, stringData.length).join("\n"),
-                                "utf8"
-                            )
-                        );
-                    }
+        const stringData = data.toString().split("\n") as string[];
 
-                    break;
+        if (stringData.some((line) => line.includes(restartString))) {
+            processRunner().then((newProcess) => {
+                handleInteraction(
+                    resolve,
+                    startTime,
+                    memoryRecordFunction,
+                    separatorString,
+                    checkerProcess,
+                    newProcess,
+                    processRunner
+                );
+            });
+            delegated = true;
+            process.kill();
+
+            return;
+        }
+
+        if (stringData.some((line) => line.includes(separatorString.trim()))) {
+            redirectChecker = true;
+
+            for (let index = 0; index < stringData.length; ++index) {
+                if (!stringData[index].includes(separatorString.trim())) continue;
+
+                if (index !== stringData.length + 1) {
+                    stdOut.push(
+                        Buffer.from(
+                            stringData.slice(index + 1, stringData.length).join("\n"),
+                            "utf8"
+                        )
+                    );
                 }
 
-                return;
+                break;
             }
 
-            process.stdin.write(data);
-        });
+            return;
+        }
 
-        checkerProcess.stderr.on("data", (data) => {
-            if (Buffer.isBuffer(data)) stdError.push(data);
+        process.stdin.write(data);
+    });
 
-            if (typeof data === "string") stdError.push(Buffer.from(data, "utf8"));
-        });
+    checkerProcess.stderr.on("data", (data) => {
+        if (delegated) return;
 
-        checkerProcess.on("close", (code) => {
-            if (closed) return;
+        if (Buffer.isBuffer(data)) stdError.push(data);
 
-            closed = true;
+        if (typeof data === "string") stdError.push(Buffer.from(data, "utf8"));
+    });
 
-            if (!processClosed) process.kill();
+    checkerProcess.on("close", (code) => {
+        if (closed) return;
 
-            if (code && code !== 0)
-                return resolve({
-                    success: false,
-                    exitCode: code,
-                    stdErr: Buffer.concat(stdError),
-                    memory_usage_megabytes: memoryRecordFunction(),
-                });
+        if (delegated) return;
 
-            resolve({
-                success: true,
-                output: Buffer.concat(stdOut),
-                timeMills: performance.now() - startTime,
+        closed = true;
+
+        if (!processClosed) process.kill();
+
+        if (code && code !== 0)
+            return resolve({
+                success: false,
+                exitCode: code,
+                stdErr: Buffer.concat(stdError),
                 memory_usage_megabytes: memoryRecordFunction(),
             });
+
+        resolve({
+            success: true,
+            output: Buffer.concat(stdOut),
+            timeMills: performance.now() - startTime,
+            memory_usage_megabytes: memoryRecordFunction(),
         });
+    });
 
-        process.on("close", () => {
-            processClosed = true;
+    process.on("close", () => {
+        if (delegated) return;
 
-            if (closed) return;
+        processClosed = true;
 
-            checkerProcess.stdin.write(Buffer.concat([separatorBuffer, Buffer.from("END")]));
-            checkerProcess.stdin.end();
-        });
+        if (closed) return;
+
+        checkerProcess.stdin.write(Buffer.concat([separatorBuffer, Buffer.from("END")]));
+        checkerProcess.stdin.end();
     });
 };

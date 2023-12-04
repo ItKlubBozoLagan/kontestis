@@ -31,7 +31,8 @@ export const evaluateInteractive = async (
         const result = await recordInteractiveOutput(
             await processRunner(),
             await checkerRunner(),
-            Buffer.from(testcase.in, "utf8")
+            Buffer.from(testcase.in, "utf8"),
+            processRunner
         );
 
         if (!result.success) {
