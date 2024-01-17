@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react";
-import { FiActivity, FiBarChart2, FiBell, FiUser, FiUsers } from "react-icons/all";
+import { FiActivity, FiBarChart2, FiBell, FiMail, FiUser, FiUsers } from "react-icons/all";
 import { Outlet } from "react-router";
 
 import { PageTitle } from "../../components/PageTitle";
@@ -35,6 +35,11 @@ export const AdminPageLayout: FC = () => {
                 display: t("admin.routes.organizations"),
                 href: "organisations",
                 icon: FiUsers,
+            },
+            {
+                display: t("admin.routes.mail"),
+                href: "mail",
+                icon: FiMail,
             },
         ],
         [t]

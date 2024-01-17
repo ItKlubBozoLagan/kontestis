@@ -6,6 +6,7 @@ import {
     ExamFinalSubmission,
     ExamGradingScale,
     KnownUserData,
+    MailPreference,
     Organisation,
     OrganisationMember,
     Problem,
@@ -59,6 +60,7 @@ import { migration_add_reviewed_to_exam_final_submissions } from "./migrations/0
 import { migration_add_evaluation_language_to_problem } from "./migrations/0036_add_evaluation_language_to_problem";
 import { migration_add_notifications } from "./migrations/0037_add_notifications";
 import { migration_add_join_codes } from "./migrations/0038_add_join_codes";
+import { migration_add_mail_preferences } from "./migrations/0039_add_mail_preferences";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -78,6 +80,7 @@ export const Database = new ScylloClient<{
     exam_final_submissions: ExamFinalSubmission;
     exam_grading_scales: ExamGradingScale;
     notifications: SiteNotification;
+    mail_preferences: MailPreference;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -129,6 +132,7 @@ const migrations: Migration<any>[] = [
     migration_add_evaluation_language_to_problem,
     migration_add_notifications,
     migration_add_join_codes,
+    migration_add_mail_preferences,
 ];
 
 export const initDatabase = async () => {

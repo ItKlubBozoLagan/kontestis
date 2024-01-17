@@ -5,6 +5,7 @@ import { AccountPage } from "../pages/account/AccountPage";
 import { AdminPageLayout } from "../pages/admin/AdminPageLayout";
 import { AdminAlertsPage } from "../pages/admin/alerts/AdminAlertsPage";
 import { AdminContestsPage } from "../pages/admin/contests/AdminContestsPage";
+import { AdminMailPage } from "../pages/admin/mail/AdminMailPage";
 import { AdminOrganisationsPage } from "../pages/admin/organisations/AdminOrganisationsPage";
 import { AdminOverviewPage } from "../pages/admin/overview/AdminOverviewPage";
 import { AdminUsersPage } from "../pages/admin/users/AdminUsersPage";
@@ -94,6 +95,10 @@ export const dashboardRoutes: RouteObject[] = [
                     {
                         path: "organisations",
                         element: <AdminOrganisationsPage />,
+                    },
+                    {
+                        path: "mail",
+                        element: <AdminMailPage />,
                     },
                 ],
             },

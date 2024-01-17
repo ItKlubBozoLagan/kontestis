@@ -16,6 +16,12 @@ type GlobalsType = {
     influxBucket: string;
     evaluatorServiceAccountEmail: string;
     evaluatorServiceAccountPrivateKey: Buffer | null;
+    emailNotifierAccountMail: string;
+    emailNotifierAccountDisplayName: string;
+    emailNotifierAccountPassword: string;
+    emailHost: string;
+    emailPort: number;
+    emailSettingsBaseURL: string;
 };
 
 export const Globals: GlobalsType = {
@@ -42,4 +48,10 @@ export const Globals: GlobalsType = {
         .GOOGLE_EVALUATOR_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64
         ? Buffer.from(process.env.GOOGLE_EVALUATOR_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64, "base64")
         : null,
+    emailHost: process.env.EMAIL_HOST ?? "localhost",
+    emailPort: process.env.EMAIL_PORT ? Number.parseInt(process.env.EMAIL_PORT) : 465,
+    emailNotifierAccountMail: process.env.EMAIL_ACCOUNT_MAIL ?? "test@kontestis.ac",
+    emailNotifierAccountDisplayName: process.env.EMAIL_ACCOUNT_DISPLAY_NAME ?? "Kontestis",
+    emailNotifierAccountPassword: process.env.EMAIL_ACCOUNT_PASSWORD ?? "",
+    emailSettingsBaseURL: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
 };

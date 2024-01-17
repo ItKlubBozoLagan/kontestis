@@ -9,6 +9,7 @@ export * from "./Evaluation";
 export * from "./ExamFinalSubmission";
 export * from "./ExamGradingScale";
 export * from "./KnownUserData";
+export * from "./MailPreferences";
 export * from "./Organisation";
 export * from "./OrganisationMember";
 export * from "./permissions";

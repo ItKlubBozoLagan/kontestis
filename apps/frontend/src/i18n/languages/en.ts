@@ -499,6 +499,7 @@ const I18nEn = {
             alerts: "Site alerts",
             contests: "Contests",
             organizations: "Organisations",
+            mail: "Mail",
         },
         overview: {
             charts: {

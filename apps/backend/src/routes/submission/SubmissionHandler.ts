@@ -101,7 +101,21 @@ SubmissionHandler.get("/", useValidation(GetSchema, { query: true }), async (req
 SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
     const contest = await extractContest(req, problem.contest_id);
-    const submissions = await Database.selectFrom("submissions", "*", { problem_id: problem.id });
+    const submissions = await Database.selectFrom(
+        "submissions",
+        [
+            "id",
+            "user_id",
+            "problem_id",
+            "language",
+            "created_at",
+            "time_used_millis",
+            "memory_used_megabytes",
+            "verdict",
+            "awarded_score",
+        ],
+        { problem_id: problem.id }
+    );
 
     const users = (
         await Promise.all(
@@ -316,7 +330,17 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
 
     const submissions = await Database.selectFrom(
         "submissions",
-        "*",
+        [
+            "id",
+            "user_id",
+            "problem_id",
+            "language",
+            "created_at",
+            "time_used_millis",
+            "memory_used_megabytes",
+            "verdict",
+            "awarded_score",
+        ],
         {
             problem_id: problem.id,
             user_id: userId,
