@@ -8,6 +8,7 @@ import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
 import { Globals } from "../../globals";
+import { Logger } from "../../lib/logger";
 import { sendMail } from "../../lib/mail";
 import { pushNotificationsToMany } from "../../lib/notifications";
 import { useValidation } from "../../middlewares/useValidation";
@@ -69,6 +70,9 @@ NotificationsHandler.post(
         // eslint-disable-next-line no-async-promise-executor
         new Promise<void>(async (resolve) => {
             for (const user of users) {
+                Logger.info("Current user: " + user.full_name);
+                Logger.info(users.length);
+
                 let preference = preferencesByUserId[user.user_id.toString()];
 
                 if (!preference) {
@@ -84,6 +88,8 @@ NotificationsHandler.post(
                 if (preference.status === "none") return;
 
                 if (preference.status === "contest-only" && !req.body.contestAnnouncement) return;
+
+                Logger.info("Attempting to send mail: ");
 
                 await sendMail(
                     user,
