@@ -65,24 +65,25 @@ NotificationsHandler.post(
             preferencesByUserId[preference.user_id.toString()] = preference;
         }
 
-        await Promise.all(
-            users.map((user) => {
+        // eslint-disable-next-line no-async-promise-executor
+        new Promise<void>(async (resolve) => {
+            for (const user of users) {
                 const preference = preferencesByUserId[user.user_id.toString()];
 
-                if (preference.status === "none") return Promise.resolve();
+                if (preference.status === "none") return;
 
-                if (preference.status === "contest-only" && !req.body.contestAnnouncement)
-                    return Promise.resolve();
+                if (preference.status === "contest-only" && !req.body.contestAnnouncement) return;
 
-                return sendMail(
+                await sendMail(
                     user,
                     req.body.subject,
                     req.body.text,
                     preference,
                     req.body.debugMode
                 );
-            })
-        );
+            }
+            resolve();
+        });
 
         return respond(res, StatusCodes.OK);
     }
