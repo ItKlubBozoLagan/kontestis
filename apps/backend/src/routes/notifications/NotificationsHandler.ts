@@ -85,9 +85,9 @@ NotificationsHandler.post(
                     await Database.insertInto("mail_preferences", preference);
                 }
 
-                if (preference.status === "none") return;
+                if (preference.status === "none") continue;
 
-                if (preference.status === "contest-only" && !req.body.contestAnnouncement) return;
+                if (preference.status === "contest-only" && !req.body.contestAnnouncement) continue;
 
                 Logger.info("Attempting to send mail: ");
 
