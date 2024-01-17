@@ -26,6 +26,17 @@ export const sendMail = async (
 
     Logger.info("Attempting sending email to: " + user.full_name);
 
+    Logger.info(transporter);
+    Logger.info(
+        Globals.emailHost +
+            ":" +
+            Globals.emailPort +
+            ":" +
+            Globals.emailNotifierAccountMail +
+            ":" +
+            Globals.emailNotifierAccountPassword
+    );
+
     const response = await transporter.sendMail({
         from: `${Globals.emailNotifierAccountDisplayName} <${Globals.emailNotifierAccountMail}>`,
         to: debugMode ? Globals.emailNotifierAccountMail : user.email,
