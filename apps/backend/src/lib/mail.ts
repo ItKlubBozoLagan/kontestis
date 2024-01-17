@@ -2,6 +2,7 @@ import { KnownUserData, MailPreference } from "@kontestis/models";
 import { createTransport } from "nodemailer";
 
 import { Globals } from "../globals";
+import { Logger } from "./logger";
 
 const transporter = createTransport({
     host: Globals.emailHost,
@@ -23,14 +24,16 @@ export const sendMail = async (
     subject = subject.replaceAll("{user}", user.full_name);
     text = text.replaceAll("{user}", user.full_name);
 
-    await transporter.sendMail({
+    Logger.info("Attempting sending email to: " + user.full_name);
+
+    const response = await transporter.sendMail({
         from: `${Globals.emailNotifierAccountDisplayName} <${Globals.emailNotifierAccountMail}>`,
         to: debugMode ? Globals.emailNotifierAccountMail : user.email,
         subject: subject,
         // TODO: Make this configurable
         text:
             `Ovu obavijest primate jer imate račun na platformi Kontestis:
-            U slučaju da neželite više primati daljnje obavijesti: ${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${mailPreferences.code}/none
+            U slučaju da ne želite više primati daljnje obavijesti: ${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${mailPreferences.code}/none
             Ako želite primati jedino obavijesti o nadolazečim natjecanjima: ${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${mailPreferences.code}/contest-only
             ` + text,
 
@@ -52,4 +55,6 @@ export const sendMail = async (
             </div>
         `,
     });
+
+    Logger.info(response);
 };
