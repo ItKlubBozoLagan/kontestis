@@ -8,6 +8,7 @@ import { Database } from "../database/Database";
 import { DEFAULT_ORGANISATION } from "../extractors/extractOrganisation";
 import { Globals } from "../globals";
 import { Influx } from "../influx/Influx";
+import { randomSequence } from "../utils/random";
 import { R } from "../utils/remeda";
 import { generateSnowflake } from "./snowflake";
 
@@ -127,6 +128,11 @@ export const processUserFromTokenData = async (
             organisation_id: DEFAULT_ORGANISATION.id,
             user_id: user.id,
             elo: DEFAULT_ELO,
+        });
+        await Database.insertInto("mail_preferences", {
+            user_id: user.id,
+            status: "all",
+            code: randomSequence(16),
         });
     }
 

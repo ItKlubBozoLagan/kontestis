@@ -11,6 +11,7 @@ import { Globals } from "../../globals";
 import { sendMail } from "../../lib/mail";
 import { pushNotificationsToMany } from "../../lib/notifications";
 import { useValidation } from "../../middlewares/useValidation";
+import { randomSequence } from "../../utils/random";
 import { reject, respond } from "../../utils/response";
 
 const NotificationsHandler = Router();
@@ -68,7 +69,17 @@ NotificationsHandler.post(
         // eslint-disable-next-line no-async-promise-executor
         new Promise<void>(async (resolve) => {
             for (const user of users) {
-                const preference = preferencesByUserId[user.user_id.toString()];
+                let preference = preferencesByUserId[user.user_id.toString()];
+
+                if (!preference) {
+                    preference = {
+                        user_id: user.user_id,
+                        code: randomSequence(16),
+                        status: "all",
+                    };
+
+                    await Database.insertInto("mail_preferences", preference);
+                }
 
                 if (preference.status === "none") return;
 
