@@ -9,7 +9,6 @@ import { compileJava } from "../compilers/JavaCompiler";
 import { compileRust } from "../compilers/RustCompiler";
 import { processCompilation } from "../transformers/CompiledTransformer";
 import { runBinary } from "./BinaryRunner";
-import { runESL } from "./ESLRunner";
 import { runPython } from "./PythonRunner";
 
 export type RunnableProcess = () => Promise<ChildProcessWithoutNullStreams>;
@@ -31,7 +30,7 @@ export type CompilationProcessInfo = {
 
 const getCompilationProcessForLanguage = (
     code: Buffer,
-    language: Exclude<EvaluationLanguage, "python" | "esl" | "output-only">
+    language: Exclude<EvaluationLanguage, "python" | "output-only">
 ): CompilationProcessInfo => {
     const outFileName = randomBytes(16).toString("hex");
 
@@ -65,10 +64,6 @@ export const compileCode: (
     language: EvaluationLanguage
 ) => Promise<RunnerFunctionResult> = async (code, language) => {
     const buffer = Buffer.from(code, "base64");
-
-    if (language === "esl") {
-        return { type: "success", runner: () => runESL(buffer) };
-    }
 
     if (language === "python") {
         return {

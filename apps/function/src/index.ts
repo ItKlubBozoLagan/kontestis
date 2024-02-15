@@ -20,7 +20,6 @@ const EvaluationLanguageSchema = Type.Union([
     Type.Literal("java"),
     Type.Literal("go"),
     Type.Literal("rust"),
-    Type.Literal("esl"),
     // eslint-disable-next-line sonarjs/no-duplicate-string
     Type.Literal("output-only"),
 ]);
