@@ -9,24 +9,48 @@ import { R } from "../utils/remeda";
 import { splitAndEvaluateTestcases } from "./evaluation";
 
 const RETURN_OUTPUT_EVALUATOR = `
-def read_until(separator):
-    out = ""
-    while True:
-        line = input()
-        if line == separator:
-            return out
-        out += line + "\\n"
+#include <iostream>
+#include <string>
+#include <sstream>
 
-while True:
-    separator = input()
-    if len(separator.strip()) > 0:
-        break
+// Disable synchronization between C and C++ standard streams
+static const auto disable_sync = []() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    return 0;
+}();
 
-read_until(separator)
-out = read_until(separator)
-subOut = read_until(separator)
+std::string read_until(const std::string& separator) {
+    std::stringstream out;
+    std::string line;
+    while (true) {
+        std::getline(std::cin, line);
+        if (line == separator) {
+            return out.str();
+        }
+        out << line << "\\n";
+    }
+}
 
-print("custom:" + subOut.strip())
+int main() {
+    std::string separator;
+    while (true) {
+        std::getline(std::cin, separator);
+        if (!separator.empty() && separator.find_first_not_of(' ') != std::string::npos) {
+            break;
+        }
+    }
+
+    read_until(separator);
+    std::string out = read_until(separator);
+    std::string subOut = read_until(separator);
+
+    std::cout << "custom:" << subOut << std::endl;
+
+    return 0;
+}
+
+
 `;
 
 export const getClusterStatus = async (clusterId: Snowflake) => {
@@ -70,7 +94,7 @@ const generateTestcaseInput = async (cluster: Cluster, count: number) => {
             code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
             evaluator: RETURN_OUTPUT_EVALUATOR,
             evaluation_variant: "checker",
-            evaluator_language: "python",
+            evaluator_language: "cpp",
         },
         Array.from({ length: count }).map((_, index) => ({
             id: BigInt(index),
@@ -126,7 +150,7 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
             evaluator: RETURN_OUTPUT_EVALUATOR,
             evaluation_variant:
                 problem.evaluation_variant === "output-only" ? "output-only" : "checker",
-            evaluator_language: "python",
+            evaluator_language: "cpp",
         },
         R.map(testcaseInputs, (t) => R.addProp(t, "correct_output", "")),
         {

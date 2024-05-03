@@ -93,7 +93,7 @@ const evaluateTestcases = async (
         .catch((error) => [undefined, error as AxiosError])) as AxiosEvaluationResponse;
 };
 
-const GROUP_SIZE_LIMIT = 1 << 22;
+const GROUP_SIZE_LIMIT = (1 << 25) - (1 << 22);
 
 export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
