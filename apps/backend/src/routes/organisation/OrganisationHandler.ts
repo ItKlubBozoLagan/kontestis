@@ -1,7 +1,14 @@
-import { AdminPermissions, DEFAULT_ELO, hasAdminPermission, Organisation } from "@kontestis/models";
+import {
+    AdminPermissions,
+    DEFAULT_ELO,
+    hasAdminPermission,
+    Organisation,
+    OrganisationPermissions,
+} from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
@@ -70,6 +77,7 @@ OrganisationHandler.post("/", useValidation(OrganisationSchema), async (req, res
         id: generateSnowflake(),
         organisation_id: organisation.id,
         user_id: user.id,
+        permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.ADMIN),
         elo: DEFAULT_ELO,
     });
 

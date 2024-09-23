@@ -1,7 +1,8 @@
-import { DEFAULT_ELO, OrganisationMember } from "@kontestis/models";
+import { DEFAULT_ELO, OrganisationMember, OrganisationPermissions } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
@@ -94,6 +95,7 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
         elo: DEFAULT_ELO,
         organisation_id: organisation.id,
         user_id: targetUser.user_id,
+        permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.VIEW),
     };
 
     await Database.insertInto("organisation_members", member);
