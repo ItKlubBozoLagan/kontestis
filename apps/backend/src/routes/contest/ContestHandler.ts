@@ -8,6 +8,7 @@ import {
     DEFAULT_ELO,
     hasAdminPermission,
     hasContestPermission,
+    OrganisationPermissions,
     Problem,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
@@ -30,6 +31,10 @@ import { pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import {
+    hasOrganisationPermission,
+    mustHaveCurrentOrganisationPermission,
+} from "../../preconditions/hasPermission";
 import { randomSequence } from "../../utils/random";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
@@ -144,15 +149,17 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
 
     const organisation = await extractCurrentOrganisation(req);
 
-    if (!hasAdminPermission(user.permissions, AdminPermissions.ADD_CONTEST))
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveCurrentOrganisationPermission(req, OrganisationPermissions.ADD_CONTEST);
 
     const date = new Date(req.body.start_time_millis);
 
     if (!date || (!req.body.past_contest && req.body.start_time_millis < Date.now()))
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && req.body.official)
+    if (
+        req.body.official &&
+        !(await hasOrganisationPermission(req, OrganisationPermissions.ADMIN, organisation.id))
+    )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     const contest: Contest = {

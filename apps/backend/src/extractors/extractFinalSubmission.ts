@@ -1,17 +1,11 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-    Snowflake,
-} from "@kontestis/models";
+import { ContestMemberPermissions, Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
+import { mustHaveContestPermission } from "../preconditions/hasPermission";
 import { extractIdFromParameters } from "../utils/extractorUtils";
-import { extractContestMember } from "./extractContestMember";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
@@ -33,18 +27,11 @@ export const extractFinalSubmission = async (
 
             if (user.id === finalSubmission.user_id) return finalSubmission;
 
-            if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
-                return finalSubmission;
-
-            const member = await extractContestMember(req, finalSubmission.contest_id);
-
-            if (
-                hasContestPermission(
-                    member.contest_permissions,
-                    ContestMemberPermissions.VIEW_PRIVATE
-                )
-            )
-                return finalSubmission;
+            await mustHaveContestPermission(
+                req,
+                ContestMemberPermissions.VIEW_PRIVATE,
+                finalSubmission.contest_id
+            );
 
             throw new SafeError(StatusCodes.NOT_FOUND);
         }

@@ -1,27 +1,13 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-    Snowflake,
-} from "@kontestis/models";
+import { ContestMemberPermissions, Snowflake } from "@kontestis/models";
 import { Request } from "express";
-import { StatusCodes } from "http-status-codes";
 
-import { SafeError } from "../errors/SafeError";
+import { mustHaveContestPermission } from "../preconditions/hasPermission";
 import { extractContest } from "./extractContest";
-import { extractContestMember } from "./extractContestMember";
-import { extractUser } from "./extractUser";
 
 export const extractModifiableContest = async (req: Request, contestId?: Snowflake) => {
-    const [user, contest] = await Promise.all([extractUser(req), extractContest(req, contestId)]);
+    const contest = await extractContest(req, contestId);
 
-    if (hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)) return contest;
-
-    const member = await extractContestMember(req, contest.id);
-
-    if (!hasContestPermission(member.contest_permissions, ContestMemberPermissions.EDIT))
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveContestPermission(req, ContestMemberPermissions.EDIT, contest.id);
 
     return contest;
 };

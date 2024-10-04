@@ -19,6 +19,7 @@ import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { respond } from "../../utils/response";
 
+// Not maintained
 const ContestGradingHandler = Router({ mergeParams: true });
 
 const GradingSchema = Type.Object({

@@ -1,9 +1,10 @@
-import { ContestMemberPermissions, hasContestPermission, Snowflake } from "@kontestis/models";
+import { ContestMemberPermissions, Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
+import { mustHaveContestPermission } from "../preconditions/hasPermission";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
@@ -21,14 +22,7 @@ export const extractContestMember = (
 
         if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        if (
-            !hasContestPermission(
-                member.contest_permissions,
-                ContestMemberPermissions.VIEW,
-                user.permissions
-            )
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
+        await mustHaveContestPermission(req, ContestMemberPermissions.VIEW, contestId);
 
         return member;
     });

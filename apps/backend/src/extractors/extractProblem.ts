@@ -2,7 +2,6 @@ import {
     AdminPermissions,
     ContestMemberPermissions,
     hasAdminPermission,
-    hasContestPermission,
     Problem,
     Snowflake,
 } from "@kontestis/models";
@@ -11,12 +10,11 @@ import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
+import { hasContestPermission } from "../preconditions/hasPermission";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { R } from "../utils/remeda";
 import { extractContest } from "./extractContest";
-import { extractContestMember } from "./extractContestMember";
 import { extractOptionalUser } from "./extractOptionalUser";
-import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractProblem = (
@@ -57,10 +55,11 @@ export const extractProblem = (
             if (
                 Date.now() >= contest.start_time.getTime() &&
                 (!optionalMember ||
-                    !hasContestPermission(
-                        optionalMember.contest_permissions,
-                        ContestMemberPermissions.VIEW_PRIVATE
-                    )) &&
+                    !(await hasContestPermission(
+                        req,
+                        ContestMemberPermissions.VIEW_PRIVATE,
+                        contest.id
+                    ))) &&
                 (!optionalUser ||
                     !hasAdminPermission(optionalUser.permissions, AdminPermissions.VIEW_CONTEST))
             )
@@ -71,18 +70,7 @@ export const extractProblem = (
                     "solution_code",
                 ]);
 
-            const user = await extractUser(req);
-
-            if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return problem;
-
-            const member = await extractContestMember(req, problem.contest_id);
-
-            if (
-                hasContestPermission(
-                    member.contest_permissions,
-                    ContestMemberPermissions.VIEW_PRIVATE
-                )
-            )
+            if (await hasContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id))
                 return problem;
 
             throw new SafeError(StatusCodes.NOT_FOUND);
