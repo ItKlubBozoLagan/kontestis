@@ -55,7 +55,7 @@ export const extractCurrentOrganisation = (req: Request) => {
     const organisationId = req.headers[ORG_HEADER];
 
     if (!organisationId || typeof organisationId !== "string" || !/\d+/.test(organisationId))
-        throw new SafeError(StatusCodes.BAD_REQUEST);
+        return extractOrganisation(req, DEFAULT_ORGANISATION.id);
 
     return extractOrganisation(req, BigInt(organisationId));
 };
@@ -64,7 +64,7 @@ export const extractCurrentOrganisationId = (req: Request) => {
     const organisationId = req.headers[ORG_HEADER];
 
     if (!organisationId || typeof organisationId !== "string" || !/\d+/.test(organisationId))
-        throw new SafeError(StatusCodes.BAD_REQUEST);
+        return DEFAULT_ORGANISATION.id;
 
     return BigInt(organisationId);
 };

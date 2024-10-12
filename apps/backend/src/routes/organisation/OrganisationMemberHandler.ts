@@ -11,6 +11,7 @@ import { extractModifiableOrganisation } from "../../extractors/extractModifiabl
 import { extractOrganisation } from "../../extractors/extractOrganisation";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { mustHaveOrganisationPermission } from "../../preconditions/hasPermission";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
@@ -40,7 +41,7 @@ OrganisationMemberHandler.get("/", async (req, res) => {
         StatusCodes.OK,
         organisationMembers.map((it) => ({
             ...it,
-            ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["email", "full_name"]),
+            ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["full_name"]),
         }))
     );
 });
@@ -66,10 +67,9 @@ const MemberSchema = Type.Object({
 });
 
 OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res) => {
-    const organisation = await extractModifiableOrganisation(
-        req,
-        extractIdFromParameters(req, "organisation_id")
-    );
+    const organisation = await extractOrganisation(req);
+
+    await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER, organisation.id);
 
     const targetUser = await Database.selectOneFrom(
         "known_users",
@@ -102,6 +102,46 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
 
     return respond(res, StatusCodes.OK, member);
 });
+
+const MemberUpdateSchema = Type.Object({
+    permissions: Type.BigInt(),
+    elo: Type.Number(),
+});
+
+OrganisationMemberHandler.patch(
+    "/:user_id",
+    useValidation(MemberUpdateSchema),
+    async (req, res) => {
+        const organisation = await extractOrganisation(req);
+
+        await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER);
+
+        const targetMember = await Database.selectOneFrom(
+            "organisation_members",
+            ["id", "user_id", "organisation_id"],
+            {
+                organisation_id: organisation.id,
+                user_id: extractIdFromParameters(req, "user_id"),
+            }
+        );
+
+        if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        await Database.update(
+            "organisation_members",
+            {
+                permissions: req.body.permissions,
+                elo: req.body.elo,
+            },
+            {
+                organisation_id: targetMember.organisation_id,
+                user_id: targetMember.user_id,
+            }
+        );
+
+        return respond(res, StatusCodes.OK);
+    }
+);
 
 OrganisationMemberHandler.delete("/:user_id", async (req, res) => {
     const organisation = await extractModifiableOrganisation(

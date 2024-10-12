@@ -35,7 +35,7 @@ export const NavBar: FC = () => {
     const { t } = useTranslation();
 
     const { data: notifications } = useNotifications({
-        refetchInterval: 1000,
+        refetchInterval: 30 * 1000,
     });
 
     const navbarItems = useMemo(

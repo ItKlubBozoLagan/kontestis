@@ -38,6 +38,8 @@ export const migration_add_organisations_permissions: Migration<MigrationType> =
             },
             {
                 id: organisationMember.id,
+                user_id: organisationMember.user_id,
+                organisation_id: organisationMember.organisation_id,
             }
         );
     }

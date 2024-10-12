@@ -1,9 +1,4 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-} from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -12,11 +7,11 @@ import { grantPermission } from "permissio";
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
-import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractUser } from "../../extractors/extractUser";
 import { pushContestNotifications } from "../../lib/contest";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { mustHaveContestPermission } from "../../preconditions/hasPermission";
 import { respond } from "../../utils/response";
 
 const ContestMemberHandler = Router({ mergeParams: true });
@@ -40,17 +35,7 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
     if (req.body.email && !targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
     if (targetUser) {
-        const contestMember = await extractContestMember(req, contest.id);
-
-        if (
-            !hasContestPermission(
-                contestMember.contest_permissions,
-                ContestMemberPermissions.ADD_USER,
-                user.permissions
-            ) &&
-            !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST)
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
+        await mustHaveContestPermission(req, ContestMemberPermissions.ADD_USER, contest.id);
     }
 
     const addedMember = await Database.selectOneFrom("contest_members", ["id"], {
@@ -117,14 +102,8 @@ ContestMemberHandler.get("/:user_id", async (req, res) => {
 
 ContestMemberHandler.patch("/:user_id", async (req, res) => {
     const contest = await extractContest(req);
-    const user = await extractUser(req);
 
     const targetId = BigInt(req.params.user_id);
-
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
-        user_id: user.id,
-        contest_id: contest.id,
-    });
 
     const newPermissions = req.body.contest_permissions
         ? BigInt(req.body.contest_permissions)
@@ -132,16 +111,11 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
 
     if (typeof newPermissions === "undefined") throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    if (
-        !hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST) &&
-        (!contestMember ||
-            !hasContestPermission(
-                contestMember.contest_permissions,
-                ContestMemberPermissions.EDIT_USER_PERMISSIONS,
-                user.permissions
-            ))
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveContestPermission(
+        req,
+        ContestMemberPermissions.EDIT_USER_PERMISSIONS,
+        contest.id
+    );
 
     const targetMember = await Database.selectOneFrom("contest_members", "*", {
         user_id: targetId,
@@ -160,19 +134,10 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
 });
 
 ContestMemberHandler.delete("/:user_id", async (req, res) => {
-    const user = await extractUser(req);
     const contest = await extractContest(req);
     const targetId = BigInt(req.params.user_id);
-    const contestMember = await extractContestMember(req);
 
-    if (
-        !hasContestPermission(
-            contestMember.contest_permissions,
-            ContestMemberPermissions.REMOVE_USER,
-            user.permissions
-        )
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveContestPermission(req, ContestMemberPermissions.REMOVE_USER, contest.id);
 
     const targetMember = await Database.selectOneFrom("contest_members", ["id"], {
         user_id: targetId,
