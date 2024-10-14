@@ -1,10 +1,17 @@
-import { AdminPermissions, hasAdminPermission, Organisation } from "@kontestis/models";
+import {
+    AdminPermissions,
+    hasAdminPermission,
+    Organisation,
+    OrganisationPermissions,
+} from "@kontestis/models";
+import { hasPermission } from "permissio";
 import { FC } from "react";
 import { FiEdit } from "react-icons/all";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
+import { useSelfOrganisationMembers } from "../../hooks/organisation/useSelfOrganisationMembers";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 
@@ -16,6 +23,8 @@ type Properties = {
 export const OrganisationTable: FC<Properties> = ({ organisations, onClick }) => {
     const { t } = useTranslation();
     const { user } = useAuthStore();
+
+    const { data: members } = useSelfOrganisationMembers();
 
     return (
         <Table tw={"w-full"}>
@@ -45,6 +54,18 @@ export const OrganisationTable: FC<Properties> = ({ organisations, onClick }) =>
                                     !hasAdminPermission(
                                         user.permissions,
                                         AdminPermissions.EDIT_ORGANISATIONS
+                                    ) &&
+                                    !(members ?? []).some(
+                                        (m) =>
+                                            m.organisation_id === organisation.id &&
+                                            (hasPermission(
+                                                m.permissions,
+                                                OrganisationPermissions.VIEW_USER
+                                            ) ||
+                                                hasPermission(
+                                                    m.permissions,
+                                                    OrganisationPermissions.ADMIN
+                                                ))
                                     )) ? (
                                     <></>
                                 ) : (

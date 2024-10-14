@@ -104,7 +104,7 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
 });
 
 const MemberUpdateSchema = Type.Object({
-    permissions: Type.BigInt(),
+    permissions: Type.String(),
     elo: Type.Number(),
 });
 
@@ -113,6 +113,10 @@ OrganisationMemberHandler.patch(
     useValidation(MemberUpdateSchema),
     async (req, res) => {
         const organisation = await extractOrganisation(req);
+
+        const newPermissions = req.body.permissions ? BigInt(req.body.permissions) : undefined;
+
+        if (typeof newPermissions === "undefined") throw new SafeError(StatusCodes.BAD_REQUEST);
 
         await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER);
 
@@ -130,12 +134,13 @@ OrganisationMemberHandler.patch(
         await Database.update(
             "organisation_members",
             {
-                permissions: req.body.permissions,
+                permissions: newPermissions,
                 elo: req.body.elo,
             },
             {
                 organisation_id: targetMember.organisation_id,
                 user_id: targetMember.user_id,
+                id: targetMember.id,
             }
         );
 

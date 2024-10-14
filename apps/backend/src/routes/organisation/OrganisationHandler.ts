@@ -51,6 +51,21 @@ OrganisationHandler.get("/", async (req, res) => {
     ]);
 });
 
+OrganisationHandler.get("/members/self", async (req, res) => {
+    const user = await extractUser(req);
+
+    const organisationMembers = await Database.selectFrom(
+        "organisation_members",
+        "*",
+        {
+            user_id: user.id,
+        },
+        "ALLOW FILTERING"
+    );
+
+    return respond(res, StatusCodes.OK, organisationMembers);
+});
+
 OrganisationHandler.get("/:organisation_id", async (req, res) => {
     const organisation = await extractOrganisation(req);
 

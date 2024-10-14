@@ -432,6 +432,7 @@ export default {
         breadcrumbs: {
             creator: "Tvorac",
             admin: "Administrator",
+            organisationAdmin: "Org. Administrator",
             owner: "Vlasnik",
         },
         stats: {
