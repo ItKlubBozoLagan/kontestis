@@ -39,10 +39,13 @@ OrganisationMemberHandler.get("/", async (req, res) => {
     return respond(
         res,
         StatusCodes.OK,
-        organisationMembers.map((it) => ({
-            ...it,
-            ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["full_name"]),
-        }))
+        organisationMembers.map(
+            (it, _, __, user = users.find((user) => user.user_id === it.user_id)!) => ({
+                ...it,
+                ...R.pick(user, ["full_name"]),
+                email_domain: user.email.split("@").at(-1),
+            })
+        )
     );
 });
 
