@@ -1,4 +1,10 @@
-import { DEFAULT_ELO, FullUser, KnownUserData, User } from "@kontestis/models";
+import {
+    DEFAULT_ELO,
+    FullUser,
+    KnownUserData,
+    OrganisationPermissions,
+    User,
+} from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { sign } from "jsonwebtoken";
@@ -118,7 +124,7 @@ export const processUserFromTokenData = async (
         permissions:
             numberUsers === 0n
                 ? grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADMIN)
-                : grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADD_CONTEST),
+                : EMPTY_PERMISSIONS,
     };
 
     if (!existingUser) {
@@ -128,6 +134,10 @@ export const processUserFromTokenData = async (
             organisation_id: DEFAULT_ORGANISATION.id,
             user_id: user.id,
             elo: DEFAULT_ELO,
+            permissions: grantPermission(
+                EMPTY_PERMISSIONS,
+                OrganisationPermissions.VIEW | OrganisationPermissions.ADD_CONTEST
+            ),
         });
         await Database.insertInto("mail_preferences", {
             user_id: user.id,

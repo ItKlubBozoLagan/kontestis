@@ -1,20 +1,14 @@
-import {
-    ContestAnnouncement,
-    ContestMemberPermissions,
-    hasContestPermission,
-} from "@kontestis/models";
+import { ContestAnnouncement, ContestMemberPermissions } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
-import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
-import { extractContestMember } from "../../extractors/extractContestMember";
-import { extractUser } from "../../extractors/extractUser";
 import { pushNotificationsToMany } from "../../lib/notifications";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { mustHaveContestPermission } from "../../preconditions/hasPermission";
 import { respond } from "../../utils/response";
 
 const ContestAnnouncementHandler = Router({ mergeParams: true });
@@ -24,29 +18,20 @@ const AnnouncementSchema = Type.Object({
 });
 
 ContestAnnouncementHandler.post("/", useValidation(AnnouncementSchema), async (req, res) => {
-    const user = await extractUser(req);
-    const member = await extractContestMember(req);
     const contest = await extractContest(req);
 
-    if (
-        !hasContestPermission(
-            member.contest_permissions,
-            ContestMemberPermissions.CREATE_ANNOUNCEMENT,
-            user.permissions
-        )
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveContestPermission(req, ContestMemberPermissions.CREATE_ANNOUNCEMENT);
 
     const contestAnnouncement: ContestAnnouncement = {
         id: generateSnowflake(),
-        contest_id: member.contest_id,
+        contest_id: contest.id,
         message: req.body.message,
     };
 
     await Database.insertInto("contest_announcements", contestAnnouncement);
 
     const members = await Database.selectFrom("contest_members", ["user_id"], {
-        contest_id: member.contest_id,
+        contest_id: contest.id,
     });
 
     const _ = pushNotificationsToMany(
@@ -54,7 +39,7 @@ ContestAnnouncementHandler.post("/", useValidation(AnnouncementSchema), async (r
             type: "new-announcement",
             data: contest.name,
         },
-        members.filter((it) => it.user_id !== member.user_id).map((it) => it.user_id)
+        members.map((it) => it.user_id)
     );
 
     return respond(res, StatusCodes.OK, contestAnnouncement);

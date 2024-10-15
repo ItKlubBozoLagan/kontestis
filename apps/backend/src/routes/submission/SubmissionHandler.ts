@@ -29,6 +29,7 @@ import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { mustHaveContestPermission } from "../../preconditions/hasPermission";
 import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
@@ -135,21 +136,7 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
         return respond(res, StatusCodes.OK, submissionsWithInfo);
 
-    const user = await extractUser(req);
-
-    if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST))
-        return respond(res, StatusCodes.OK, submissionsWithInfo);
-
-    const member = await extractContestMember(req, problem.contest_id);
-
-    if (
-        !hasContestPermission(
-            member.contest_permissions,
-            ContestMemberPermissions.VIEW_PRIVATE,
-            user.permissions
-        )
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, problem.contest_id);
 
     respond(res, StatusCodes.OK, submissionsWithInfo);
 });

@@ -7,6 +7,9 @@ import {
     ContestMemberPermissions,
     hasAdminPermission,
     hasContestPermission,
+    OrganisationPermissionKeys,
+    OrganisationPermissionNames,
+    OrganisationPermissions,
 } from "@kontestis/models";
 import { grantPermission, hasPermission, removePermission } from "permissio";
 import { FC, useState } from "react";
@@ -23,7 +26,7 @@ type Properties = {
     onSave: (newPermissions: bigint) => void;
 };
 
-type PermissionType = "admin" | "contest_member";
+type PermissionType = "admin" | "contest_member" | "organisation_member";
 
 type PermissionData = {
     permission: Record<string, unknown>;
@@ -43,6 +46,15 @@ const permissionByType = {
             (it) => `contest_member.${it}`
         ) as `contest_member.${ContestMemberPermissionKeys}`[],
         function: hasContestPermission,
+    },
+    organisation_member: {
+        permission: OrganisationPermissions,
+        keys: OrganisationPermissionNames.map(
+            (it) => `organisation_member.${it}`
+        ) as `organisation_member.${OrganisationPermissionKeys}`[],
+        function: (editor_permission, permission) =>
+            hasPermission(editor_permission, permission) ||
+            hasPermission(editor_permission, OrganisationPermissions.ADMIN),
     },
 } satisfies Record<PermissionType, PermissionData>;
 

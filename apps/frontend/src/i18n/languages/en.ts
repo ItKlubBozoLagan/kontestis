@@ -432,6 +432,7 @@ const I18nEn = {
         breadcrumbs: {
             creator: "Creator",
             admin: "Admin",
+            organisationAdmin: "Org. Admin",
             owner: "Owner",
         },
         stats: {
@@ -575,6 +576,20 @@ const I18nEn = {
             VIEW_ORGANISATIONS: "View organisations",
             EDIT_ORGANISATIONS: "Edit organisations",
             DELETE_ORGANISATIONS: "Delete organisations",
+        },
+        organisation_member: {
+            ADMIN: "Admin",
+            VIEW: "View",
+            VIEW_USER: "View user",
+            EDIT_USER: "Edit user",
+            DELETE_USER: "Delete user",
+            ADD_CONTEST: "Add contest",
+            VIEW_CONTEST: "View contest",
+            EDIT_CONTEST: "Edit contest",
+            DELETE_CONTEST: "Delete contest",
+            ADD_ALERTS: "Add alerts",
+            EDIT_ALERTS: "Edit alerts",
+            DELETE_ALERTS: "Delete alerts",
         },
     },
     errorMessages: {

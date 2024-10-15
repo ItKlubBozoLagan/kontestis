@@ -4,10 +4,12 @@ import {
     AdminPermissions,
     Cluster,
     Contest,
+    ContestMember,
     ContestMemberPermissions,
     DEFAULT_ELO,
     hasAdminPermission,
     hasContestPermission,
+    OrganisationPermissions,
     Problem,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
@@ -19,8 +21,8 @@ import { eqIn } from "scyllo";
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
-import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
+import { extractOptionalUser } from "../../extractors/extractOptionalUser";
 import {
     extractCurrentOrganisation,
     extractOrganisation,
@@ -30,6 +32,11 @@ import { pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import {
+    hasOrganisationPermission,
+    mustHaveContestPermission,
+    mustHaveCurrentOrganisationPermission,
+} from "../../preconditions/hasPermission";
 import { randomSequence } from "../../utils/random";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
@@ -144,15 +151,17 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
 
     const organisation = await extractCurrentOrganisation(req);
 
-    if (!hasAdminPermission(user.permissions, AdminPermissions.ADD_CONTEST))
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveCurrentOrganisationPermission(req, OrganisationPermissions.ADD_CONTEST);
 
     const date = new Date(req.body.start_time_millis);
 
     if (!date || (!req.body.past_contest && req.body.start_time_millis < Date.now()))
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && req.body.official)
+    if (
+        req.body.official &&
+        !(await hasOrganisationPermission(req, OrganisationPermissions.ADMIN, organisation.id))
+    )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
     const contest: Contest = {
@@ -308,34 +317,59 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
 });
 
 ContestHandler.get("/", async (req, res) => {
-    const contestIds = await Database.selectFrom("contests", ["id", "organisation_id"]);
-    const contests = [];
-
     const organisation = await extractCurrentOrganisation(req);
 
-    for (const id of contestIds) {
-        if (id.organisation_id !== organisation.id) continue;
+    const contests = await Database.selectFrom("contests", "*", {
+        organisation_id: organisation.id,
+    });
+    const returnedContests: Array<Contest> = [];
 
-        try {
-            contests.push(await extractContest(req, id.id));
-        } catch {
-            // TODO: clean this up a bit
+    const hasViewContestsPermission = await hasOrganisationPermission(
+        req,
+        OrganisationPermissions.VIEW_CONTEST,
+        organisation.id
+    );
+
+    const optionalUser = await extractOptionalUser(req);
+
+    // TODO: FIX
+    const contestMembers = optionalUser
+        ? await Database.selectFrom(
+              "contest_members",
+              "*",
+              { user_id: optionalUser.id },
+              "ALLOW FILTERING"
+          )
+        : [];
+
+    const contestMembersByContestId: Record<string, ContestMember> = {};
+
+    for (const member of contestMembers) {
+        contestMembersByContestId[member.contest_id.toString()] = member;
+    }
+
+    for (const contest of contests) {
+        if (contest.public || hasViewContestsPermission) {
+            returnedContests.push(contest);
+            continue;
+        }
+
+        const member = contestMembersByContestId[contest.id.toString()];
+
+        if (
+            member &&
+            hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW)
+        ) {
+            returnedContests.push(contest);
         }
     }
 
-    return respond(res, StatusCodes.OK, contests);
+    return respond(res, StatusCodes.OK, returnedContests);
 });
 ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
     const contest = await extractContest(req);
 
-    const user = await extractUser(req);
-    const member = await extractContestMember(req);
-
-    if (
-        !hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE) &&
-        !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
-    )
-        throw new SafeError(StatusCodes.FORBIDDEN);
+    await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
 
     const targetUser = await Database.selectOneFrom("users", ["id"], { id: req.params.user_id });
 
@@ -419,10 +453,7 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         contestMembers
             .map((it) => ({
                 ...it,
-                ...R.pick(users.find((user) => user.user_id === it.user_id)!, [
-                    "email",
-                    "full_name",
-                ]),
+                ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["full_name"]),
                 ...R.pick(organisationMembers.find((member) => member.user_id === it.user_id)!, [
                     "elo",
                 ]),

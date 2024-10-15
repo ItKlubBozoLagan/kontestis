@@ -1,7 +1,14 @@
-import { AdminPermissions, DEFAULT_ELO, hasAdminPermission, Organisation } from "@kontestis/models";
+import {
+    AdminPermissions,
+    DEFAULT_ELO,
+    hasAdminPermission,
+    Organisation,
+    OrganisationPermissions,
+} from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
@@ -44,6 +51,21 @@ OrganisationHandler.get("/", async (req, res) => {
     ]);
 });
 
+OrganisationHandler.get("/members/self", async (req, res) => {
+    const user = await extractUser(req);
+
+    const organisationMembers = await Database.selectFrom(
+        "organisation_members",
+        "*",
+        {
+            user_id: user.id,
+        },
+        "ALLOW FILTERING"
+    );
+
+    return respond(res, StatusCodes.OK, organisationMembers);
+});
+
 OrganisationHandler.get("/:organisation_id", async (req, res) => {
     const organisation = await extractOrganisation(req);
 
@@ -70,6 +92,7 @@ OrganisationHandler.post("/", useValidation(OrganisationSchema), async (req, res
         id: generateSnowflake(),
         organisation_id: organisation.id,
         user_id: user.id,
+        permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.ADMIN),
         elo: DEFAULT_ELO,
     });
 

@@ -61,6 +61,7 @@ import { migration_add_evaluation_language_to_problem } from "./migrations/0036_
 import { migration_add_notifications } from "./migrations/0037_add_notifications";
 import { migration_add_join_codes } from "./migrations/0038_add_join_codes";
 import { migration_add_mail_preferences } from "./migrations/0039_add_mail_preferences";
+import { migration_add_organisations_permissions } from "./migrations/0040_add_organisations_permissions";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -133,6 +134,7 @@ const migrations: Migration<any>[] = [
     migration_add_notifications,
     migration_add_join_codes,
     migration_add_mail_preferences,
+    migration_add_organisations_permissions,
 ];
 
 export const initDatabase = async () => {

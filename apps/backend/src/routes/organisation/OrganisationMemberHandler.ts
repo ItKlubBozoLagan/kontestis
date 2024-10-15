@@ -1,7 +1,8 @@
-import { DEFAULT_ELO, OrganisationMember } from "@kontestis/models";
+import { DEFAULT_ELO, OrganisationMember, OrganisationPermissions } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
@@ -10,6 +11,7 @@ import { extractModifiableOrganisation } from "../../extractors/extractModifiabl
 import { extractOrganisation } from "../../extractors/extractOrganisation";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { mustHaveOrganisationPermission } from "../../preconditions/hasPermission";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
@@ -39,7 +41,7 @@ OrganisationMemberHandler.get("/", async (req, res) => {
         StatusCodes.OK,
         organisationMembers.map((it) => ({
             ...it,
-            ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["email", "full_name"]),
+            ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["full_name"]),
         }))
     );
 });
@@ -65,10 +67,9 @@ const MemberSchema = Type.Object({
 });
 
 OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res) => {
-    const organisation = await extractModifiableOrganisation(
-        req,
-        extractIdFromParameters(req, "organisation_id")
-    );
+    const organisation = await extractOrganisation(req);
+
+    await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER, organisation.id);
 
     const targetUser = await Database.selectOneFrom(
         "known_users",
@@ -94,12 +95,58 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
         elo: DEFAULT_ELO,
         organisation_id: organisation.id,
         user_id: targetUser.user_id,
+        permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.VIEW),
     };
 
     await Database.insertInto("organisation_members", member);
 
     return respond(res, StatusCodes.OK, member);
 });
+
+const MemberUpdateSchema = Type.Object({
+    permissions: Type.String(),
+    elo: Type.Number(),
+});
+
+OrganisationMemberHandler.patch(
+    "/:user_id",
+    useValidation(MemberUpdateSchema),
+    async (req, res) => {
+        const organisation = await extractOrganisation(req);
+
+        const newPermissions = req.body.permissions ? BigInt(req.body.permissions) : undefined;
+
+        if (typeof newPermissions === "undefined") throw new SafeError(StatusCodes.BAD_REQUEST);
+
+        await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER);
+
+        const targetMember = await Database.selectOneFrom(
+            "organisation_members",
+            ["id", "user_id", "organisation_id"],
+            {
+                organisation_id: organisation.id,
+                user_id: extractIdFromParameters(req, "user_id"),
+            }
+        );
+
+        if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        await Database.update(
+            "organisation_members",
+            {
+                permissions: newPermissions,
+                elo: req.body.elo,
+            },
+            {
+                organisation_id: targetMember.organisation_id,
+                user_id: targetMember.user_id,
+                id: targetMember.id,
+            }
+        );
+
+        return respond(res, StatusCodes.OK);
+    }
+);
 
 OrganisationMemberHandler.delete("/:user_id", async (req, res) => {
     const organisation = await extractModifiableOrganisation(

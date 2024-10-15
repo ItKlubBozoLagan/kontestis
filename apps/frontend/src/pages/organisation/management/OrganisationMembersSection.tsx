@@ -1,31 +1,46 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Organisation, OrganisationMemberWithInfo } from "@kontestis/models";
-import React, { FC, useEffect, useState } from "react";
+import {
+    AdminPermissions,
+    hasAdminPermission,
+    Organisation,
+    OrganisationMemberWithInfo,
+    OrganisationPermissions,
+} from "@kontestis/models";
+import { EMPTY_PERMISSIONS, grantPermission, hasPermission, PermissionData } from "permissio";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import tw, { theme } from "twin.macro";
 import { z } from "zod";
 
 import { Breadcrumb } from "../../../components/Breadcrumb";
 import { DomainBreadcrumb } from "../../../components/DomainBreadcrumb";
+import { PermissionsModal } from "../../../components/PermissionsModal";
 import { SimpleButton } from "../../../components/SimpleButton";
 import { TitledInput } from "../../../components/TitledInput";
 import { useAddOrganisationMember } from "../../../hooks/organisation/useAddOrganisationMemeber";
 import { useAllOrganisationMembers } from "../../../hooks/organisation/useAllOrganisationMembers";
+import { useModifyOrganisationMember } from "../../../hooks/organisation/useModifyOrganisationMember";
 import { useRemoveOrganisationMember } from "../../../hooks/organisation/useRemoveOrganisationMember";
 import { useTranslation } from "../../../hooks/useTranslation";
+import { useAuthStore } from "../../../state/auth";
 
 type MemberBoxProperties = {
     member: OrganisationMemberWithInfo;
+    editorPermissions: PermissionData;
     organisation: Organisation;
 };
 
 // TODO: Refactor shared parts from contest management
-const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
+const MemberBox: FC<MemberBoxProperties> = ({ member, organisation, editorPermissions }) => {
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
 
     const deleteMutation = useRemoveOrganisationMember(organisation.id);
+    const modifyMutation = useModifyOrganisationMember([organisation.id, member.user_id]);
 
     const { t } = useTranslation();
+
+    const { user } = useAuthStore();
 
     const onDeleteClick = () => {
         if (deleteMutation.isLoading) return;
@@ -44,17 +59,44 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation }) => {
             key={member.id.toString()}
             tw={"p-4 bg-neutral-200 flex justify-between border border-solid border-black"}
         >
+            <PermissionsModal
+                isOpen={modalOpen}
+                onRequestClose={() => setModalOpen(false)}
+                onAfterClose={() => setModalOpen(false)}
+                permissions={member.permissions}
+                type={"organisation_member"}
+                editor_permission={editorPermissions}
+                onSave={(permissions) => {
+                    modifyMutation.mutate({
+                        permissions: BigInt(permissions),
+                        elo: member.elo,
+                    });
+                }}
+            />
             <div tw={"flex gap-2"}>
                 {member.user_id === organisation.owner && (
                     <Breadcrumb color={theme`colors.red.400`}>
                         {t("account.breadcrumbs.owner")}
                     </Breadcrumb>
                 )}
+                {hasPermission(member.permissions, OrganisationPermissions.ADMIN) && (
+                    <Breadcrumb color={theme`colors.purple.500`}>
+                        {t("account.breadcrumbs.organisationAdmin")}
+                    </Breadcrumb>
+                )}
                 <DomainBreadcrumb email={member.email} />
                 {member.full_name}
             </div>
             {!(member.user_id === organisation.owner) && (
-                <div tw={"flex items-center"}>
+                <div tw={"flex items-center gap-3"}>
+                    {member.user_id !== user.id && (
+                        <div
+                            tw={"text-red-600 cursor-pointer select-none"}
+                            onClick={() => setModalOpen(true)}
+                        >
+                            {t("admin.users.editPermission")}
+                        </div>
+                    )}
                     <span
                         tw={"text-red-600 cursor-pointer select-none"}
                         css={
@@ -86,6 +128,8 @@ const AddMemberSchema = z.object({
 export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => {
     const { data: members } = useAllOrganisationMembers(organisation.id);
 
+    const user = useAuthStore();
+
     const addMutation = useAddOrganisationMember(organisation.id);
     const {
         register,
@@ -100,6 +144,16 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
         setNetError(false);
         addMutation.mutate(data.email);
     });
+
+    const editor = useMemo(
+        () => (members ?? []).find((x) => x.user_id === user.user.id),
+        [members, user]
+    );
+
+    const hasAdminEditPerms = hasAdminPermission(
+        user.user.permissions,
+        AdminPermissions.EDIT_ORGANISATIONS
+    );
 
     const [netError, setNetError] = useState(false);
 
@@ -143,6 +197,7 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
                     <MemberBox
                         member={members.find((it) => it.user_id === organisation.owner)!}
                         organisation={organisation}
+                        editorPermissions={editor?.permissions ?? EMPTY_PERMISSIONS}
                     />
 
                     <div tw={"w-[calc(100% + 1rem)] -mx-2 h-[1px] bg-neutral-600"}></div>
@@ -156,6 +211,11 @@ export const OrganisationMembersSection: FC<Properties> = ({ organisation }) => 
                         key={member.id.toString()}
                         member={member}
                         organisation={organisation}
+                        editorPermissions={
+                            hasAdminEditPerms
+                                ? grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.ADMIN)
+                                : editor?.permissions ?? EMPTY_PERMISSIONS
+                        }
                     />
                 ))}
         </div>

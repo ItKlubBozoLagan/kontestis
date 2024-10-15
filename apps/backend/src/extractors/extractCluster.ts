@@ -1,20 +1,13 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-    Snowflake,
-} from "@kontestis/models";
+import { ContestMemberPermissions, Snowflake } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
+import { mustHaveContestPermission } from "../preconditions/hasPermission";
 import { extractIdFromParameters } from "../utils/extractorUtils";
 import { extractContest } from "./extractContest";
-import { extractContestMember } from "./extractContestMember";
 import { extractProblem } from "./extractProblem";
-import { extractUser } from "./extractUser";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
 export const extractCluster = async (
@@ -34,16 +27,7 @@ export const extractCluster = async (
         if (Date.now() >= contest.start_time.getTime() + 1000 * contest.duration_seconds)
             return cluster;
 
-        const user = await extractUser(req);
-
-        if (hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) return cluster;
-
-        const member = await extractContestMember(req, contest.id);
-
-        if (
-            !hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_PRIVATE)
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
+        await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
 
         return cluster;
     });
