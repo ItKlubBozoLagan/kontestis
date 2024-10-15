@@ -19,6 +19,6 @@ export type OrganisationMemberV3 = OrganisationMemberV2 & {
 export type OrganisationMember = OrganisationMemberV3;
 
 export type OrganisationMemberWithInfo = OrganisationMember & {
+    email_domain: string;
     full_name: string;
-    email: string;
 };

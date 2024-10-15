@@ -84,7 +84,7 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, organisation, editorPermis
                         {t("account.breadcrumbs.organisationAdmin")}
                     </Breadcrumb>
                 )}
-                <DomainBreadcrumb email={member.email} />
+                <DomainBreadcrumb email={member.email_domain} />
                 {member.full_name}
             </div>
             {!(member.user_id === organisation.owner) && (
