@@ -25,13 +25,13 @@ import { getAllTestcases } from "./testcase";
 
 const ERR_UNEXPECTED_STATE = new Error("unexpected state");
 
-type ProblemDetails = {
+export type ProblemDetails = {
     problemId: bigint;
     language: EvaluationLanguage;
     code: string;
     evaluation_variant: EvaluationVariant;
     evaluator?: string;
-    evaluator_language?: string;
+    evaluator_language?: EvaluationLanguage;
 };
 
 export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
@@ -69,7 +69,7 @@ const evaluateTestcases = async (
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
     return (await evaluatorAxios
-        .post<EvaluationResult>(
+        .post<EvaluationResult[]>(
             "",
             {
                 problem_type: problemDetails.evaluation_variant,
