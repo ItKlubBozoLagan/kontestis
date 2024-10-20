@@ -62,6 +62,7 @@ ProblemHandler.post("/:contest_id", useValidation(ProblemSchema), async (req, re
         solution_language: req.body.solution_language,
         solution_code: req.body.solution_code,
         tags: req.body.tags ?? [],
+        legacy_evaluation: false,
     };
 
     await Database.insertInto("problems", problem);

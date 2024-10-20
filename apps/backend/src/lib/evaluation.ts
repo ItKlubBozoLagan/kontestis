@@ -18,6 +18,7 @@ import { AxiosError } from "axios";
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
 import { isContestRunning } from "./contest";
+import { evaluateTestcasesNew } from "./evaluation_rs";
 import { Logger } from "./logger";
 import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
@@ -32,6 +33,7 @@ export type ProblemDetails = {
     evaluation_variant: EvaluationVariant;
     evaluator?: string;
     evaluator_language?: EvaluationLanguage;
+    legacy_evaluation: boolean;
 };
 
 export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
@@ -99,6 +101,7 @@ export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
     testcases: TestcaseWithOutput[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const groups: TestcaseWithOutput[][] = [];
 
@@ -124,7 +127,24 @@ export const splitAndEvaluateTestcases = async (
     const data: EvaluationResult[] = [];
 
     for (const groupTestcases of groups) {
-        const [results, error] = await evaluateTestcases(problemDetails, groupTestcases, problem);
+        const [results, error] = await (problemDetails.legacy_evaluation
+            ? evaluateTestcases(problemDetails, groupTestcases, problem)
+            : evaluateTestcasesNew(
+                  {
+                      ...problemDetails,
+                      code: Buffer.from(problemDetails.code, "base64").toString("utf8"),
+                      evaluator:
+                          problemDetails.evaluation_variant === "plain"
+                              ? undefined
+                              : problemDetails.evaluator,
+                      evaluator_language:
+                          problemDetails.evaluation_variant === "plain"
+                              ? undefined
+                              : problemDetails.evaluator_language,
+                  },
+                  groupTestcases,
+                  problem
+              ));
 
         if (error) return [undefined, error] as AxiosEvaluationResponse;
 
@@ -147,6 +167,8 @@ const evaluateCluster = async (
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
     const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
+
+    // console.log({ results });
 
     if (error || !results) return;
 
@@ -237,6 +259,7 @@ const evaluateCluster = async (
     };
 };
 
+// NOTE: špaget
 export const beginEvaluation = async (
     user: User,
     problemDetails: ProblemDetails,
