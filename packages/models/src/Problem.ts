@@ -27,7 +27,11 @@ export type ProblemV4 = ProblemV3 & {
     evaluation_language?: EvaluationLanguage;
 };
 
-export type Problem = ProblemV4;
+export type ProblemV5 = ProblemV4 & {
+    legacy_evaluation: boolean;
+};
+
+export type Problem = ProblemV5;
 
 export type ProblemWithScore = Problem & {
     score: number;

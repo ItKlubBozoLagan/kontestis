@@ -11,7 +11,7 @@ import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
-import { ProblemDetails } from "./evaluation";
+import { AxiosEvaluationResponse, ProblemDetails } from "./evaluation";
 import { Logger } from "./logger";
 
 type EvaluationTestcase = {
@@ -46,80 +46,94 @@ type OutputOnlyEvaluationPayload = Pick<BatchEvaluationPayload, "id" | "checker"
 };
 
 const generateBatchPayload = (
+    evaluationId: number,
     problemDetails: ProblemDetails,
     testcases: TestcaseWithOutput[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
-): BatchEvaluationPayload => ({
-    id: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
-    code: problemDetails.code,
-    language: problemDetails.language,
-    testcases: testcases.map((it) => ({
-        id: it.id.toString(),
-        input: it.input,
-        output: it.correct_output,
-    })),
-    time_limit: problem.time_limit_millis,
-    memory_limit: problem.memory_limit_megabytes * 1024,
-    checker:
-        problemDetails.evaluator && problemDetails.evaluator_language
-            ? {
-                  script: problemDetails.evaluator,
-                  language: problemDetails.evaluator_language,
-              }
-            : undefined,
+): { Batch: BatchEvaluationPayload } => ({
+    Batch: {
+        id: evaluationId,
+        code: problemDetails.code,
+        language: problemDetails.language,
+        testcases: testcases.map((it) => ({
+            id: it.id.toString(),
+            input: it.input,
+            output: it.correct_output,
+        })),
+        time_limit: problem.time_limit_millis,
+        memory_limit: problem.memory_limit_megabytes * 1024,
+        checker:
+            problemDetails.evaluator && problemDetails.evaluator_language
+                ? {
+                      script: problemDetails.evaluator,
+                      language: problemDetails.evaluator_language,
+                  }
+                : undefined,
+    },
 });
 
 const generateOutputOnlyPayload = (
+    evaluationId: number,
     problemDetails: ProblemDetails,
     testcases: TestcaseWithOutput[],
     _problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
-): OutputOnlyEvaluationPayload => ({
-    id: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
-    output: problemDetails.code,
-    // FIXME:
-    testcase: {
-        id: testcases[0].id.toString(),
-        input: testcases[0].input,
-        output: testcases[0].correct_output,
+): { OutputOnly: OutputOnlyEvaluationPayload } => ({
+    OutputOnly: {
+        id: evaluationId,
+        output: problemDetails.code,
+        // FIXME:
+        testcase: {
+            id: testcases[0].id.toString(),
+            input: testcases[0].input,
+            output: testcases[0].correct_output,
+        },
+        checker:
+            problemDetails.evaluator && problemDetails.evaluator_language
+                ? {
+                      script: problemDetails.evaluator,
+                      language: problemDetails.evaluator_language,
+                  }
+                : undefined,
     },
-    checker:
-        problemDetails.evaluator && problemDetails.evaluator_language
-            ? {
-                  script: problemDetails.evaluator,
-                  language: problemDetails.evaluator_language,
-              }
-            : undefined,
 });
 
 const generateInteractivePayload = (
+    evaluationId: number,
     problemDetails: ProblemDetails,
     testcases: TestcaseWithOutput[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
-): InteractiveEvaluationPayload => {
+): { Interactive: InteractiveEvaluationPayload } => {
     assert(problemDetails.evaluator !== undefined);
     assert(problemDetails.evaluator_language !== undefined);
 
     return {
-        ...generateBatchPayload(problemDetails, testcases, problem),
-        checker: {
-            script: problemDetails.evaluator,
-            language: problemDetails.evaluator_language,
+        Interactive: {
+            ...generateBatchPayload(evaluationId, problemDetails, testcases, problem).Batch,
+            checker: {
+                script: problemDetails.evaluator,
+                language: problemDetails.evaluator_language,
+            },
         },
     };
 };
 
+const VerdictSchema = Type.Object({
+    type: Type.String(),
+    data: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+});
+
 const SuccessfulEvaluationSchema = Type.Object({
     evaluation_id: Type.Number(),
-    verdict: Type.String(),
+    verdict: VerdictSchema,
     max_time: Type.Number(),
     max_memory: Type.Number(),
     testcases: Type.Array(
         Type.Object({
             id: Type.String(),
-            verdict: Type.String(),
+            verdict: VerdictSchema,
             time: Type.Number(),
             memory: Type.Number(),
-            error: Type.Optional(Type.String()),
+            error: Type.Optional(Type.Union([Type.String(), Type.Null()])),
         })
     ),
 });
@@ -132,50 +146,65 @@ const convertSuccessfulEvaluationToEvaluationResult = (
     evaluation: SuccessfulEvaluationRS
 ): EvaluationResult[] => {
     // TODO:
-    return [];
+    return evaluation.testcases.map(
+        (it) =>
+            ({
+                testCaseId: it.id,
+                type:
+                    it.verdict.type === "accepted"
+                        ? "success"
+                        : it.verdict.type === "skipped"
+                        ? "skipped"
+                        : "error",
+                verdict: it.verdict.type,
+                time: it.time,
+                memory: it.memory / 1024,
+                error: it.error + "",
+                exitCode: 0,
+                extra: it.verdict.type === "custom" ? it.verdict.data ?? "" : "",
+            } as EvaluationResult)
+    );
 };
 
-const evaluateTestcasesNew = async (
+export const evaluateTestcasesNew = async (
     problemDetails: ProblemDetails,
     testcases: TestcaseWithOutput[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
-) => {
+): Promise<AxiosEvaluationResponse> => {
+    const evaluationId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+
     const payload = {
         BeginEvaluation:
             problemDetails.evaluation_variant === "output-only"
-                ? generateOutputOnlyPayload(problemDetails, testcases, problem)
+                ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases, problem)
                 : problemDetails.evaluation_variant === "interactive"
-                ? generateInteractivePayload(problemDetails, testcases, problem)
-                : generateBatchPayload(problemDetails, testcases, problem),
+                ? generateInteractivePayload(evaluationId, problemDetails, testcases, problem)
+                : generateBatchPayload(evaluationId, problemDetails, testcases, problem),
     };
-
-    await Redis.rPush(Globals.evaluatorRedisQueueKey, JSON.stringify(payload));
 
     const cloned = Redis.duplicate();
 
     await cloned.connect();
 
-    // FIXME: edge case, evaluator can maybe be too fast
     // TODO: make global queue, so connections are not repeated
     //  also maybe memory leak here, ^ will fix
-    return await new Promise<EvaluationResult[]>((resolve) => {
-        cloned
-            .subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
-                try {
-                    const parsed = JSON.parse(message);
+    const evaluationResponse = new Promise<SuccessfulEvaluationRS>((resolve) => {
+        cloned.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
+            try {
+                const parsed = JSON.parse(message);
 
-                    const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
+                const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
 
-                    if (valid)
-                        resolve(
-                            convertSuccessfulEvaluationToEvaluationResult(
-                                parsed as SuccessfulEvaluationRS
-                            )
-                        );
-                } catch (error) {
-                    Logger.error("failed parsing evaluator response", error + "");
-                }
-            })
-            .then(() => cloned.disconnect());
+                if (valid && parsed.evaluation_id === evaluationId)
+                    resolve(parsed as SuccessfulEvaluationRS);
+            } catch (error) {
+                Logger.error("failed parsing evaluator response", error + "");
+            }
+        });
     });
+
+    await Redis.rPush(Globals.evaluatorRedisQueueKey, JSON.stringify(payload));
+    const response = await evaluationResponse.finally(() => cloned.disconnect());
+
+    return [convertSuccessfulEvaluationToEvaluationResult(response), undefined];
 };

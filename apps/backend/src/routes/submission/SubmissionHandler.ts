@@ -79,6 +79,7 @@ SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (r
             evaluation_variant: problemWithFullData.evaluation_variant,
             evaluator_language: problemWithFullData.evaluation_language,
             evaluator: problemWithFullData.evaluation_script,
+            legacy_evaluation: problem.legacy_evaluation,
         },
         endListener
     );

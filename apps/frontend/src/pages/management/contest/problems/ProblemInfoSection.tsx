@@ -161,8 +161,6 @@ export const ProblemInfoSection: FC<Properties> = ({ problem }) => {
                             ]}
                             defaultIndex={variant === "checker" ? 0 : 1}
                             onChange={(value) => {
-                                console.log("HERE");
-                                console.log(variant);
                                 setValue(
                                     "evaluation_variant",
                                     value ===
