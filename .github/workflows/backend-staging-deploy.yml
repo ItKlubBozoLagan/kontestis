@@ -3,12 +3,12 @@ name: "🚚 Backend auto-deployment"
 on:
     push:
         branches:
-            - main
+            - dev
         paths:
             - "apps/backend/**"
             - "packages/**"
             - "!packages/scripts/**"
-            - ".github/workflows/backend-deploy.yml"
+            - ".github/workflows/backend-staging-deploy.yml"
 
 jobs:
     build:
@@ -36,7 +36,7 @@ jobs:
                   context: .
                   platforms: linux/amd64
                   file: .deploy/backend.dockerfile
-                  tags: ghcr.io/itklubbozolagan/kontestis-backend:latest
+                  tags: ghcr.io/itklubbozolagan/kontestis-backend:dev
     release:
         name: "🚚 Release"
         runs-on: ubuntu-latest
@@ -49,4 +49,4 @@ jobs:
               run: "mkdir ~/.kube && echo '${{ secrets.KUBE_CONFIG }}' | base64 -d > ~/.kube/config && KUBECONFIG=~/.kube/config"
 
             - name: "Rollout an application update"
-              run: "kubectl rollout restart deployment kontestis -n kontestis"
+              run: "kubectl rollout restart deployment kontestis-staging -n kontestis"
