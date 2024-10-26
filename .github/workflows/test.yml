@@ -1,35 +1,35 @@
 name: "🧪 Test"
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "packages/utils/**"
-      - ".github/workflows/test.yml"
+    push:
+        branches:
+            - "main"
+            - "dev"
+        paths:
+            - "packages/utils/**"
+            - ".github/workflows/test.yml"
 
 jobs:
-  deploy:
-    name: "🧪 Test"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+    deploy:
+        name: "🧪 Test"
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
 
-      - name: Install PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7.25.0
+            - name: Install PNPM
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 7.25.0
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "pnpm"
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  cache: "pnpm"
 
-      - name: Install packages
-        # currently the only package that has tests
-        run: pnpm --filter=@kontestis/utils... install
+            - name: Install packages
+              # currently the only package that has tests
+              run: pnpm --filter=@kontestis/utils... install
 
-      - name: Lint
-        run: pnpm test
-
+            - name: Lint
+              run: pnpm test

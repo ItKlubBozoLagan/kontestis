@@ -1,35 +1,35 @@
 name: "✨ Lint"
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "**.ts"
-      - "**.tsx"
-      - ".github/workflows/lint.yml"
+    push:
+        branches:
+            - "main"
+            - "dev"
+        paths:
+            - "**.ts"
+            - "**.tsx"
+            - ".github/workflows/lint.yml"
 
 jobs:
-  deploy:
-    name: "✨ Lint"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+    deploy:
+        name: "✨ Lint"
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
 
-      - name: Install PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7.25.0
+            - name: Install PNPM
+              uses: pnpm/action-setup@v2
+              with:
+                  version: 7.25.0
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "pnpm"
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  cache: "pnpm"
 
-      - name: Install packages
-        run: pnpm install
+            - name: Install packages
+              run: pnpm install
 
-      - name: Lint
-        run: pnpm lint
-
+            - name: Lint
+              run: pnpm lint
