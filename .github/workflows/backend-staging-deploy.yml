@@ -1,4 +1,4 @@
-name: "🚚 Backend auto-deployment"
+name: "🚚 Backend auto-deployment (staging)"
 
 on:
     push:
