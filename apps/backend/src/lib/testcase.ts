@@ -49,8 +49,6 @@ int main() {
 
     return 0;
 }
-
-
 `;
 
 export const getClusterStatus = async (clusterId: Snowflake) => {
@@ -95,6 +93,7 @@ const generateTestcaseInput = async (cluster: Cluster, count: number) => {
             evaluator: RETURN_OUTPUT_EVALUATOR,
             evaluation_variant: "checker",
             evaluator_language: "cpp",
+            legacy_evaluation: true,
         },
         Array.from({ length: count }).map((_, index) => ({
             id: BigInt(index),
@@ -151,6 +150,7 @@ export const generateTestcaseBatch = async (cluster: Cluster, count: number) => 
             evaluation_variant:
                 problem.evaluation_variant === "output-only" ? "output-only" : "checker",
             evaluator_language: "cpp",
+            legacy_evaluation: true,
         },
         R.map(testcaseInputs, (t) => R.addProp(t, "correct_output", "")),
         {

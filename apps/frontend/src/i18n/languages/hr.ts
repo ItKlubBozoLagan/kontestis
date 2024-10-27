@@ -398,7 +398,7 @@ export default {
     submissions: {
         empty: "Još nema poslanih rješenja :(",
         loading: "Učitavam poslana rješenja...",
-        processing: "Obrađujem...",
+        processing: "Obrađujem%1",
         table: {
             head: {
                 user: "Korsinik",
