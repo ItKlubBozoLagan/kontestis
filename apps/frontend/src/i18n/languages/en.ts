@@ -398,7 +398,7 @@ const I18nEn = {
     submissions: {
         empty: "No submissions yet :(",
         loading: "Loading submissions...",
-        processing: "Processing...",
+        processing: "Processing%1",
         table: {
             head: {
                 user: "User",

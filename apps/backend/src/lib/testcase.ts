@@ -49,8 +49,6 @@ int main() {
 
     return 0;
 }
-
-
 `;
 
 export const getClusterStatus = async (clusterId: Snowflake) => {
@@ -95,7 +93,6 @@ const generateTestcaseInput = async (cluster: Cluster, count: number) => {
             evaluator: RETURN_OUTPUT_EVALUATOR,
             evaluation_variant: "checker",
             evaluator_language: "cpp",
-            // FIXME:
             legacy_evaluation: true,
         },
         Array.from({ length: count }).map((_, index) => ({

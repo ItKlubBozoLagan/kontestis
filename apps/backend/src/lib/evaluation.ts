@@ -168,8 +168,6 @@ const evaluateCluster = async (
 
     const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
 
-    // console.log({ results });
-
     if (error || !results) return;
 
     const clusterTestcases = testcases.map((it) => ({

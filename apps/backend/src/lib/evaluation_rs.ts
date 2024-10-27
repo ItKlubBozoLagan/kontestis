@@ -142,13 +142,18 @@ export const CompiledSuccessfulEvaluationSchema = TypeCompiler.Compile(Successfu
 export type SuccessfulEvaluationRS = Static<typeof SuccessfulEvaluationSchema>;
 
 const convertSuccessfulEvaluationToEvaluationResult = (
-    evaluation: SuccessfulEvaluationRS
+    evaluation: SuccessfulEvaluationRS,
+    testcases: TestcaseWithOutput[]
 ): EvaluationResult[] => {
-    return evaluation.testcases.map((testcase) => {
-        const result: EvaluationResult = {
-            testCaseId: testcase.id,
-        } as EvaluationResult;
+    if (evaluation.verdict.type === "compilation_error")
+        return testcases.map((testcase) => ({
+            testCaseId: testcase.id.toString(),
+            type: "error",
+            verdict: "compilation_error",
+            error: evaluation.verdict.data ?? "",
+        }));
 
+    return evaluation.testcases.map((testcase) => {
         switch (testcase.verdict.type) {
             case "accepted":
             case "wrong_answer":
@@ -164,7 +169,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
             }
             case "custom": {
                 return {
-                    ...result,
+                    testCaseId: testcase.id,
                     type: "success",
                     verdict: "custom",
                     time: testcase.time,
@@ -174,7 +179,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
             }
             case "compilation_error": {
                 return {
-                    ...result,
+                    testCaseId: testcase.id,
                     type: "error",
                     verdict: "compilation_error",
                     error: testcase.error ?? "",
@@ -182,7 +187,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
             }
             case "runtime_error": {
                 return {
-                    ...result,
+                    testCaseId: testcase.id,
                     type: "error",
                     verdict: "runtime_error",
                     exitCode: 1,
@@ -198,7 +203,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
             case "evaluation_error":
             default:
                 return {
-                    ...result,
+                    testCaseId: testcase.id,
                     type: "error",
                     verdict: "evaluation_error",
                 };
@@ -252,5 +257,5 @@ export const evaluateTestcasesNew = async (
     await Redis.rPush(Globals.evaluatorRedisQueueKey, JSON.stringify(payload));
     const response = await evaluationResponse;
 
-    return [convertSuccessfulEvaluationToEvaluationResult(response), undefined];
+    return [convertSuccessfulEvaluationToEvaluationResult(response, testcases), undefined];
 };
