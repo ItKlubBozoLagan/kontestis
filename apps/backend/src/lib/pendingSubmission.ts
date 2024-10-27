@@ -10,26 +10,14 @@ type PendingSubmissionMeta = {
 };
 
 const convertToPlainRedis = (submission: PendingSubmission) =>
-    mapFields(
-        mapFields(mapFields(submission, ["id", "user_id"], String), ["created_at"], (date) =>
-            date.toISOString()
-        ),
-        ["evaluation_ids"],
-        (ids) => ids.join(",")
+    mapFields(mapFields(submission, ["id", "user_id"], String), ["created_at"], (date) =>
+        date.toISOString()
     );
 
 type PlainPendingSubmission = ReturnType<typeof convertToPlainRedis>;
 
 const convertToTyped = (raw: PlainPendingSubmission): PendingSubmission =>
-    mapFields(
-        mapFields(
-            mapFields(raw, ["id", "user_id"], BigInt),
-            ["created_at"],
-            (date) => new Date(date)
-        ),
-        ["evaluation_ids"],
-        (it) => it.split(",").map(Number)
-    );
+    mapFields(mapFields(raw, ["id", "user_id"], BigInt), ["created_at"], (date) => new Date(date));
 
 export const storePendingSubmission = async (
     meta: PendingSubmissionMeta,
