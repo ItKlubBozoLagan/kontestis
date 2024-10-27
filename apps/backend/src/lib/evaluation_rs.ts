@@ -75,17 +75,16 @@ const generateBatchPayload = (
 const generateOutputOnlyPayload = (
     evaluationId: number,
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
+    testcase: TestcaseWithOutput,
     _problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ): { OutputOnly: OutputOnlyEvaluationPayload } => ({
     OutputOnly: {
         id: evaluationId,
         output: problemDetails.code,
-        // FIXME:
         testcase: {
-            id: testcases[0].id.toString(),
-            input: testcases[0].input,
-            output: testcases[0].correct_output,
+            id: testcase.id.toString(),
+            input: testcase.input,
+            output: testcase.correct_output,
         },
         checker:
             problemDetails.evaluator && problemDetails.evaluator_language
@@ -138,32 +137,96 @@ const SuccessfulEvaluationSchema = Type.Object({
     ),
 });
 
-const CompiledSuccessfulEvaluationSchema = TypeCompiler.Compile(SuccessfulEvaluationSchema);
+export const CompiledSuccessfulEvaluationSchema = TypeCompiler.Compile(SuccessfulEvaluationSchema);
 
-type SuccessfulEvaluationRS = Static<typeof SuccessfulEvaluationSchema>;
+export type SuccessfulEvaluationRS = Static<typeof SuccessfulEvaluationSchema>;
 
 const convertSuccessfulEvaluationToEvaluationResult = (
     evaluation: SuccessfulEvaluationRS
 ): EvaluationResult[] => {
-    // TODO:
-    return evaluation.testcases.map(
-        (it) =>
-            ({
-                testCaseId: it.id,
-                type:
-                    it.verdict.type === "accepted"
-                        ? "success"
-                        : it.verdict.type === "skipped"
-                        ? "skipped"
-                        : "error",
-                verdict: it.verdict.type,
-                time: it.time,
-                memory: it.memory / 1024,
-                error: it.error + "",
-                exitCode: 0,
-                extra: it.verdict.type === "custom" ? it.verdict.data ?? "" : "",
-            } as EvaluationResult)
-    );
+    return evaluation.testcases.map((testcase) => {
+        const result: EvaluationResult = {
+            testCaseId: testcase.id,
+        } as EvaluationResult;
+
+        switch (testcase.verdict.type) {
+            case "accepted":
+            case "wrong_answer":
+            case "time_limit_exceeded":
+            case "memory_limit_exceeded": {
+                return {
+                    testCaseId: testcase.id,
+                    type: "success",
+                    verdict: testcase.verdict.type,
+                    time: testcase.time,
+                    memory: testcase.memory / 1024,
+                };
+            }
+            case "custom": {
+                return {
+                    ...result,
+                    type: "success",
+                    verdict: "custom",
+                    time: testcase.time,
+                    memory: testcase.memory / 1024,
+                    extra: testcase.verdict.data ?? "",
+                };
+            }
+            case "compilation_error": {
+                return {
+                    ...result,
+                    type: "error",
+                    verdict: "compilation_error",
+                    error: testcase.error ?? "",
+                };
+            }
+            case "runtime_error": {
+                return {
+                    ...result,
+                    type: "error",
+                    verdict: "runtime_error",
+                    exitCode: 1,
+                };
+            }
+            case "skipped": {
+                return {
+                    testCaseId: testcase.id,
+                    type: "skipped",
+                    verdict: "skipped",
+                };
+            }
+            case "evaluation_error":
+            default:
+                return {
+                    ...result,
+                    type: "error",
+                    verdict: "evaluation_error",
+                };
+        }
+    });
+};
+
+const PendingListeners: Record<number, (response: SuccessfulEvaluationRS) => void> = {};
+
+export const subscribeToEvaluatorPubSub = async () => {
+    const subscriber = Redis.duplicate();
+
+    await subscriber.connect();
+
+    await subscriber.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
+        try {
+            const parsed = JSON.parse(message);
+
+            const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
+
+            if (!valid || !PendingListeners[parsed.evaluation_id]) return;
+
+            PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
+            delete PendingListeners[parsed.evaluation_id];
+        } catch (error) {
+            Logger.error("failed parsing evaluator response", error + "");
+        }
+    });
 };
 
 export const evaluateTestcasesNew = async (
@@ -176,35 +239,18 @@ export const evaluateTestcasesNew = async (
     const payload = {
         BeginEvaluation:
             problemDetails.evaluation_variant === "output-only"
-                ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases, problem)
+                ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases[0], problem)
                 : problemDetails.evaluation_variant === "interactive"
                 ? generateInteractivePayload(evaluationId, problemDetails, testcases, problem)
                 : generateBatchPayload(evaluationId, problemDetails, testcases, problem),
     };
 
-    const cloned = Redis.duplicate();
-
-    await cloned.connect();
-
-    // TODO: make global queue, so connections are not repeated
-    //  also maybe memory leak here, ^ will fix
     const evaluationResponse = new Promise<SuccessfulEvaluationRS>((resolve) => {
-        cloned.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
-            try {
-                const parsed = JSON.parse(message);
-
-                const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
-
-                if (valid && parsed.evaluation_id === evaluationId)
-                    resolve(parsed as SuccessfulEvaluationRS);
-            } catch (error) {
-                Logger.error("failed parsing evaluator response", error + "");
-            }
-        });
+        PendingListeners[evaluationId] = resolve;
     });
 
     await Redis.rPush(Globals.evaluatorRedisQueueKey, JSON.stringify(payload));
-    const response = await evaluationResponse.finally(() => cloned.disconnect());
+    const response = await evaluationResponse;
 
     return [convertSuccessfulEvaluationToEvaluationResult(response), undefined];
 };
