@@ -8,5 +8,3 @@ export type KnownUserDataV1 = {
     email: string;
     picture_url: string;
 };
-
-export type KnownUserData = KnownUserDataV1;

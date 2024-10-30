@@ -1,7 +1,7 @@
 import "twin.macro";
 import "./globals.scss";
 
-import { FullUser } from "@kontestis/models";
+import { User } from "@kontestis/models";
 import React, { useEffect } from "react";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
@@ -51,7 +51,7 @@ export const App = () => {
             return;
         }
 
-        wrapAxios<FullUser>(http.get("/auth/info"))
+        wrapAxios<User>(http.get("/auth/info"))
             .then((data) => {
                 setUser(data);
                 setIsLoggedIn(true);

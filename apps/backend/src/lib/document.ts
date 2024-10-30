@@ -46,7 +46,7 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
         })
     );
 
-    const userInfo = await Database.selectOneFrom("known_users", "*", { user_id: userId });
+    const userInfo = await Database.selectOneFrom("users", "*", { id: userId });
 
     if (!userInfo) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
