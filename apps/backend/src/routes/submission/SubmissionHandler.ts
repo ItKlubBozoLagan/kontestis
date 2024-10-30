@@ -122,8 +122,8 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     const users = (
         await Promise.all(
             R.chunk(submissions, 100).map((chunk) =>
-                Database.selectFrom("known_users", "*", {
-                    user_id: eqIn(...chunk.map((s) => s.user_id)),
+                Database.selectFrom("users", "*", {
+                    id: eqIn(...chunk.map((s) => s.user_id)),
                 })
             )
         )
@@ -131,7 +131,7 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
 
     const submissionsWithInfo = submissions.map((it) => ({
         ...it,
-        ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["email", "full_name"]),
+        ...R.pick(users.find((user) => user.id === it.user_id)!, ["email", "full_name"]),
     }));
 
     if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)

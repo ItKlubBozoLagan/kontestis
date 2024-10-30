@@ -1,13 +1,13 @@
-import { FullUser } from "@kontestis/models";
+import { User } from "@kontestis/models";
 import { create } from "zustand";
 
 import { useTokenStore } from "./token";
 
 type AuthState = {
     isLoggedIn: boolean;
-    user: FullUser;
+    user: User;
     setIsLoggedIn: (_: boolean) => void;
-    setUser: (_: FullUser) => void;
+    setUser: (_: User) => void;
 
     // variable exists for forced logouts... duh
     //  error/crash/non user-initiated logout -> forceLogout = true ->

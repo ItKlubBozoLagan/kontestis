@@ -1,4 +1,4 @@
-import { AdminPermissions, FullUser, hasAdminPermission } from "@kontestis/models";
+import { AdminPermissions, hasAdminPermission, User } from "@kontestis/models";
 import React, { FC, useEffect, useState } from "react";
 import { theme } from "twin.macro";
 
@@ -12,7 +12,7 @@ import { useAuthStore } from "../../../state/auth";
 import { R } from "../../../util/remeda";
 
 type Properties = {
-    user: FullUser;
+    user: User;
 };
 
 const MemberBox: FC<Properties> = ({ user }) => {

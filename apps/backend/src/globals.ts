@@ -25,6 +25,8 @@ type GlobalsType = {
 
     evaluatorRedisQueueKey: string;
     evaluatorRedisPubSubChannel: string;
+
+    jwtSecret: string;
 };
 
 export const Globals: GlobalsType = {
@@ -59,4 +61,9 @@ export const Globals: GlobalsType = {
     emailSettingsBaseURL: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
     evaluatorRedisQueueKey: process.env.EVALUATOR_QUEUE_KEY ?? "evaluator_msg_queue",
     evaluatorRedisPubSubChannel: process.env.EVALUATOR_PUBSUB_CHANNEL ?? "evaluator_evaluations",
+    jwtSecret: !process.env.JWT_SECRET
+        ? (() => {
+              throw new Error("missing JWT_SECRET");
+          })()
+        : process.env.JWT_SECRET,
 };

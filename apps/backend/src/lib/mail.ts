@@ -1,4 +1,4 @@
-import { KnownUserData, MailPreference } from "@kontestis/models";
+import { MailPreference, User } from "@kontestis/models";
 import { createTransport } from "nodemailer";
 
 import { Globals } from "../globals";
@@ -15,7 +15,7 @@ const transporter = createTransport({
 });
 
 export const sendMail = async (
-    user: KnownUserData,
+    user: User,
     subject: string,
     text: string,
     mailPreferences: MailPreference,

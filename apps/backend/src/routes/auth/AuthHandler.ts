@@ -1,16 +1,15 @@
-import { AdminPermissions, hasAdminPermission, KnownUserData } from "@kontestis/models";
+import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
+import { generateGravatarUrl, generateJwt } from "../../lib/auth";
 import { processUserFromTokenData, verifyToken } from "../../lib/google";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
-import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
 const AuthHandler = Router();
@@ -29,18 +28,19 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
     const tokenData = await processUserFromTokenData(googleResponse, true);
 
     await Database.update(
-        "known_users",
+        "users",
         {
-            email: tokenData.email,
             full_name: tokenData.full_name,
-            picture_url: tokenData.picture_url,
+            picture_url: tokenData.picture_url || generateGravatarUrl(tokenData.email),
         },
         {
-            user_id: tokenData.id,
+            id: tokenData.id,
         }
     );
 
-    respond(res, StatusCodes.OK);
+    const jwt = generateJwt(tokenData.id, "google");
+
+    respond(res, StatusCodes.OK, { token: jwt });
 });
 
 AuthHandler.get("/info", async (req, res) => {
@@ -59,14 +59,11 @@ AuthHandler.get("/info/:id", async (req, res) => {
 
     if (id === user.id) return respond(res, StatusCodes.OK, user);
 
-    const [userData, knownData] = await Promise.all([
-        Database.selectOneFrom("known_users", "*", { user_id: id }),
-        Database.selectOneFrom("users", "*", { id: id }),
-    ]);
+    const userData = Database.selectOneFrom("users", "*", { id: id });
 
-    if (!userData || !knownData) throw new SafeError(StatusCodes.NOT_FOUND);
+    if (!userData) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    respond(res, StatusCodes.OK, { ...userData, ...knownData });
+    respond(res, StatusCodes.OK, { ...userData });
 });
 
 AuthHandler.get("/", async (req, res) => {
@@ -77,33 +74,7 @@ AuthHandler.get("/", async (req, res) => {
 
     const users = await Database.selectFrom("users", "*", {});
 
-    const knownUsers = (
-        await Promise.all(
-            R.chunk(users, 100).map((chunk) =>
-                Database.selectFrom("known_users", "*", {
-                    user_id: eqIn(...chunk.map((user) => user.id)),
-                })
-            )
-        )
-    ).flat();
-
-    const knownUsersByUserId: Record<string, KnownUserData> = {};
-
-    for (const knownUser of knownUsers)
-        knownUsersByUserId[knownUser.user_id.toString()] = knownUser;
-
-    return respond(
-        res,
-        StatusCodes.OK,
-        users
-            .filter((user) => !!knownUsersByUserId[user.id.toString()])
-            .map((user) => ({
-                ...user,
-                full_name: knownUsersByUserId[user.id.toString()].full_name,
-                email: knownUsersByUserId[user.id.toString()].email,
-                picture_url: knownUsersByUserId[user.id.toString()].picture_url,
-            }))
-    );
+    return respond(res, StatusCodes.OK, users);
 });
 
 AuthHandler.patch("/:user_id", async (req, res) => {
@@ -114,7 +85,7 @@ AuthHandler.patch("/:user_id", async (req, res) => {
     if (!hasAdminPermission(user.permissions, AdminPermissions.EDIT_USER))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const target = await Database.selectOneFrom("users", "*", { id: targetId }, "ALLOW FILTERING");
+    const target = await Database.selectOneFrom("users", ["id"], { id: targetId });
 
     if (!target) throw new SafeError(StatusCodes.NOT_FOUND);
 
@@ -122,11 +93,7 @@ AuthHandler.patch("/:user_id", async (req, res) => {
 
     if (typeof newPermissions === "undefined") throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    await Database.update(
-        "users",
-        { permissions: newPermissions },
-        { id: target.id, google_id: target.google_id }
-    );
+    await Database.update("users", { permissions: newPermissions }, { id: target.id });
 
     return respond(res, StatusCodes.OK);
 });

@@ -1,7 +1,7 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import React, { FC, useCallback } from "react";
 
-import { http } from "../../api/http";
+import { http, ServerData } from "../../api/http";
 import { TitledSection } from "../../components/TitledSection";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useTokenStore } from "../../state/token";
@@ -9,12 +9,14 @@ import { useTokenStore } from "../../state/token";
 const LoginBase: FC = () => {
     const { setToken } = useTokenStore();
 
-    const onLoginSuccess = useCallback((credentialResponse: CredentialResponse) => {
+    const onGoogleLoginSuccess = useCallback((credentialResponse: CredentialResponse) => {
         const { credential } = credentialResponse;
 
         if (!credential) return;
 
-        http.post("/auth/google-login", credentialResponse).then(() => setToken(credential));
+        http.post<ServerData<{ token: string }>>("/auth/google-login", credentialResponse).then(
+            (data) => setToken(data.data.data.token)
+        );
     }, []);
 
     const { t } = useTranslation();
@@ -24,7 +26,7 @@ const LoginBase: FC = () => {
             <TitledSection title={t("login.label")}>
                 <div tw={"flex flex-col gap-6 items-center"}>
                     <GoogleLogin
-                        onSuccess={onLoginSuccess}
+                        onSuccess={onGoogleLoginSuccess}
                         width={"256px"}
                         size={"large"}
                         text={"signin"}

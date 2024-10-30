@@ -1,10 +1,4 @@
-import {
-    DEFAULT_ELO,
-    FullUser,
-    KnownUserData,
-    OrganisationPermissions,
-    User,
-} from "@kontestis/models";
+import { DEFAULT_ELO, OrganisationPermissions, User } from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { sign } from "jsonwebtoken";
@@ -66,68 +60,35 @@ export const verifyToken = async (token: string): Promise<NiceTokenResponse> => 
     return niceGoogleResponse;
 };
 
-// a bit hacky way of processing pre-inserted user entries
-export const fixExistingKnownUser = async (
-    knownUserData: KnownUserData,
-    tokenData: NiceTokenResponse
-): Promise<User | undefined> => {
-    const potentialEntry = await Database.selectOneFrom("users", "*", {
-        id: knownUserData.user_id,
-    });
-
-    if (!potentialEntry) return;
-
-    await Database.deleteFrom("users", "*", { id: potentialEntry.id });
-
-    const updatedUser: User = {
-        ...potentialEntry,
-        google_id: tokenData.id,
-    };
-
-    await Database.insertInto("users", updatedUser);
-
-    return updatedUser;
-};
-
 export const processUserFromTokenData = async (
     tokenData: NiceTokenResponse,
     login: boolean = false
-): Promise<FullUser> => {
-    const { id: googleId } = tokenData;
+): Promise<User> => {
+    const { email: _email } = tokenData;
+
+    const email = _email.toLowerCase();
 
     const [numberUsers, potentialEntry] = await Promise.all([
         Database.raw("SELECT COUNT(id) as userCount FROM users;").then(
             (it) => it.rows[0]["usercount"] as bigint
         ),
         Database.selectOneFrom("users", "*", {
-            google_id: googleId,
+            email,
         }),
     ]);
 
-    let existingUser: User | undefined = potentialEntry;
-
-    if (!potentialEntry) {
-        const potentialKnownUser = await Database.selectOneFrom(
-            "known_users",
-            "*",
-            { email: tokenData.email },
-            "ALLOW FILTERING"
-        );
-
-        if (potentialKnownUser)
-            existingUser = await fixExistingKnownUser(potentialKnownUser, tokenData);
-    }
-
-    const user: User = existingUser ?? {
+    const user: User = potentialEntry ?? {
         id: generateSnowflake(),
-        google_id: googleId,
+        email,
+        full_name: tokenData.name,
+        picture_url: tokenData.picture_url,
         permissions:
             numberUsers === 0n
                 ? grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADMIN)
                 : EMPTY_PERMISSIONS,
     };
 
-    if (!existingUser) {
+    if (!potentialEntry) {
         await Database.insertInto("users", user);
         await Database.insertInto("organisation_members", {
             id: generateSnowflake(),
@@ -153,12 +114,7 @@ export const processUserFromTokenData = async (
             { happened: true }
         );
 
-    return {
-        ...user,
-        picture_url: tokenData.picture_url,
-        email: tokenData.email,
-        full_name: tokenData.name,
-    };
+    return user;
 };
 
 const exchangeEvaluatorServiceToken = async (): Promise<string | undefined> => {
