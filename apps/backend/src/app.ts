@@ -29,6 +29,7 @@ import expressPackageJson from "express/package.json";
 import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
 import { subscribeToEvaluatorPubSub } from "./lib/evaluation_rs";
+import { initAaiEdu } from "./lib/aaiedu";
 
 declare global {
     interface BigInt {
@@ -133,6 +134,7 @@ Promise.allSettled([
         }),
     // for consistency
     initInflux(),
+    initAaiEdu(),
 ]).then(async () => {
     Logger.info("Ready");
 

@@ -55,7 +55,7 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 };
 
 export const AccountPage: FC = () => {
-    const { user } = useAuthStore();
+    const { user, eduUser } = useAuthStore();
     const elo = useElo();
 
     const { t } = useTranslation();
@@ -75,13 +75,19 @@ export const AccountPage: FC = () => {
                     </div>
                     <div tw={"flex flex-col gap-2"}>
                         <div tw={"flex gap-2"}>
-                            <Breadcrumb
-                                prependIcon={FcGoogle}
-                                color={theme`colors.white`}
-                                borderColor={theme("colors.neutral.200")}
-                            >
-                                Google
-                            </Breadcrumb>
+                            {eduUser ? (
+                                <Breadcrumb color={"#adb7c0"} borderColor={"#6f7173"}>
+                                    AAI@EduHr
+                                </Breadcrumb>
+                            ) : (
+                                <Breadcrumb
+                                    prependIcon={FcGoogle}
+                                    color={theme`colors.white`}
+                                    borderColor={theme("colors.neutral.200")}
+                                >
+                                    Google
+                                </Breadcrumb>
+                            )}
                             <DomainBreadcrumb />
                             {hasAdminPermission(user.permissions, AdminPermissions.ADMIN) && (
                                 <Breadcrumb

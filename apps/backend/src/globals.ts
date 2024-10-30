@@ -27,6 +27,12 @@ type GlobalsType = {
     evaluatorRedisPubSubChannel: string;
 
     jwtSecret: string;
+
+    aaiEduConfigurationUrl: string;
+    aaiEduClientId: string;
+    aaiEduClientSecret: string;
+    aaiEduRedirectUri: string;
+    aaiEduScopes: string[];
 };
 
 export const Globals: GlobalsType = {
@@ -66,4 +72,12 @@ export const Globals: GlobalsType = {
               throw new Error("missing JWT_SECRET");
           })()
         : process.env.JWT_SECRET,
+
+    aaiEduConfigurationUrl:
+        process.env.AAI_EDU_CONFIG_URL ??
+        "https://fed-lab.aaiedu.hr/.well-known/openid-configuration",
+    aaiEduClientId: process.env.AAI_EDU_CLIENT_ID ?? "",
+    aaiEduClientSecret: process.env.AAI_EDU_CLIENT_SECRET ?? "",
+    aaiEduRedirectUri: process.env.AAI_EDU_REDIRECT_URL ?? "http://localhost:3000/aai-login",
+    aaiEduScopes: process.env.AAI_EDU_SCOPES?.split(" ") ?? [],
 };

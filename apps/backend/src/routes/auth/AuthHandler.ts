@@ -5,19 +5,24 @@ import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
+import { extractOptionalEduUser } from "../../extractors/extractOptionalEduUser";
 import { extractUser } from "../../extractors/extractUser";
 import { generateGravatarUrl, generateJwt } from "../../lib/auth";
 import { processUserFromTokenData, verifyToken } from "../../lib/google";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
+import { AaiEduHandler } from "./AaiEduHandler";
 
 const AuthHandler = Router();
+
+AuthHandler.use("/aai-edu", AaiEduHandler);
 
 const OAuthSchema = Type.Object({
     credential: Type.String(),
 });
 
+// TODO: organize better
 AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) => {
     const { credential } = req.body;
 
@@ -45,8 +50,12 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
 
 AuthHandler.get("/info", async (req, res) => {
     const user = await extractUser(req);
+    const edu_user = await extractOptionalEduUser(req);
 
-    return respond(res, StatusCodes.OK, user);
+    return respond(res, StatusCodes.OK, {
+        user,
+        edu_user,
+    });
 });
 
 AuthHandler.get("/info/:id", async (req, res) => {
