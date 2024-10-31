@@ -30,7 +30,10 @@ const parseEduToken = (info: AaiEduTokenData): Omit<EduUser, keyof User> => ({
     professional_status: info.hrEduPersonProfessionalStatus?.[0] ?? null,
 });
 
-export const loginEduUser = async (eduUserData: AaiEduTokenData): Promise<{ token: string }> => {
+export const loginEduUser = async (
+    eduUserData: AaiEduTokenData,
+    id_token: string
+): Promise<{ token: string }> => {
     const existingEduUser = await Database.selectOneFrom("edu_users", "*", {
         uid: eduUserData.hrEduPersonUniqueID[0],
     });
@@ -80,14 +83,17 @@ export const loginEduUser = async (eduUserData: AaiEduTokenData): Promise<{ toke
 
     await processLogin(eduUser, !existingEduUser && !existingMailUser);
 
-    const jwt = generateJwt(eduUser.id, "aai-edu");
+    const jwt = generateJwt(eduUser.id, "aai-edu", {
+        id_token,
+    });
 
     return { token: jwt };
 };
 
 export const linkEduUser = async (
     user: User,
-    eduUserData: AaiEduTokenData
+    eduUserData: AaiEduTokenData,
+    id_token: string
 ): Promise<{ token: string }> => {
     const existingEduUser = await Database.selectOneFrom("edu_users", "*", {
         uid: eduUserData.hrEduPersonUniqueID[0],
@@ -109,7 +115,9 @@ export const linkEduUser = async (
             }
         );
 
-        const jwt = generateJwt(user.id, "aai-edu");
+        const jwt = generateJwt(user.id, "aai-edu", {
+            id_token,
+        });
 
         return { token: jwt };
     }
@@ -123,7 +131,9 @@ export const linkEduUser = async (
         ...parseEduToken(eduUserData),
     });
 
-    const jwt = generateJwt(user.id, "aai-edu");
+    const jwt = generateJwt(user.id, "aai-edu", {
+        id_token,
+    });
 
     return { token: jwt };
 };

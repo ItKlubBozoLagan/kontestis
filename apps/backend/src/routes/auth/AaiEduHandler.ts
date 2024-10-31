@@ -52,12 +52,12 @@ AaiEduHandler.post("/token", useValidation(TokenSchema), async (req, res) => {
     if (!exchanged.success) throw new SafeError(StatusCodes.BAD_REQUEST);
 
     if (!user) {
-        const tokenData = await loginEduUser(exchanged.data);
+        const tokenData = await loginEduUser(exchanged.data, exchanged.id_token);
 
         return respond(res, StatusCodes.OK, tokenData);
     }
 
-    const tokenData = await linkEduUser(user, exchanged.data);
+    const tokenData = await linkEduUser(user, exchanged.data, exchanged.id_token);
 
     return respond(res, StatusCodes.OK, tokenData);
 });

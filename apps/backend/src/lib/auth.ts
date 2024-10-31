@@ -22,11 +22,20 @@ const AuthSourceType = Type.Union([
 
 export type AuthSource = Static<typeof AuthSourceType>;
 
-export const generateJwt = (user_id: Snowflake, source: AuthSource, jti = generateSnowflake()) => {
+export const generateJwt = <
+    S extends AuthSource,
+    E extends S extends "aai-edu" ? { id_token: string } : {}
+>(
+    user_id: Snowflake,
+    source: AuthSource,
+    extra: E,
+    jti = generateSnowflake()
+) => {
     return jsonwebtoken.sign(
         {
             user_id: user_id.toString(),
             source,
+            ...extra,
             jti: jti.toString(),
         },
         Globals.jwtSecret,

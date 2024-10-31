@@ -42,7 +42,7 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
         }
     );
 
-    const jwt = generateJwt(tokenData.id, "google");
+    const jwt = generateJwt(tokenData.id, "google", {});
 
     respond(res, StatusCodes.OK, { token: jwt });
 });

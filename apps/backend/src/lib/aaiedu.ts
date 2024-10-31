@@ -46,6 +46,7 @@ type ExchangeResponse =
     | {
           success: true;
           data: AaiEduTokenData;
+          id_token: string;
       };
 
 const validateJwksIdToken = async (token: string): Promise<JwtPayload | null> =>
@@ -102,5 +103,5 @@ export const aaiEduExchangeAuthorizationToken = async (code: string): Promise<Ex
 
     if (!AaiEduIdTokenSchemaCompiled.Check(valid)) return { success: false };
 
-    return { success: true, data: valid };
+    return { success: true, data: valid, id_token };
 };
