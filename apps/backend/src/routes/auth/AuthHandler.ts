@@ -5,7 +5,6 @@ import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
-import { extractOptionalEduUser } from "../../extractors/extractOptionalEduUser";
 import { extractUser } from "../../extractors/extractUser";
 import { generateGravatarUrl, generateJwt } from "../../lib/auth";
 import { processUserFromTokenData, verifyToken } from "../../lib/google";
@@ -30,7 +29,7 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
 
     if (googleResponse === null) throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const tokenData = await processUserFromTokenData(googleResponse, true);
+    const tokenData = await processUserFromTokenData(googleResponse);
 
     await Database.update(
         "users",
@@ -50,12 +49,8 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
 
 AuthHandler.get("/info", async (req, res) => {
     const user = await extractUser(req);
-    const edu_user = await extractOptionalEduUser(req);
 
-    return respond(res, StatusCodes.OK, {
-        user,
-        edu_user,
-    });
+    return respond(res, StatusCodes.OK, user);
 });
 
 AuthHandler.get("/info/:id", async (req, res) => {

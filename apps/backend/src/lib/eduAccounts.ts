@@ -5,7 +5,7 @@ import { EMPTY_PERMISSIONS } from "permissio";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { AaiEduTokenData } from "./aaiedu";
-import { generateGravatarUrl, generateJwt } from "./auth";
+import { generateGravatarUrl, generateJwt, processLogin } from "./auth";
 import { generateSnowflake } from "./snowflake";
 
 // baš špageti
@@ -78,12 +78,17 @@ export const loginEduUser = async (eduUserData: AaiEduTokenData): Promise<{ toke
             picture_url: eduUser.picture_url,
         });
 
+    await processLogin(eduUser, !existingEduUser && !existingMailUser);
+
     const jwt = generateJwt(eduUser.id, "aai-edu");
 
     return { token: jwt };
 };
 
-export const linkEduUser = async (user: User, eduUserData: AaiEduTokenData) => {
+export const linkEduUser = async (
+    user: User,
+    eduUserData: AaiEduTokenData
+): Promise<{ token: string }> => {
     const existingEduUser = await Database.selectOneFrom("edu_users", "*", {
         uid: eduUserData.hrEduPersonUniqueID[0],
     });
@@ -104,7 +109,9 @@ export const linkEduUser = async (user: User, eduUserData: AaiEduTokenData) => {
             }
         );
 
-        return;
+        const jwt = generateJwt(user.id, "aai-edu");
+
+        return { token: jwt };
     }
 
     await Database.insertInto("edu_users", {
@@ -115,4 +122,8 @@ export const linkEduUser = async (user: User, eduUserData: AaiEduTokenData) => {
         picture_url: user.picture_url,
         ...parseEduToken(eduUserData),
     });
+
+    const jwt = generateJwt(user.id, "aai-edu");
+
+    return { token: jwt };
 };

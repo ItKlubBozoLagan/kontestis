@@ -53,6 +53,15 @@ export type EduUserLinksV1 = {
     edu_uid: string;
 };
 
-export type EduUserLinks = EduUserLinksV1;
-
 export type User = UserV6;
+
+export type FullUser = User &
+    (
+        | {
+              is_edu: false;
+          }
+        | {
+              is_edu: true;
+              edu_data: EduUser;
+          }
+    );

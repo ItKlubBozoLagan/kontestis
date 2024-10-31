@@ -16,7 +16,11 @@ const TokenSchema = Type.Object({
     authorization_code: Type.String(),
 });
 
-AaiEduHandler.get("/url", (req, res) => {
+const ParametersSchema = Type.Object({
+    purpose: Type.Union([Type.Literal("login"), Type.Literal("link")]),
+});
+
+AaiEduHandler.get("/url", useValidation(ParametersSchema, { query: true }), (req, res) => {
     const base = AaiEduOpenIdConfiguration.authorization_endpoint.split("?").at(0)!;
 
     const query = new URLSearchParams();
@@ -25,6 +29,7 @@ AaiEduHandler.get("/url", (req, res) => {
     query.set("client_id", Globals.aaiEduClientId);
     query.set("redirect_uri", Globals.aaiEduRedirectUri);
     query.set("scope", Globals.aaiEduScopes.join(" "));
+    query.set("state", req.query.purpose);
     query.set(
         "claims",
         JSON.stringify({
@@ -52,9 +57,9 @@ AaiEduHandler.post("/token", useValidation(TokenSchema), async (req, res) => {
         return respond(res, StatusCodes.OK, tokenData);
     }
 
-    await linkEduUser(user, exchanged.data);
+    const tokenData = await linkEduUser(user, exchanged.data);
 
-    respond(res, StatusCodes.OK);
+    return respond(res, StatusCodes.OK, tokenData);
 });
 
 export { AaiEduHandler };

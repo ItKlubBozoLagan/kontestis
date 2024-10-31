@@ -20,6 +20,7 @@ import {
     nextRankFromRank,
 } from "../../util/rank";
 import { AccountStatistics } from "./AccountStatistics";
+import { EduDetails } from "./EduDetails";
 
 type RankComponentProperties = {
     rankName: GlobalRank;
@@ -55,7 +56,7 @@ const RankConnection: FC<RankComponentProperties & { basis: number }> = ({ rankN
 };
 
 export const AccountPage: FC = () => {
-    const { user, eduUser } = useAuthStore();
+    const { user } = useAuthStore();
     const elo = useElo();
 
     const { t } = useTranslation();
@@ -73,11 +74,11 @@ export const AccountPage: FC = () => {
                         />
                         <RankBreadcrumb showExact />
                     </div>
-                    <div tw={"flex flex-col gap-2"}>
-                        <div tw={"flex gap-2"}>
-                            {eduUser ? (
+                    <div tw={"w-[256px] flex flex-col gap-2"}>
+                        <div tw={"flex flex-wrap-reverse gap-2"}>
+                            {user.is_edu ? (
                                 <Breadcrumb color={"#adb7c0"} borderColor={"#6f7173"}>
-                                    AAI@EduHr
+                                    AAI@EduHr - {user.edu_data.associated_org}
                                 </Breadcrumb>
                             ) : (
                                 <Breadcrumb
@@ -108,6 +109,7 @@ export const AccountPage: FC = () => {
                         </div>
                     </div>
                 </div>
+                <EduDetails />
                 <div tw={"w-10/12 flex items-center pb-12 pt-4 relative"}>
                     <RxTriangleDown
                         size={"32px"}

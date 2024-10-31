@@ -6,7 +6,7 @@ import { http, wrapAxios } from "../../api/http";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { useTokenStore } from "../../state/token";
 
-export const AaiLoginPage: FC = () => {
+export const AaiLinkPage: FC = () => {
     const { setToken } = useTokenStore();
 
     const [parameters] = useSearchParams();
@@ -17,8 +17,8 @@ export const AaiLoginPage: FC = () => {
         const code = parameters.get("code");
         const state = parameters.get("state");
 
-        if (!code || !state || state !== "login") {
-            navigate("/");
+        if (!code || !state || state !== "link") {
+            navigate("/account");
 
             return;
         }
@@ -30,7 +30,7 @@ export const AaiLoginPage: FC = () => {
         )
             .then((data) => setToken(data.token))
             .catch(() => {
-                navigate("/");
+                navigate("/account");
             });
     }, []);
 

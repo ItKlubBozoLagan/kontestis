@@ -1,15 +1,13 @@
-import { DEFAULT_ELO, OrganisationPermissions, User } from "@kontestis/models";
+import { User } from "@kontestis/models";
 import { AdminPermissions } from "@kontestis/models";
 import axios from "axios";
 import { sign } from "jsonwebtoken";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 
 import { Database } from "../database/Database";
-import { DEFAULT_ORGANISATION } from "../extractors/extractOrganisation";
 import { Globals } from "../globals";
-import { Influx } from "../influx/Influx";
-import { randomSequence } from "../utils/random";
 import { R } from "../utils/remeda";
+import { processLogin } from "./auth";
 import { generateSnowflake } from "./snowflake";
 
 type VerifyTokenResponse = {
@@ -60,10 +58,7 @@ export const verifyToken = async (token: string): Promise<NiceTokenResponse> => 
     return niceGoogleResponse;
 };
 
-export const processUserFromTokenData = async (
-    tokenData: NiceTokenResponse,
-    login: boolean = false
-): Promise<User> => {
+export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Promise<User> => {
     const { email: _email } = tokenData;
 
     const email = _email.toLowerCase();
@@ -90,29 +85,9 @@ export const processUserFromTokenData = async (
 
     if (!potentialEntry) {
         await Database.insertInto("users", user);
-        await Database.insertInto("organisation_members", {
-            id: generateSnowflake(),
-            organisation_id: DEFAULT_ORGANISATION.id,
-            user_id: user.id,
-            elo: DEFAULT_ELO,
-            permissions: grantPermission(
-                EMPTY_PERMISSIONS,
-                OrganisationPermissions.VIEW | OrganisationPermissions.ADD_CONTEST
-            ),
-        });
-        await Database.insertInto("mail_preferences", {
-            user_id: user.id,
-            status: "all",
-            code: randomSequence(16),
-        });
     }
 
-    if (login)
-        await Influx.insert(
-            "logins",
-            { userId: user.id.toString(), newLogin: String(!potentialEntry) },
-            { happened: true }
-        );
+    await processLogin(user, !potentialEntry);
 
     return user;
 };

@@ -1,7 +1,7 @@
 import "twin.macro";
 import "./globals.scss";
 
-import { EduUser, User } from "@kontestis/models";
+import { FullUser } from "@kontestis/models";
 import React, { useEffect } from "react";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
@@ -23,8 +23,7 @@ BigInt.prototype.toJSON = function () {
 };
 
 export const App = () => {
-    const { isLoggedIn, setUser, setEduUser, setIsLoggedIn, forceLogout, doForceLogout } =
-        useAuthStore();
+    const { isLoggedIn, setUser, setIsLoggedIn, forceLogout, doForceLogout } = useAuthStore();
     const { token } = useTokenStore();
     const {
         isSelected,
@@ -52,11 +51,9 @@ export const App = () => {
             return;
         }
 
-        wrapAxios<{ user: User; edu_user?: EduUser }>(http.get("/auth/info"))
+        wrapAxios<FullUser>(http.get("/auth/info"))
             .then((data) => {
-                setUser(data.user);
-
-                if (data.edu_user) setEduUser(data.edu_user);
+                setUser(data);
 
                 setIsLoggedIn(true);
             })
