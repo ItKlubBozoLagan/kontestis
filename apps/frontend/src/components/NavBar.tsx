@@ -1,5 +1,5 @@
 import { AdminPermissions } from "@kontestis/models";
-import { FC, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
 import {
     FiActivity,
     FiArrowLeft,
@@ -26,7 +26,7 @@ import { NotificationBellDropdown } from "./NotificationBellDropdown";
 
 export const NavBar: FC = () => {
     const { user } = useAuthStore();
-    const { setToken } = useTokenStore();
+    const { token, setToken } = useTokenStore();
     const { setIsSelected, organisationId } = useOrganisationStore();
     const { processingCount } = useProcessingLoader();
 
@@ -63,6 +63,24 @@ export const NavBar: FC = () => {
         ],
         [t]
     );
+
+    const doAiiEduLogout = useCallback(() => {
+        const tokenData = token.split(".").at(1)?.replace(/-/g, "+").replace(/_/g, "/");
+
+        if (!tokenData) return;
+
+        const data = JSON.parse(atob(tokenData));
+
+        if (!("id_token" in data)) return;
+
+        // TODO: configurable
+        window.location.href = `https://fed-lab.aaiedu.hr/sso/module.php/oidc/logout.php?id_token_hint=${data.id_token}&post_logout_redirect_uri=http://localhost:3000/aai-login`;
+    }, [token]);
+
+    const logout = useCallback(() => {
+        setToken("");
+        doAiiEduLogout();
+    }, [doAiiEduLogout, setToken]);
 
     return (
         <div
@@ -123,7 +141,7 @@ export const NavBar: FC = () => {
                 )}
                 <div
                     tw={"flex items-center hover:text-red-800 transition-all cursor-pointer"}
-                    onClick={() => setToken("")}
+                    onClick={logout}
                 >
                     <FiLogOut size={"16px"} />
                 </div>
