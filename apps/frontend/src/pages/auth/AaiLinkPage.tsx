@@ -29,7 +29,7 @@ export const AaiLinkPage: FC = () => {
             })
         )
             .then((data) => setToken(data.token))
-            .catch(() => {
+            .finally(() => {
                 navigate("/account");
             });
     }, []);
