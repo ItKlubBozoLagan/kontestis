@@ -39,7 +39,7 @@ export const loginEduUser = async (
     });
 
     const existingMailUser = await Database.selectOneFrom("users", "*", {
-        email: eduUserData.mail[0],
+        email: eduUserData.hrEduPersonUniqueID[0],
     });
 
     if (existingEduUser) {
