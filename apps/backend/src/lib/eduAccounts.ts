@@ -99,7 +99,14 @@ export const linkEduUser = async (
         uid: eduUserData.hrEduPersonUniqueID[0],
     });
 
+    const existingMailUser = await Database.selectOneFrom("users", "*", {
+        email: eduUserData.hrEduPersonUniqueID[0],
+    });
+
     if (existingEduUser && user.id !== existingEduUser.id)
+        throw new SafeError(StatusCodes.CONFLICT);
+
+    if (existingMailUser && user.id !== existingMailUser.id)
         throw new SafeError(StatusCodes.CONFLICT);
 
     if (existingEduUser) {
