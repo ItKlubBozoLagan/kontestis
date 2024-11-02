@@ -11,13 +11,17 @@ import { processUserFromTokenData, verifyToken } from "../../lib/google";
 import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
+import { AaiEduHandler } from "./AaiEduHandler";
 
 const AuthHandler = Router();
+
+AuthHandler.use("/aai-edu", AaiEduHandler);
 
 const OAuthSchema = Type.Object({
     credential: Type.String(),
 });
 
+// TODO: organize better
 AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) => {
     const { credential } = req.body;
 
@@ -25,7 +29,7 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
 
     if (googleResponse === null) throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const tokenData = await processUserFromTokenData(googleResponse, true);
+    const tokenData = await processUserFromTokenData(googleResponse);
 
     await Database.update(
         "users",
@@ -38,7 +42,7 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
         }
     );
 
-    const jwt = generateJwt(tokenData.id, "google");
+    const jwt = generateJwt(tokenData.id, "google", {});
 
     respond(res, StatusCodes.OK, { token: jwt });
 });

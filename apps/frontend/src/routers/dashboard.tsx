@@ -9,6 +9,7 @@ import { AdminMailPage } from "../pages/admin/mail/AdminMailPage";
 import { AdminOrganisationsPage } from "../pages/admin/organisations/AdminOrganisationsPage";
 import { AdminOverviewPage } from "../pages/admin/overview/AdminOverviewPage";
 import { AdminUsersPage } from "../pages/admin/users/AdminUsersPage";
+import { AaiLinkPage } from "../pages/auth/AaiLinkPage";
 import { ContestsPage } from "../pages/contests/ContestsPage";
 import { ContestViewPage } from "../pages/contests/ContestViewPage";
 import { DashboardPage } from "../pages/DashboardPage";
@@ -161,5 +162,9 @@ export const dashboardRoutes: RouteObject[] = [
                 element: <Navigate to={"/"} replace />,
             },
         ],
+    },
+    {
+        path: "/aai-login",
+        element: <AaiLinkPage />,
     },
 ];

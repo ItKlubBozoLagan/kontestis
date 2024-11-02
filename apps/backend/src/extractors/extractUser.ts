@@ -1,12 +1,13 @@
-import { User } from "@kontestis/models";
+import { FullUser } from "@kontestis/models";
 import { Request } from "express";
 import { StatusCodes } from "http-status-codes";
 
+import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { validateJwt } from "../lib/auth";
 import { memoizedRequestExtractor } from "./MemoizedRequestExtractor";
 
-export const extractUser = async (req: Request): Promise<User> => {
+export const extractUser = async (req: Request): Promise<FullUser> => {
     return memoizedRequestExtractor(req, "__user", async () => {
         const auth = req.header("authorization");
 
@@ -17,6 +18,20 @@ export const extractUser = async (req: Request): Promise<User> => {
 
         if (tokenData === null) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-        return tokenData;
+        const eduUser = await Database.selectOneFrom("edu_users", "*", {
+            id: tokenData.id,
+        });
+
+        if (eduUser)
+            return {
+                ...tokenData,
+                is_edu: true,
+                edu_data: eduUser,
+            };
+
+        return {
+            ...tokenData,
+            is_edu: false,
+        };
     });
 };

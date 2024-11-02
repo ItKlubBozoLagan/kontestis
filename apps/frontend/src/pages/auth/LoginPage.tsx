@@ -2,6 +2,7 @@ import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oau
 import React, { FC, useCallback } from "react";
 
 import { http, ServerData } from "../../api/http";
+import { AaiEduButton } from "../../components/AaiEduButton";
 import { TitledSection } from "../../components/TitledSection";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useTokenStore } from "../../state/token";
@@ -34,6 +35,7 @@ const LoginBase: FC = () => {
                         shape={"rectangular"}
                         auto_select={true}
                     />
+                    <AaiEduButton purpose={"login"} />
                 </div>
             </TitledSection>
         </div>

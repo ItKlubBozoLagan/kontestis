@@ -40,10 +40,10 @@ export type UserV6 = Omit<UserV5, "google_id"> & {
 
 export type EduUserV1 = UserV6 & {
     uid: string;
-    dob: Date;
-    student_category: string;
+    dob: Date | null;
+    student_category: string | null;
     associated_org: string;
-    professional_status: string;
+    professional_status: string | null;
 };
 
 export type EduUser = EduUserV1;
@@ -53,6 +53,15 @@ export type EduUserLinksV1 = {
     edu_uid: string;
 };
 
-export type EduUserLinks = EduUserLinksV1;
-
 export type User = UserV6;
+
+export type FullUser = User &
+    (
+        | {
+              is_edu: false;
+          }
+        | {
+              is_edu: true;
+              edu_data: EduUser;
+          }
+    );

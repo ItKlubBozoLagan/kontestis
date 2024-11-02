@@ -13,7 +13,9 @@ services:
     environment:
       - VITE_API_ENDPOINT=http://localhost:8080
       - VITE_OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
-  
+      - VITE_AAI_EDU_LOGOUT_URL=https://fed-lab.aaiedu.hr/sso/module.php/oidc/logout.php
+      - VITE_AAI_EDU_LOGOUT_REDIRECT_URL=http://localhost:3000/
+
   backend:
     image: "node:hydrogen-alpine"
     tty: true
@@ -42,7 +44,6 @@ services:
       - REDIS_URL=redis://redis:6379
       - INFLUXDB_URL=http://influxdb:8086
       - OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
-      - OAUTH_ALLOWED_DOMAINS=skole.hr,gmail.com,hm4.dev,v3x.email,fer.hr,fer.unizg.hr,unizg.hr
       - EVALUATOR_ENDPOINT=http://function:8080
 
   function:

@@ -14,7 +14,9 @@ export const AdminOrganisationsPage: FC = () => {
             {organisations && (
                 <OrganisationTable
                     organisations={organisations}
-                    onClick={(organisation) => navigate(`/manage/${organisation.id}`)}
+                    onClick={(organisation) =>
+                        organisation.id !== 1n && navigate(`/manage/${organisation.id}`)
+                    }
                 />
             )}
         </div>
