@@ -74,7 +74,9 @@ export const NavBar: FC = () => {
         if (!("id_token" in data)) return;
 
         // TODO: configurable
-        window.location.href = `https://fed-lab.aaiedu.hr/sso/module.php/oidc/logout.php?id_token_hint=${data.id_token}&post_logout_redirect_uri=http://localhost:3000/aai-login`;
+        window.location.href = `${import.meta.env.VITE_AAI_EDU_LOGOUT_URL}?id_token_hint=${
+            data.id_token
+        }&post_logout_redirect_uri=${import.meta.env.VITE_AAI_EDU_LOGOUT_REDIRECT_URL}`;
     }, [token]);
 
     const logout = useCallback(() => {
