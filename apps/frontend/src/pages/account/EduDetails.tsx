@@ -1,5 +1,5 @@
 import { toCroatianLocale } from "@kontestis/utils";
-import React, { FC, useMemo } from "react";
+import React, { FC } from "react";
 import tw from "twin.macro";
 
 import { AaiEduButton } from "../../components/AaiEduButton";
@@ -17,7 +17,7 @@ export const EduDetails: FC = () => {
             </div>
         );
 
-    const eduUser = useMemo(() => user.edu_data, [user]);
+    const eduUser = user.edu_data;
 
     return (
         <div tw={"w-full px-12 pt-6 pb-12"}>
