@@ -176,6 +176,7 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
         elo_applied: false,
         exam: req.body.exam,
         join_code: randomSequence(8),
+        require_edu_verification: false,
     };
 
     await Promise.all([
@@ -332,6 +333,8 @@ ContestHandler.get("/", async (req, res) => {
 
     const optionalUser = await extractOptionalUser(req);
 
+    const isEduUser = optionalUser?.is_edu ?? false;
+
     // TODO: FIX
     const contestMembers = optionalUser
         ? await Database.selectFrom(
@@ -349,7 +352,17 @@ ContestHandler.get("/", async (req, res) => {
     }
 
     for (const contest of contests) {
-        if (contest.public || hasViewContestsPermission) {
+        if (hasViewContestsPermission) {
+            returnedContests.push(contest);
+            continue;
+        }
+
+        if (contest.public && contest.require_edu_verification && isEduUser) {
+            returnedContests.push(contest);
+            continue;
+        }
+
+        if (contest.public && !contest.require_edu_verification) {
             returnedContests.push(contest);
             continue;
         }
@@ -371,7 +384,9 @@ ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
 
     await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
 
-    const targetUser = await Database.selectOneFrom("users", ["id"], { id: req.params.user_id });
+    const targetUser = await Database.selectOneFrom("users", ["id", "full_name"], {
+        id: req.params.user_id,
+    });
 
     if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
@@ -379,15 +394,9 @@ ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
 
     const readStream = new stream.PassThrough();
 
-    const userData = await Database.selectOneFrom("known_users", ["full_name"], {
-        user_id: targetUser.id,
-    });
-
-    if (!userData) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
     readStream.end(buffer);
 
-    const filename = contest.name + " " + userData.full_name;
+    const filename = contest.name + " " + targetUser.full_name;
 
     res.header(
         "Content-Disposition",
@@ -427,8 +436,8 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
     const users = (
         await Promise.all(
             R.chunk(contestMembers, 100).map((chunk) => {
-                return Database.selectFrom("known_users", "*", {
-                    user_id: eqIn(...chunk.map((it) => it.user_id)),
+                return Database.selectFrom("users", "*", {
+                    id: eqIn(...chunk.map((it) => it.user_id)),
                 });
             })
         )
@@ -444,7 +453,7 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
     );
 
     // if for every contestMember doesn't exist a corresponding user
-    if (!contestMembers.every((it) => users.some((user) => user.user_id === it.user_id)))
+    if (!contestMembers.every((it) => users.some((user) => user.id === it.user_id)))
         throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
     return respond(
@@ -453,7 +462,7 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         contestMembers
             .map((it) => ({
                 ...it,
-                ...R.pick(users.find((user) => user.user_id === it.user_id)!, ["full_name"]),
+                ...R.pick(users.find((user) => user.id === it.user_id)!, ["full_name"]),
                 ...R.pick(organisationMembers.find((member) => member.user_id === it.user_id)!, [
                     "elo",
                 ]),

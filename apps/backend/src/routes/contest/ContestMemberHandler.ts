@@ -24,12 +24,7 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
     const contest = await extractContest(req);
     const user = await extractUser(req);
     const targetUser = req.body.email
-        ? await Database.selectOneFrom(
-              "known_users",
-              "*",
-              { email: req.body.email },
-              "ALLOW FILTERING"
-          )
+        ? await Database.selectOneFrom("users", "*", { email: req.body.email }, "ALLOW FILTERING")
         : undefined;
 
     if (req.body.email && !targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
@@ -39,7 +34,7 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
     }
 
     const addedMember = await Database.selectOneFrom("contest_members", ["id"], {
-        user_id: targetUser ? targetUser.user_id : user.id,
+        user_id: targetUser ? targetUser.id : user.id,
         contest_id: contest.id,
     });
 
@@ -50,12 +45,12 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
 
     await Database.insertInto("contest_members", {
         id: generateSnowflake(),
-        user_id: targetUser ? targetUser.user_id : user.id,
+        user_id: targetUser ? targetUser.id : user.id,
         contest_id: contest.id,
         contest_permissions: grantPermission(0n, ContestMemberPermissions.VIEW),
     });
 
-    const _ = pushContestNotifications(contest, [targetUser ? targetUser.user_id : user.id]);
+    const _ = pushContestNotifications(contest, [targetUser ? targetUser.id : user.id]);
 
     return respond(res, StatusCodes.OK);
 });

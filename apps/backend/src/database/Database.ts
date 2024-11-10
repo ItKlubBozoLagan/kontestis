@@ -3,9 +3,9 @@ import {
     ContestAnnouncement,
     ContestMember,
     ContestQuestion,
+    EduUser,
     ExamFinalSubmission,
     ExamGradingScale,
-    KnownUserData,
     MailPreference,
     Organisation,
     OrganisationMember,
@@ -62,10 +62,14 @@ import { migration_add_notifications } from "./migrations/0037_add_notifications
 import { migration_add_join_codes } from "./migrations/0038_add_join_codes";
 import { migration_add_mail_preferences } from "./migrations/0039_add_mail_preferences";
 import { migration_add_organisations_permissions } from "./migrations/0040_add_organisations_permissions";
+import { migration_legacy_evaluation } from "./migrations/0041_legacy_evaluation";
+import { migration_migrate_user_tables } from "./migrations/0042_migrate_user_tables";
+import { migration_remove_edu_links } from "./migrations/0043_remove_edu_links";
+import { migration_edu_user_uid_index } from "./migrations/0044_edu_user_uid_index";
+import { migration_add_require_edu_verification } from "./migrations/0045_add_require_edu_verification";
 
 export const Database = new ScylloClient<{
     users: User;
-    known_users: KnownUserData;
     contests: Contest;
     problems: Problem;
     clusters: Cluster;
@@ -82,6 +86,7 @@ export const Database = new ScylloClient<{
     exam_grading_scales: ExamGradingScale;
     notifications: SiteNotification;
     mail_preferences: MailPreference;
+    edu_users: EduUser;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -135,6 +140,11 @@ const migrations: Migration<any>[] = [
     migration_add_join_codes,
     migration_add_mail_preferences,
     migration_add_organisations_permissions,
+    migration_legacy_evaluation,
+    migration_migrate_user_tables,
+    migration_remove_edu_links,
+    migration_edu_user_uid_index,
+    migration_add_require_edu_verification,
 ];
 
 export const initDatabase = async () => {

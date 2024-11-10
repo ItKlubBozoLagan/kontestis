@@ -1,77 +1,78 @@
 name: "🚚 GCP auto-deployment"
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "apps/function/**"
-      - "packages/**"
-      - "!packages/scripts/**"
-      - ".github/workflows/function-deploy.yml"
+    push:
+        branches:
+            - main
+            - dev
+        paths:
+            - "apps/function/**"
+            - "packages/**"
+            - "!packages/scripts/**"
+            - ".github/workflows/function-deploy.yml"
 
 jobs:
-  build:
-    name: "🐳 Build"
-    runs-on: ubuntu-latest
-    permissions:
-      contents: "read"
-      id-token: "write"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    build:
+        name: "🐳 Build"
+        runs-on: ubuntu-latest
+        permissions:
+            contents: "read"
+            id-token: "write"
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - id: auth
-        name: Authenticate with GCP
-        uses: google-github-actions/auth@v1
-        with:
-          token_format: "access_token"
-          workload_identity_provider: "projects/953907026294/locations/global/workloadIdentityPools/kontestis-actions/providers/kontestis-provider"
-          service_account: "github-actions@speedy-baton-368023.iam.gserviceaccount.com"
+            - id: auth
+              name: Authenticate with GCP
+              uses: google-github-actions/auth@v1
+              with:
+                  token_format: "access_token"
+                  workload_identity_provider: "projects/953907026294/locations/global/workloadIdentityPools/kontestis-actions/providers/kontestis-provider"
+                  service_account: "github-actions@speedy-baton-368023.iam.gserviceaccount.com"
 
-      - name: Cache Docker
-        uses: actions/cache@v2
-        with:
-          path: /var/lib/docker
-          key: docker-${{ runner.os }}
+            - name: Cache Docker
+              uses: actions/cache@v2
+              with:
+                  path: /var/lib/docker
+                  key: docker-${{ runner.os }}
 
-      - name: Login to GCP container registry
-        uses: docker/login-action@v2
-        with:
-          registry: eu.gcr.io
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+            - name: Login to GCP container registry
+              uses: docker/login-action@v2
+              with:
+                  registry: eu.gcr.io
+                  username: oauth2accesstoken
+                  password: ${{ steps.auth.outputs.access_token }}
 
-      - name: Build image
-        run: docker build -t eu.gcr.io/speedy-baton-368023/kontestis-evaluator -f ./.deploy/function.dockerfile .
+            - name: Build image
+              run: docker build -t eu.gcr.io/speedy-baton-368023/kontestis-evaluator -f ./.deploy/function.dockerfile .
 
-      - name: Push image
-        run: docker push eu.gcr.io/speedy-baton-368023/kontestis-evaluator
+            - name: Push image
+              run: docker push eu.gcr.io/speedy-baton-368023/kontestis-evaluator
 
-  deploy:
-    name: "🚚 Release"
-    runs-on: ubuntu-latest
-    needs: ["build"]
-    permissions:
-      contents: "read"
-      id-token: "write"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    deploy:
+        name: "🚚 Release"
+        runs-on: ubuntu-latest
+        needs: ["build"]
+        permissions:
+            contents: "read"
+            id-token: "write"
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v1
-        with:
-          workload_identity_provider: "projects/953907026294/locations/global/workloadIdentityPools/kontestis-actions/providers/kontestis-provider"
-          service_account: "github-actions@speedy-baton-368023.iam.gserviceaccount.com"
+            - name: Authenticate with GCP
+              uses: google-github-actions/auth@v1
+              with:
+                  workload_identity_provider: "projects/953907026294/locations/global/workloadIdentityPools/kontestis-actions/providers/kontestis-provider"
+                  service_account: "github-actions@speedy-baton-368023.iam.gserviceaccount.com"
 
-      - id: deploy
-        name: Deploy to GCP
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          service: kontestis-evaluator
-          image: eu.gcr.io/speedy-baton-368023/kontestis-evaluator
-          region: europe-west6
+            - id: deploy
+              name: Deploy to GCP
+              uses: google-github-actions/deploy-cloudrun@v1
+              with:
+                  service: kontestis-evaluator
+                  image: eu.gcr.io/speedy-baton-368023/kontestis-evaluator
+                  region: europe-west6
 
-      - name: Verify deployment
-        run: "curl \"${{ steps.deploy.outputs.url }}\""
+            - name: Verify deployment
+              run: 'curl "${{ steps.deploy.outputs.url }}"'

@@ -1,4 +1,4 @@
-FROM node:hydrogen-alpine as workspace
+FROM node:hydrogen-alpine AS workspace
 
 WORKDIR /app
 

@@ -9,6 +9,7 @@ import { http } from "../../api/http";
 import { TableItem, TableRow } from "../../components/Table";
 import { useContestStatus } from "../../hooks/useContestStatus";
 import { useTranslation } from "../../hooks/useTranslation";
+import { AAIDataProcessingModal } from "./AAIDataProcessingModal";
 
 type Properties = {
     contest: ContestWithPermissions;
@@ -23,6 +24,8 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
     const queryClient = useQueryClient();
 
     const { t } = useTranslation();
+
+    const [isDataModalOpen, setDataModalOpen] = useState(false);
 
     return (
         <TableRow>
@@ -71,6 +74,8 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                                             ])
                                         )
                                         .then(() => setRegistered(true));
+
+                                    if (contest.require_edu_verification) setDataModalOpen(true);
                                 }}
                             >
                                 {t("contests.table.body.registered.notRegistered")}
@@ -87,6 +92,11 @@ export const ContestListItem: FC<Properties> = ({ contest, adminView }) => {
                     )}
                 </TableItem>
             )}
+            <AAIDataProcessingModal
+                isOpen={isDataModalOpen}
+                onRequestClose={() => setDataModalOpen(false)}
+                onAfterClose={() => setDataModalOpen(false)}
+            />
         </TableRow>
     );
 };

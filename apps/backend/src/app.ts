@@ -28,6 +28,8 @@ import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
 import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
+import { subscribeToEvaluatorPubSub } from "./lib/evaluation_rs";
+import { initAaiEdu } from "./lib/aaiedu";
 
 declare global {
     interface BigInt {
@@ -122,14 +124,17 @@ Promise.allSettled([
             Logger.panic("Scylla failed", error);
         }),
     Redis.connect()
-        .then(() => {
+        .then(async () => {
             Logger.redis("Connected to Redis");
+            await subscribeToEvaluatorPubSub();
+            Logger.redis("Subscribed to evaluator pub sub");
         })
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
     // for consistency
     initInflux(),
+    initAaiEdu(),
 ]).then(async () => {
     Logger.info("Ready");
 

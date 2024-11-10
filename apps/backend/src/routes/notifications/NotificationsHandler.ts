@@ -57,7 +57,7 @@ NotificationsHandler.post(
         if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN))
             return reject(res, StatusCodes.FORBIDDEN);
 
-        const users = await Database.selectFrom("known_users", "*", {});
+        const users = await Database.selectFrom("users", "*", {});
 
         const mailPreferences = await Database.selectFrom("mail_preferences", "*", {});
 
@@ -73,11 +73,11 @@ NotificationsHandler.post(
                 Logger.info("Current user: " + user.full_name);
                 Logger.info(users.length);
 
-                let preference = preferencesByUserId[user.user_id.toString()];
+                let preference = preferencesByUserId[user.id.toString()];
 
                 if (!preference) {
                     preference = {
-                        user_id: user.user_id,
+                        user_id: user.id,
                         code: randomSequence(16),
                         status: "all",
                     };

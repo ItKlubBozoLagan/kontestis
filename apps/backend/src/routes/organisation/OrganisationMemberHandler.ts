@@ -30,17 +30,15 @@ OrganisationMemberHandler.get("/", async (req, res) => {
         "ALLOW FILTERING"
     );
 
-    const users = await Database.selectFrom("known_users", "*", {
-        user_id: eqIn(
-            ...organisationMembers.map((organisationMember) => organisationMember.user_id)
-        ),
+    const users = await Database.selectFrom("users", "*", {
+        id: eqIn(...organisationMembers.map((organisationMember) => organisationMember.user_id)),
     });
 
     return respond(
         res,
         StatusCodes.OK,
         organisationMembers.map(
-            (it, _, __, user = users.find((user) => user.user_id === it.user_id)!) => ({
+            (it, _, __, user = users.find((user) => user.id === it.user_id)!) => ({
                 ...it,
                 ...R.pick(user, ["full_name"]),
                 email_domain: user.email.split("@").at(-1),
@@ -74,21 +72,15 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
 
     await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER, organisation.id);
 
-    const targetUser = await Database.selectOneFrom(
-        "known_users",
-        ["user_id"],
-        {
-            email: req.body.email,
-        },
-        // eslint-disable-next-line sonarjs/no-duplicate-string
-        "ALLOW FILTERING"
-    );
+    const targetUser = await Database.selectOneFrom("users", ["id"], {
+        email: req.body.email,
+    });
 
     if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
     const exists = await Database.selectOneFrom("organisation_members", ["id"], {
         organisation_id: organisation.id,
-        user_id: targetUser.user_id,
+        user_id: targetUser.id,
     });
 
     if (exists) throw new SafeError(StatusCodes.CONFLICT);
@@ -97,7 +89,7 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
         id: generateSnowflake(),
         elo: DEFAULT_ELO,
         organisation_id: organisation.id,
-        user_id: targetUser.user_id,
+        user_id: targetUser.id,
         permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.VIEW),
     };
 

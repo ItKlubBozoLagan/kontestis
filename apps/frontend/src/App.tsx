@@ -54,6 +54,7 @@ export const App = () => {
         wrapAxios<FullUser>(http.get("/auth/info"))
             .then((data) => {
                 setUser(data);
+
                 setIsLoggedIn(true);
             })
             .catch(() => doForceLogout());

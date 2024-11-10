@@ -32,10 +32,36 @@ export type UserV4 = Omit<UserV3, "google_id"> & {
 
 export type UserV5 = Omit<UserV4, "elo">;
 
-export type User = UserV5;
-
-export type FullUser = User & {
-    full_name: string;
+export type UserV6 = Omit<UserV5, "google_id"> & {
     email: string;
+    full_name: string;
     picture_url: string;
 };
+
+export type EduUserV1 = UserV6 & {
+    uid: string;
+    dob: Date | null;
+    student_category: string | null;
+    associated_org: string;
+    professional_status: string | null;
+};
+
+export type EduUser = EduUserV1;
+
+export type EduUserLinksV1 = {
+    user_id: Snowflake;
+    edu_uid: string;
+};
+
+export type User = UserV6;
+
+export type FullUser = User &
+    (
+        | {
+              is_edu: false;
+          }
+        | {
+              is_edu: true;
+              edu_data: EduUser;
+          }
+    );

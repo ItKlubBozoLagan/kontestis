@@ -31,7 +31,11 @@ export type ContestV6 = ContestV5 & {
     join_code: string;
 };
 
-export type Contest = ContestV6;
+export type ContestV7 = ContestV6 & {
+    require_edu_verification: boolean;
+};
+
+export type Contest = ContestV7;
 
 export type ContestWithPermissions = Contest & {
     registered: boolean;

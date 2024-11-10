@@ -4,15 +4,17 @@ import {
     SubmissionWithUserInfo,
 } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
-import { AiFillCaretDown, AiFillCaretUp } from "react-icons/all";
+import { AiFillCaretDown, AiFillCaretUp, FiLoader } from "react-icons/all";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
+import { Translated } from "../../components/Translated";
 import { useContest } from "../../hooks/contest/useContest";
 import { useAllFinalSubmissions } from "../../hooks/submission/final/useAllFinalSubmissions";
 import { useSetFinalSubmission } from "../../hooks/submission/useSetFinalSubmission";
+import { useInterval } from "../../hooks/useInterval";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 
@@ -39,6 +41,16 @@ export const SubmissionListTable: FC<Properties> = ({
     const setFinalSubmission = useSetFinalSubmission([contest?.id ?? 0n, user.id]);
 
     const { t } = useTranslation();
+
+    const [dots, setDots] = useState("");
+
+    useInterval(() => {
+        setDots((dots) => {
+            if (dots === "...") return "".padEnd(3, " ");
+
+            return `${dots.trimEnd()}.`.padEnd(3, " ");
+        });
+    }, 400);
 
     useEffect(() => {
         if (!setFinalSubmission.isSuccess) return;
@@ -136,8 +148,19 @@ export const SubmissionListTable: FC<Properties> = ({
                                     )}
                                 </>
                             ) : (
-                                <TableItem colSpan={100} tw={"text-center text-yellow-800"}>
-                                    {t("submissions.processing")}
+                                <TableItem colSpan={100} tw={""}>
+                                    <div
+                                        tw={
+                                            "w-full text-yellow-800 flex items-center justify-center gap-2"
+                                        }
+                                    >
+                                        <FiLoader size={16} tw={"animate-spin-slow"} />
+                                        <pre tw={"m-0"}>
+                                            <Translated translationKey={"submissions.processing"}>
+                                                {dots}
+                                            </Translated>
+                                        </pre>
+                                    </div>
                                 </TableItem>
                             )}
                         </TableRow>
