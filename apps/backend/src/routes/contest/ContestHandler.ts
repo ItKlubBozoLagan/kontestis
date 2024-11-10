@@ -176,6 +176,7 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
         elo_applied: false,
         exam: req.body.exam,
         join_code: randomSequence(8),
+        require_edu_verification: false,
     };
 
     await Promise.all([
@@ -332,6 +333,8 @@ ContestHandler.get("/", async (req, res) => {
 
     const optionalUser = await extractOptionalUser(req);
 
+    const isEduUser = optionalUser?.is_edu ?? false;
+
     // TODO: FIX
     const contestMembers = optionalUser
         ? await Database.selectFrom(
@@ -349,7 +352,17 @@ ContestHandler.get("/", async (req, res) => {
     }
 
     for (const contest of contests) {
-        if (contest.public || hasViewContestsPermission) {
+        if (hasViewContestsPermission) {
+            returnedContests.push(contest);
+            continue;
+        }
+
+        if (contest.public && contest.require_edu_verification && isEduUser) {
+            returnedContests.push(contest);
+            continue;
+        }
+
+        if (contest.public && !contest.require_edu_verification) {
             returnedContests.push(contest);
             continue;
         }
