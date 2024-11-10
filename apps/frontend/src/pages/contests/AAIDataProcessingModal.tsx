@@ -31,12 +31,19 @@ export const AAIDataProcessingModal: FC<Modal.Props> = ({ ...properties }) => {
                         href={
                             "https://docs.google.com/document/d/1X8neYV8vG4MyrM56_ExmANihbTVWkhKAy1wnenm4bkc/edit?usp=sharing"
                         }
+                        target={"_blank"}
                         tw={"text-blue-700"}
+                        rel="noreferrer"
                     >
                         suglasnost
                     </a>{" "}
                     odgovorne osobe, molimo da suglasnost pošaljete{" "}
-                    <a href={"https://forms.gle/pk2dLqpY7qZLUbu78"} tw={"text-blue-700"}>
+                    <a
+                        href={"https://forms.gle/pk2dLqpY7qZLUbu78"}
+                        target={"_blank"}
+                        tw={"text-blue-700"}
+                        rel="noreferrer"
+                    >
                         ovdje
                     </a>
                     .
@@ -51,14 +58,21 @@ export const AAIDataProcessingModal: FC<Modal.Props> = ({ ...properties }) => {
                     nagrada te objavu materijala vezanih uz promociju Natjecanja.
                 </div>
             )}
-            <a href={"https://nap.xfer.hr"} tw={"text-xl p-2 text-blue-700"}>
+            <a
+                href={"https://nap.xfer.hr"}
+                target={"_blank"}
+                tw={"text-xl p-2 text-blue-700"}
+                rel="noreferrer"
+            >
                 Stranica natjecanja
             </a>
             <a
                 href={
                     "https://docs.google.com/document/d/1tKBnTB1HlAMCwKXFPm1w7yS6f_2hgQzNyf2F1PFs6YI/edit?usp=sharing"
                 }
+                target={"_blank"}
                 tw={"text-xl p-2 text-blue-700"}
+                rel="noreferrer"
             >
                 Pravilnik natjecanja
             </a>
