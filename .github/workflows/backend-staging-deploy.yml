@@ -9,6 +9,7 @@ on:
             - "packages/**"
             - "!packages/scripts/**"
             - ".github/workflows/backend-staging-deploy.yml"
+            - ".deploy/backend.dockerfile"
 
 jobs:
     build:
