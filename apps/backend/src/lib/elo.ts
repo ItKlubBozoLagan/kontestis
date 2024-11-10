@@ -71,7 +71,7 @@ export const applyUserEloInInflux = async (userId: Snowflake) => {
         }
     );
 
-    for (const { organisation_id, elo } of [organisations!]) {
+    for (const { organisation_id, elo } of organisations ? [organisations] : []) {
         const tags = {
             userId: userId.toString(),
             orgId: organisation_id.toString(),
