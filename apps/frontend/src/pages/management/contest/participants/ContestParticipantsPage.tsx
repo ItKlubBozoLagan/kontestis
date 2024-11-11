@@ -97,7 +97,7 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
                         {t("account.breadcrumbs.creator")}
                     </Breadcrumb>
                 )}
-                <DomainBreadcrumb email={member.email} />
+                <DomainBreadcrumb email={member.email_domain} />
                 <RankBreadcrumb specificElo={member.elo} />
                 {member.full_name}
             </div>
