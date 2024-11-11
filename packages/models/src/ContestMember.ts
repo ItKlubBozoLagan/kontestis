@@ -19,6 +19,6 @@ export type ContestMember = ContestMemberV2;
 export type ContestMemberWithInfo = ContestMember & {
     full_name: string;
     email_domain: string;
-    edu_mail_domain: string;
+    edu_mail_domain?: string;
     elo: number;
 };
