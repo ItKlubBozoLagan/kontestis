@@ -98,6 +98,11 @@ const MemberBox: FC<MemberBoxProperties> = ({ member, admin }) => {
                     </Breadcrumb>
                 )}
                 <DomainBreadcrumb email={member.email_domain} />
+                {member.edu_mail_domain &&
+                    member.email_domain.trim().toLowerCase() !==
+                        member.edu_mail_domain.trim().toLowerCase() && (
+                        <DomainBreadcrumb email={member.edu_mail_domain} />
+                    )}
                 <RankBreadcrumb specificElo={member.elo} />
                 {member.full_name}
             </div>
