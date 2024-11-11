@@ -460,12 +460,13 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         res,
         StatusCodes.OK,
         contestMembers
-            .map((it) => ({
+            .map((it, _, __, user = users.find((user) => user.id === it.user_id)!) => ({
                 ...it,
-                ...R.pick(users.find((user) => user.id === it.user_id)!, ["full_name"]),
+                ...R.pick(user, ["full_name"]),
                 ...R.pick(organisationMembers.find((member) => member.user_id === it.user_id)!, [
                     "elo",
                 ]),
+                email_domain: user.email.split("@").at(-1),
             }))
             .map((it) => ({ ...it, score: it.score ?? {} }))
     );
