@@ -154,7 +154,9 @@ export const SubmissionListTable: FC<Properties> = ({
                                             "w-full text-yellow-800 flex items-center justify-center gap-2"
                                         }
                                     >
-                                        <FiLoader size={16} tw={"animate-spin-slow"} />
+                                        <div tw={"animate-spin-slow"}>
+                                            <FiLoader size={16} />
+                                        </div>
                                         <pre tw={"m-0"}>
                                             <Translated translationKey={"submissions.processing"}>
                                                 {dots}
