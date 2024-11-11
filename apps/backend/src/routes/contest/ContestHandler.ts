@@ -443,6 +443,16 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         )
     ).flat();
 
+    const eduUsers = (
+        await Promise.all(
+            R.chunk(contestMembers, 100).map((chunk) => {
+                return Database.selectFrom("edu_users", "*", {
+                    id: eqIn(...chunk.map((it) => it.user_id)),
+                });
+            })
+        )
+    ).flat();
+
     const organisationMembers = await Database.selectFrom(
         "organisation_members",
         "*",
@@ -460,14 +470,24 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         res,
         StatusCodes.OK,
         contestMembers
-            .map((it, _, __, user = users.find((user) => user.id === it.user_id)!) => ({
-                ...it,
-                ...R.pick(user, ["full_name"]),
-                ...R.pick(organisationMembers.find((member) => member.user_id === it.user_id)!, [
-                    "elo",
-                ]),
-                email_domain: user.email.split("@").at(-1),
-            }))
+            .map(
+                (
+                    it,
+                    _,
+                    __,
+                    user = users.find((user) => user.id === it.user_id)!,
+                    eduUser = eduUsers.find((user) => user.id === it.user_id)
+                ) => ({
+                    ...it,
+                    ...R.pick(user, ["full_name"]),
+                    ...R.pick(
+                        organisationMembers.find((member) => member.user_id === it.user_id)!,
+                        ["elo"]
+                    ),
+                    email_domain: user.email.split("@").at(-1),
+                    edu_mail_domain: eduUser?.email.split("@").at(-1),
+                })
+            )
             .map((it) => ({ ...it, score: it.score ?? {} }))
     );
 });

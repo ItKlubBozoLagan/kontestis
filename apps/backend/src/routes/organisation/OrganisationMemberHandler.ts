@@ -34,25 +34,14 @@ OrganisationMemberHandler.get("/", async (req, res) => {
         id: eqIn(...organisationMembers.map((organisationMember) => organisationMember.user_id)),
     });
 
-    const eduUsers = await Database.selectFrom("edu_users", "*", {
-        id: eqIn(...organisationMembers.map((organisationMember) => organisationMember.user_id)),
-    });
-
     return respond(
         res,
         StatusCodes.OK,
         organisationMembers.map(
-            (
-                it,
-                _,
-                __,
-                user = users.find((user) => user.id === it.user_id)!,
-                eduUser = eduUsers.find((user) => user.id === it.user_id)
-            ) => ({
+            (it, _, __, user = users.find((user) => user.id === it.user_id)!) => ({
                 ...it,
                 ...R.pick(user, ["full_name"]),
                 email_domain: user.email.split("@").at(-1),
-                edu_mail_domain: eduUser?.email.split("@").at(-1),
             })
         )
     );
