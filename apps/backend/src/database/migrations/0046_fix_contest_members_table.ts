@@ -11,8 +11,6 @@ export const migration_fix_contest_members_table: Migration<MigrationType> = asy
 ) => {
     const contestMembers = await database.selectFrom("contest_members", "*");
 
-    console.log(contestMembers);
-
     await database.dropTable("contest_members");
 
     await database.createTable(
