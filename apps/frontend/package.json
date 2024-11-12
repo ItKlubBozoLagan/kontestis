@@ -9,6 +9,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@esbuild/linux-arm64": "^0.16.17",
         "@hookform/resolvers": "^2.9.11",
         "@kontestis/models": "workspace:^1.0.0",
         "@kontestis/utils": "workspace:^1.0.0",
