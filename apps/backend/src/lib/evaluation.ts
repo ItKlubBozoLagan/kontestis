@@ -61,7 +61,7 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
     if (!contestMember) return;
 
     await Database.raw(
-        `UPDATE contest_members SET score[${problemId}]=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
+        `UPDATE contest_members SET score['${problemId}']=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
     );
 };
 
