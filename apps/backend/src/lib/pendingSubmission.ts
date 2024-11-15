@@ -27,7 +27,10 @@ export const storePendingSubmission = async (
         RedisKeys.PENDING_SUBMISSION(meta.userId, meta.problemId, submission.id),
         convertToPlainRedis(submission)
     ).then(() => {
-        Redis.expire(RedisKeys.PENDING_SUBMISSION(meta.userId, meta.problemId, submission.id), 60);
+        Redis.expire(
+            RedisKeys.PENDING_SUBMISSION(meta.userId, meta.problemId, submission.id),
+            5 * 60
+        );
     });
 };
 
