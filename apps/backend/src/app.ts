@@ -101,7 +101,7 @@ app.use(() => {
     throw new SafeError(StatusCodes.NOT_FOUND);
 });
 
-app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((error: Error, _: Request, res: Response, next: NextFunction) => {
     if (!error) return next();
 
     if (error.name === "SyntaxError") return reject(res, StatusCodes.BAD_REQUEST, "bad json");

@@ -53,12 +53,14 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
 
     if (!isContestRunning(contest)) return;
 
-    const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
+    const contestMember = await Database.selectOneFrom("contest_members", ["id", "score"], {
         contest_id: contest.id,
         user_id: userId,
     });
 
     if (!contestMember) return;
+
+    if (contestMember.score[problemId.toString()] >= score) return;
 
     await Database.raw(
         `UPDATE contest_members SET score['${problemId}']=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
