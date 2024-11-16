@@ -67,6 +67,7 @@ import { migration_migrate_user_tables } from "./migrations/0042_migrate_user_ta
 import { migration_remove_edu_links } from "./migrations/0043_remove_edu_links";
 import { migration_edu_user_uid_index } from "./migrations/0044_edu_user_uid_index";
 import { migration_add_require_edu_verification } from "./migrations/0045_add_require_edu_verification";
+import { migration_fix_contest_members_table } from "./migrations/0046_fix_contest_members_table";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -145,6 +146,7 @@ const migrations: Migration<any>[] = [
     migration_remove_edu_links,
     migration_edu_user_uid_index,
     migration_add_require_edu_verification,
+    migration_fix_contest_members_table,
 ];
 
 export const initDatabase = async () => {
