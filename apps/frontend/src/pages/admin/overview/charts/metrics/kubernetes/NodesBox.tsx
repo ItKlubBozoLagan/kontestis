@@ -51,7 +51,7 @@ export const NodesBox: FC<Properties> = ({ kubeData }) => {
                             {t("admin.overview.metrics.kubernetes.nodes.title")}
                         </span>
                     </div>
-                    <span tw={"text-base font-mono"}>{kubeData.appScale}</span>
+                    <span tw={"text-base font-mono"}>{kubeData.nodes.length}</span>
                 </div>
                 {expanded && (
                     <div tw={"flex flex-col gap-1 pl-2"}>
