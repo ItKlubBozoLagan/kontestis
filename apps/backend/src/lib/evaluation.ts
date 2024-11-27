@@ -310,7 +310,7 @@ export const beginEvaluation = async (
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
 
-    const _ = await (async () => {
+    const _ = (async () => {
         const clusterSubmissions = await Promise.all(
             clusters.map((c) => evaluateCluster(problemDetails, c, problem, pendingSubmission))
         );
