@@ -188,7 +188,6 @@ export const ProblemViewPage: FC = () => {
                             onClick={() => {
                                 if (code.trim().length === 0) return;
 
-                                // TODO: react query mutations
                                 submitMutation.mutate({
                                     code: convertToBase64(code),
                                     language,
