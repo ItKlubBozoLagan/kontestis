@@ -84,7 +84,7 @@ SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (r
         endListener
     );
 
-    return respond(res, StatusCodes.CREATED, { submission: submissionId });
+    return respond(res, StatusCodes.ACCEPTED, { submission: submissionId });
 });
 
 // TODO: permissions return full response

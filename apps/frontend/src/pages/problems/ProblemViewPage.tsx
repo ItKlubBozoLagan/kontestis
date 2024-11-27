@@ -1,7 +1,7 @@
 import "./problem-markdown.scss";
 
 import { EvaluationLanguage } from "@kontestis/models";
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import { IconType } from "react-icons";
 import { FiCheckSquare, FiClock, FiCode, FiDatabase } from "react-icons/all";
 import ReactMarkdown from "react-markdown";
@@ -10,11 +10,11 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import { theme } from "twin.macro";
 
-import { http } from "../../api/http";
 import { SimpleButton } from "../../components/SimpleButton";
 import { TitledSection } from "../../components/TitledSection";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useAllProblemSubmissions } from "../../hooks/submission/useAllProblemSubmissions";
+import { useSubmitSubmission } from "../../hooks/submission/useSubmitSubmission";
 import { useDocumentEvent } from "../../hooks/useDocumentEvent";
 import { useTranslation } from "../../hooks/useTranslation";
 import { convertToBase64 } from "../../util/base";
@@ -56,16 +56,31 @@ export const LimitBox = React.forwardRef<
 LimitBox.displayName = "LimitBox";
 
 export const ProblemViewPage: FC = () => {
-    const { problemId } = useParams<Properties>();
+    const { problemId: _problemId } = useParams<Properties>();
 
     const textAreaReference = useRef<HTMLTextAreaElement | null>(null);
 
     const [language, setLanguage] = useState<EvaluationLanguage>("python");
     const [code, setCode] = useState("");
 
-    const { data: problem } = useProblem(BigInt(problemId ?? 0));
-    const { data: submissions } = useAllProblemSubmissions(BigInt(problemId ?? 0), {
-        refetchInterval: 1000,
+    const problemId = useMemo(() => BigInt(_problemId ?? 0), [_problemId]);
+
+    const { data: problem } = useProblem(problemId);
+    const { data: submissions, refetch: refetchSubmissions } = useAllProblemSubmissions(problemId, {
+        refetchInterval: (data) => {
+            const hasAnyIncomplete = (data ?? []).some((it) => !it.completed);
+
+            return hasAnyIncomplete && 1000;
+        },
+    });
+
+    const submitMutation = useSubmitSubmission(problemId, {
+        onMutate: () => {
+            setCode("");
+        },
+        onSuccess: () => {
+            const _ = refetchSubmissions();
+        },
     });
 
     useEffect(() => {
@@ -174,12 +189,10 @@ export const ProblemViewPage: FC = () => {
                                 if (code.trim().length === 0) return;
 
                                 // TODO: react query mutations
-                                const _ = http.post("/submission/" + problemId + "/", {
+                                submitMutation.mutate({
                                     code: convertToBase64(code),
                                     language,
                                 });
-
-                                setCode("");
                             }}
                         >
                             {t("problems.individual.submit.submitButton")}
