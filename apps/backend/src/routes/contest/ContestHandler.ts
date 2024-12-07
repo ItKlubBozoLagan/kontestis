@@ -224,6 +224,7 @@ ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
             id: generateSnowflake(),
             user_id: user.id,
             organisation_id: contest.organisation_id,
+            permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.VIEW),
             elo: DEFAULT_ELO,
         });
 
