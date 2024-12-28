@@ -34,6 +34,10 @@ export default {
             },
         },
     },
+    aaieduButton: {
+        purposeLogin: "Prijava",
+        purposeLink: "Poveži račun",
+    },
     notifications: {
         "contest-start": "Natjecanje %1 je počelo!",
         "contest-end": "Natjecanje %1 je završilo!",
@@ -434,6 +438,16 @@ export default {
             admin: "Administrator",
             organisationAdmin: "Org. Administrator",
             owner: "Vlasnik",
+        },
+        aaiedu: {
+            title: "Povezan AAI@Edu račun",
+            userId: "ID korisnika",
+            fullName: "Ime i prezime",
+            email: "Adresa E-pošte",
+            associatedOrg: "Povezana organizacija",
+            dob: "Datum rođenja",
+            studentCategory: "Kategorija studenta",
+            professionalStatus: "Profesionalni status",
         },
         stats: {
             submissions: {
