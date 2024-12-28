@@ -34,6 +34,10 @@ const I18nEn = {
             },
         },
     },
+    aaieduButton: {
+        purposeLogin: "Log in",
+        purposeLink: "Link",
+    },
     notifications: {
         "contest-start": "Contest %1 has started!",
         "contest-end": "Contest %1 has ended!",
@@ -428,12 +432,22 @@ const I18nEn = {
     account: {
         label: "Account information",
         fullName: "Full Name",
-        email: "E-mail",
+        email: "E-Mail",
         breadcrumbs: {
             creator: "Creator",
             admin: "Admin",
             organisationAdmin: "Org. Admin",
             owner: "Owner",
+        },
+        aaiedu: {
+            title: "Linked AAI@Edu account",
+            userId: "User ID",
+            fullName: "Full name",
+            email: "E-Mail address",
+            associatedOrg: "Associated organisation",
+            dob: "Date of birth",
+            studentCategory: "Student category",
+            professionalStatus: "Professional status",
         },
         stats: {
             submissions: {
