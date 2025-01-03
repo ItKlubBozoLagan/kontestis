@@ -353,7 +353,7 @@ export const beginEvaluation = async (
         await Promise.all([
             Database.insertInto("submissions", newSubmission),
             updateContestMember(problemDetails.problemId, user.id, score),
-        ]);
+        ]).catch((error) => Logger.error("submission store failed: ", error + ""));
 
         // I know I can put this in Promise.all, but it needs to be removed
         // from redis after we have successfully stored it in the database
