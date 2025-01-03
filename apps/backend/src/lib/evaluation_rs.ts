@@ -214,17 +214,32 @@ const convertSuccessfulEvaluationToEvaluationResult = (
 const PendingListeners: Record<number, (response: SuccessfulEvaluationRS) => void> = {};
 
 export const subscribeToEvaluatorPubSub = async () => {
+    setInterval(() => {
+        Redis.publish(Globals.evaluatorRedisPubSubChannel, "heartbeat");
+    }, 60 * 1000);
+
     const subscriber = Redis.duplicate();
 
     await subscriber.connect();
 
     await subscriber.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
+        if (message === "heartbeat") return;
+
         try {
             const parsed = JSON.parse(message);
 
             const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
 
-            if (!valid || !PendingListeners[parsed.evaluation_id]) return;
+            if (!valid) {
+                Logger.error(
+                    "failed validating evaluator response: " +
+                        JSON.stringify(CompiledSuccessfulEvaluationSchema.Errors)
+                );
+
+                return;
+            }
+
+            if (!PendingListeners[parsed.evaluation_id]) return;
 
             PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
             delete PendingListeners[parsed.evaluation_id];
