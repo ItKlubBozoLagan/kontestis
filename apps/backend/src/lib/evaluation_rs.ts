@@ -223,7 +223,11 @@ export const subscribeToEvaluatorPubSub = async () => {
     await subscriber.connect();
 
     await subscriber.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
+        Logger.info("Got message: " + message);
+
         if (message === "heartbeat") return;
+
+        Logger.info("Processing message");
 
         try {
             const parsed = JSON.parse(message);
@@ -239,7 +243,11 @@ export const subscribeToEvaluatorPubSub = async () => {
                 return;
             }
 
+            Logger.info("Find pending listener for evaluation id: " + parsed.evaluation_id);
+
             if (!PendingListeners[parsed.evaluation_id]) return;
+
+            Logger.info("Pending listener found!");
 
             PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
             delete PendingListeners[parsed.evaluation_id];
@@ -267,8 +275,10 @@ export const evaluateTestcasesNew = async (
 
     const evaluationResponse = new Promise<SuccessfulEvaluationRS>((resolve) => {
         PendingListeners[evaluationId] = resolve;
+        Logger.info(`Setup pending listener for evaluation if ${evaluationId}`);
     });
 
+    Logger.info(`Sending evaluation id ${evaluationId} to evaluator!`);
     await Redis.rPush(Globals.evaluatorRedisQueueKey, JSON.stringify(payload));
     const response = await evaluationResponse;
 
