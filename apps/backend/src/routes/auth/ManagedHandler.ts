@@ -43,7 +43,7 @@ ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async 
 
 const RegisterSchema = Type.Object({
     email: Type.RegEx(/^[^@]+@[^@]+\.[^@]+$/),
-    password: Type.String({ minLength: 4, maxLength: 1 << 10 }),
+    password: Type.String({ minLength: 4, maxLength: 1024 }),
     full_name: Type.String({ minLength: 4, maxLength: 128 }),
     picture_url: Type.Optional(Type.String({ maxLength: 1024 })),
 });
