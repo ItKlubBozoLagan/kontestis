@@ -46,6 +46,16 @@ export type EduUserV1 = UserV6 & {
     professional_status: string | null;
 };
 
+export type ManagedUserV1 = {
+    id: Snowflake;
+    email: string;
+    password: string;
+    created_at?: Date;
+    confirmed_at?: Date;
+};
+
+export type ManagedUser = ManagedUserV1;
+
 export type EduUser = EduUserV1;
 
 export type EduUserLinksV1 = {

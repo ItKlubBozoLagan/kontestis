@@ -17,7 +17,7 @@ const TOKEN_DURATION = "7d";
 const AuthSourceType = Type.Union([
     Type.Literal("google"),
     Type.Literal("aai-edu"),
-    Type.Literal("native"),
+    Type.Literal("managed"),
 ]);
 
 export type AuthSource = Static<typeof AuthSourceType>;

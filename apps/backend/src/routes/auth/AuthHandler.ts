@@ -12,10 +12,12 @@ import { useValidation } from "../../middlewares/useValidation";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
 import { AaiEduHandler } from "./AaiEduHandler";
+import ManagedHandler from "./ManagedHandler";
 
 const AuthHandler = Router();
 
 AuthHandler.use("/aai-edu", AaiEduHandler);
+AuthHandler.use("/managed", ManagedHandler);
 
 const OAuthSchema = Type.Object({
     credential: Type.String(),
