@@ -26,7 +26,7 @@ const processEmailVerification = async (user: User) => {
         EX: 30 * 60,
     });
 
-    await sendRegistrationMail(user, code);
+    const _ = sendRegistrationMail(user, code);
 };
 
 const LoginSchema = Type.Object({
@@ -120,7 +120,7 @@ ManagedHandler.post(
             processEmailVerification(user),
         ]);
 
-        return respond(res, StatusCodes.OK, user);
+        return respond(res, StatusCodes.ACCEPTED, user);
     }
 );
 

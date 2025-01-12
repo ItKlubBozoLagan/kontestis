@@ -15,19 +15,24 @@ const transporter = createTransport({
 });
 
 export const sendRegistrationMail = async (user: User, code: string) => {
-    Logger.debug("Sending veritification email to: " + user.email);
+    Logger.debug("Sending verification email to: " + user.email);
 
     const subject = "Kontestis - E-mail verification";
     const text = `Hello ${user.full_name},
 
     Please verify your email by clicking on the following link: ${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}`;
 
+    const html = `Hello ${user.full_name},
+
+    Please verify your email by clicking on the following link: <a href="${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}">${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}</a>`;
+
     await transporter
         .sendMail({
             from: `${Globals.emailNotifierAccountDisplayName} <${Globals.emailNotifierAccountMail}>`,
             to: user.email,
-            subject: subject,
-            text: text,
+            subject,
+            text,
+            html,
         })
         .then((response) => {
             Logger.debug("Verification main response", response);
