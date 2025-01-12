@@ -73,7 +73,6 @@ export const validateJwt = async (
 
     if (!compiledValidJWTSchema.Check(jwt)) return null;
 
-    // TODO: edu account support
     const user = await Database.selectOneFrom("users", "*", {
         id: jwt.user_id,
     });
@@ -90,7 +89,13 @@ export const generateGravatarUrl = (email: string) => {
     return `https://www.gravatar.com/avatar/${md5(email.trim().toLowerCase())}?s=256`;
 };
 
-export const processLogin = async (user: User, newLogin: boolean) => {
+export const processLogin = async (
+    user: User,
+    options: {
+        newLogin: boolean;
+        confirm: boolean;
+    }
+) => {
     const defaultOrgMember = await Database.selectOneFrom("organisation_members", ["id"], {
         organisation_id: DEFAULT_ORGANISATION.id,
         user_id: user.id,
@@ -119,9 +124,18 @@ export const processLogin = async (user: User, newLogin: boolean) => {
             code: randomSequence(16),
         });
 
+    if (options.confirm) {
+        const managed = await Database.selectOneFrom("managed_users", ["confirmed_at"], {
+            id: user.id,
+        });
+
+        if (managed && !managed.confirmed_at)
+            await Database.update("managed_users", { confirmed_at: new Date() }, { id: user.id });
+    }
+
     await Influx.insert(
         "logins",
-        { userId: user.id.toString(), newLogin: String(newLogin) },
+        { userId: user.id.toString(), newLogin: String(options.newLogin) },
         { happened: true }
     );
 };

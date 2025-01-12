@@ -16,17 +16,20 @@ const FormData = z.object({
 });
 
 type Properties = {
-    setError: (error: string | undefined) => void;
+    onError: (error: string | undefined) => void;
+    onEmailResent: () => void;
 };
 
-export const ManagedLoginForm: FC<Properties> = ({ setError }) => {
+export const ManagedLoginForm: FC<Properties> = ({ onError, onEmailResent }) => {
     const { setToken } = useTokenStore();
 
     const loginMutation = useLogin({
         onError: (error) => {
-            if (error.status === 401) setError("Invalid email or password");
-            else if (error.status === 422) setError("Email not verified");
-            else setError("Something went wrong");
+            if (error.status === 401) onError("Invalid email or password");
+            else if (error.status === 422) {
+                if (error.message === "verification-repeat") onEmailResent();
+                else onError("Email not verified");
+            } else onError("Something went wrong");
         },
         onSuccess: (data) => {
             setToken(data.token);

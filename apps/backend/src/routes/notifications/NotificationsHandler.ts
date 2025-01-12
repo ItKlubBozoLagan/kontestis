@@ -136,11 +136,11 @@ NotificationsHandler.get("/mail/modify/:code/:status/", async (req, res) => {
     return res.status(200).send(
         `Mail postavke za user id  ${preferences.user_id} su postavljene na: ${req.params.status}
                 <br/>
-                <a href="${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${preferences.code}/all">all</a>
+                <a href="${Globals.backendUrl}/api/notifications/mail/modify/${preferences.code}/all">all</a>
                 <br/>
-                <a href="${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${preferences.code}/contest-only">contest-only</a>
+                <a href="${Globals.backendUrl}/api/notifications/mail/modify/${preferences.code}/contest-only">contest-only</a>
                 <br/>
-                <a href="${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${preferences.code}/none">none</a>
+                <a href="${Globals.backendUrl}/api/notifications/mail/modify/${preferences.code}/none">none</a>
             `
     );
 });

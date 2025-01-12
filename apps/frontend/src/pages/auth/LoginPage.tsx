@@ -1,5 +1,5 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 
 import { http, ServerData } from "../../api/http";
@@ -13,8 +13,11 @@ const LoginBase: FC = () => {
     const { setToken } = useTokenStore();
 
     const [error, setError] = useState<string>();
+    const [managedEmailResent, setManagedEmailResent] = useState(false);
 
     const location = useLocation();
+
+    const searchParameters = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
     const onGoogleLoginSuccess = useCallback((credentialResponse: CredentialResponse) => {
         const { credential } = credentialResponse;
@@ -37,12 +40,26 @@ const LoginBase: FC = () => {
                             Registered successfully! Verify your email before logging in.
                         </span>
                     )}
-                    {error && <span tw={"text-red-500 text-lg"}>{error}</span>}
+                    {searchParameters.has("confirmed") && (
+                        <span tw={"text-green-700 text-lg"}>
+                            E-mail confirmed, you can log in now!
+                        </span>
+                    )}
+                    {managedEmailResent ? (
+                        <span tw={"text-red-500 text-lg"}>
+                            E-mail not verified! Check your inbox!
+                        </span>
+                    ) : (
+                        error && <span tw={"text-red-500 text-lg"}>{error}</span>
+                    )}
                     <div tw={"flex gap-4 justify-center items-stretch w-full"}>
                         <div tw={"flex flex-col gap-4 items-center w-full px-12 py-4"}>
                             <span tw={"text-lg"}>Log in with email</span>
                             <div tw={"w-full flex flex-col gap-4 items-center flex-grow"}>
-                                <ManagedLoginForm setError={setError} />
+                                <ManagedLoginForm
+                                    onError={setError}
+                                    onEmailResent={() => setManagedEmailResent(true)}
+                                />
                             </div>
                         </div>
                         <div tw={"flex-shrink-0 flex flex-col items-center justify-center gap-1"}>

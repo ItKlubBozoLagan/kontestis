@@ -14,7 +14,21 @@ const transporter = createTransport({
     },
 });
 
-export const sendRegistrationMail = async (user: User) => {};
+export const sendRegistrationMail = async (user: User, code: string) => {
+    Logger.debug("Sending veritification email to: " + user.email);
+
+    const subject = "Kontestis - E-mail verification";
+    const text = `Hello ${user.full_name},
+
+    Please verify your email by clicking on the following link: ${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}`;
+
+    await transporter.sendMail({
+        from: `${Globals.emailNotifierAccountDisplayName} <${Globals.emailNotifierAccountMail}>`,
+        to: user.email,
+        subject: subject,
+        text: text,
+    });
+};
 
 export const sendMail = async (
     user: User,
@@ -46,18 +60,18 @@ export const sendMail = async (
         // TODO: Make this configurable
         text:
             `Ovu obavijest primate jer imate račun na platformi Kontestis:
-            U slučaju da ne želite više primati daljnje obavijesti: ${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${mailPreferences.code}/none
-            Ako želite primati jedino obavijesti o nadolazečim natjecanjima: ${Globals.emailSettingsBaseURL}/api/notifications/mail/modify/${mailPreferences.code}/contest-only
+            U slučaju da ne želite više primati daljnje obavijesti: ${Globals.backendUrl}/api/notifications/mail/modify/${mailPreferences.code}/none
+            Ako želite primati jedino obavijesti o nadolazečim natjecanjima: ${Globals.backendUrl}/api/notifications/mail/modify/${mailPreferences.code}/contest-only
             ` + text,
 
         html: `
             <p>
               Ovu obavijest primate jer imate račun na platformi Kontestis: <br/>
               U slučaju da neželite više primati daljnje obavijesti: <a href="${
-                  Globals.emailSettingsBaseURL
+                  Globals.backendUrl
               }/api/notifications/mail/modify/${mailPreferences.code}/none">Unsubscibe</a> </br>
               Ako želite primati jedino obavijesti o nadolazečim natjecanjima: <a href="${
-                  Globals.emailSettingsBaseURL
+                  Globals.backendUrl
               }/api/notifications/mail/modify/${
             mailPreferences.code
         }/contest-only">Unsubscibe Secondary</a> </br>

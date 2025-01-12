@@ -80,7 +80,7 @@ export const AccountPage: FC = () => {
                                 <Breadcrumb color={"#adb7c0"} borderColor={"#6f7173"}>
                                     AAI@EduHr - {user.edu_data.associated_org}
                                 </Breadcrumb>
-                            )}{" "}
+                            )}
                             {user.auth_source === "google" && (
                                 <Breadcrumb
                                     prependIcon={FcGoogle}

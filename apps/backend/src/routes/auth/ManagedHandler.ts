@@ -7,14 +7,27 @@ import { EMPTY_PERMISSIONS } from "permissio";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
+import { Globals } from "../../globals";
 import { generateGravatarUrl, generateJwt, processLogin } from "../../lib/auth";
+import { sendRegistrationMail } from "../../lib/mail";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { Redis } from "../../redis/Redis";
 import { RedisKeys } from "../../redis/RedisKeys";
+import { randomSequence } from "../../utils/random";
 import { respond } from "../../utils/response";
 
 const ManagedHandler = Router();
+
+const processEmailVerification = async (user: User) => {
+    const code = randomSequence(32);
+
+    await Redis.set(RedisKeys.MANAGED_USER_CONFIRMATION_CODE(user.id), code, {
+        EX: 30 * 60,
+    });
+
+    await sendRegistrationMail(user, code);
+};
 
 const LoginSchema = Type.Object({
     email: Type.String(),
@@ -32,15 +45,30 @@ ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async 
 
     if (!verifyResult) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-    if (!managedUser.confirmed_at) throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY);
-
     const user = await Database.selectOneFrom("users", "*", {
         id: managedUser.id,
     });
 
     if (!user) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
-    await processLogin(user, true);
+    if (!managedUser.confirmed_at) {
+        const confirmationCode = await Redis.get(
+            RedisKeys.MANAGED_USER_CONFIRMATION_CODE(managedUser.id)
+        );
+
+        if (confirmationCode !== null) {
+            throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY);
+        }
+
+        await processEmailVerification(user);
+
+        throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY, "verification-repeat");
+    }
+
+    await processLogin(user, {
+        newLogin: false,
+        confirm: true,
+    });
 
     return respond(res, StatusCodes.OK, { token: generateJwt(user.id, "managed", {}) });
 });
@@ -57,7 +85,7 @@ ManagedHandler.post(
     useValidation(RegisterSchema, { body: true }),
     async (req, res) => {
         const existingUser = await Database.selectOneFrom("users", ["id"], {
-            email: req.body.email,
+            email: req.body.email.toLowerCase(),
         });
 
         if (existingUser) throw new SafeError(StatusCodes.CONFLICT);
@@ -66,7 +94,7 @@ ManagedHandler.post(
 
         const managedUser: ManagedUser = {
             id: generateSnowflake(),
-            email: req.body.email,
+            email: req.body.email.toLowerCase(),
             password: passwordHash,
             created_at: new Date(),
             confirmed_at: undefined,
@@ -74,22 +102,29 @@ ManagedHandler.post(
 
         const user: User = {
             id: managedUser.id,
-            email: managedUser.email,
+            email: managedUser.email.toLowerCase(),
             permissions: EMPTY_PERMISSIONS,
             full_name: req.body.full_name,
-            picture_url: req.body.picture_url ?? generateGravatarUrl(managedUser.email),
+            picture_url:
+                req.body.picture_url ?? generateGravatarUrl(managedUser.email.toLowerCase()),
         };
 
         await Database.insertInto("managed_users", managedUser);
         await Database.insertInto("users", user);
 
-        await processLogin(user, true);
+        await Promise.all([
+            processLogin(user, {
+                newLogin: false,
+                confirm: false,
+            }),
+            processEmailVerification(user),
+        ]);
 
         return respond(res, StatusCodes.OK, user);
     }
 );
 
-ManagedHandler.post("/confirm/:user_id/:code", async (req, res) => {
+ManagedHandler.get("/confirm/:user_id/:code", async (req, res) => {
     const user = await Database.selectOneFrom("managed_users", ["id", "confirmed_at"], {
         id: req.params.user_id,
     });
@@ -99,9 +134,6 @@ ManagedHandler.post("/confirm/:user_id/:code", async (req, res) => {
     if (user.confirmed_at) throw new SafeError(StatusCodes.CONFLICT);
 
     const confirmationCode = await Redis.get(RedisKeys.MANAGED_USER_CONFIRMATION_CODE(user.id));
-
-    // This should never happen
-    if (!confirmationCode) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
     if (confirmationCode !== req.params.code) throw new SafeError(StatusCodes.NOT_FOUND);
 
@@ -115,7 +147,9 @@ ManagedHandler.post("/confirm/:user_id/:code", async (req, res) => {
         }
     );
 
-    return respond(res, StatusCodes.OK);
+    await Redis.del(RedisKeys.MANAGED_USER_CONFIRMATION_CODE(user.id));
+
+    return res.redirect(`${Globals.frontendUrl}/?confirmed=true`);
 });
 
 export default ManagedHandler;
