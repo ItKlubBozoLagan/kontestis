@@ -76,11 +76,12 @@ export const AccountPage: FC = () => {
                     </div>
                     <div tw={"w-[256px] flex flex-col gap-2"}>
                         <div tw={"flex flex-wrap-reverse gap-2"}>
-                            {user.is_edu ? (
+                            {user.is_edu && (
                                 <Breadcrumb color={"#adb7c0"} borderColor={"#6f7173"}>
                                     AAI@EduHr - {user.edu_data.associated_org}
                                 </Breadcrumb>
-                            ) : (
+                            )}{" "}
+                            {user.auth_source === "google" && (
                                 <Breadcrumb
                                     prependIcon={FcGoogle}
                                     color={theme`colors.white`}

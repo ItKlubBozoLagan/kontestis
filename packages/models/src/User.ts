@@ -65,8 +65,11 @@ export type EduUserLinksV1 = {
 
 export type User = UserV6;
 
-export type FullUser = User &
-    (
+export type AuthSource = "google" | "aai-edu" | "managed";
+
+export type FullUser = User & {
+    auth_source: AuthSource;
+} & (
         | {
               is_edu: false;
           }

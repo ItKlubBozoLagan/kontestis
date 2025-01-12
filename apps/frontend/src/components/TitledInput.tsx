@@ -5,6 +5,7 @@ import tw from "twin.macro";
 export type InputProperties = {
     label?: string;
     bigLabel?: boolean;
+    error?: string;
     // a kind of wrapper around autoFocus, but makes eslint not yell
     focusOnLoad?: boolean;
 };
@@ -12,11 +13,11 @@ export type InputProperties = {
 export const TitledInput = React.forwardRef<
     HTMLInputElement,
     React.InputHTMLAttributes<HTMLInputElement> & InputProperties
->(({ name, label, className, bigLabel, focusOnLoad, ...properties }, reference) => {
+>(({ name, label, className, bigLabel, error, focusOnLoad, ...properties }, reference) => {
     return (
-        <div tw={"w-full flex flex-col justify-start max-w-[256px]"} className={className}>
+        <div tw={"w-full flex flex-col gap-1 justify-start max-w-[256px]"} className={className}>
             {label && (
-                <label id={name} tw={"pb-1"} css={bigLabel ? tw`text-base` : tw`text-sm pl-1`}>
+                <label id={name} css={bigLabel ? tw`text-base` : tw`text-sm pl-1`}>
                     {label}
                 </label>
             )}
@@ -29,6 +30,7 @@ export const TitledInput = React.forwardRef<
                 }
                 {...properties}
             />
+            {error && <span tw={"text-red-600"}>{error}</span>}
         </div>
     );
 });

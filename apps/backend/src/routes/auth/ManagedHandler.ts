@@ -26,11 +26,11 @@ ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async 
         email: req.body.email,
     });
 
-    if (!managedUser) throw new SafeError(StatusCodes.NOT_FOUND);
+    if (!managedUser) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
     const verifyResult = await verify(managedUser.password, req.body.password);
 
-    if (!verifyResult) throw new SafeError(StatusCodes.NOT_FOUND);
+    if (!verifyResult) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
     if (!managedUser.confirmed_at) throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY);
 

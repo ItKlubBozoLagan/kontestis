@@ -1,5 +1,11 @@
-import { DEFAULT_ELO, OrganisationPermissions, Snowflake, User } from "@kontestis/models";
-import { Static, Type } from "@sinclair/typebox";
+import {
+    AuthSource,
+    DEFAULT_ELO,
+    OrganisationPermissions,
+    Snowflake,
+    User,
+} from "@kontestis/models";
+import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import md5 from "md5";
@@ -19,8 +25,6 @@ const AuthSourceType = Type.Union([
     Type.Literal("aai-edu"),
     Type.Literal("managed"),
 ]);
-
-export type AuthSource = Static<typeof AuthSourceType>;
 
 export const generateJwt = <
     S extends AuthSource,
@@ -53,7 +57,12 @@ const ValidJWTSchema = Type.Object({
 
 const compiledValidJWTSchema = TypeCompiler.Compile(ValidJWTSchema);
 
-export const validateJwt = async (token: string): Promise<User | null> => {
+export const validateJwt = async (
+    token: string
+): Promise<{
+    user: User;
+    authSource: AuthSource;
+} | null> => {
     let jwt: string | JwtPayload;
 
     try {
@@ -71,7 +80,10 @@ export const validateJwt = async (token: string): Promise<User | null> => {
 
     if (!user || !/^\d+$/.test(jwt.jti)) return null;
 
-    return user;
+    return {
+        user,
+        authSource: jwt.source,
+    };
 };
 
 export const generateGravatarUrl = (email: string) => {

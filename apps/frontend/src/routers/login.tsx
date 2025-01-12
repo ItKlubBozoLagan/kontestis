@@ -3,6 +3,7 @@ import { Navigate, RouteObject } from "react-router-dom";
 
 import { AaiLoginPage } from "../pages/auth/AaiLoginPage";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { RegisterPage } from "../pages/auth/RegisterPage";
 import { Root } from "../pages/Root";
 
 export const loginRoutes: RouteObject[] = [
@@ -13,6 +14,10 @@ export const loginRoutes: RouteObject[] = [
             {
                 index: true,
                 element: <LoginPage />,
+            },
+            {
+                path: "register",
+                element: <RegisterPage />,
             },
             {
                 path: "aai-login",
