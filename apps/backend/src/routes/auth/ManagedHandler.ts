@@ -10,6 +10,8 @@ import { SafeError } from "../../errors/SafeError";
 import { generateGravatarUrl, generateJwt, processLogin } from "../../lib/auth";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { Redis } from "../../redis/Redis";
+import { RedisKeys } from "../../redis/RedisKeys";
 import { respond } from "../../utils/response";
 
 const ManagedHandler = Router();
@@ -32,11 +34,13 @@ ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async 
 
     if (!managedUser.confirmed_at) throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY);
 
-    const user = await Database.selectOneFrom("users", ["id"], {
+    const user = await Database.selectOneFrom("users", "*", {
         id: managedUser.id,
     });
 
     if (!user) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    await processLogin(user, true);
 
     return respond(res, StatusCodes.OK, { token: generateJwt(user.id, "managed", {}) });
 });
@@ -84,5 +88,34 @@ ManagedHandler.post(
         return respond(res, StatusCodes.OK, user);
     }
 );
+
+ManagedHandler.post("/confirm/:user_id/:code", async (req, res) => {
+    const user = await Database.selectOneFrom("managed_users", ["id", "confirmed_at"], {
+        id: req.params.user_id,
+    });
+
+    if (!user) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    if (user.confirmed_at) throw new SafeError(StatusCodes.CONFLICT);
+
+    const confirmationCode = await Redis.get(RedisKeys.MANAGED_USER_CONFIRMATION_CODE(user.id));
+
+    // This should never happen
+    if (!confirmationCode) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    if (confirmationCode !== req.params.code) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    await Database.update(
+        "managed_users",
+        {
+            confirmed_at: new Date(),
+        },
+        {
+            id: user.id,
+        }
+    );
+
+    return respond(res, StatusCodes.OK);
+});
 
 export default ManagedHandler;

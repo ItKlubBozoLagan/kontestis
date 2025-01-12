@@ -14,6 +14,8 @@ const transporter = createTransport({
     },
 });
 
+export const sendRegistrationMail = async (user: User) => {};
+
 export const sendMail = async (
     user: User,
     subject: string,
