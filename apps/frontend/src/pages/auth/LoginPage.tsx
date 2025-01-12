@@ -53,7 +53,7 @@ const LoginBase: FC = () => {
                         error && <span tw={"text-red-500 text-lg"}>{error}</span>
                     )}
                     <div tw={"flex gap-4 justify-center items-stretch w-full"}>
-                        <div tw={"flex flex-col gap-4 items-center w-full px-12 py-4"}>
+                        <div tw={"flex flex-col gap-4 items-center w-full px-12 py-4 basis-1/2"}>
                             <span tw={"text-lg"}>Log in with email</span>
                             <div tw={"w-full flex flex-col gap-4 items-center flex-grow"}>
                                 <ManagedLoginForm
@@ -67,7 +67,7 @@ const LoginBase: FC = () => {
                             <span tw={"text-neutral-800 mb-1"}>or</span>
                             <div tw={"w-[1px] flex-grow bg-neutral-400"}></div>
                         </div>
-                        <div tw={"flex flex-col gap-6 items-center w-full py-4"}>
+                        <div tw={"flex flex-col gap-6 items-center w-full py-4 basis-1/2"}>
                             <span tw={"text-lg"}>Log in with SSO</span>
                             <div
                                 tw={
