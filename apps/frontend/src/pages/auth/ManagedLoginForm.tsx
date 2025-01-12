@@ -36,7 +36,6 @@ export const ManagedLoginForm: FC<Properties> = ({ setError }) => {
     const {
         handleSubmit,
         register,
-        watch,
         formState: { errors },
     } = useForm<z.infer<typeof FormData>>({
         resolver: zodResolver(FormData),
