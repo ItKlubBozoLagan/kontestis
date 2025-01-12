@@ -22,12 +22,16 @@ export const sendRegistrationMail = async (user: User, code: string) => {
 
     Please verify your email by clicking on the following link: ${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}`;
 
-    await transporter.sendMail({
-        from: `${Globals.emailNotifierAccountDisplayName} <${Globals.emailNotifierAccountMail}>`,
-        to: user.email,
-        subject: subject,
-        text: text,
-    });
+    await transporter
+        .sendMail({
+            from: `${Globals.emailNotifierAccountDisplayName} <${Globals.emailNotifierAccountMail}>`,
+            to: user.email,
+            subject: subject,
+            text: text,
+        })
+        .then((response) => {
+            Logger.debug("Verification main response", response);
+        });
 };
 
 export const sendMail = async (
