@@ -81,7 +81,10 @@ export const loginEduUser = async (
             picture_url: eduUser.picture_url,
         });
 
-    await processLogin(eduUser, !existingEduUser && !existingMailUser);
+    await processLogin(eduUser, {
+        newLogin: !existingEduUser && !existingMailUser,
+        confirm: true,
+    });
 
     const jwt = generateJwt(eduUser.id, "aai-edu", {
         id_token,

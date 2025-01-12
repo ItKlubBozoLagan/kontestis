@@ -87,7 +87,10 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
         await Database.insertInto("users", user);
     }
 
-    await processLogin(user, !potentialEntry);
+    await processLogin(user, {
+        newLogin: !potentialEntry,
+        confirm: true,
+    });
 
     return user;
 };

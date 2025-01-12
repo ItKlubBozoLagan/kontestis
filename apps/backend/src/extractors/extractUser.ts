@@ -14,9 +14,11 @@ export const extractUser = async (req: Request): Promise<FullUser> => {
         if (!(auth && auth.startsWith("Bearer "))) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
         const token = auth.slice("Bearer ".length);
-        const tokenData = await validateJwt(token).catch(() => null);
+        const jwtData = await validateJwt(token).catch(() => null);
 
-        if (tokenData === null) throw new SafeError(StatusCodes.UNAUTHORIZED);
+        if (jwtData === null) throw new SafeError(StatusCodes.UNAUTHORIZED);
+
+        const { user: tokenData, authSource } = jwtData;
 
         const eduUser = await Database.selectOneFrom("edu_users", "*", {
             id: tokenData.id,
@@ -25,6 +27,7 @@ export const extractUser = async (req: Request): Promise<FullUser> => {
         if (eduUser)
             return {
                 ...tokenData,
+                auth_source: authSource,
                 is_edu: true,
                 edu_data: eduUser,
             };
@@ -32,6 +35,7 @@ export const extractUser = async (req: Request): Promise<FullUser> => {
         return {
             ...tokenData,
             is_edu: false,
+            auth_source: authSource,
         };
     });
 };

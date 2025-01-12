@@ -16,6 +16,9 @@ const I18nEn = {
         logout: "Log out",
         siteRestriction: "Login is currently only limited to %1 and %2 accounts",
     },
+    register: {
+        label: "Register",
+    },
     navbar: {
         dashboard: "Dashboard",
         contests: "Contests",

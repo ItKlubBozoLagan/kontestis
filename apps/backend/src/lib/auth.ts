@@ -1,5 +1,11 @@
-import { DEFAULT_ELO, OrganisationPermissions, Snowflake, User } from "@kontestis/models";
-import { Static, Type } from "@sinclair/typebox";
+import {
+    AuthSource,
+    DEFAULT_ELO,
+    OrganisationPermissions,
+    Snowflake,
+    User,
+} from "@kontestis/models";
+import { Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import md5 from "md5";
@@ -17,10 +23,8 @@ const TOKEN_DURATION = "7d";
 const AuthSourceType = Type.Union([
     Type.Literal("google"),
     Type.Literal("aai-edu"),
-    Type.Literal("native"),
+    Type.Literal("managed"),
 ]);
-
-export type AuthSource = Static<typeof AuthSourceType>;
 
 export const generateJwt = <
     S extends AuthSource,
@@ -53,7 +57,12 @@ const ValidJWTSchema = Type.Object({
 
 const compiledValidJWTSchema = TypeCompiler.Compile(ValidJWTSchema);
 
-export const validateJwt = async (token: string): Promise<User | null> => {
+export const validateJwt = async (
+    token: string
+): Promise<{
+    user: User;
+    authSource: AuthSource;
+} | null> => {
     let jwt: string | JwtPayload;
 
     try {
@@ -64,21 +73,29 @@ export const validateJwt = async (token: string): Promise<User | null> => {
 
     if (!compiledValidJWTSchema.Check(jwt)) return null;
 
-    // TODO: edu account support
     const user = await Database.selectOneFrom("users", "*", {
         id: jwt.user_id,
     });
 
     if (!user || !/^\d+$/.test(jwt.jti)) return null;
 
-    return user;
+    return {
+        user,
+        authSource: jwt.source,
+    };
 };
 
 export const generateGravatarUrl = (email: string) => {
     return `https://www.gravatar.com/avatar/${md5(email.trim().toLowerCase())}?s=256`;
 };
 
-export const processLogin = async (user: User, newLogin: boolean) => {
+export const processLogin = async (
+    user: User,
+    options: {
+        newLogin: boolean;
+        confirm: boolean;
+    }
+) => {
     const defaultOrgMember = await Database.selectOneFrom("organisation_members", ["id"], {
         organisation_id: DEFAULT_ORGANISATION.id,
         user_id: user.id,
@@ -107,9 +124,18 @@ export const processLogin = async (user: User, newLogin: boolean) => {
             code: randomSequence(16),
         });
 
+    if (options.confirm) {
+        const managed = await Database.selectOneFrom("managed_users", ["confirmed_at"], {
+            id: user.id,
+        });
+
+        if (managed && !managed.confirmed_at)
+            await Database.update("managed_users", { confirmed_at: new Date() }, { id: user.id });
+    }
+
     await Influx.insert(
         "logins",
-        { userId: user.id.toString(), newLogin: String(newLogin) },
+        { userId: user.id.toString(), newLogin: String(options.newLogin) },
         { happened: true }
     );
 };

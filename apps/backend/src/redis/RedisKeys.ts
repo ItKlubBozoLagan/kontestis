@@ -12,4 +12,5 @@ export const RedisKeys = {
     CACHED_TESTCASE_OUTPUT: (clusterId: Snowflake, testcase: Snowflake) =>
         `cluster:${clusterId}:testcase:${testcase}:data-output`,
     TASK_ELO_PROCESSING: (contestId: Snowflake) => `tasks:elo:${contestId}`,
+    MANAGED_USER_CONFIRMATION_CODE: (userId: Snowflake) => `user:confirmation:${userId}`,
 };
