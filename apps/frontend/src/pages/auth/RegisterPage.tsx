@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { FC, useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
@@ -9,6 +10,7 @@ import { z } from "zod";
 import { SimpleButton } from "../../components/SimpleButton";
 import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
+import { withCaptcha } from "../../hoc/withCaptcha";
 import { useRegister } from "../../hooks/auth/useRegister";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -19,7 +21,7 @@ const FormData = z.object({
     password: z.string().min(4).max(1024),
 });
 
-export const RegisterPage: FC = () => {
+const RegisterPageComponent: FC = () => {
     const [error, setError] = useState<string>();
 
     const navigate = useNavigate();
@@ -27,6 +29,7 @@ export const RegisterPage: FC = () => {
     const registerMutation = useRegister({
         onError: (error) => {
             if (error.status === 409) setError("Email already in use");
+            else if (error.status === 403) setError("Captcha failed!");
             else setError("Something went wrong");
         },
         onSuccess: () => {
@@ -47,8 +50,21 @@ export const RegisterPage: FC = () => {
         },
     });
 
+    const { executeRecaptcha } = useGoogleReCaptcha();
+
     const onSubmit = handleSubmit((data) => {
-        registerMutation.mutate(data);
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        setError(undefined);
+
+        if (!executeRecaptcha) {
+            setError("Failed to load captcha");
+
+            return;
+        }
+
+        executeRecaptcha()
+            .then((token) => registerMutation.mutate({ data, captcha_token: token }))
+            .catch(console.error);
     });
 
     const { t } = useTranslation();
@@ -107,3 +123,5 @@ export const RegisterPage: FC = () => {
         </div>
     );
 };
+
+export const RegisterPage = withCaptcha(RegisterPageComponent);
