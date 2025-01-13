@@ -16,6 +16,9 @@ const I18nEn = {
         logout: "Log out",
         siteRestriction: "Login is currently only limited to %1 and %2 accounts",
     },
+    register: {
+        label: "Register",
+    },
     navbar: {
         dashboard: "Dashboard",
         contests: "Contests",
@@ -33,6 +36,10 @@ const I18nEn = {
                 collapse: "Collapse",
             },
         },
+    },
+    aaieduButton: {
+        purposeLogin: "Log in",
+        purposeLink: "Link",
     },
     notifications: {
         "contest-start": "Contest %1 has started!",
@@ -428,12 +435,22 @@ const I18nEn = {
     account: {
         label: "Account information",
         fullName: "Full Name",
-        email: "E-mail",
+        email: "E-Mail",
         breadcrumbs: {
             creator: "Creator",
             admin: "Admin",
             organisationAdmin: "Org. Admin",
             owner: "Owner",
+        },
+        aaiedu: {
+            title: "Linked AAI@Edu account",
+            userId: "User ID",
+            fullName: "Full name",
+            email: "E-Mail address",
+            associatedOrg: "Associated organisation",
+            dob: "Date of birth",
+            studentCategory: "Student category",
+            professionalStatus: "Professional status",
         },
         stats: {
             submissions: {

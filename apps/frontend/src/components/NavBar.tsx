@@ -73,7 +73,6 @@ export const NavBar: FC = () => {
 
         if (!("id_token" in data)) return;
 
-        // TODO: configurable
         window.location.href = `${import.meta.env.VITE_AAI_EDU_LOGOUT_URL}?id_token_hint=${
             data.id_token
         }&post_logout_redirect_uri=${import.meta.env.VITE_AAI_EDU_LOGOUT_REDIRECT_URL}`;

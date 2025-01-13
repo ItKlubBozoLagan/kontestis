@@ -15,8 +15,8 @@ export class CachedValue<T, Parameters extends unknown[] = []> {
     }
 
     // force cast to promise
-    async #callGetter(...paramaters: Parameters): Promise<T> {
-        return this.getter(...paramaters);
+    async #callGetter(...parameters: Parameters): Promise<T> {
+        return this.getter(...parameters);
     }
 
     async get(...parameters: Parameters) {

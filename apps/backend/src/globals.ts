@@ -21,7 +21,8 @@ type GlobalsType = {
     emailNotifierAccountPassword: string;
     emailHost: string;
     emailPort: number;
-    emailSettingsBaseURL: string;
+    backendUrl: string;
+    frontendUrl: string;
 
     evaluatorRedisQueueKey: string;
     evaluatorRedisPubSubChannel: string;
@@ -64,7 +65,8 @@ export const Globals: GlobalsType = {
     emailNotifierAccountMail: process.env.EMAIL_ACCOUNT_MAIL ?? "test@kontestis.ac",
     emailNotifierAccountDisplayName: process.env.EMAIL_ACCOUNT_DISPLAY_NAME ?? "Kontestis",
     emailNotifierAccountPassword: process.env.EMAIL_ACCOUNT_PASSWORD ?? "",
-    emailSettingsBaseURL: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
+    backendUrl: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
+    frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
     evaluatorRedisQueueKey: process.env.EVALUATOR_QUEUE_KEY ?? "evaluator_msg_queue",
     evaluatorRedisPubSubChannel: process.env.EVALUATOR_PUBSUB_CHANNEL ?? "evaluator_evaluations",
     jwtSecret: !process.env.JWT_SECRET

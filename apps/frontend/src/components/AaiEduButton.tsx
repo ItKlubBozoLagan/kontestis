@@ -4,14 +4,16 @@ import tw from "twin.macro";
 import aaiEduLogo from "/aai-edu.png";
 
 import { http, ServerData } from "../api/http";
+import { useTranslation } from "../hooks/useTranslation";
 
 type Properties = {
-    text?: string;
     purpose: "login" | "link";
 };
 
-export const AaiEduButton: FC<Properties> = ({ text, purpose }) => {
+export const AaiEduButton: FC<Properties> = ({ purpose }) => {
     const [aaiEduUrl, setAaiEduUrl] = useState<string>();
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         http.get<ServerData<{ url: string }>>(`auth/aai-edu/url?purpose=${purpose}`)
@@ -34,7 +36,11 @@ export const AaiEduButton: FC<Properties> = ({ text, purpose }) => {
             onClick={onAaiEduClick}
         >
             <img src={aaiEduLogo} alt="AAI@EduHR" tw={"w-24"} />
-            <span tw={"font-bold"}>{text ?? "Login"}</span>
+            <span tw={"font-bold"}>
+                {purpose === "login"
+                    ? t("aaieduButton.purposeLogin")
+                    : t("aaieduButton.purposeLink")}
+            </span>
         </div>
     );
 };
