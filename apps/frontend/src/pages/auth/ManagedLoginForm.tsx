@@ -49,7 +49,7 @@ export const ManagedLoginForm: FC<Properties> = ({ onError, onEmailResent }) => 
     });
 
     return (
-        <div tw={"w-full flex flex-col gap-6 items-center"}>
+        <div tw={"w-full flex flex-col gap-6 items-center max-w-[256px]"}>
             <form onSubmit={onSubmit} tw={"w-full"}>
                 <div tw={"flex flex-col gap-4 items-center w-full"}>
                     <TitledInput
@@ -78,7 +78,7 @@ export const ManagedLoginForm: FC<Properties> = ({ onError, onEmailResent }) => 
                     </SimpleButton>
                 </div>
             </form>
-            <span tw={"text-base"}>
+            <span tw={"text-base text-center"}>
                 don&apos;t have an account?{" "}
                 <Link to={"/register"} tw={"text-sky-600"}>
                     register

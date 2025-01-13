@@ -95,7 +95,7 @@ export const RegisterPage: FC = () => {
                                 </SimpleButton>
                             </div>
                         </form>
-                        <span tw={"text-base"}>
+                        <span tw={"text-base text-center"}>
                             already have an account?{" "}
                             <Link to={"/"} tw={"text-sky-600"}>
                                 login
