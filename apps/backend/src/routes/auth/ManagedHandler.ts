@@ -11,6 +11,7 @@ import { Globals } from "../../globals";
 import { generateGravatarUrl, generateJwt, processLogin } from "../../lib/auth";
 import { sendRegistrationMail } from "../../lib/mail";
 import { generateSnowflake } from "../../lib/snowflake";
+import { useCaptcha, useCaptchaSchema } from "../../middlewares/useCaptcha";
 import { useValidation } from "../../middlewares/useValidation";
 import { Redis } from "../../redis/Redis";
 import { RedisKeys } from "../../redis/RedisKeys";
@@ -82,6 +83,8 @@ const RegisterSchema = Type.Object({
 
 ManagedHandler.post(
     "/register",
+    useCaptchaSchema,
+    useCaptcha,
     useValidation(RegisterSchema, { body: true }),
     async (req, res) => {
         const existingUser = await Database.selectOneFrom("users", ["id"], {

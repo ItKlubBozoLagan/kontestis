@@ -1,10 +1,11 @@
 import { FC, useCallback, useEffect, useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import tw from "twin.macro";
 
 import { NavBar } from "../components/NavBar";
 import { SimpleButton } from "../components/SimpleButton";
 import { useLanguageContext } from "../context/useLanguageContext";
+import { useCopy } from "../hooks/useCopy";
 import { useTranslation } from "../hooks/useTranslation";
 import { I18N_AVAILABLE_LANGUAGES } from "../i18n/i18n";
 import { useBackendError } from "../state/backendError";
@@ -18,6 +19,10 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
     const { currentLanguage, setLanguage } = useLanguageContext();
     const { lastUpdate, backendError, setBackendError } = useBackendError();
     const { token } = useTokenStore();
+
+    const location = useLocation();
+
+    const { copy, copied } = useCopy();
 
     const [errorTimeout, setErrorTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
@@ -36,7 +41,7 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
     }, [lastUpdate]);
 
     const copyToken = useCallback(() => {
-        if ("clipboard" in navigator) navigator.clipboard.writeText(token);
+        copy(token);
     }, [token]);
 
     const { t } = useTranslation();
@@ -53,7 +58,10 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                     <Outlet />
                 </div>
             }
-            <div tw={"fixed right-6 bottom-6 flex gap-2"}>
+            <div
+                tw={"fixed right-6 bottom-6 flex gap-2"}
+                css={location.pathname.startsWith("/register") ? tw`bottom-28` : ""}
+            >
                 {I18N_AVAILABLE_LANGUAGES.filter((it) => it !== currentLanguage).map((language) => (
                     <SimpleButton key={language} onClick={() => setLanguage(language)}>
                         <div tw={"flex gap-2 items-center"}>
@@ -97,7 +105,9 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                 ))}
             {import.meta.env.DEV && (
                 <div tw={"fixed left-6 bottom-6"}>
-                    <SimpleButton onClick={copyToken}>Copy token</SimpleButton>
+                    <SimpleButton onClick={copyToken}>
+                        {copied ? "Copied" : "Copy token"}
+                    </SimpleButton>
                 </div>
             )}
         </div>

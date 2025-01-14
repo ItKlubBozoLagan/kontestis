@@ -34,6 +34,10 @@ type GlobalsType = {
     aaiEduClientSecret: string;
     aaiEduRedirectUri: string;
     aaiEduScopes: string[];
+    captcha: {
+        enabled: boolean;
+        secret: string;
+    };
 };
 
 export const Globals: GlobalsType = {
@@ -82,4 +86,8 @@ export const Globals: GlobalsType = {
     aaiEduClientSecret: process.env.AAI_EDU_CLIENT_SECRET ?? "",
     aaiEduRedirectUri: process.env.AAI_EDU_REDIRECT_URL ?? "http://localhost:3000/aai-login",
     aaiEduScopes: process.env.AAI_EDU_SCOPES?.split(" ") ?? [],
+    captcha: {
+        enabled: (process.env.CAPTCHA_DISABLED ?? "false").toLowerCase() !== "true",
+        secret: process.env.CAPTCHA_SECRET ?? "",
+    },
 };

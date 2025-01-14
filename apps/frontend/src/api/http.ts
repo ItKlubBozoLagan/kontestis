@@ -83,7 +83,10 @@ const handleAxiosError = (error: AxiosError) => {
     if (responseStatus) {
         if (responseStatus === 429) return useBackendError.getState().setBackendError("rate-limit");
 
-        if ([401, 403].includes(responseStatus)) return useAuthStore.getState().doForceLogout();
+        const { token } = useTokenStore.getState();
+
+        if (token?.length > 0 && [401, 403].includes(responseStatus))
+            return useAuthStore.getState().doForceLogout();
     }
 
     if (error.code !== "ERR_NETWORK") return;
