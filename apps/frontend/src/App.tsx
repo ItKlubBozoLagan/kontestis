@@ -1,7 +1,7 @@
 import "twin.macro";
 import "./globals.scss";
 
-import { FullUser } from "@kontestis/models";
+import { FullUser, Snowflake } from "@kontestis/models";
 import React, { useEffect } from "react";
 import Modal from "react-modal";
 import { useQueryClient } from "react-query";
@@ -40,6 +40,15 @@ export const App = () => {
 
     useEffect(() => {
         queryClient.clear();
+    }, [organisationId]);
+
+    useEffect(() => {
+        const _organisationId = organisationId as Snowflake | string;
+
+        if (typeof _organisationId === "string") {
+            console.log("Invalid org id, updating:", { organisationId });
+            setOrganisationId(BigInt(/^\d+$/.test(_organisationId) ? _organisationId : "0"));
+        }
     }, [organisationId]);
 
     useEffect(() => {
