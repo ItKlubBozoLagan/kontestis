@@ -22,6 +22,7 @@ export const compileCLike =
                 "-x",
                 variant === "cpp" ? "c++" : "c",
                 "-",
+                variant === "c" ? "-lm" : "",
             ],
             {
                 shell: true,
