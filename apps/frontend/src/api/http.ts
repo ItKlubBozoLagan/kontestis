@@ -89,7 +89,7 @@ const handleAxiosError = (error: AxiosError) => {
             return useAuthStore.getState().doForceLogout();
     }
 
-    if (error.code !== "ERR_NETWORK") return;
+    if (error.code !== "ERR_NETWORK" || import.meta.env.DEV) return;
 
     useAuthStore.getState().doForceLogout();
     useBackendError.getState().setBackendError("unavailable");

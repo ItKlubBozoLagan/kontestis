@@ -28,8 +28,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     forceLogout: false,
     doForceLogout: (value = true) => {
-        if (import.meta.env.DEV) return;
-
         if (value) useTokenStore.getState().setToken("");
 
         return set({ forceLogout: value });
