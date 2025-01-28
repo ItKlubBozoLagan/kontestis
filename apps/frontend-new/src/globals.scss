@@ -1,0 +1,21 @@
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  scrollbar-gutter: stable;
+  @apply bg-slate-950;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+

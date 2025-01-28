@@ -17,6 +17,16 @@ services:
       - VITE_AAI_EDU_LOGOUT_URL=https://fed-lab.aaiedu.hr/sso/module.php/oidc/logout.php
       - VITE_AAI_EDU_LOGOUT_REDIRECT_URL=http://localhost:3000/
 
+  frontend_new:
+    image: "node:hydrogen-alpine"
+    tty: true
+    volumes:
+      - ".:/app"
+    working_dir: "/app/apps/frontend-new"
+    command: "npm run dev -- --host"
+    ports:
+      - "5173:5173"
+
   backend:
     image: "node:hydrogen-alpine"
     tty: true

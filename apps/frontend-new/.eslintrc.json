@@ -1,0 +1,31 @@
+{
+  "extends": [
+    "plugin:react/recommended"
+  ],
+  "ignorePatterns": [
+    "!**/*"
+  ],
+  "plugins": [
+    "react"
+  ],
+  "env": {
+    "browser": true
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "globals": {
+    "JSX": "readonly"
+  },
+  "rules": {
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "react/no-unknown-property": "off",
+    "sonarjs/no-nested-template-literals": "off",
+    "sonarjs/no-duplicate-string": "off"
+  }
+}

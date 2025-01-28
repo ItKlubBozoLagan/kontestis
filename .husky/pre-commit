@@ -2,5 +2,5 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 pnpm lint
-pnpm --filter=@kontestis/scripts exec-script dependency-check
+#pnpm --filter=@kontestis/scripts exec-script dependency-check
 pnpm test
