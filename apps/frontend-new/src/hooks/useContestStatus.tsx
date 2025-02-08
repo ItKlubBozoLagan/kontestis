@@ -1,7 +1,6 @@
 import { Contest } from "@kontestis/models";
 import { formatDuration } from "@kontestis/utils";
 import { useEffect, useState } from "react";
-import { theme } from "twin.macro";
 
 import { useTranslation } from "./useTranslation";
 
@@ -18,13 +17,6 @@ export type ValidContestStatusInfo = {
     status: ContestStatus;
     rawTimeFormat: string;
     timeFormat: string;
-};
-
-export const ContestStatusStyleColorMap: Record<ContestStatusInfo["status"], string> = {
-    pending: theme`colors.yellow.100`,
-    running: theme`colors.green.100`,
-    finished: theme`colors.red.100`,
-    invalid: "",
 };
 
 // some disgusting generic hell here, but it makes DX better

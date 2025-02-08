@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 
-import { Dataset } from "../components/HistoryLineChart";
 import { StatisticResult, StringLiteral } from "./stats/types";
+
+type Dataset = {
+    time: Date;
+    value: number;
+};
 
 export const useFormatCountStat = <K extends string>(stat: StatisticResult<K>[] | undefined) =>
     useMemo(() => {

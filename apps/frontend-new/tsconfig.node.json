@@ -10,7 +10,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "react": [ "./node_modules/@types/react" ]
     }
   },
   "exclude": ["node_modules"],

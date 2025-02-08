@@ -2,12 +2,12 @@ import { DEFAULT_ELO, OrganisationMember, Snowflake } from "@kontestis/models";
 import { useCallback, useMemo } from "react";
 import { useQuery } from "react-query";
 
-import { http, QueryHandler, wrapAxios } from "../../api/http";
-import { useAuthStore } from "../../state/auth";
-import { useOrganisationStore } from "../../state/organisation";
+import { http, QueryHandler, wrapAxios } from "@/api/http";
+import { useAuthStore } from "@/state/auth";
 
 export const useOrganisationMemberElo: QueryHandler<number, Snowflake> = (memberId, options) => {
-    const { organisationId } = useOrganisationStore();
+    // TODO: organisation
+    const { organisationId } = { organisationId: 1 };
 
     const queryFunction = useCallback(
         () =>

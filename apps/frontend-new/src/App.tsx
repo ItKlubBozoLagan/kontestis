@@ -2,8 +2,7 @@ import "./tailwind.css";
 import "./globals.scss";
 
 import { FullUser } from "@kontestis/models";
-import React, { useEffect } from "react";
-import Modal from "react-modal";
+import React, { FC, useEffect } from "react";
 import { useQueryClient } from "react-query";
 import { useRoutes } from "react-router-dom";
 
@@ -13,13 +12,11 @@ import { loginRoutes } from "./routers/login";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
 
-Modal.setAppElement("#root");
-
 BigInt.prototype.toJSON = function () {
     return this.toString();
 };
 
-export const App = () => {
+export const App: FC = () => {
     const { isLoggedIn, setUser, setIsLoggedIn, forceLogout, doForceLogout } = useAuthStore();
     const { token } = useTokenStore();
 
