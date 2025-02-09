@@ -1,4 +1,3 @@
-import "./tailwind.css";
 import "./globals.scss";
 
 import { FullUser } from "@kontestis/models";

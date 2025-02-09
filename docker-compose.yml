@@ -26,6 +26,12 @@ services:
     command: "npm run dev -- --host"
     ports:
       - "5173:5173"
+    environment:
+      - VITE_CAPTCHA_SITE_KEY=6Le6ZrYqAAAAAPG-tsPqZm_1numHrNnJ66Ob9KYU
+      - VITE_API_ENDPOINT=http://localhost:8080
+      - VITE_OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
+      - VITE_AAI_EDU_LOGOUT_URL=https://fed-lab.aaiedu.hr/sso/module.php/oidc/logout.php
+      - VITE_AAI_EDU_LOGOUT_REDIRECT_URL=http://localhost:3000/
 
   backend:
     image: "node:hydrogen-alpine"

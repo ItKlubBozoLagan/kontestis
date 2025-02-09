@@ -18,16 +18,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useLogin } from "@/hooks/auth/useLogin";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTokenStore } from "@/state/token";
 
 const formSchema = z.object({
-    username: z.string().min(2, {
-        message: "Username must be at least 2 characters long.",
+    email: z.string().email({
+        message: "Invalid email address.",
     }),
-    password: z.string().min(2, {
-        message: "Password must be at least 2 characters long.",
-    }),
+    password: z
+        .string()
+        .min(4, {
+            message: "Password must be at least 4 characters long.",
+        })
+        .max(1024, {
+            message: "Password must be at most 1024 characters long.",
+        }),
 });
 
 const LoginPageBase: FC = () => {
@@ -37,13 +43,36 @@ const LoginPageBase: FC = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            username: "",
+            email: "",
             password: "",
         },
     });
 
+    const loginMutation = useLogin({
+        onError: (error) => {
+            if (error.status === 401)
+                form.setError("email", {
+                    message: "Invalid email or password.",
+                });
+            else if (error.status === 422) {
+                // TODO: resend
+                if (error.message === "verification-repeat")
+                    form.setError("email", {
+                        message: "Verification email resent.",
+                    });
+                else
+                    form.setError("email", {
+                        message: "Email not verified.",
+                    });
+            }
+        },
+        onSuccess: (data) => {
+            setToken(data.token);
+        },
+    });
+
     const onSubmit = form.handleSubmit((data) => {
-        console.log(data);
+        loginMutation.mutate(data);
     });
 
     const onGoogleLoginSuccess = useCallback((credentialResponse: CredentialResponse) => {
@@ -57,76 +86,86 @@ const LoginPageBase: FC = () => {
     }, []);
 
     return (
-        <Card className={"w-[356px]"}>
-            <CardHeader>
-                <CardTitle>Log in</CardTitle>
-            </CardHeader>
-            <CardContent className={"w-full flex flex-col gap-8"}>
-                <div className={"basis-1/2 flex flex-col items-center justify-center"}>
-                    <div className={"w-flex w-full"}>
-                        <Form {...form}>
-                            <form
-                                action="#"
-                                className={
-                                    "flex flex-col items-stretch gap-4 h-full justify-center"
-                                }
-                                onSubmit={onSubmit}
-                            >
-                                <FormField
-                                    control={form.control}
-                                    name="username"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Username</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="someone" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder={"\u2022".repeat(16)}
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button type={"submit"}>{t("login.label")}</Button>
-                            </form>
-                        </Form>
+        <>
+            <Card className={"w-[356px]"}>
+                <CardHeader>
+                    <CardTitle>Log in</CardTitle>
+                </CardHeader>
+                <CardContent className={"w-full flex flex-col gap-8"}>
+                    <div className={"basis-1/2 flex flex-col items-center justify-center"}>
+                        <div className={"w-full"}>
+                            <Form {...form}>
+                                <form
+                                    action="#"
+                                    className={
+                                        "flex flex-col items-stretch gap-4 h-full justify-center"
+                                    }
+                                    onSubmit={onSubmit}
+                                >
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Username</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="someone@kontestis.ac"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Password</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type={"password"}
+                                                        placeholder={"\u2022".repeat(16)}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <Button disabled={loginMutation.isLoading} type={"submit"}>
+                                        {t("login.label")}
+                                    </Button>
+                                </form>
+                            </Form>
+                        </div>
                     </div>
-                </div>
-                <div className={"flex gap-4 items-center justify-center w-full"}>
-                    <Separator className={"shrink"} />
-                    <span>or</span>
-                    <Separator className={"shrink"} />
-                </div>
-                <div className={"flex flex-col gap-6 items-center w-full basis-1/2"}>
-                    <div className={"flex flex-col flex-grow gap-6 items-center justify-center"}>
-                        <GoogleLogin
-                            onSuccess={onGoogleLoginSuccess}
-                            width={"256px"}
-                            size={"large"}
-                            text={"signin"}
-                            theme={"filled_blue"}
-                            shape={"rectangular"}
-                            auto_select={true}
-                        />
-                        <AaiEduButton purpose={"login"} />
+                    <div className={"flex gap-4 items-center justify-center w-full"}>
+                        <Separator className={"shrink"} />
+                        <span>or</span>
+                        <Separator className={"shrink"} />
                     </div>
-                </div>
-            </CardContent>
-        </Card>
+                    <div className={"flex flex-col gap-6 items-center w-full basis-1/2"}>
+                        <div
+                            className={"flex flex-col flex-grow gap-6 items-center justify-center"}
+                        >
+                            <AaiEduButton purpose={"login"} />
+                            <GoogleLogin
+                                onSuccess={onGoogleLoginSuccess}
+                                width={"256px"}
+                                size={"large"}
+                                text={"signin_with"}
+                                theme={"outline"}
+                                shape={"rectangular"}
+                                auto_select={true}
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </>
     );
 };
 

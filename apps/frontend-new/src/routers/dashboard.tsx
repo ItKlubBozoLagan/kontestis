@@ -1,12 +1,20 @@
 import React from "react";
 import { RouteObject } from "react-router-dom";
 
+import { TemporaryDashboard } from "@/pages/dashboard/TemporaryDashboard";
+
 import { Root } from "../pages/Root";
 
 export const dashboardRoutes: RouteObject[] = [
     {
         path: "/",
         element: <Root />,
+        children: [
+            {
+                index: true,
+                element: <TemporaryDashboard />,
+            },
+        ],
         // children: [
         //     {
         //         index: true,
