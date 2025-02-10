@@ -5,9 +5,11 @@ import React, { FC, useEffect } from "react";
 import { useQueryClient } from "react-query";
 import { useRoutes } from "react-router-dom";
 
+import { Toaster } from "@/components/ui/toaster";
+
 import { http, wrapAxios } from "./api/http";
+import { authRoutes } from "./routers/auth";
 import { dashboardRoutes } from "./routers/dashboard";
-import { loginRoutes } from "./routers/login";
 import { useAuthStore } from "./state/auth";
 import { useTokenStore } from "./state/token";
 
@@ -41,7 +43,7 @@ export const App: FC = () => {
             .catch(() => doForceLogout());
     }, [token]);
 
-    const matched = useRoutes(isLoggedIn ? dashboardRoutes : loginRoutes);
+    const matched = useRoutes(isLoggedIn ? dashboardRoutes : authRoutes);
 
     useEffect(() => {
         if (!forceLogout || location.pathname === "/") return;
@@ -71,5 +73,10 @@ export const App: FC = () => {
 
     if (token.length > 0 && !isLoggedIn) return <></>;
 
-    return matched;
+    return (
+        <>
+            {matched}
+            <Toaster />
+        </>
+    );
 };

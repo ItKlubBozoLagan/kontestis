@@ -35,7 +35,7 @@ export const sendRegistrationMail = async (user: User, code: string) => {
             html,
         })
         .then((response) => {
-            Logger.debug("Verification main response", response);
+            Logger.debug("Verification mail response", response);
         });
 };
 

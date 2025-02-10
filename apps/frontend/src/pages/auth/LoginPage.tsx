@@ -108,6 +108,7 @@ const LoginBase: FC = () => {
 
 export const LoginPage: FC = () => (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_OAUTH_CLIENT_ID}>
+        {/* @ts-expect-error */}
         <LoginBase />
     </GoogleOAuthProvider>
 );
