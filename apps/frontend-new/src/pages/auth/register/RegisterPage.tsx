@@ -20,7 +20,6 @@ import { withCaptcha } from "@/hoc/withCaptcha";
 import { useRegister } from "@/hooks/auth/useRegister";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useTokenStore } from "@/state/token";
 
 const formSchema = z
     .object({
@@ -57,7 +56,6 @@ const formSchema = z
     });
 
 const RegisterPageBase: FC = () => {
-    const { setToken } = useTokenStore();
     const { t } = useTranslation();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -109,8 +107,6 @@ const RegisterPageBase: FC = () => {
 
     const onSubmit = form.handleSubmit((data) => {
         if (!executeRecaptcha) {
-            // setError("Failed to load captcha");
-
             return;
         }
 
