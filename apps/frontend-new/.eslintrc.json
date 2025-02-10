@@ -6,7 +6,8 @@
     "!**/*"
   ],
   "plugins": [
-    "react"
+    "react",
+    "eslint-plugin-react-compiler"
   ],
   "env": {
     "browser": true
@@ -22,6 +23,7 @@
   "rules": {
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
+    "react-compiler/react-compiler": "error",
     "jsx-a11y/no-static-element-interactions": "off",
     "jsx-a11y/click-events-have-key-events": "off",
     "react/no-unknown-property": "off",
