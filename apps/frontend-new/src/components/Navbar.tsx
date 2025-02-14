@@ -96,7 +96,7 @@ export const Navbar: FC = () => {
                                     role="combobox"
                                     aria-expanded={organisationSelectOpen}
                                     className={cn(
-                                        "flex h-max min-w-[176px] max-w-[200px] justify-between gap-2 transition-all rounded-full dark:border-slate-600",
+                                        "flex h-max min-w-[176px] max-w-[200px] justify-between gap-2 transition-all rounded-full dark:border-slate-600 dark:hover:bg-slate-900/80",
                                         selectedOrganisation === 1n &&
                                             "dark:bg-green-600/40 hover:dark:bg-green-600/50 rounded-full border border-solid dark:border-green-600"
                                     )}
