@@ -8,7 +8,7 @@ import { Root } from "@/pages/Root";
 export const authRoutes: RouteObject[] = [
     {
         path: "/",
-        element: <Root />,
+        element: <Root hideNavbar />,
         children: [
             {
                 index: true,

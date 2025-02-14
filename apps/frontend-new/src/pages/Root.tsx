@@ -1,11 +1,12 @@
 import { FC, useCallback } from "react";
 import { Outlet } from "react-router";
 
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { useCopy } from "@/hooks/useCopy";
 import { useTokenStore } from "@/state/token";
 
-export const Root: FC = () => {
+export const Root: FC<{ hideNavbar?: boolean }> = ({ hideNavbar = false }) => {
     // const { currentLanguage, setLanguage } = useLanguageContext();
 
     const { token } = useTokenStore();
@@ -20,15 +21,15 @@ export const Root: FC = () => {
 
     return (
         <div className={"w-full flex flex-col items-center"}>
-            {
-                <div
-                    className={
-                        "flex flex-col w-full max-w-[1000px] items-center justify-start gap-4 py-6 px-12"
-                    }
-                >
-                    <Outlet />
-                </div>
-            }
+            {!hideNavbar && <Navbar />}
+            <div
+                className={
+                    "flex flex-col w-full max-w-[1000px] items-center justify-start gap-4 py-6 px-12"
+                }
+            >
+                <Outlet />
+            </div>
+
             {/*<div className={"fixed right-6 bottom-6 flex gap-2"}>*/}
             {/*    {I18N_AVAILABLE_LANGUAGES.filter((it) => it !== currentLanguage).map((language) => (*/}
             {/*        <Button*/}
