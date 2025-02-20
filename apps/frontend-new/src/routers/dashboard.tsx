@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, RouteObject } from "react-router-dom";
 
-import { TemporaryDashboard } from "@/pages/dashboard/TemporaryDashboard";
+import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { Root } from "@/pages/Root";
 
 export const dashboardRoutes: RouteObject[] = [
@@ -11,7 +11,7 @@ export const dashboardRoutes: RouteObject[] = [
         children: [
             {
                 index: true,
-                element: <TemporaryDashboard />,
+                element: <DashboardPage />,
             },
             {
                 path: "*",
