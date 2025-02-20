@@ -51,7 +51,11 @@ export const SubmissionViewPage: FC = () => {
                     <div tw={"relative w-full"}>
                         <pre>
                             <code
-                                className={`line-numbers match-braces rainbow-braces language-${submission.language}`}
+                                className={`line-numbers match-braces rainbow-braces language-${
+                                    submission.language === "gnu_asm_x86_linux"
+                                        ? "nasm"
+                                        : submission.language
+                                }`}
                             >
                                 {convertFromBase64(submission.code)}
                             </code>
