@@ -163,7 +163,10 @@ const evaluateCluster = async (
     pendingSubmission: PendingSubmission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const testcases = await getAllTestcases(cluster);
+    const testcases = await getAllTestcases(cluster).then((testcases) =>
+        problemDetails.evaluation_variant === "output-only" ? testcases.slice(0, 1) : testcases
+    );
+
     const testCasesById: Record<string, Testcase> = {};
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;

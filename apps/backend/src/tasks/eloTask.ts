@@ -92,10 +92,12 @@ const handleContest = async (contest: Contest) => {
         "ALLOW FILTERING"
     );
 
+    const users = await Database.selectFrom("users", "*", {
+        id: eqIn(...members.map((it) => it.user_id)),
+    });
+
     const usersWithElo = R.map(
-        await Database.selectFrom("users", "*", {
-            id: eqIn(...members.map((it) => it.user_id)),
-        }),
+        users.filter((user) => organisationMembers.some((member) => member.user_id === user.id)),
         (user) =>
             R.pipe(
                 user,
@@ -131,6 +133,7 @@ const handleContest = async (contest: Contest) => {
     );
 
     const leaderboard = members
+        .filter((member) => usersWithElo.some((user) => user.id === member.user_id))
         .map((member) => ({
             user_id: member.user_id,
             currentGlobalElo: usersWithElo.find((user) => user.id === member.user_id)?.elo ?? 0,

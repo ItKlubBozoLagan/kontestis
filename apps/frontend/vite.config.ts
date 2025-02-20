@@ -13,7 +13,7 @@ export default defineConfig({
                     [
                         "prismjs",
                         {
-                            languages: ["python", "c", "cpp", "go", "rust", "java"],
+                            languages: ["python", "c", "cpp", "go", "rust", "java", "nasm"],
                             plugins: ["line-numbers", "match-braces"],
                             css: true,
                         },
