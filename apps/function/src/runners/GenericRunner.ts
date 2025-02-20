@@ -56,6 +56,8 @@ const getCompilationProcessForLanguage = (
                 outFile: outFileName,
                 startCompilation: compileJava(code, outFileName),
             };
+        case "gnu_asm_x86_linux":
+            throw new Error("GNU Assembly is not supported");
     }
 };
 
