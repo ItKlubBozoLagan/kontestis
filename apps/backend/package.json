@@ -32,6 +32,7 @@
         "jsonwebtoken": "^9.0.0",
         "jwks-rsa": "^3.1.0",
         "md5": "^2.3.0",
+        "minio": "^8.0.4",
         "nodemailer": "^6.9.8",
         "permissio": "^2.0.2",
         "rate-limit-redis": "^3.0.1",

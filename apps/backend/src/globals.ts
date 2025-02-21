@@ -42,6 +42,17 @@ type GlobalsType = {
         enabled: boolean;
         secret: string;
     };
+
+    s3: {
+        endpoint: string;
+        port: number;
+        useSSL: boolean;
+        accessKey: string;
+        secretKey: string;
+        buckets: {
+            submission_meta: string;
+        };
+    };
 };
 
 export const Globals: GlobalsType = {
@@ -96,5 +107,15 @@ export const Globals: GlobalsType = {
     captcha: {
         enabled: (process.env.CAPTCHA_DISABLED ?? "false").toLowerCase() !== "true",
         secret: process.env.CAPTCHA_SECRET ?? "",
+    },
+    s3: {
+        endpoint: process.env.S3_ENDPOINT ?? "localhost",
+        port: process.env.S3_PORT ? Number.parseInt(process.env.S3_PORT) : 443,
+        useSSL: process.env.S3_USE_SSL === "true",
+        accessKey: process.env.S3_ACCESS_KEY ?? "",
+        secretKey: process.env.S3_SECRET_KEY ?? "",
+        buckets: {
+            submission_meta: process.env.S3_BUCKET_SUBMISSION_META ?? "submission-meta",
+        },
     },
 };
