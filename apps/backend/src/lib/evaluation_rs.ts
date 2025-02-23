@@ -133,6 +133,7 @@ const SuccessfulEvaluationSchema = Type.Object({
             time: Type.Number(),
             memory: Type.Number(),
             error: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            output: Type.Optional(Type.Union([Type.String(), Type.Null()])),
         })
     ),
 });
@@ -165,6 +166,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     verdict: testcase.verdict.type,
                     time: testcase.time,
                     memory: testcase.memory / 1024,
+                    output: testcase.output ?? undefined,
                 };
             }
             case "custom": {
@@ -218,43 +220,58 @@ export const subscribeToEvaluatorPubSub = async () => {
         Redis.publish(Globals.evaluatorRedisPubSubChannel, "heartbeat");
     }, 60 * 1000);
 
+    void (async () => {
+        try {
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+                const result = await Redis.blPop("queue-1", 0); // Waits indefinitely for data
+
+                if (!result) continue;
+
+                const message = result.element;
+
+                Logger.info("Got message: " + message);
+
+                if (message === "heartbeat") continue;
+
+                Logger.info("Processing message");
+
+                try {
+                    const parsed = JSON.parse(message);
+
+                    const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
+
+                    if (!valid) {
+                        Logger.error(
+                            "failed validating evaluator response: " +
+                                JSON.stringify(CompiledSuccessfulEvaluationSchema.Errors)
+                        );
+
+                        continue;
+                    }
+
+                    Logger.info("Find pending listener for evaluation id: " + parsed.evaluation_id);
+
+                    if (!PendingListeners[parsed.evaluation_id]) continue;
+
+                    Logger.info("Pending listener found!");
+
+                    PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
+                    delete PendingListeners[parsed.evaluation_id];
+                } catch (error) {
+                    Logger.error("failed parsing evaluator response", error + "");
+                }
+            }
+        } catch (error) {
+            console.error("Error pulling from queue:", error);
+        }
+    })();
+
     const subscriber = Redis.duplicate();
 
     await subscriber.connect();
 
-    await subscriber.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
-        Logger.info("Got message: " + message);
-
-        if (message === "heartbeat") return;
-
-        Logger.info("Processing message");
-
-        try {
-            const parsed = JSON.parse(message);
-
-            const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
-
-            if (!valid) {
-                Logger.error(
-                    "failed validating evaluator response: " +
-                        JSON.stringify(CompiledSuccessfulEvaluationSchema.Errors)
-                );
-
-                return;
-            }
-
-            Logger.info("Find pending listener for evaluation id: " + parsed.evaluation_id);
-
-            if (!PendingListeners[parsed.evaluation_id]) return;
-
-            Logger.info("Pending listener found!");
-
-            PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
-            delete PendingListeners[parsed.evaluation_id];
-        } catch (error) {
-            Logger.error("failed parsing evaluator response", error + "");
-        }
-    });
+    await subscriber.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {});
 };
 
 export const evaluateTestcasesNew = async (

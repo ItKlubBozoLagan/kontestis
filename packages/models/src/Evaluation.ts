@@ -16,6 +16,7 @@ export type SuccessfulEvaluationResult =
           verdict: "accepted" | "wrong_answer" | "time_limit_exceeded" | "memory_limit_exceeded";
           time: number;
           memory: number;
+          output?: string;
       }
     | CustomSuccessfulEvaluationResult;
 
@@ -25,6 +26,7 @@ export type CustomSuccessfulEvaluationResult = {
     time: number;
     memory: number;
     extra: string;
+    output?: string;
 };
 
 export type CompilationErrorResult = {
