@@ -11,6 +11,7 @@ import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
+import { RedisKeys } from "../redis/RedisKeys";
 import { AxiosEvaluationResponse, ProblemDetails } from "./evaluation";
 import { Logger } from "./logger";
 
@@ -133,6 +134,7 @@ const SuccessfulEvaluationSchema = Type.Object({
             time: Type.Number(),
             memory: Type.Number(),
             error: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            output: Type.Optional(Type.Union([Type.String(), Type.Null()])),
         })
     ),
 });
@@ -165,6 +167,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     verdict: testcase.verdict.type,
                     time: testcase.time,
                     memory: testcase.memory / 1024,
+                    output: testcase.output ?? undefined,
                 };
             }
             case "custom": {
@@ -213,48 +216,53 @@ const convertSuccessfulEvaluationToEvaluationResult = (
 
 const PendingListeners: Record<number, (response: SuccessfulEvaluationRS) => void> = {};
 
-export const subscribeToEvaluatorPubSub = async () => {
-    setInterval(() => {
-        Redis.publish(Globals.evaluatorRedisPubSubChannel, "heartbeat");
-    }, 60 * 1000);
+export const subscribeToEvaluatorResponseQueue = async () => {
+    const redisCloned = Redis.duplicate();
 
-    const subscriber = Redis.duplicate();
+    await redisCloned.connect();
 
-    await subscriber.connect();
+    try {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const result = await redisCloned.blPop(RedisKeys.EVALUATION_RESULT_QUEUE, 0); // Waits indefinitely for data
 
-    await subscriber.subscribe(Globals.evaluatorRedisPubSubChannel, (message) => {
-        Logger.info("Got message: " + message);
+            if (!result) continue;
 
-        if (message === "heartbeat") return;
+            const message = result.element;
 
-        Logger.info("Processing message");
+            Logger.debug("Got message: " + message);
 
-        try {
-            const parsed = JSON.parse(message);
+            try {
+                const parsed = JSON.parse(message);
 
-            const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
+                const valid = CompiledSuccessfulEvaluationSchema.Check(parsed);
 
-            if (!valid) {
-                Logger.error(
-                    "failed validating evaluator response: " +
-                        JSON.stringify(CompiledSuccessfulEvaluationSchema.Errors)
-                );
+                if (!valid) {
+                    Logger.error(
+                        "failed validating evaluator response: " +
+                            JSON.stringify(CompiledSuccessfulEvaluationSchema.Errors)
+                    );
 
-                return;
+                    continue;
+                }
+
+                Logger.info("Find pending listener for evaluation id: " + parsed.evaluation_id);
+
+                if (!PendingListeners[parsed.evaluation_id]) continue;
+
+                Logger.info("Pending listener found!");
+
+                PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
+                delete PendingListeners[parsed.evaluation_id];
+            } catch (error) {
+                Logger.error("failed parsing evaluator response", error + "");
             }
-
-            Logger.info("Find pending listener for evaluation id: " + parsed.evaluation_id);
-
-            if (!PendingListeners[parsed.evaluation_id]) return;
-
-            Logger.info("Pending listener found!");
-
-            PendingListeners[parsed.evaluation_id](parsed as SuccessfulEvaluationRS);
-            delete PendingListeners[parsed.evaluation_id];
-        } catch (error) {
-            Logger.error("failed parsing evaluator response", error + "");
         }
-    });
+    } catch (error) {
+        console.error("Error pulling from queue:", error, "retrying in 10s");
+        redisCloned.disconnect();
+        setTimeout(subscribeToEvaluatorResponseQueue, 10_000);
+    }
 };
 
 export const evaluateTestcasesNew = async (
@@ -265,12 +273,15 @@ export const evaluateTestcasesNew = async (
     const evaluationId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
     const payload = {
-        BeginEvaluation:
-            problemDetails.evaluation_variant === "output-only"
-                ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases[0], problem)
-                : problemDetails.evaluation_variant === "interactive"
-                ? generateInteractivePayload(evaluationId, problemDetails, testcases, problem)
-                : generateBatchPayload(evaluationId, problemDetails, testcases, problem),
+        BeginEvaluation: {
+            output_queue: RedisKeys.EVALUATION_RESULT_QUEUE,
+            evaluation:
+                problemDetails.evaluation_variant === "output-only"
+                    ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases[0], problem)
+                    : problemDetails.evaluation_variant === "interactive"
+                    ? generateInteractivePayload(evaluationId, problemDetails, testcases, problem)
+                    : generateBatchPayload(evaluationId, problemDetails, testcases, problem),
+        },
     };
 
     const evaluationResponse = new Promise<SuccessfulEvaluationRS>((resolve) => {

@@ -46,7 +46,7 @@ services:
       - INFLUXDB_URL=http://influxdb:8086
       - OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
       - EVALUATOR_ENDPOINT=http://function:8080
-
+      - CAPTCHA_DISABLED=true
   function:
     build:
       context: ./apps/function

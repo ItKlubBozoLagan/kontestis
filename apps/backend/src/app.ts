@@ -28,7 +28,7 @@ import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
 import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
-import { subscribeToEvaluatorPubSub } from "./lib/evaluation_rs";
+import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
 
 declare global {
@@ -126,7 +126,8 @@ Promise.allSettled([
     Redis.connect()
         .then(async () => {
             Logger.redis("Connected to Redis");
-            await subscribeToEvaluatorPubSub();
+            const _ = subscribeToEvaluatorResponseQueue();
+
             Logger.redis("Subscribed to evaluator pub sub");
         })
         .catch((error) => {
