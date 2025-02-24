@@ -1,4 +1,8 @@
+import { hostname } from "node:os";
+
 type GlobalsType = {
+    INSTANCE_ID: string;
+
     mode: "development" | "production" | string;
     port: number;
     rateLimit: number;
@@ -25,7 +29,7 @@ type GlobalsType = {
     frontendUrl: string;
 
     evaluatorRedisQueueKey: string;
-    evaluatorRedisPubSubChannel: string;
+    evaluatorRedisResponseQueuePrefix: string;
 
     jwtSecret: string;
 
@@ -41,6 +45,8 @@ type GlobalsType = {
 };
 
 export const Globals: GlobalsType = {
+    INSTANCE_ID: hostname(),
+
     mode: process.env.MODE ?? "development",
     port: process.env.PORT ? Number.parseInt(process.env.PORT) : 8080,
     rateLimit: process.env.RATE_LIMIT ? Number.parseInt(process.env.RATE_LIMIT) : 60,
@@ -72,7 +78,8 @@ export const Globals: GlobalsType = {
     backendUrl: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
     frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
     evaluatorRedisQueueKey: process.env.EVALUATOR_QUEUE_KEY ?? "evaluator_msg_queue",
-    evaluatorRedisPubSubChannel: process.env.EVALUATOR_PUBSUB_CHANNEL ?? "evaluator_evaluations",
+    evaluatorRedisResponseQueuePrefix:
+        process.env.EVALUATOR_RESPONSE_QUEUE_CHANNEL ?? "evaluator_evaluations",
     jwtSecret: !process.env.JWT_SECRET
         ? (() => {
               throw new Error("missing JWT_SECRET");

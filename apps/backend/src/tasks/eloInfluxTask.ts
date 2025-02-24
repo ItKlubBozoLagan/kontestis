@@ -1,4 +1,5 @@
 import { Database } from "../database/Database";
+import { applyUserEloInInflux } from "../lib/elo";
 import { Logger } from "../lib/logger";
 
 export const startEloInfluxTask = async () => {
@@ -6,6 +7,6 @@ export const startEloInfluxTask = async () => {
     setInterval(async () => {
         const users = await Database.selectFrom("users", ["id"]);
 
-        //await Promise.all(users.map((user) => applyUserEloInInflux(user.id)));
+        await Promise.all(users.map((user) => applyUserEloInInflux(user.id)));
     }, 10 * 60 * 1000);
 };
