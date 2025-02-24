@@ -1,6 +1,8 @@
 import "/public/css/prism-custom.css";
 
 import { ClusterSubmission } from "@kontestis/models";
+import Convert from "ansi-to-html";
+import escapeHtml from "escape-html";
 import Prism from "prismjs";
 import { FC, useEffect, useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/all";
@@ -22,6 +24,8 @@ Prism.manual = true;
 type Properties = {
     submissionId: string;
 };
+
+const convert = new Convert();
 
 export const SubmissionViewPage: FC = () => {
     const { submissionId } = useParams<Properties>();
@@ -80,7 +84,11 @@ export const SubmissionViewPage: FC = () => {
             {isSubmissionSuccess && submission.verdict === "compilation_error" && (
                 <TitledSection title={"Compile time error"}>
                     <div tw={"bg-neutral-100 px-4 w-full rounded overflow-auto"}>
-                        <pre>{submission.error}</pre>
+                        <pre
+                            dangerouslySetInnerHTML={{
+                                __html: convert.toHtml(escapeHtml(submission.error)),
+                            }}
+                        ></pre>
                     </div>
                 </TitledSection>
             )}
