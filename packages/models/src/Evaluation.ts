@@ -37,6 +37,7 @@ export type CompilationErrorResult = {
 
 export type EvaluationResult = {
     testCaseId: string;
+    compiler_output?: string;
 } & (
     | SuccessfulEvaluationResult
     | CompilationErrorResult

@@ -39,7 +39,13 @@ export type SubmissionV5 = Omit<SubmissionV4, "verdict"> &
           }
     );
 
-export type Submission = SubmissionV5;
+// error can contain all sorts of issues, this keeps compatibility with old code
+//  and also a dedicated field just for compiler output
+export type SubmissionV6 = SubmissionV5 & {
+    compiler_output?: string;
+};
+
+export type Submission = SubmissionV6;
 
 export type SubmissionWithUserInfo = Submission & {
     full_name: string;
@@ -48,7 +54,12 @@ export type SubmissionWithUserInfo = Submission & {
 
 export type PendingSubmission = Omit<
     Submission,
-    "verdict" | "awarded_score" | "problem_id" | "time_used_millis" | "memory_used_megabytes"
+    | "verdict"
+    | "awarded_score"
+    | "problem_id"
+    | "time_used_millis"
+    | "memory_used_megabytes"
+    | "compiler_output"
 >;
 
 export type SubmissionByProblemResponse =

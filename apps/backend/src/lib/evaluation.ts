@@ -253,12 +253,14 @@ const evaluateCluster = async (
 
     return {
         ...clusterSubmission,
+        // only if verdict is "compilation_error", legacy?
         compilationError: clusterTestcases.some(
             (it) => it.evaluationResult.verdict === "compilation_error"
         )
             ? (results.find((it) => it.verdict === "compilation_error") as CompilationErrorResult)
                   .error
             : undefined,
+        compilerOutput: results.find((it) => it.compiler_output)?.compiler_output,
     };
 };
 
@@ -351,6 +353,7 @@ export const beginEvaluation = async (
                     : undefined,
             time_used_millis: time,
             memory_used_megabytes: memory,
+            compiler_output: clusterSubmissions.find((it) => it?.compilerOutput)?.compilerOutput,
         } as Submission;
 
         await Promise.all([
