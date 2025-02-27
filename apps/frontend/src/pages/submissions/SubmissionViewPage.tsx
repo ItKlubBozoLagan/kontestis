@@ -81,17 +81,32 @@ export const SubmissionViewPage: FC = () => {
                     </div>
                 )}
             </TitledSection>
-            {isSubmissionSuccess && submission.verdict === "compilation_error" && (
-                <TitledSection title={"Compile time error"}>
-                    <div tw={"bg-neutral-100 px-4 w-full rounded overflow-auto"}>
-                        <pre
-                            dangerouslySetInnerHTML={{
-                                __html: convert.toHtml(escapeHtml(submission.error)),
-                            }}
-                        ></pre>
-                    </div>
-                </TitledSection>
-            )}
+            {isSubmissionSuccess &&
+                (submission.compiler_output || submission.verdict === "compilation_error") && (
+                    <TitledSection
+                        title={
+                            submission.verdict === "compilation_error"
+                                ? "Compile time error"
+                                : "Compiler output"
+                        }
+                    >
+                        <div tw={"bg-neutral-100 px-4 w-full rounded overflow-auto"}>
+                            <pre
+                                dangerouslySetInnerHTML={{
+                                    __html: convert.toHtml(
+                                        escapeHtml(
+                                            submission.compiler_output ||
+                                                (submission.verdict === "compilation_error"
+                                                    ? submission.error
+                                                    : "")
+                                        )
+                                    ),
+                                }}
+                            ></pre>
+                        </div>
+                    </TitledSection>
+                )}
+
             {!displayTestcase ? (
                 <Table tw={"w-full"}>
                     <thead>

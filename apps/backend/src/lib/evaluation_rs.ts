@@ -127,6 +127,7 @@ const SuccessfulEvaluationSchema = Type.Object({
     verdict: VerdictSchema,
     max_time: Type.Number(),
     max_memory: Type.Number(),
+    compiler_output: Type.Optional(Type.Union([Type.String(), Type.Null()])),
     testcases: Type.Array(
         Type.Object({
             id: Type.String(),
@@ -153,6 +154,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
             type: "error",
             verdict: "compilation_error",
             error: evaluation.verdict.data ?? "",
+            compiler_output: evaluation.compiler_output ?? undefined,
         }));
 
     return evaluation.testcases.map((testcase) => {
@@ -168,7 +170,8 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     time: testcase.time,
                     memory: testcase.memory / 1024,
                     output: testcase.output ?? undefined,
-                };
+                    compiler_output: evaluation.compiler_output ?? undefined,
+                } satisfies EvaluationResult;
             }
             case "custom": {
                 return {
@@ -178,6 +181,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     time: testcase.time,
                     memory: testcase.memory / 1024,
                     extra: testcase.verdict.data ?? "",
+                    compiler_output: evaluation.compiler_output ?? undefined,
                 };
             }
             case "compilation_error": {
@@ -186,6 +190,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     type: "error",
                     verdict: "compilation_error",
                     error: testcase.error ?? "",
+                    compiler_output: evaluation.compiler_output ?? undefined,
                 };
             }
             case "runtime_error": {
@@ -194,6 +199,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     type: "error",
                     verdict: "runtime_error",
                     exitCode: 1,
+                    compiler_output: evaluation.compiler_output ?? undefined,
                 };
             }
             case "skipped": {
@@ -211,7 +217,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     verdict: "evaluation_error",
                 };
         }
-    });
+    }) satisfies EvaluationResult[];
 };
 
 const PendingListeners: Record<number, (response: SuccessfulEvaluationRS) => void> = {};
