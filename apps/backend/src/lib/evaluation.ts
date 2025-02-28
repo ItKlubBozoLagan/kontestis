@@ -11,12 +11,13 @@ import {
     Submission,
     Testcase,
     TestcaseWithOutput,
-    User,
 } from "@kontestis/models";
 import { AxiosError } from "axios";
 
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
+import { Redis } from "../redis/Redis";
+import { RedisKeys } from "../redis/RedisKeys";
 import { isContestRunning } from "./contest";
 import { evaluateTestcasesNew } from "./evaluation_rs";
 import { Logger } from "./logger";
@@ -38,7 +39,12 @@ export type ProblemDetails = {
 
 export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
 
-const updateContestMember = async (problemId: Snowflake, userId: Snowflake, score: number) => {
+const updateContestMemberScore = async (
+    problemId: Snowflake,
+    userId: Snowflake,
+    createdAt: Date,
+    score: number
+) => {
     const problem = await Database.selectOneFrom("problems", ["contest_id"], { id: problemId });
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
@@ -51,7 +57,7 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
 
     if (!contest) throw ERR_UNEXPECTED_STATE;
 
-    if (!isContestRunning(contest)) return;
+    if (!isContestRunning(contest, createdAt.getTime())) return;
 
     const contestMember = await Database.selectOneFrom("contest_members", ["id", "score"], {
         contest_id: contest.id,
@@ -266,26 +272,43 @@ const evaluateCluster = async (
 
 // NOTE: špaget
 export const beginEvaluation = async (
-    user: User,
+    userId: Snowflake,
     problemDetails: ProblemDetails,
-    afterEnd?: (submission: Submission) => Promise<void> | void
+    afterEnd?: (submission: Submission) => Promise<void> | void,
+    existingSubmission?: Submission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const pendingSubmission: PendingSubmission = {
-        id: generateSnowflake(),
-        created_at: new Date(),
-        user_id: user.id,
+        id: existingSubmission?.id ?? generateSnowflake(),
+        created_at: existingSubmission?.created_at ?? new Date(),
+        user_id: userId,
         language: problemDetails.language,
         code: problemDetails.code,
     };
 
-    await storePendingSubmission(
-        {
-            userId: user.id,
-            problemId: problemDetails.problemId,
-        },
-        pendingSubmission
-    );
+    console.log(pendingSubmission);
+
+    existingSubmission
+        ? await Redis.sAdd(
+              RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
+              existingSubmission.id.toString()
+          )
+        : await storePendingSubmission(
+              {
+                  userId: userId,
+                  problemId: problemDetails.problemId,
+              },
+              pendingSubmission
+          );
+
+    const removeReevaluationIdTimeout = existingSubmission
+        ? setTimeout(async () => {
+              await Redis.sRem(
+                  RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
+                  existingSubmission.id.toString()
+              );
+          }, 1000 * 300)
+        : undefined;
 
     const problem = await Database.selectOneFrom(
         "problems",
@@ -357,19 +380,32 @@ export const beginEvaluation = async (
         } as Submission;
 
         await Promise.all([
-            Database.insertInto("submissions", newSubmission),
-            updateContestMember(problemDetails.problemId, user.id, score),
+            existingSubmission
+                ? Database.update("submissions", newSubmission, { id: newSubmission.id })
+                : Database.insertInto("submissions", newSubmission),
+            updateContestMemberScore(
+                problemDetails.problemId,
+                userId,
+                newSubmission.created_at,
+                score
+            ),
         ]).catch((error) => Logger.error("submission store failed: ", error + ""));
 
         // I know I can put this in Promise.all, but it needs to be removed
         // from redis after we have successfully stored it in the database
-        await completePendingSubmission(
-            {
-                userId: user.id,
-                problemId: problemDetails.problemId,
-            },
-            pendingSubmission.id
-        );
+        existingSubmission
+            ? await Redis.sRem(
+                  RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
+                  existingSubmission.id.toString()
+              )
+            : await completePendingSubmission(
+                  {
+                      userId: userId,
+                      problemId: problemDetails.problemId,
+                  },
+                  pendingSubmission.id
+              );
+        clearTimeout(removeReevaluationIdTimeout);
 
         if (afterEnd) {
             try {

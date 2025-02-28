@@ -49,7 +49,6 @@ export type Submission = SubmissionV6;
 
 export type SubmissionWithUserInfo = Submission & {
     full_name: string;
-    email: string;
 };
 
 export type PendingSubmission = Omit<

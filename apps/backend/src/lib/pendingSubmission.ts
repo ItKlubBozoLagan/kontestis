@@ -23,6 +23,7 @@ export const storePendingSubmission = async (
     meta: PendingSubmissionMeta,
     submission: PendingSubmission
 ) => {
+    console.log("Store pending submission: " + meta);
     await Redis.hSet(
         RedisKeys.PENDING_SUBMISSION(meta.userId, meta.problemId, submission.id),
         convertToPlainRedis(submission)
