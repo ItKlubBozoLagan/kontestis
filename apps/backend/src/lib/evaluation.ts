@@ -9,6 +9,7 @@ import {
     Problem,
     Snowflake,
     Submission,
+    SuccessfulEvaluationResult,
     Testcase,
     TestcaseWithOutput,
 } from "@kontestis/models";
@@ -16,8 +17,10 @@ import { AxiosError } from "axios";
 
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
+import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
+import { S3Client } from "../s3/S3";
 import { isContestRunning } from "./contest";
 import { evaluateTestcasesNew } from "./evaluation_rs";
 import { Logger } from "./logger";
@@ -177,9 +180,37 @@ const evaluateCluster = async (
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
+    await Promise.all(
+        testcases.flatMap((testcase) => [
+            S3Client.putObject(
+                // eslint-disable-next-line sonarjs/no-duplicate-string
+                Globals.s3.buckets.submission_meta,
+                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.in`,
+                testcase.input
+            ),
+            S3Client.putObject(
+                Globals.s3.buckets.submission_meta,
+                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.out`,
+                testcase.correct_output
+            ),
+        ])
+    );
+
     const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
 
     if (error || !results) return;
+
+    await Promise.all(
+        results
+            .filter((result) => result.type === "success" && result.output)
+            .map((result) =>
+                S3Client.putObject(
+                    Globals.s3.buckets.submission_meta,
+                    `${pendingSubmission.id}/${cluster.id}/${result.testCaseId}.sout`,
+                    (result as SuccessfulEvaluationResult).output ?? ""
+                )
+            )
+    );
 
     const clusterTestcases = testcases.map((it) => ({
         ...it,

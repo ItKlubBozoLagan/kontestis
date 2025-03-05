@@ -36,8 +36,11 @@ import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
+import SubmissionFileHandler from "./SubmissionFileHandler";
 
 const SubmissionHandler = Router();
+
+SubmissionHandler.use("/files/:submission_id/", SubmissionFileHandler);
 
 const SubmissionSchema = Type.Object({
     language: EvaluationLanguageSchema,
