@@ -30,6 +30,8 @@ import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { mustHaveContestPermission } from "../../preconditions/hasPermission";
+import { Redis } from "../../redis/Redis";
+import { RedisKeys } from "../../redis/RedisKeys";
 import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
@@ -71,7 +73,7 @@ SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (r
     if (!problemWithFullData) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
     const submissionId = await beginEvaluation(
-        user,
+        user.id,
         {
             problemId: problem.id,
             language: req.body.language,
@@ -82,6 +84,38 @@ SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (r
             legacy_evaluation: problem.legacy_evaluation,
         },
         endListener
+    );
+
+    return respond(res, StatusCodes.ACCEPTED, { submission: submissionId });
+});
+
+SubmissionHandler.post("/reevaluate/:submission_id", async (req, res) => {
+    const submission = await extractSubmission(req);
+    const problem = await extractProblem(req, submission.problem_id);
+
+    await mustHaveContestPermission(req, ContestMemberPermissions.EDIT, problem.contest_id);
+
+    const problemWithFullData = await Database.selectOneFrom(
+        "problems",
+        ["evaluation_script", "evaluation_variant", "evaluation_language"],
+        { id: problem.id }
+    );
+
+    if (!problemWithFullData) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    const submissionId = await beginEvaluation(
+        submission.user_id,
+        {
+            problemId: problem.id,
+            language: submission.language,
+            code: submission.code,
+            evaluation_variant: problemWithFullData.evaluation_variant,
+            evaluator_language: problemWithFullData.evaluation_language,
+            evaluator: problemWithFullData.evaluation_script,
+            legacy_evaluation: problem.legacy_evaluation,
+        },
+        () => {},
+        submission as Submission
     );
 
     return respond(res, StatusCodes.ACCEPTED, { submission: submissionId });
@@ -119,6 +153,10 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
         { problem_id: problem.id }
     );
 
+    const reevaluationIds = new Set<string>(
+        await Redis.sMembers(RedisKeys.REEVALUATION_IDS(problem.id))
+    );
+
     const users = (
         await Promise.all(
             R.chunk(submissions, 100).map((chunk) =>
@@ -131,7 +169,8 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
 
     const submissionsWithInfo = submissions.map((it) => ({
         ...it,
-        ...R.pick(users.find((user) => user.id === it.user_id)!, ["email", "full_name"]),
+        reevaluation: reevaluationIds.has(it.id.toString()),
+        ...R.pick(users.find((user) => user.id === it.user_id)!, ["full_name"]),
     }));
 
     if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
