@@ -286,8 +286,6 @@ export const beginEvaluation = async (
         code: problemDetails.code,
     };
 
-    console.log(pendingSubmission);
-
     existingSubmission
         ? await Redis.sAdd(
               RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
@@ -381,12 +379,28 @@ export const beginEvaluation = async (
 
         await Promise.all([
             existingSubmission
-                ? Database.update("submissions", newSubmission, { id: newSubmission.id })
+                ? Database.update(
+                      "submissions",
+                      {
+                          awarded_score: newSubmission.awarded_score,
+                          verdict: newSubmission.verdict,
+                          compiler_output: newSubmission.compiler_output,
+                          memory_used_megabytes: newSubmission.memory_used_megabytes,
+                          time_used_millis: newSubmission.time_used_millis,
+                          error:
+                              verdict === "compilation_error"
+                                  ? clusterSubmissions.find(
+                                        (submission) => submission?.verdict === "compilation_error"
+                                    )?.compilationError
+                                  : undefined,
+                      },
+                      { id: newSubmission.id }
+                  )
                 : Database.insertInto("submissions", newSubmission),
             updateContestMemberScore(
                 problemDetails.problemId,
                 userId,
-                newSubmission.created_at,
+                new Date(newSubmission.created_at.toString()),
                 score
             ),
         ]).catch((error) => Logger.error("submission store failed: ", error + ""));

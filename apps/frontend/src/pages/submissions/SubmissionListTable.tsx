@@ -48,6 +48,7 @@ export const SubmissionListTable: FC<Properties> = ({
                     {!adminView && contest && contest.exam && (
                         <TableHeadItem>{t("submissions.table.head.final")}</TableHeadItem>
                     )}
+                    {adminView && <TableHeadItem>Rejudge</TableHeadItem>}
                 </TableHeadRow>
             </thead>
             <tbody>

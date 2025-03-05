@@ -169,7 +169,7 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
 
     const submissionsWithInfo = submissions.map((it) => ({
         ...it,
-        reevaluation: it.id.toString() in reevaluationIds,
+        reevaluation: reevaluationIds.has(it.id.toString()),
         ...R.pick(users.find((user) => user.id === it.user_id)!, ["full_name"]),
     }));
 

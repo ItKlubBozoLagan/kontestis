@@ -4,7 +4,7 @@ import { useMutation } from "react-query";
 import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../api/http";
 
 export const useReevaluateSubmission: MutationHandler<
-    undefined,
+    Snowflake,
     undefined,
     [Snowflake, Snowflake]
 > = ([submissionId, problemId], options) =>
@@ -13,7 +13,7 @@ export const useReevaluateSubmission: MutationHandler<
         invalidateOnSuccess(
             [
                 ["submission", submissionId],
-                ["submission", "problem", problemId],
+                ["submission", "problem-global", problemId],
             ],
             options
         )

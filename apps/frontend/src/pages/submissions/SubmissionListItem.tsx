@@ -2,6 +2,7 @@ import {
     Contest,
     ExamFinalSubmissionWithProblemId,
     ProblemWithScore,
+    Submission,
     SubmissionByProblemResponse,
     SubmissionWithUserInfo,
 } from "@kontestis/models";
@@ -10,9 +11,13 @@ import { FiLoader } from "react-icons/all";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
+import { SimpleButton } from "../../components/SimpleButton";
 import { TableItem, TableRow } from "../../components/Table";
 import { Translated } from "../../components/Translated";
+import { GlobalProblemSubmission } from "../../hooks/submission/useGlobalProblemSubmissions";
+import { useReevaluateSubmission } from "../../hooks/submission/useReevaluateSubmission";
 import { useSetFinalSubmission } from "../../hooks/submission/useSetFinalSubmission";
 import { useInterval } from "../../hooks/useInterval";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -40,6 +45,11 @@ export const SubmissionListItem: FC<Properties> = ({
     const { t } = useTranslation();
 
     const [dots, setDots] = useState("");
+
+    const { mutate: reevaluate } = useReevaluateSubmission([
+        submission.id,
+        (submission as Submission).problem_id ?? 0n,
+    ]);
 
     useInterval(() => {
         setDots((dots) => {
@@ -80,6 +90,23 @@ export const SubmissionListItem: FC<Properties> = ({
                             maxScore={problem.score}
                         />
                     </TableItem>
+                    {adminView && (
+                        <TableItem>
+                            <SimpleButton
+                                disabled={(submission as GlobalProblemSubmission).reevaluation}
+                                tw={"w-full"}
+                                onClick={() => reevaluate(submission.id)}
+                            >
+                                <div tw={"w-full flex justify-center"}>
+                                    {(submission as GlobalProblemSubmission).reevaluation ? (
+                                        <LoadingSpinner size={"xs"} />
+                                    ) : (
+                                        <>Rejudge</>
+                                    )}
+                                </div>
+                            </SimpleButton>
+                        </TableItem>
+                    )}
                     {!adminView && contest && contest.exam && (
                         <TableItem>
                             {(finalSubmissions ?? []).some(
