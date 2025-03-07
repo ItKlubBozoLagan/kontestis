@@ -1,8 +1,8 @@
-import { http } from "../api/http";
+import axios from "axios";
 
 export const downloadFile = async (path: string) => {
     try {
-        const response = await http.get(path, {
+        const response = await axios.get(path, {
             responseType: "blob", // Ensure we get binary data
         });
 

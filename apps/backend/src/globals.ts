@@ -45,6 +45,7 @@ type GlobalsType = {
 
     s3: {
         endpoint: string;
+        instanceUrl: string;
         port: number;
         useSSL: boolean;
         accessKey: string;
@@ -110,6 +111,7 @@ export const Globals: GlobalsType = {
     },
     s3: {
         endpoint: process.env.S3_ENDPOINT ?? "localhost",
+        instanceUrl: process.env.S3_INSTANCE_URL ?? "http://localhost:9000",
         port: process.env.S3_PORT ? Number.parseInt(process.env.S3_PORT) : 443,
         useSSL: process.env.S3_USE_SSL === "true",
         accessKey: process.env.S3_ACCESS_KEY ?? "",

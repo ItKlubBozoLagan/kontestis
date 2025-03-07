@@ -1,8 +1,9 @@
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
-import { FC } from "react";
+import { AdminPermissions, ContestMemberPermissions, Snowflake } from "@kontestis/models";
+import { FC, useCallback } from "react";
 import { FiChevronsLeft, FiDownload, FiX } from "react-icons/all";
 import tw from "twin.macro";
 
+import { http, wrapAxios } from "../../api/http";
 import { CanContestMember } from "../../components/CanContestMember";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { Translated } from "../../components/Translated";
@@ -15,27 +16,38 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { downloadFile } from "../../util/download";
 
 type Properties = {
-    submission_id: bigint;
-    cluster_submission_id: bigint;
-    cluster_id: bigint;
+    submissionId: bigint;
+    clusterSubmissionId: bigint;
+    clusterId: bigint;
     files: string[];
     back: () => void;
 };
 
 export const SubmissionTestcaseTable: FC<Properties> = ({
-    cluster_submission_id,
-    cluster_id,
+    clusterSubmissionId,
+    clusterId,
     files,
     back,
-    submission_id,
+    submissionId,
 }) => {
-    const { data: submission } = useSubmission(submission_id);
+    const { data: submission } = useSubmission(submissionId);
     const { data: problem } = useProblem(submission?.problem_id ?? 0n, { enabled: !!submission });
     const { data: contest } = useContest(problem?.contest_id ?? 0n, { enabled: !!problem });
     const { data: members } = useSelfContestMembers();
     const member = (members ?? []).find((member) => !!contest && member.contest_id === contest.id);
 
-    const { data: testcaseSubmissions } = useSubmissionTestcases(cluster_submission_id);
+    const { data: testcaseSubmissions } = useSubmissionTestcases(clusterSubmissionId);
+
+    const downloadSubmissionFile = useCallback(
+        async (testcaseId: Snowflake, type: "in" | "out" | "sout") => {
+            const { url } = await wrapAxios<{ url: string }>(
+                http.get(`/submission/files/${submissionId}/${clusterId}/${testcaseId}/${type}`)
+            );
+
+            await downloadFile(url);
+        },
+        [submissionId, clusterId]
+    );
 
     const { t } = useTranslation();
 
@@ -105,15 +117,13 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                             >
                                 <TableItem>
                                     {files.includes(
-                                        `${submission_id}/${cluster_id}/${ts.testcase_id}.in`
+                                        `${submissionId}/${clusterId}/${ts.testcase_id}.in`
                                     ) ? (
                                         <FiDownload
                                             size={16}
                                             tw={"hover:cursor-pointer hover:text-blue-400"}
                                             onClick={() =>
-                                                downloadFile(
-                                                    `submission/files/${submission_id}/${cluster_id}/${ts.testcase_id}/in`
-                                                )
+                                                downloadSubmissionFile(ts.testcase_id, "in")
                                             }
                                         />
                                     ) : (
@@ -122,15 +132,13 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                 </TableItem>
                                 <TableItem>
                                     {files.includes(
-                                        `${submission_id}/${cluster_id}/${ts.testcase_id}.out`
+                                        `${submissionId}/${clusterId}/${ts.testcase_id}.out`
                                     ) ? (
                                         <FiDownload
                                             size={16}
                                             tw={"hover:cursor-pointer hover:text-blue-400"}
                                             onClick={() =>
-                                                downloadFile(
-                                                    `submission/files/${submission_id}/${cluster_id}/${ts.testcase_id}/out`
-                                                )
+                                                downloadSubmissionFile(ts.testcase_id, "out")
                                             }
                                         />
                                     ) : (
@@ -139,7 +147,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                 </TableItem>
                                 <TableItem>
                                     {files.includes(
-                                        `${submission_id}/${cluster_id}/${ts.testcase_id}.sout`
+                                        `${submissionId}/${clusterId}/${ts.testcase_id}.sout`
                                     ) ? (
                                         <FiDownload
                                             size={16}
@@ -147,9 +155,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                                 "self-center hover:cursor-pointer hover:text-blue-400"
                                             }
                                             onClick={() =>
-                                                downloadFile(
-                                                    `submission/files/${submission_id}/${cluster_id}/${ts.testcase_id}/sout`
-                                                )
+                                                downloadSubmissionFile(ts.testcase_id, "sout")
                                             }
                                         />
                                     ) : (

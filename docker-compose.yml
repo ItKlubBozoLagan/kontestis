@@ -115,4 +115,5 @@ services:
     command: server --console-address ":9001" /data
     environment:
       MINIO_ROOT_USER: root 
-      MINIO_ROOT_PASSWORD: password 
+      MINIO_ROOT_PASSWORD: password
+      MINIO_SERVER_URL: http://localhost:9000 

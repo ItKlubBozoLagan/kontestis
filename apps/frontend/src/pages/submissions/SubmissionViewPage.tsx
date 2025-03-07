@@ -164,9 +164,9 @@ export const SubmissionViewPage: FC = () => {
                 </Table>
             ) : (
                 <SubmissionTestcaseTable
-                    submission_id={BigInt(submissionId!)}
-                    cluster_submission_id={selectedCluster!.id}
-                    cluster_id={selectedCluster!.cluster_id}
+                    submissionId={BigInt(submissionId!)}
+                    clusterSubmissionId={selectedCluster!.id}
+                    clusterId={selectedCluster!.cluster_id}
                     files={files ?? []}
                     back={() => setDisplayTestcase(false)}
                 ></SubmissionTestcaseTable>
