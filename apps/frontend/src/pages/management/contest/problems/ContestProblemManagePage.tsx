@@ -41,7 +41,7 @@ export const ContestProblemManagePage: FC = () => {
 
     useEffect(() => {
         setIsReevaluating((submissions ?? []).some((s) => s.reevaluation));
-    }, [JSON.stringify(submissions)]);
+    }, [submissions]);
 
     const { member } = useContestContext();
 
