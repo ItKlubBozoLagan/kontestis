@@ -11,11 +11,9 @@ export const downloadFile = async (path: string) => {
         let filename = "downloaded-file";
 
         if (contentDisposition) {
-            const match = contentDisposition.match(/filename="(.+)"/);
+            const [_, match] = contentDisposition.match(/filename="(.+)"/);
 
-            if (match?.[1]) {
-                filename = match[1];
-            }
+            if (match) filename = match;
         }
 
         // Create a Blob from the response data

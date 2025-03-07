@@ -67,7 +67,7 @@ SubmissionFileHandler.get("/:cluster_id/:testcase_id/:type", async (req, res) =>
         `${submission.id}/${cluster.id}/${testcaseId}.${type}`,
         10 * 60,
         {
-            "response-content-disposition": `attachment;filename="${testcaseId}.${type}"`,
+            "response-content-disposition": `attachment;filename="testcase-${testcaseId}.${type}"`,
             "response-content-type": "application/octet-stream",
         }
     );
