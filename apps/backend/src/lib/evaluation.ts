@@ -367,6 +367,20 @@ export const beginEvaluation = async (
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
 
+    const exitingClusters = await Database.selectFrom("cluster_submissions", ["id"], {
+        submission_id: pendingSubmission.id,
+    });
+
+    await Promise.all(
+        exitingClusters.map((ec) =>
+            Database.update(
+                "cluster_submissions",
+                { submission_id: -pendingSubmission.id },
+                { id: ec.id }
+            )
+        )
+    );
+
     const _ = (async () => {
         const clusterSubmissions = await Promise.all(
             clusters.map((c) => evaluateCluster(problemDetails, c, problem, pendingSubmission))
