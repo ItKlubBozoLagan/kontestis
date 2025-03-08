@@ -1,3 +1,5 @@
+import * as https from "node:https";
+
 import * as Minio from "minio";
 
 import { Globals } from "../globals";
@@ -8,6 +10,10 @@ export const S3Client = new Minio.Client({
     useSSL: Globals.s3.useSSL,
     accessKey: Globals.s3.accessKey,
     secretKey: Globals.s3.secretKey,
+    transportAgent:
+        Globals.s3.useSSL && !Globals.s3.validateSSL
+            ? new https.Agent({ rejectUnauthorized: false })
+            : undefined,
 });
 
 export const initS3 = async () => {

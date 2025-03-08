@@ -48,6 +48,7 @@ type GlobalsType = {
         instanceUrl: string;
         port: number;
         useSSL: boolean;
+        validateSSL: boolean;
         accessKey: string;
         secretKey: string;
         buckets: {
@@ -114,6 +115,7 @@ export const Globals: GlobalsType = {
         instanceUrl: process.env.S3_INSTANCE_URL ?? "http://localhost:9000",
         port: process.env.S3_PORT ? Number.parseInt(process.env.S3_PORT) : 443,
         useSSL: process.env.S3_USE_SSL === "true",
+        validateSSL: process.env.S3_VALIDATE_SSL !== "false",
         accessKey: process.env.S3_ACCESS_KEY ?? "",
         secretKey: process.env.S3_SECRET_KEY ?? "",
         buckets: {
