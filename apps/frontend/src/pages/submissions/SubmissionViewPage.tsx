@@ -14,6 +14,7 @@ import { TitledSection } from "../../components/TitledSection";
 import { Translated } from "../../components/Translated";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
+import { useSubmissionFiles } from "../../hooks/submission/useSubmissionFiles";
 import { useCopy } from "../../hooks/useCopy";
 import { useTranslation } from "../../hooks/useTranslation";
 import { convertFromBase64 } from "../../util/base";
@@ -43,6 +44,13 @@ export const SubmissionViewPage: FC = () => {
 
     const [selectedCluster, setSelectedCluster] = useState<ClusterSubmission>();
     const [displayTestcase, setDisplayTestcase] = useState(false);
+
+    const { data: files } = useSubmissionFiles(
+        [BigInt(submissionId ?? 0), BigInt(selectedCluster?.cluster_id ?? 0)],
+        {
+            enabled: !!selectedCluster,
+        }
+    );
 
     const { t } = useTranslation();
 
@@ -156,7 +164,10 @@ export const SubmissionViewPage: FC = () => {
                 </Table>
             ) : (
                 <SubmissionTestcaseTable
-                    cluster_submission_id={selectedCluster!.id}
+                    submissionId={BigInt(submissionId!)}
+                    clusterSubmissionId={selectedCluster!.id}
+                    clusterId={selectedCluster!.cluster_id}
+                    files={files ?? []}
                     back={() => setDisplayTestcase(false)}
                 ></SubmissionTestcaseTable>
             )}

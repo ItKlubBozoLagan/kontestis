@@ -10,6 +10,12 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@aws-crypto/sha256-browser": "^5.2.0",
+        "@aws-sdk/hash-node": "^3.374.0",
+        "@aws-sdk/protocol-http": "^3.374.0",
+        "@aws-sdk/s3-request-presigner": "^3.758.0",
+        "@aws-sdk/url-parser": "^3.374.0",
+        "@aws-sdk/util-format-url": "^3.734.0",
         "@influxdata/influxdb-client": "^1.33.2",
         "@influxdata/influxdb-client-apis": "^1.33.2",
         "@kontestis/models": "workspace:^1.0.0",
@@ -32,6 +38,7 @@
         "jsonwebtoken": "^9.0.0",
         "jwks-rsa": "^3.1.0",
         "md5": "^2.3.0",
+        "minio": "^8.0.4",
         "nodemailer": "^6.9.8",
         "permissio": "^2.0.2",
         "rate-limit-redis": "^3.0.1",
