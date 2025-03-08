@@ -28,7 +28,6 @@ export const s3OfflinePresignGetObject = async (
 
     const s3ObjectUrl = parseUrl(baseUrl);
 
-    console.log(new HttpRequest(s3ObjectUrl));
     const presigner = new S3RequestPresigner({
         credentials: {
             accessKeyId: Globals.s3.accessKey,
@@ -39,8 +38,6 @@ export const s3OfflinePresignGetObject = async (
     });
 
     const url = await presigner.presign(new HttpRequest(s3ObjectUrl), { expiresIn: expire });
-
-    console.log(url);
 
     return formatUrl(url);
 };
