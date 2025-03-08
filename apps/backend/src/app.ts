@@ -28,8 +28,9 @@ import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
 import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
-import { subscribeToEvaluatorPubSub } from "./lib/evaluation_rs";
+import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
+import { initS3 } from "./s3/S3";
 
 declare global {
     interface BigInt {
@@ -126,12 +127,16 @@ Promise.allSettled([
     Redis.connect()
         .then(async () => {
             Logger.redis("Connected to Redis");
-            await subscribeToEvaluatorPubSub();
+            const _ = subscribeToEvaluatorResponseQueue();
+
             Logger.redis("Subscribed to evaluator pub sub");
         })
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
+    initS3().catch((error) => {
+        Logger.panic("S3 failed", error);
+    }),
     // for consistency
     initInflux(),
     initAaiEdu(),

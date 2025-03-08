@@ -1,6 +1,8 @@
 import "/public/css/prism-custom.css";
 
 import { ClusterSubmission } from "@kontestis/models";
+import Convert from "ansi-to-html";
+import escapeHtml from "escape-html";
 import Prism from "prismjs";
 import { FC, useEffect, useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/all";
@@ -12,6 +14,7 @@ import { TitledSection } from "../../components/TitledSection";
 import { Translated } from "../../components/Translated";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionClusters } from "../../hooks/submission/useSubmissionClusters";
+import { useSubmissionFiles } from "../../hooks/submission/useSubmissionFiles";
 import { useCopy } from "../../hooks/useCopy";
 import { useTranslation } from "../../hooks/useTranslation";
 import { convertFromBase64 } from "../../util/base";
@@ -22,6 +25,8 @@ Prism.manual = true;
 type Properties = {
     submissionId: string;
 };
+
+const convert = new Convert();
 
 export const SubmissionViewPage: FC = () => {
     const { submissionId } = useParams<Properties>();
@@ -39,6 +44,13 @@ export const SubmissionViewPage: FC = () => {
 
     const [selectedCluster, setSelectedCluster] = useState<ClusterSubmission>();
     const [displayTestcase, setDisplayTestcase] = useState(false);
+
+    const { data: files } = useSubmissionFiles(
+        [BigInt(submissionId ?? 0), BigInt(selectedCluster?.cluster_id ?? 0)],
+        {
+            enabled: !!selectedCluster,
+        }
+    );
 
     const { t } = useTranslation();
 
@@ -77,13 +89,32 @@ export const SubmissionViewPage: FC = () => {
                     </div>
                 )}
             </TitledSection>
-            {isSubmissionSuccess && submission.verdict === "compilation_error" && (
-                <TitledSection title={"Compile time error"}>
-                    <div tw={"bg-neutral-100 px-4 w-full rounded overflow-auto"}>
-                        <pre>{submission.error}</pre>
-                    </div>
-                </TitledSection>
-            )}
+            {isSubmissionSuccess &&
+                (submission.compiler_output || submission.verdict === "compilation_error") && (
+                    <TitledSection
+                        title={
+                            submission.verdict === "compilation_error"
+                                ? "Compile time error"
+                                : "Compiler output"
+                        }
+                    >
+                        <div tw={"bg-neutral-100 px-4 w-full rounded overflow-auto"}>
+                            <pre
+                                dangerouslySetInnerHTML={{
+                                    __html: convert.toHtml(
+                                        escapeHtml(
+                                            submission.compiler_output ||
+                                                (submission.verdict === "compilation_error"
+                                                    ? submission.error
+                                                    : "")
+                                        )
+                                    ),
+                                }}
+                            ></pre>
+                        </div>
+                    </TitledSection>
+                )}
+
             {!displayTestcase ? (
                 <Table tw={"w-full"}>
                     <thead>
@@ -133,7 +164,10 @@ export const SubmissionViewPage: FC = () => {
                 </Table>
             ) : (
                 <SubmissionTestcaseTable
-                    cluster_submission_id={selectedCluster!.id}
+                    submissionId={BigInt(submissionId!)}
+                    clusterSubmissionId={selectedCluster!.id}
+                    clusterId={selectedCluster!.cluster_id}
+                    files={files ?? []}
                     back={() => setDisplayTestcase(false)}
                 ></SubmissionTestcaseTable>
             )}

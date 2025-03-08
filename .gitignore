@@ -5,6 +5,7 @@ pruned/
 .fleet/
 global.env
 coverage/
+.pnpm-store/
 
 tools/**
 !tools/.gitkeep

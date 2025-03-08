@@ -1,5 +1,5 @@
 import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { FiPlus } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
@@ -33,7 +33,15 @@ export const ContestProblemManagePage: FC = () => {
 
     const { data: clusters } = useAllClusters(BigInt(problemId ?? 0));
 
-    const { data: submissions } = useGlobalProblemSubmissions(BigInt(problemId ?? 0));
+    const [isReevaluating, setIsReevaluating] = useState(false);
+
+    const { data: submissions } = useGlobalProblemSubmissions(BigInt(problemId ?? 0), {
+        refetchInterval: isReevaluating ? 1000 : 10_000,
+    });
+
+    useEffect(() => {
+        setIsReevaluating((submissions ?? []).some((s) => s.reevaluation));
+    }, [submissions]);
 
     const { member } = useContestContext();
 

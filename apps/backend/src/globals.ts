@@ -1,4 +1,8 @@
+import { hostname } from "node:os";
+
 type GlobalsType = {
+    INSTANCE_ID: string;
+
     mode: "development" | "production" | string;
     port: number;
     rateLimit: number;
@@ -25,7 +29,7 @@ type GlobalsType = {
     frontendUrl: string;
 
     evaluatorRedisQueueKey: string;
-    evaluatorRedisPubSubChannel: string;
+    evaluatorRedisResponseQueuePrefix: string;
 
     jwtSecret: string;
 
@@ -38,9 +42,24 @@ type GlobalsType = {
         enabled: boolean;
         secret: string;
     };
+
+    s3: {
+        endpoint: string;
+        instanceUrl: string;
+        port: number;
+        useSSL: boolean;
+        validateSSL: boolean;
+        accessKey: string;
+        secretKey: string;
+        buckets: {
+            submission_meta: string;
+        };
+    };
 };
 
 export const Globals: GlobalsType = {
+    INSTANCE_ID: hostname(),
+
     mode: process.env.MODE ?? "development",
     port: process.env.PORT ? Number.parseInt(process.env.PORT) : 8080,
     rateLimit: process.env.RATE_LIMIT ? Number.parseInt(process.env.RATE_LIMIT) : 60,
@@ -72,7 +91,8 @@ export const Globals: GlobalsType = {
     backendUrl: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
     frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
     evaluatorRedisQueueKey: process.env.EVALUATOR_QUEUE_KEY ?? "evaluator_msg_queue",
-    evaluatorRedisPubSubChannel: process.env.EVALUATOR_PUBSUB_CHANNEL ?? "evaluator_evaluations",
+    evaluatorRedisResponseQueuePrefix:
+        process.env.EVALUATOR_RESPONSE_QUEUE_CHANNEL ?? "evaluator_evaluations",
     jwtSecret: !process.env.JWT_SECRET
         ? (() => {
               throw new Error("missing JWT_SECRET");
@@ -89,5 +109,17 @@ export const Globals: GlobalsType = {
     captcha: {
         enabled: (process.env.CAPTCHA_DISABLED ?? "false").toLowerCase() !== "true",
         secret: process.env.CAPTCHA_SECRET ?? "",
+    },
+    s3: {
+        endpoint: process.env.S3_ENDPOINT ?? "localhost",
+        instanceUrl: process.env.S3_INSTANCE_URL ?? "http://localhost:9000",
+        port: process.env.S3_PORT ? Number.parseInt(process.env.S3_PORT) : 443,
+        useSSL: process.env.S3_USE_SSL === "true",
+        validateSSL: process.env.S3_VALIDATE_SSL !== "false",
+        accessKey: process.env.S3_ACCESS_KEY ?? "",
+        secretKey: process.env.S3_SECRET_KEY ?? "",
+        buckets: {
+            submission_meta: process.env.S3_BUCKET_SUBMISSION_META ?? "submission-meta",
+        },
     },
 };

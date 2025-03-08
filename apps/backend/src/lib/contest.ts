@@ -4,9 +4,12 @@ import { pushNotificationsToMany } from "./notifications";
 
 type ContestLike = Pick<Contest, "start_time" | "duration_seconds">;
 
-export const isContestRunning = (contest: ContestLike) =>
-    Date.now() >= contest.start_time.getTime() &&
-    Date.now() <= contest.start_time.getTime() + contest.duration_seconds * 1000;
+export const isContestRunning = (contest: ContestLike, currentTime = Date.now()) =>
+    currentTime >= contest.start_time.getTime() &&
+    currentTime <= contest.start_time.getTime() + contest.duration_seconds * 1000;
+
+export const isContestOver = (contest: ContestLike) =>
+    Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000;
 
 export const pushContestNotifications = (
     contest: Pick<Contest, "name" | "start_time" | "duration_seconds">,

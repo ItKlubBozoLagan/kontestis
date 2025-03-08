@@ -3,7 +3,11 @@ import { useQuery } from "react-query";
 
 import { http, QueryHandler, wrapAxios } from "../../api/http";
 
-export const useGlobalProblemSubmissions: QueryHandler<SubmissionWithUserInfo[], Snowflake> = (
+export type GlobalProblemSubmission = SubmissionWithUserInfo & {
+    reevaluation: boolean;
+};
+
+export const useGlobalProblemSubmissions: QueryHandler<GlobalProblemSubmission[], Snowflake> = (
     problemId,
     options
 ) =>

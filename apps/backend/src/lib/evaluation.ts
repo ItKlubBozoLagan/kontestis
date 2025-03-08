@@ -9,14 +9,18 @@ import {
     Problem,
     Snowflake,
     Submission,
+    SuccessfulEvaluationResult,
     Testcase,
     TestcaseWithOutput,
-    User,
 } from "@kontestis/models";
 import { AxiosError } from "axios";
 
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
+import { Globals } from "../globals";
+import { Redis } from "../redis/Redis";
+import { RedisKeys } from "../redis/RedisKeys";
+import { S3Client } from "../s3/S3";
 import { isContestRunning } from "./contest";
 import { evaluateTestcasesNew } from "./evaluation_rs";
 import { Logger } from "./logger";
@@ -38,7 +42,12 @@ export type ProblemDetails = {
 
 export type AxiosEvaluationResponse = [EvaluationResult[], undefined] | [undefined, AxiosError];
 
-const updateContestMember = async (problemId: Snowflake, userId: Snowflake, score: number) => {
+const updateContestMemberScore = async (
+    problemId: Snowflake,
+    userId: Snowflake,
+    createdAt: Date,
+    score: number
+) => {
     const problem = await Database.selectOneFrom("problems", ["contest_id"], { id: problemId });
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
@@ -51,7 +60,7 @@ const updateContestMember = async (problemId: Snowflake, userId: Snowflake, scor
 
     if (!contest) throw ERR_UNEXPECTED_STATE;
 
-    if (!isContestRunning(contest)) return;
+    if (!isContestRunning(contest, createdAt.getTime())) return;
 
     const contestMember = await Database.selectOneFrom("contest_members", ["id", "score"], {
         contest_id: contest.id,
@@ -171,9 +180,37 @@ const evaluateCluster = async (
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
+    await Promise.all(
+        testcases.flatMap((testcase) => [
+            S3Client.putObject(
+                // eslint-disable-next-line sonarjs/no-duplicate-string
+                Globals.s3.buckets.submission_meta,
+                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.in`,
+                testcase.input
+            ),
+            S3Client.putObject(
+                Globals.s3.buckets.submission_meta,
+                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.out`,
+                testcase.correct_output
+            ),
+        ])
+    );
+
     const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
 
     if (error || !results) return;
+
+    await Promise.all(
+        results
+            .filter((result) => result.type === "success" && result.output)
+            .map((result) =>
+                S3Client.putObject(
+                    Globals.s3.buckets.submission_meta,
+                    `${pendingSubmission.id}/${cluster.id}/${result.testCaseId}.sout`,
+                    (result as SuccessfulEvaluationResult).output ?? ""
+                )
+            )
+    );
 
     const clusterTestcases = testcases.map((it) => ({
         ...it,
@@ -253,37 +290,54 @@ const evaluateCluster = async (
 
     return {
         ...clusterSubmission,
+        // only if verdict is "compilation_error", legacy?
         compilationError: clusterTestcases.some(
             (it) => it.evaluationResult.verdict === "compilation_error"
         )
             ? (results.find((it) => it.verdict === "compilation_error") as CompilationErrorResult)
                   .error
             : undefined,
+        compilerOutput: results.find((it) => it.compiler_output)?.compiler_output,
     };
 };
 
 // NOTE: špaget
 export const beginEvaluation = async (
-    user: User,
+    userId: Snowflake,
     problemDetails: ProblemDetails,
-    afterEnd?: (submission: Submission) => Promise<void> | void
+    afterEnd?: (submission: Submission) => Promise<void> | void,
+    existingSubmission?: Submission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const pendingSubmission: PendingSubmission = {
-        id: generateSnowflake(),
-        created_at: new Date(),
-        user_id: user.id,
+        id: existingSubmission?.id ?? generateSnowflake(),
+        created_at: existingSubmission?.created_at ?? new Date(),
+        user_id: userId,
         language: problemDetails.language,
         code: problemDetails.code,
     };
 
-    await storePendingSubmission(
-        {
-            userId: user.id,
-            problemId: problemDetails.problemId,
-        },
-        pendingSubmission
-    );
+    existingSubmission
+        ? await Redis.sAdd(
+              RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
+              existingSubmission.id.toString()
+          )
+        : await storePendingSubmission(
+              {
+                  userId: userId,
+                  problemId: problemDetails.problemId,
+              },
+              pendingSubmission
+          );
+
+    const removeReevaluationIdTimeout = existingSubmission
+        ? setTimeout(async () => {
+              await Redis.sRem(
+                  RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
+                  existingSubmission.id.toString()
+              );
+          }, 1000 * 300)
+        : undefined;
 
     const problem = await Database.selectOneFrom(
         "problems",
@@ -312,6 +366,20 @@ export const beginEvaluation = async (
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
     if (!problem) throw ERR_UNEXPECTED_STATE;
+
+    const exitingClusters = await Database.selectFrom("cluster_submissions", ["id"], {
+        submission_id: pendingSubmission.id,
+    });
+
+    await Promise.all(
+        exitingClusters.map((ec) =>
+            Database.update(
+                "cluster_submissions",
+                { submission_id: -pendingSubmission.id },
+                { id: ec.id }
+            )
+        )
+    );
 
     const _ = (async () => {
         const clusterSubmissions = await Promise.all(
@@ -351,22 +419,52 @@ export const beginEvaluation = async (
                     : undefined,
             time_used_millis: time,
             memory_used_megabytes: memory,
+            compiler_output: clusterSubmissions.find((it) => it?.compilerOutput)?.compilerOutput,
         } as Submission;
 
         await Promise.all([
-            Database.insertInto("submissions", newSubmission),
-            updateContestMember(problemDetails.problemId, user.id, score),
+            existingSubmission
+                ? Database.update(
+                      "submissions",
+                      {
+                          awarded_score: newSubmission.awarded_score,
+                          verdict: newSubmission.verdict,
+                          compiler_output: newSubmission.compiler_output,
+                          memory_used_megabytes: newSubmission.memory_used_megabytes,
+                          time_used_millis: newSubmission.time_used_millis,
+                          error:
+                              verdict === "compilation_error"
+                                  ? clusterSubmissions.find(
+                                        (submission) => submission?.verdict === "compilation_error"
+                                    )?.compilationError
+                                  : undefined,
+                      },
+                      { id: newSubmission.id }
+                  )
+                : Database.insertInto("submissions", newSubmission),
+            updateContestMemberScore(
+                problemDetails.problemId,
+                userId,
+                new Date(newSubmission.created_at.toString()),
+                score
+            ),
         ]).catch((error) => Logger.error("submission store failed: ", error + ""));
 
         // I know I can put this in Promise.all, but it needs to be removed
         // from redis after we have successfully stored it in the database
-        await completePendingSubmission(
-            {
-                userId: user.id,
-                problemId: problemDetails.problemId,
-            },
-            pendingSubmission.id
-        );
+        existingSubmission
+            ? await Redis.sRem(
+                  RedisKeys.REEVALUATION_IDS(problemDetails.problemId),
+                  existingSubmission.id.toString()
+              )
+            : await completePendingSubmission(
+                  {
+                      userId: userId,
+                      problemId: problemDetails.problemId,
+                  },
+                  pendingSubmission.id
+              );
+        clearTimeout(removeReevaluationIdTimeout);
 
         if (afterEnd) {
             try {
