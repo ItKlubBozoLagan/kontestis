@@ -12,9 +12,11 @@ export const AAIDataProcessingModal: FC<Modal.Props> = ({ ...properties }) => {
 
     if (!user.is_edu) return <></>;
 
-    const minimumAge = new Date();
+    const userDob = user.edu_data?.dob ?? new Date("1/1/2000");
 
-    minimumAge.setFullYear(minimumAge.getFullYear() - 18);
+    const minimumDob = new Date();
+
+    minimumDob.setFullYear(minimumDob.getFullYear() - 18);
 
     return (
         <Modal
@@ -24,7 +26,7 @@ export const AAIDataProcessingModal: FC<Modal.Props> = ({ ...properties }) => {
             style={ModalStyles}
             contentLabel={"Suglasnost"}
         >
-            {(user.edu_data?.dob?.getTime() ?? new Date("1/1/2000")) > minimumAge.getTime() ? (
+            {userDob.getTime() > minimumDob.getTime() ? (
                 <div tw={"text-xl p-2"}>
                     Maloljetnim natjecateljima je potrebna{" "}
                     <a
