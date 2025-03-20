@@ -1,4 +1,10 @@
-import { AdminPermissions, ContestMemberPermissions, Snowflake } from "@kontestis/models";
+import {
+    AdminPermissions,
+    ContestMemberPermissions,
+    hasAdminPermission,
+    hasContestPermission,
+    Snowflake,
+} from "@kontestis/models";
 import { FC, useCallback } from "react";
 import { FiChevronsLeft, FiDownload, FiX } from "react-icons/all";
 import tw from "twin.macro";
@@ -13,6 +19,7 @@ import { useProblem } from "../../hooks/problem/useProblem";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionTestcases } from "../../hooks/submission/useSubmissionTestcases";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useAuthStore } from "../../state/auth";
 import { downloadFile } from "../../util/download";
 
 type Properties = {
@@ -38,6 +45,8 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
 
     const { data: testcaseSubmissions } = useSubmissionTestcases(clusterSubmissionId);
 
+    const { user } = useAuthStore();
+
     const downloadSubmissionFile = useCallback(
         async (testcaseId: Snowflake, type: "in" | "out" | "sout") => {
             const { url } = await wrapAxios<{ url: string }>(
@@ -51,10 +60,8 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
 
     const { t } = useTranslation();
 
-    const permission =
-        contest && contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now()
-            ? ContestMemberPermissions.VIEW
-            : ContestMemberPermissions.VIEW_PRIVATE;
+    const isContestFinished =
+        contest && contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now();
 
     return (
         <Table tw={"w-full"}>
@@ -73,15 +80,23 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                     <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
-                    <CanContestMember
-                        member={member}
-                        permission={permission}
-                        adminPermission={AdminPermissions.EDIT_CONTEST}
-                    >
-                        <TableHeadItem>Input</TableHeadItem>
-                        <TableHeadItem>Output</TableHeadItem>
-                        <TableHeadItem>Submission</TableHeadItem>
-                    </CanContestMember>
+                    {isContestFinished ? (
+                        <>
+                            <TableHeadItem>Input</TableHeadItem>
+                            <TableHeadItem>Output</TableHeadItem>
+                            <TableHeadItem>Submission</TableHeadItem>
+                        </>
+                    ) : (
+                        <CanContestMember
+                            member={member}
+                            permission={ContestMemberPermissions.VIEW_PRIVATE}
+                            adminPermission={AdminPermissions.EDIT_CONTEST}
+                        >
+                            <TableHeadItem>Input</TableHeadItem>
+                            <TableHeadItem>Output</TableHeadItem>
+                            <TableHeadItem>Submission</TableHeadItem>
+                        </CanContestMember>
+                    )}
                 </TableHeadRow>
             </thead>
             <tbody>
@@ -110,59 +125,66 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                     {ts.awarded_score ?? "?"}
                                 </Translated>
                             </TableItem>
-                            <CanContestMember
-                                member={member}
-                                permission={permission}
-                                adminPermission={AdminPermissions.EDIT_CONTEST}
-                            >
-                                <TableItem>
-                                    {files.includes(
-                                        `${submissionId}/${clusterId}/${ts.testcase_id}.in`
-                                    ) ? (
-                                        <FiDownload
-                                            size={16}
-                                            tw={"hover:cursor-pointer hover:text-blue-400"}
-                                            onClick={() =>
-                                                downloadSubmissionFile(ts.testcase_id, "in")
-                                            }
-                                        />
-                                    ) : (
-                                        <FiX tw={"text-neutral-500"} size={16} />
-                                    )}
-                                </TableItem>
-                                <TableItem>
-                                    {files.includes(
-                                        `${submissionId}/${clusterId}/${ts.testcase_id}.out`
-                                    ) ? (
-                                        <FiDownload
-                                            size={16}
-                                            tw={"hover:cursor-pointer hover:text-blue-400"}
-                                            onClick={() =>
-                                                downloadSubmissionFile(ts.testcase_id, "out")
-                                            }
-                                        />
-                                    ) : (
-                                        <FiX tw={"text-neutral-500"} size={16} />
-                                    )}
-                                </TableItem>
-                                <TableItem>
-                                    {files.includes(
-                                        `${submissionId}/${clusterId}/${ts.testcase_id}.sout`
-                                    ) ? (
-                                        <FiDownload
-                                            size={16}
-                                            tw={
-                                                "self-center hover:cursor-pointer hover:text-blue-400"
-                                            }
-                                            onClick={() =>
-                                                downloadSubmissionFile(ts.testcase_id, "sout")
-                                            }
-                                        />
-                                    ) : (
-                                        <FiX tw={"text-neutral-500"} size={16} />
-                                    )}
-                                </TableItem>
-                            </CanContestMember>
+                            {(isContestFinished ||
+                                hasAdminPermission(
+                                    user.permissions,
+                                    AdminPermissions.EDIT_CONTEST
+                                ) ||
+                                (member &&
+                                    hasContestPermission(
+                                        member.contest_permissions,
+                                        ContestMemberPermissions.VIEW_PRIVATE
+                                    ))) && (
+                                <>
+                                    <TableItem>
+                                        {files.includes(
+                                            `${submissionId}/${clusterId}/${ts.testcase_id}.in`
+                                        ) ? (
+                                            <FiDownload
+                                                size={16}
+                                                tw={"hover:cursor-pointer hover:text-blue-400"}
+                                                onClick={() =>
+                                                    downloadSubmissionFile(ts.testcase_id, "in")
+                                                }
+                                            />
+                                        ) : (
+                                            <FiX tw={"text-neutral-500"} size={16} />
+                                        )}
+                                    </TableItem>
+                                    <TableItem>
+                                        {files.includes(
+                                            `${submissionId}/${clusterId}/${ts.testcase_id}.out`
+                                        ) ? (
+                                            <FiDownload
+                                                size={16}
+                                                tw={"hover:cursor-pointer hover:text-blue-400"}
+                                                onClick={() =>
+                                                    downloadSubmissionFile(ts.testcase_id, "out")
+                                                }
+                                            />
+                                        ) : (
+                                            <FiX tw={"text-neutral-500"} size={16} />
+                                        )}
+                                    </TableItem>
+                                    <TableItem>
+                                        {files.includes(
+                                            `${submissionId}/${clusterId}/${ts.testcase_id}.sout`
+                                        ) ? (
+                                            <FiDownload
+                                                size={16}
+                                                tw={
+                                                    "self-center hover:cursor-pointer hover:text-blue-400"
+                                                }
+                                                onClick={() =>
+                                                    downloadSubmissionFile(ts.testcase_id, "sout")
+                                                }
+                                            />
+                                        ) : (
+                                            <FiX tw={"text-neutral-500"} size={16} />
+                                        )}
+                                    </TableItem>
+                                </>
+                            )}
                         </TableRow>
                     ))}
             </tbody>
