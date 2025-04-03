@@ -18,4 +18,10 @@ export type TestcaseSubmissionV2 = Omit<TestcaseSubmissionV1, "submission_id" | 
     awarded_score: number;
 };
 
-export type TestcaseSubmission = TestcaseSubmissionV2;
+export type TestcaseSubmissionV3 = TestcaseSubmissionV2 & {
+    input_file?: string;
+    output_file?: string;
+    submission_output_file?: string;
+};
+
+export type TestcaseSubmission = TestcaseSubmissionV3;

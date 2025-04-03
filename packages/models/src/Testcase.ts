@@ -13,8 +13,26 @@ export type TestcaseV2 = Omit<TestcaseV1, "correctoutput"> & {
 
 export type TestcaseV3 = Omit<TestcaseV2, "correct_output">;
 
-export type Testcase = TestcaseV3;
+export type TestcaseV4 = Omit<TestcaseV3, "input"> & {
+    input_type: "manual" | "generator";
+    output_type: "auto" | "manual";
+    status:
+        | "ready"
+        | "ready-modified"
+        | "not-ready"
+        | "generator-error"
+        | "validation-error"
+        | "solution-error";
+    error?: string;
+    generator_id?: Snowflake;
+    generator_input?: string;
+    input_file?: string;
+    output_file?: string;
+};
 
-export type TestcaseWithOutput = Testcase & {
+export type Testcase = TestcaseV4;
+
+export type TestcaseWithData = Testcase & {
+    input: string;
     correct_output: string;
 };

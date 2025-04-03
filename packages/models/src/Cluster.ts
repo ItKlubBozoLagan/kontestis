@@ -13,6 +13,21 @@ export type ClusterV2 = ClusterV1 & {
     generator_code?: string;
 };
 
+export type ClusterV3 = ClusterV1 & {
+    order: number;
+    status:
+        | "ready"
+        | "ready-modified"
+        | "not-ready"
+        | "generator-error"
+        | "validation-error"
+        | "solution-error";
+    mode: "auto" | "manual";
+    error?: string;
+    auto_generator_id?: Snowflake;
+    auto_generator_tests: number;
+};
+
 export type ClusterStatus =
     | "cached"
     | "uncached"
@@ -20,7 +35,7 @@ export type ClusterStatus =
     | "generator_error"
     | "solution_error";
 
-export type Cluster = ClusterV2;
+export type Cluster = ClusterV3;
 
 export type ClusterWithStatus = Cluster & {
     status: ClusterStatus;
