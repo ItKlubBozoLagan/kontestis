@@ -31,6 +31,7 @@ import { NotificationsHandler } from "./routes/notifications/NotificationsHandle
 import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
 import { initS3 } from "./s3/S3";
+import fileUpload from "express-fileupload";
 
 declare global {
     interface BigInt {
@@ -79,6 +80,8 @@ app.use(async (req, res, next) => {
     Logger.debug(req.method + " ON " + req.url);
     next();
 });
+
+app.use(fileUpload());
 
 app.use(json({ limit: "50mb" }), (req, _, next) => {
     // json from express@5 yields undefined for empty bodies,

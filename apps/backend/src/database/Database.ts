@@ -6,6 +6,7 @@ import {
     EduUser,
     ExamFinalSubmission,
     ExamGradingScale,
+    Generator,
     MailPreference,
     ManagedUser,
     Organisation,
@@ -92,6 +93,7 @@ export const Database = new ScylloClient<{
     mail_preferences: MailPreference;
     edu_users: EduUser;
     managed_users: ManagedUser;
+    generators: Generator;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
