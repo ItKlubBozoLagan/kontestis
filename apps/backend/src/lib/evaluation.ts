@@ -11,7 +11,6 @@ import {
     Submission,
     SuccessfulEvaluationResult,
     Testcase,
-    TestcaseWithOutput,
 } from "@kontestis/models";
 import { AxiosError } from "axios";
 
@@ -78,7 +77,7 @@ const updateContestMemberScore = async (
 
 const evaluateTestcases = async (
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
+    testcases: EvaluationInputTestcase[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
     return (await evaluatorAxios
@@ -108,13 +107,19 @@ const evaluateTestcases = async (
 
 const GROUP_SIZE_LIMIT = (1 << 25) - (1 << 22);
 
+export type EvaluationInputTestcase = {
+    id: Snowflake;
+    input: string;
+    correct_output: string;
+};
+
 export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
+    testcases: EvaluationInputTestcase[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const groups: TestcaseWithOutput[][] = [];
+    const groups: EvaluationInputTestcase[][] = [];
 
     let currentSize = 0;
     let groupId = 0;
