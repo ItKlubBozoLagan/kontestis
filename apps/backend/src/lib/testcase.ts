@@ -64,70 +64,27 @@ int main() {
 }
 `;
 
+const fetchTestcaseFile = async (fileName: string) => {
+    const cachedFile = await Redis.get(fileName);
+
+    if (cachedFile) {
+        return cachedFile;
+    }
+
+    const file = await S3Client.getObject(Globals.s3.buckets.testcases, fileName);
+
+    const result = ((await readBucketStream(file)) as string[]).join("");
+
+    await Redis.set(fileName, result, {
+        EX: 3 * 60 * 60,
+    });
+
+    return result;
+};
+
 export const getTestcaseInputData: (testcase: Testcase) => Promise<TestcaseWithInput> = (
     testcase: Testcase
 ) => {};
-
-export const getTestcaseData: (testcase: Testcase) => Promise<TestcaseWithData> = async (
-    testcase: Testcase
-) => {
-    if (testcase.status !== "ready") {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-    }
-
-    const cachedInput = await Redis.get(
-        RedisKeys.CACHED_TESTCASE_INPUT(testcase.cluster_id, testcase.id)
-    );
-
-    let inputData = cachedInput;
-
-    if (!cachedInput) {
-        if (!testcase.input_file) {
-            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-
-        const file = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.input_file);
-
-        inputData = ((await readBucketStream(file)) as string[]).join("");
-
-        await Redis.set(
-            RedisKeys.CACHED_TESTCASE_INPUT(testcase.cluster_id, testcase.id),
-            inputData,
-            {
-                EX: 3 * 60 * 60,
-            }
-        );
-    }
-
-    const cachedOutput = await Redis.get(
-        RedisKeys.CACHED_TESTCASE_OUTPUT(testcase.cluster_id, testcase.id)
-    );
-    let outputData = cachedOutput;
-
-    if (!cachedOutput) {
-        if (!testcase.output_file) {
-            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-
-        const file = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.output_file);
-
-        outputData = ((await readBucketStream(file)) as string[]).join("");
-
-        await Redis.set(
-            RedisKeys.CACHED_TESTCASE_OUTPUT(testcase.cluster_id, testcase.id),
-            outputData,
-            {
-                EX: 24 * 60 * 60,
-            }
-        );
-    }
-
-    return {
-        ...testcase,
-        input: inputData ?? "",
-        correct_output: outputData ?? "",
-    };
-};
 
 export const getClusterStatus = async (clusterId: Snowflake) => {
     return ((await Redis.get(RedisKeys.CLUSTER_STATUS(clusterId))) ?? "uncached") as ClusterStatus;
@@ -201,7 +158,7 @@ export const getAllTestcaseInputs: (
 
     const testcaseById: Record<string, Testcase> = {};
 
-    for (const testcase of notReadyTestcases) {
+    for (const testcase of testcases) {
         testcaseById[testcase.id.toString()] = testcase;
     }
 
@@ -237,7 +194,7 @@ export const getAllTestcaseInputs: (
         )
     );
 
-    const testcaseInputsByTestcaseId: Record<string, string>;
+    const testcaseInputsByTestcaseId: Record<string, string> = {};
 
     await Promise.all(
         generationResults.flat().map(async (result) => {
@@ -278,9 +235,20 @@ export const getAllTestcaseInputs: (
         })
     );
 
-    if (generationResults.flat().some((result) => result.type === "error")) return false;
+    if (generationResults.flat().some((result) => result.type === "error"))
+        return {
+            type: "error",
+            error: "generator-error",
+        };
 
-    const manualInputs = testcases.filter((t) => t.input_type === "manual").map(async (t) => {});
+    const manualInputs = testcases.filter((t) => t.input_type === "manual");
+
+    if (manualInputs.some((t) => t.status !== "ready" || !t.input_file)) {
+        return {
+            type: "error",
+            error: "manual-input",
+        };
+    }
 };
 
 type SolutionInfo = {
