@@ -15,7 +15,6 @@ import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { S3Client } from "../s3/S3";
-import { R } from "../utils/remeda";
 import { readBucketStream } from "../utils/stream";
 import { splitAndEvaluateTestcases } from "./evaluation";
 import { generateTestcases, IGNORE_OUTPUT_CHECKER } from "./generator";
@@ -82,10 +81,6 @@ const fetchTestcaseFile = async (fileName: string) => {
     return result;
 };
 
-export const getTestcaseInputData: (testcase: Testcase) => Promise<TestcaseWithInput> = (
-    testcase: Testcase
-) => {};
-
 export const getClusterStatus = async (clusterId: Snowflake) => {
     return ((await Redis.get(RedisKeys.CLUSTER_STATUS(clusterId))) ?? "uncached") as ClusterStatus;
 };
@@ -93,35 +88,37 @@ export const getClusterStatus = async (clusterId: Snowflake) => {
 export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = async (
     cluster: Cluster
 ) => {
-    if (cluster.mode !== "manual") {
-        if (!cluster.auto_generator_id) {
-            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-        }
-
-        const generator = await Database.selectFrom("generators", "*", {
-            id: cluster.auto_generator_id,
-        });
-
-        if (!generator) {
-            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-        }
+    if (cluster.status !== "ready") {
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     const testcases = await Database.selectFrom("testcases", "*", {
         cluster_id: cluster.id,
     });
 
-    return Promise.all(testcases.map((t) => getTestcaseData(t)));
-};
-
-export const assureTestcaseGeneration = async (cluster: Cluster) => {
-    const testcases = await Database.selectFrom("testcases", "*", {
-        cluster_id: cluster.id,
-    });
-
-    if (!(await assureTestcaseInput(testcases))) {
-        return false;
+    if (testcases.some((testcase) => !testcase.input_file || !testcase.output_file)) {
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
     }
+
+    const testcaseInputByTestcaseId: Record<string, string> = {};
+    const testcaseOutputByTestcaseId: Record<string, string> = {};
+
+    await Promise.all(
+        testcases.map(async (testcase) => {
+            testcaseInputByTestcaseId[testcase.id.toString()] = await fetchTestcaseFile(
+                testcase.input_file!
+            );
+            testcaseOutputByTestcaseId[testcase.id.toString()] = await fetchTestcaseFile(
+                testcase.output_file!
+            );
+        })
+    );
+
+    return testcases.map((testcase) => ({
+        ...testcase,
+        input: testcaseInputByTestcaseId[testcase.id.toString()],
+        correct_output: testcaseOutputByTestcaseId[testcase.id.toString()],
+    }));
 };
 
 type TestcaseWithInput = Testcase & {
@@ -136,25 +133,11 @@ type TestcaseAssureInputResult = {
     error: string;
 };
 
-export const getAllTestcaseInputs: (
-    testcases: Testcase[]
-) => Promise<TestcaseAssureInputResult> = async (testcases: Testcase[]) => {
-    const notReadyTestcases = testcases.filter((t) => t.status !== "ready");
-
-    if (notReadyTestcases.some((t) => t.input_type === "manual" && !t.input_file))
-        return {
-            type: "error",
-            error: "manual-input",
-        };
-
-    // eslint-disable-next-line sonarjs/no-duplicate-string
-    if (notReadyTestcases.some((t) => t.status === "generator-error"))
-        return {
-            type: "error",
-            error: "generator-error",
-        };
-
-    const generatorTestcases = notReadyTestcases.filter((t) => t.input_type === "generator");
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const generateInputs = async (testcases: Testcase[]) => {
+    if (testcases.some((t) => t.input_type === "manual")) {
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
 
     const testcaseById: Record<string, Testcase> = {};
 
@@ -164,7 +147,7 @@ export const getAllTestcaseInputs: (
 
     const testcasesByGeneratorId: Record<string, Testcase[]> = {};
 
-    for (const testcase of generatorTestcases) {
+    for (const testcase of testcases) {
         if (!testcase.generator_id) {
             throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
         }
@@ -194,13 +177,12 @@ export const getAllTestcaseInputs: (
         )
     );
 
-    const testcaseInputsByTestcaseId: Record<string, string> = {};
-
     await Promise.all(
         generationResults.flat().map(async (result) => {
             if (result.type === "error") {
                 await Database.update(
                     "testcases",
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     { status: "generator-error", error: result.error },
                     { id: result.id }
                 );
@@ -214,190 +196,129 @@ export const getAllTestcaseInputs: (
                 throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
             }
 
-            // TODO: Problem title in name
-            const inputFilePath = `$DD/${testcase.cluster_id}/${
+            const cluster = await Database.selectOneFrom("clusters", ["problem_id"], {
+                id: testcase.cluster_id,
+            });
+
+            if (!cluster) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+            const problem = await Database.selectOneFrom("problems", ["title"], {
+                id: cluster.problem_id,
+            });
+
+            if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+            const inputFilePath = `${problem}/${testcase.cluster_id}/${
                 testcase.id
             }-${generateSnowflake()}.in`;
 
             await S3Client.putObject(Globals.s3.buckets.testcases, inputFilePath, result.output);
 
-            testcaseInputsByTestcaseId[result.id.toString()] = result.output;
-
-            await Redis.set(
-                RedisKeys.CACHED_TESTCASE_INPUT(testcase.cluster_id, testcase.id),
-                result.output,
-                {
-                    EX: 24 * 60 * 60,
-                }
-            );
-
             await Database.update("testcases", { input_file: inputFilePath }, { id: testcase.id });
         })
     );
-
-    if (generationResults.flat().some((result) => result.type === "error"))
-        return {
-            type: "error",
-            error: "generator-error",
-        };
-
-    const manualInputs = testcases.filter((t) => t.input_type === "manual");
-
-    if (manualInputs.some((t) => t.status !== "ready" || !t.input_file)) {
-        return {
-            type: "error",
-            error: "manual-input",
-        };
-    }
 };
 
-type SolutionInfo = {
-    code: string;
-    language: EvaluationLanguage;
+type ProblemMeta = {
+    solution_language: EvaluationLanguage;
+    solution_code: string;
 };
 
-export const assureTestcaseOutput = async (testcases: Testcase[], solutionInfo: SolutionInfo) => {
-    const notReadyTestcases = testcases.filter((t) => t.status !== "ready");
-
-    if (notReadyTestcases.some((t) => t.output_type === "manual" && !t.output_file)) return false;
-
-    if (
-        notReadyTestcases.some(
-            (t) => t.status === "validation-error" || t.status === "solution-error"
-        )
-    )
-        return false;
-
-    const solutionTestcases = notReadyTestcases.filter((t) => t.output_type === "auto");
-
-    const testcaseById: Record<string, Testcase> = {};
-
-    for (const testcase of notReadyTestcases) {
-        testcaseById[testcase.id.toString()] = testcase;
+export const generateOutputs = async (testcases: Testcase[], problemMeta: ProblemMeta) => {
+    if (testcases.some((testCase) => !testCase.input_file)) {
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
-    const [result, error] = await splitAndEvaluateTestcases(
+    if (testcases.some((testCase) => testCase.output_file === "manual")) {
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+
+    const inputByTestcaseId: Record<string, string> = {};
+
+    await Promise.all(
+        testcases.map(async (testCase) => {
+            inputByTestcaseId[testCase.id.toString()] = await fetchTestcaseFile(
+                testCase.input_file!
+            );
+        })
+    );
+
+    const testcasesById: Record<string, Testcase> = {};
+
+    for (const testcase of testcases) {
+        testcasesById[testcase.id.toString()] = testcase;
+    }
+
+    const [rawOutData, error] = await splitAndEvaluateTestcases(
         {
             problemId: 0n,
-            language: solutionInfo.language,
-            code: solutionInfo.code,
-            evaluation_variant: "checker",
+            language: problemMeta.solution_language,
+            code: problemMeta.solution_code,
             evaluator: IGNORE_OUTPUT_CHECKER,
+            evaluation_variant: "checker",
             evaluator_language: "cpp",
             legacy_evaluation: false,
         },
-        testcases.map((t) => {})
-    );
-};
-
-const generateTestcaseInput = async (cluster: Cluster, count: number) => {
-    const [data] = await splitAndEvaluateTestcases(
-        {
-            problemId: 0n,
-            language: cluster.generator_language ?? "python",
-            code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
-            evaluator: RETURN_OUTPUT_EVALUATOR,
-            evaluation_variant: "checker",
-            evaluator_language: "cpp",
-            legacy_evaluation: true,
-        },
-        Array.from({ length: count }).map((_, index) => ({
-            id: BigInt(index),
-            cluster_id: cluster.id,
-            input: index.toString(),
+        testcases.map((testcase) => ({
+            id: testcase.id,
+            input: inputByTestcaseId[testcase.id.toString()],
             correct_output: "",
         })),
         {
-            time_limit_millis: 60_000,
-            memory_limit_megabytes: 2048,
-        }
-    );
-
-    if (!data) return;
-
-    const inputData: Record<string, string> = {};
-
-    for (const result of data) {
-        if (result.type !== "success" || result.verdict !== "custom") {
-            return;
-        }
-
-        inputData[result.testCaseId] = result.extra;
-    }
-
-    return Array.from({ length: count }).map((_, index) => ({
-        id: BigInt(index),
-        cluster_id: cluster.id,
-        input: inputData[index.toString()],
-    }));
-};
-
-export const generateTestcaseBatch = async (cluster: Cluster, count: number) => {
-    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "pending");
-
-    const testcaseInputs = cluster.generator
-        ? await generateTestcaseInput(cluster, count)
-        : await Database.selectFrom("testcases", "*", { cluster_id: cluster.id });
-
-    if (!testcaseInputs) {
-        return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "generator_error");
-    }
-
-    const problem = await Database.selectOneFrom("problems", "*", { id: cluster.problem_id });
-
-    if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-    const [rawOutData] = await splitAndEvaluateTestcases(
-        {
-            problemId: problem.id,
-            language: problem.solution_language ?? "python",
-            code: Buffer.from(problem.solution_code ?? "", "utf8").toString("base64"),
-            evaluator: RETURN_OUTPUT_EVALUATOR,
-            evaluation_variant:
-                problem.evaluation_variant === "output-only" ? "output-only" : "checker",
-            evaluator_language: "cpp",
-            legacy_evaluation: true,
-        },
-        R.map(testcaseInputs, (t) => R.addProp(t, "correct_output", "")),
-        {
-            time_limit_millis: 60_000,
+            time_limit_millis: 30_000,
             memory_limit_megabytes: 2048,
         }
     );
 
     if (!rawOutData) {
-        return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "solution_error");
-    }
-
-    const testcases: TestcaseWithData[] = [];
-
-    for (const result of rawOutData) {
-        if (result.type !== "success" || result.verdict !== "custom") {
-            return await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "solution_error");
-        }
-
-        testcases.push({
-            id: BigInt(result.testCaseId),
-            cluster_id: cluster.id,
-            input: testcaseInputs.find((input) => input.id === BigInt(result.testCaseId))!.input,
-            correct_output: result.extra,
-        });
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR, error?.message);
     }
 
     await Promise.all(
-        testcases.map(async (tc) => {
-            await Redis.set(RedisKeys.CACHED_TESTCASE_INPUT(cluster.id, tc.id), tc.input, {
-                EX: 3 * 60 * 60,
+        rawOutData.map(async (result) => {
+            if (result.type !== "success" || result.verdict !== "accepted") {
+                await Database.update(
+                    "testcases",
+                    { status: "solution-error", error: result.verdict },
+                    { id: BigInt(result.testCaseId) }
+                );
+
+                return;
+            }
+
+            const testcase = testcasesById[result.testCaseId];
+
+            if (!testcase) {
+                throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            const cluster = await Database.selectOneFrom("clusters", ["problem_id"], {
+                id: testcase.cluster_id,
             });
-            await Redis.set(
-                RedisKeys.CACHED_TESTCASE_OUTPUT(cluster.id, tc.id),
-                tc.correct_output ?? "",
-                { EX: 3 * 60 * 60 }
+
+            if (!cluster) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+            const problem = await Database.selectOneFrom("problems", ["title"], {
+                id: cluster.problem_id,
+            });
+
+            if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+            const outputFilePath = `${problem}/${testcase.cluster_id}/${
+                testcase.id
+            }-${generateSnowflake()}.out`;
+
+            await S3Client.putObject(
+                Globals.s3.buckets.testcases,
+                outputFilePath,
+                result.output ?? ""
+            );
+
+            await Database.update(
+                "testcases",
+                { output_file: outputFilePath },
+                { id: testcase.id }
             );
         })
     );
-
-    await Redis.set(RedisKeys.CLUSTER_STATUS(cluster.id), "cached", { EX: 3 * 60 * 60 });
-
-    return testcases;
 };
