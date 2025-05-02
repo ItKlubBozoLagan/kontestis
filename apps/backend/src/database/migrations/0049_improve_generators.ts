@@ -156,13 +156,13 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
     for (const cluster of clusters) {
         // Migrate to new generator format
         if (!cluster.generator) {
-            await database.update("clusters", { mode: "custom" }, { id: cluster.id });
+            await database.update("clusters", { mode: "manual" }, { id: cluster.id });
             continue;
         }
 
         if (!cluster.generator_language || !cluster.generator_code) {
             Logger.error("Generator language or code not found for cluster " + cluster.id);
-            await database.update("clusters", { mode: "custom" }, { id: cluster.id });
+            await database.update("clusters", { mode: "manual" }, { id: cluster.id });
             continue;
         }
 
