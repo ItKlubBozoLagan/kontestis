@@ -117,6 +117,7 @@ const I18nEn = {
                     contestant: "Contestant",
                     total: "Total",
                 },
+                disabled: "The leaderboard is currently disabled",
                 emptyMessage: "Surprisingly empty here",
             },
             announcements: {
@@ -163,6 +164,11 @@ const I18nEn = {
                         name: "Name",
                         startTime: "Start time",
                         duration: "Duration",
+                        showLeaderboard: {
+                            label: "Leaderboard visibility",
+                            duringContest: "During & after contest",
+                            afterContest: "Only After contest",
+                        },
                         visibility: {
                             label: "Visibility",
                             private: "Private",

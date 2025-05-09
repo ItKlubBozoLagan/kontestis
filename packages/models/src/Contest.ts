@@ -35,7 +35,11 @@ export type ContestV7 = ContestV6 & {
     require_edu_verification: boolean;
 };
 
-export type Contest = ContestV7;
+export type ContestV8 = ContestV7 & {
+    show_leaderboard_during_contest: boolean;
+};
+
+export type Contest = ContestV8;
 
 export type ContestWithPermissions = Contest & {
     registered: boolean;

@@ -1,4 +1,4 @@
-import { Contest, ProblemWithScore } from "@kontestis/models";
+import { AdminPermissions, Contest, hasAdminPermission, ProblemWithScore } from "@kontestis/models";
 import React, { FC, useMemo } from "react";
 import tw from "twin.macro";
 
@@ -15,8 +15,22 @@ type Properties = {
 };
 
 export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
-    const { isSuccess, data } = useAllContestMembers(contest.id);
     const { user } = useAuthStore();
+
+    const contestEnded =
+        Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000;
+
+    const leaderboardVisible = useMemo(
+        () =>
+            contest.show_leaderboard_during_contest ||
+            contestEnded ||
+            hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST),
+        [contest, contestEnded, user]
+    );
+
+    const { isSuccess, data } = useAllContestMembers(contest.id, {
+        enabled: leaderboardVisible,
+    });
 
     const maxScore = problems.reduce((accumulator, current) => accumulator + current.score, 0);
 
@@ -45,10 +59,14 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
             .sort((a, b) => b.total_score - a.total_score);
     }, [isSuccess, data]);
 
-    const contestEnded =
-        Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000;
-
     if (Date.now() <= contest.start_time.getTime()) return <></>;
+
+    if (!leaderboardVisible)
+        return (
+            <span tw={"text-lg mt-12 text-neutral-600"}>
+                {t("contests.individual.leaderboard.disabled")}
+            </span>
+        );
 
     return (
         <div tw={"w-full flex flex-col gap-4 pt-4"}>
