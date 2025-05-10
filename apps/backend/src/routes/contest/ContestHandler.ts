@@ -28,7 +28,7 @@ import {
     extractOrganisation,
 } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
-import { pushContestNotifications } from "../../lib/contest";
+import { isContestRunning, pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
@@ -55,6 +55,7 @@ const ContestSchema = Type.Object({
         minimum: 10 * 60,
         maximum: 7 * 24 * 60 * 60,
     }),
+    show_leaderboard: Type.Boolean({ default: true }),
     public: Type.Boolean(),
     official: Type.Boolean(),
     exam: Type.Boolean(),
@@ -177,6 +178,7 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
         exam: req.body.exam,
         join_code: randomSequence(8),
         require_edu_verification: false,
+        show_leaderboard_during_contest: true,
     };
 
     await Promise.all([
@@ -281,6 +283,7 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
             public: req.body.public,
             official: req.body.official,
             exam: req.body.exam,
+            show_leaderboard_during_contest: req.body.show_leaderboard,
         },
         { id: contest.id }
     );
@@ -428,7 +431,17 @@ ContestHandler.get("/members/self", async (req, res) => {
 });
 
 ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
+    const maybeUser = await extractOptionalUser(req);
     const contest = await extractContest(req);
+
+    if (
+        !contest.show_leaderboard_during_contest &&
+        isContestRunning(contest) &&
+        // TODO: better permission checks
+        (!maybeUser || !hasAdminPermission(maybeUser.permissions, AdminPermissions.VIEW_CONTEST))
+    ) {
+        throw new SafeError(StatusCodes.FORBIDDEN);
+    }
 
     const contestMembers = await Database.selectFrom("contest_members", "*", {
         contest_id: contest.id,

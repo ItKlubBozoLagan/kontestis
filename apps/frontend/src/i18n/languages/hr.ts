@@ -114,6 +114,7 @@ export default {
                     contestant: "Natjecatelj",
                     total: "Ukupno bodova",
                 },
+                disabled: "Trenutno nije moguće vidjeti bodovnu listu",
                 emptyMessage: "Iznenađujuće, bodovna lista je prazna",
             },
             announcements: {
@@ -160,6 +161,11 @@ export default {
                         name: "Naziv",
                         startTime: "Početak",
                         duration: "Trajanje",
+                        showLeaderboard: {
+                            label: "Vidljivost rang ljestvice",
+                            duringContest: "Tijekom i nakon natjecanja",
+                            afterContest: "Samo nakon natjecanja",
+                        },
                         visibility: {
                             label: "Vidljivost",
                             private: "Privatno",

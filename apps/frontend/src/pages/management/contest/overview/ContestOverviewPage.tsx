@@ -38,6 +38,7 @@ const ModifyContestSchema = z.object({
     start_time: z.coerce.date(),
     duration_hours: z.coerce.number(),
     duration_minutes: z.coerce.number(),
+    show_leaderboard: z.boolean(),
     public: z.boolean(),
     official: z.boolean(),
     exam: z.boolean(),
@@ -210,6 +211,38 @@ export const ContestOverviewPage: FC = () => {
                                     </div>
                                 </div>
                             </EditableDisplayBox>
+                            <TitledSwitch
+                                label={t(
+                                    "contests.management.individual.overview.info.showLeaderboard.label"
+                                )}
+                                choice={[
+                                    t(
+                                        "contests.management.individual.overview.info.showLeaderboard.duringContest"
+                                    ),
+                                    t(
+                                        "contests.management.individual.overview.info.showLeaderboard.afterContest"
+                                    ),
+                                ]}
+                                defaultIndex={contest.show_leaderboard_during_contest ? 0 : 1}
+                                onChange={(value) => {
+                                    setValue(
+                                        "show_leaderboard",
+                                        value ===
+                                            t(
+                                                "contests.management.individual.overview.info.showLeaderboard.duringContest"
+                                            )
+                                    );
+
+                                    if (
+                                        (value ===
+                                            t(
+                                                "contests.management.individual.overview.info.showLeaderboard.duringContest"
+                                            )) !==
+                                        contest.show_leaderboard_during_contest
+                                    )
+                                        submitForm();
+                                }}
+                            />
                             <TitledSwitch
                                 label={t(
                                     "contests.management.individual.overview.info.visibility.label"
