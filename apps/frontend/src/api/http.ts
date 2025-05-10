@@ -85,7 +85,7 @@ const handleAxiosError = (error: AxiosError) => {
 
         const { token } = useTokenStore.getState();
 
-        if (token?.length > 0 && [401, 403].includes(responseStatus))
+        if (token?.length > 0 && [401].includes(responseStatus))
             return useAuthStore.getState().doForceLogout();
     }
 

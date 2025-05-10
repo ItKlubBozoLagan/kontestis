@@ -5,7 +5,7 @@ import { http, QueryHandler, wrapAxios } from "../../../api/http";
 
 export const useAllContestMembers: QueryHandler<ContestMemberWithInfo[], Snowflake> = (
     contest_id,
-    ...options
+    options
 ) =>
     useQuery({
         queryKey: ["contests", contest_id, "members"],
