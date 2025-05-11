@@ -28,7 +28,7 @@ import {
     extractOrganisation,
 } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
-import { isContestRunning, pushContestNotifications } from "../../lib/contest";
+import { isContestOver, isContestRunning, pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
@@ -431,16 +431,13 @@ ContestHandler.get("/members/self", async (req, res) => {
 });
 
 ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
-    const maybeUser = await extractOptionalUser(req);
     const contest = await extractContest(req);
 
     if (
-        !contest.show_leaderboard_during_contest &&
-        isContestRunning(contest) &&
-        // TODO: better permission checks
-        (!maybeUser || !hasAdminPermission(maybeUser.permissions, AdminPermissions.VIEW_CONTEST))
+        (!contest.show_leaderboard_during_contest || !isContestRunning(contest)) &&
+        !isContestOver(contest)
     ) {
-        throw new SafeError(StatusCodes.FORBIDDEN);
+        await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
     }
 
     const contestMembers = await Database.selectFrom("contest_members", "*", {
