@@ -67,6 +67,7 @@ export const CreateContestModal: FC<Modal.Props> = ({ ...properties }) => {
             ...R.omit(data, ["duration_hours", "duration_minutes", "start_time"]),
             start_time_millis: data.start_time.getTime(),
             duration_seconds: data.duration_hours * 60 * 60 + data.duration_minutes * 60,
+            show_leaderboard: true,
         });
     });
 
