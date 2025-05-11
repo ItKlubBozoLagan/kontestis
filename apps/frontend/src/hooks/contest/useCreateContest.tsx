@@ -7,6 +7,7 @@ export type ContestVariables = {
     name: string;
     start_time_millis: number;
     duration_seconds: number;
+    show_leaderboard: boolean;
     public: boolean;
     official: boolean;
     exam: boolean;
