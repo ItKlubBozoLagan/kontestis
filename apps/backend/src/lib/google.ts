@@ -63,32 +63,40 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
 
     const email = _email.toLowerCase();
 
-    const [numberUsers, potentialEntry] = await Promise.all([
-        Database.raw("SELECT COUNT(id) as userCount FROM users;").then(
-            (it) => it.rows[0]["usercount"] as bigint
-        ),
+    const [numberUsers, potentialEntry, potentialEduEntry] = await Promise.all([
+        Database.count("users"),
         Database.selectOneFrom("users", "*", {
             email,
         }),
+        Database.selectOneFrom("edu_users", ["id"], {
+            uid: email,
+        }),
     ]);
 
-    const user: User = potentialEntry ?? {
-        id: generateSnowflake(),
-        email,
-        full_name: tokenData.name,
-        picture_url: tokenData.picture_url,
-        permissions:
-            numberUsers === 0n
-                ? grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADMIN)
-                : EMPTY_PERMISSIONS,
-    };
+    const eduUser = potentialEduEntry
+        ? await Database.selectOneFrom("users", "*", {
+              id: potentialEduEntry.id,
+          })
+        : undefined;
 
-    if (!potentialEntry) {
+    const user: User = potentialEntry ??
+        eduUser ?? {
+            id: generateSnowflake(),
+            email,
+            full_name: tokenData.name,
+            picture_url: tokenData.picture_url,
+            permissions:
+                numberUsers === 0n
+                    ? grantPermission(EMPTY_PERMISSIONS, AdminPermissions.ADMIN)
+                    : EMPTY_PERMISSIONS,
+        };
+
+    if (!potentialEntry && !eduUser) {
         await Database.insertInto("users", user);
     }
 
     await processLogin(user, {
-        newLogin: !potentialEntry,
+        newLogin: !potentialEntry && !eduUser,
         confirm: true,
     });
 
