@@ -66,10 +66,7 @@ export const Root: FC<Properties> = ({ hideNavbar = false }) => {
                     <SimpleButton key={language} onClick={() => setLanguage(language)}>
                         <div tw={"flex gap-2 items-center"}>
                             <img
-                                src={`https://flagcdn.com/16x12/${language.replace(
-                                    /^en$/,
-                                    "gb"
-                                )}.webp`}
+                                src={`country_flags/${language.replace(/^en$/, "gb")}.webp`}
                                 alt={`${language} flag`}
                             />
                             {language.toUpperCase()}
