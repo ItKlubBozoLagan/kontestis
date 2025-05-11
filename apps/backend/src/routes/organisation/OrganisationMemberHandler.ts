@@ -30,9 +30,15 @@ OrganisationMemberHandler.get("/", async (req, res) => {
         "ALLOW FILTERING"
     );
 
-    const users = await Database.selectFrom("users", "*", {
-        id: eqIn(...organisationMembers.map((organisationMember) => organisationMember.user_id)),
-    });
+    const users = (
+        await Promise.all(
+            R.chunk(organisationMembers, 100).map((chunk) => {
+                return Database.selectFrom("users", "*", {
+                    id: eqIn(...chunk.map((it) => it.user_id)),
+                });
+            })
+        )
+    ).flat();
 
     return respond(
         res,
