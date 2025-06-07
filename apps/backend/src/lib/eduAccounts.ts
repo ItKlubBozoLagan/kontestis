@@ -38,9 +38,15 @@ export const loginEduUser = async (
         uid: eduUserData.hrEduPersonUniqueID[0],
     });
 
-    const existingMailUser = await Database.selectOneFrom("users", "*", {
+    let existingMailUser = await Database.selectOneFrom("users", "*", {
         email: eduUserData.hrEduPersonUniqueID[0],
     });
+
+    if (!existingMailUser) {
+        existingMailUser = await Database.selectOneFrom("users", "*", {
+            email: eduUserData.mail[0],
+        });
+    }
 
     if (existingEduUser) {
         const existingUser = await Database.selectOneFrom("users", "*", {
@@ -102,9 +108,15 @@ export const linkEduUser = async (
         uid: eduUserData.hrEduPersonUniqueID[0],
     });
 
-    const existingMailUser = await Database.selectOneFrom("users", "*", {
+    let existingMailUser = await Database.selectOneFrom("users", "*", {
         email: eduUserData.hrEduPersonUniqueID[0],
     });
+
+    if (!existingMailUser) {
+        existingMailUser = await Database.selectOneFrom("users", "*", {
+            email: eduUserData.mail[0],
+        });
+    }
 
     if (existingEduUser && user.id !== existingEduUser.id)
         throw new SafeError(StatusCodes.CONFLICT);
