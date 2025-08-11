@@ -16,8 +16,9 @@ import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { S3Client } from "../s3/S3";
 import { readBucketStream } from "../utils/stream";
-import { splitAndEvaluateTestcases } from "./evaluation";
+import { EvaluationInputTestcase, ProblemDetails, splitAndEvaluateTestcases } from "./evaluation";
 import { generateTestcases, IGNORE_OUTPUT_CHECKER } from "./generator";
+import { Logger } from "./logger";
 import { generateSnowflake } from "./snowflake";
 
 const RETURN_OUTPUT_EVALUATOR = `
@@ -125,13 +126,14 @@ type TestcaseWithInput = Testcase & {
     input: string;
 };
 
-type TestcaseAssureInputResult = {
-    type: "success";
-    data: TestcaseWithInput[];
-} & {
-    type: "error";
-    error: string;
-};
+type TestcaseAssureResult =
+    | {
+          type: "success";
+      }
+    | {
+          type: "error";
+          error: string;
+      };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const generateInputs = async (testcases: Testcase[]) => {
