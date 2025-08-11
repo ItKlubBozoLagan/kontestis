@@ -16,8 +16,9 @@ import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { S3Client } from "../s3/S3";
 import { readBucketStream } from "../utils/stream";
-import { splitAndEvaluateTestcases } from "./evaluation";
+import { EvaluationInputTestcase, ProblemDetails, splitAndEvaluateTestcases } from "./evaluation";
 import { generateTestcases, IGNORE_OUTPUT_CHECKER } from "./generator";
+import { Logger } from "./logger";
 import { generateSnowflake } from "./snowflake";
 
 const RETURN_OUTPUT_EVALUATOR = `
@@ -134,11 +135,20 @@ type TestcaseAssureResult =
           error: string;
       };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-export const generateInputs = async (testcases: Testcase[]) => {
-    if (testcases.some((t) => t.input_type === "manual")) {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-    }
+export const assureTestcaseInput: (
+    testcases: Testcase[],
+    problemDetails: Pick<ProblemDetails, "problemId">
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+) => Promise<TestcaseAssureResult> = async (testcases, problemDetails) => {
+    const notReadyTestcases = testcases.filter((t) => t.status !== "ready");
+
+    if (notReadyTestcases.some((t) => t.input_type === "manual" && !t.input_file))
+        return {
+            type: "error",
+            error: "manual-input",
+        };
+
+    const generatorTestcases = notReadyTestcases.filter((t) => t.input_type === "generator");
 
     const testcaseById: Record<string, Testcase> = {};
 
@@ -148,7 +158,7 @@ export const generateInputs = async (testcases: Testcase[]) => {
 
     const testcasesByGeneratorId: Record<string, Testcase[]> = {};
 
-    for (const testcase of testcases) {
+    for (const testcase of generatorTestcases) {
         if (!testcase.generator_id) {
             throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
         }
@@ -178,6 +188,8 @@ export const generateInputs = async (testcases: Testcase[]) => {
         )
     );
 
+    const testcaseInputsByTestcaseId: Record<string, string> = {};
+
     await Promise.all(
         generationResults.flat().map(async (result) => {
             if (result.type === "error") {
@@ -197,129 +209,241 @@ export const generateInputs = async (testcases: Testcase[]) => {
                 throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
             }
 
-            const cluster = await Database.selectOneFrom("clusters", ["problem_id"], {
-                id: testcase.cluster_id,
-            });
-
-            if (!cluster) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-            const problem = await Database.selectOneFrom("problems", ["title"], {
-                id: cluster.problem_id,
-            });
-
-            if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-            const inputFilePath = `${problem}/${testcase.cluster_id}/${
+            const inputFilePath = `${problemDetails.problemId}/${testcase.cluster_id}/${
                 testcase.id
             }-${generateSnowflake()}.in`;
 
             await S3Client.putObject(Globals.s3.buckets.testcases, inputFilePath, result.output);
 
+            testcaseInputsByTestcaseId[result.id.toString()] = result.output;
+
+            await Redis.set(inputFilePath, result.output, {
+                EX: 3 * 60 * 60,
+            });
+
             await Database.update("testcases", { input_file: inputFilePath }, { id: testcase.id });
         })
     );
+
+    if (generationResults.flat().some((result) => result.type === "error"))
+        return {
+            type: "error",
+            error: "generator-error",
+        };
+
+    return {
+        type: "success",
+    };
 };
 
-type ProblemMeta = {
+type SolutionInfo = {
     solution_language: EvaluationLanguage;
     solution_code: string;
 };
 
-export const generateOutputs = async (testcases: Testcase[], problemMeta: ProblemMeta) => {
-    if (testcases.some((testCase) => !testCase.input_file)) {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-    }
+export const assureTestcaseOutput: (
+    testcases: Testcase[],
+    solutionInfo: SolutionInfo,
+    problemDetails: Pick<ProblemDetails, "problemId">
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+) => Promise<TestcaseAssureResult> = async (testcases, solutionInfo, problemDetails) => {
+    const notReadyTestcases = testcases.filter((t) => t.status !== "ready");
 
-    if (testcases.some((testCase) => testCase.output_file === "manual")) {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-    }
+    if (notReadyTestcases.some((t) => t.output_type === "manual" && !t.output_file))
+        return {
+            type: "error",
+            error: "manual-output",
+        };
 
-    const inputByTestcaseId: Record<string, string> = {};
+    if (
+        notReadyTestcases.some(
+            // eslint-disable-next-line sonarjs/no-duplicate-string
+            (t) => t.status === "validation-error" || t.status === "solution-error"
+        )
+    )
+        return {
+            type: "error",
+            error: "validation-error-or-solution-error",
+        };
 
-    await Promise.all(
-        testcases.map(async (testCase) => {
-            inputByTestcaseId[testCase.id.toString()] = await fetchTestcaseFile(
-                testCase.input_file!
-            );
+    const solutionTestcases = notReadyTestcases.filter((t) => t.output_type === "auto");
+
+    const solutionTestcasesWithInput: EvaluationInputTestcase[] = await Promise.all(
+        solutionTestcases.map(async (t) => {
+            if (!t.input_file) {
+                Logger.error("Testcase input file not found for testcase " + t.id);
+                throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            const input = await fetchTestcaseFile(t.input_file);
+
+            return {
+                ...t,
+                input,
+                correct_output: "",
+            };
         })
     );
 
-    const testcasesById: Record<string, Testcase> = {};
+    const testcaseById: Record<string, Testcase> = {};
 
-    for (const testcase of testcases) {
-        testcasesById[testcase.id.toString()] = testcase;
+    for (const testcase of notReadyTestcases) {
+        testcaseById[testcase.id.toString()] = testcase;
     }
 
-    const [rawOutData, error] = await splitAndEvaluateTestcases(
+    const [result, error] = await splitAndEvaluateTestcases(
         {
             problemId: 0n,
-            language: problemMeta.solution_language,
-            code: problemMeta.solution_code,
-            evaluator: IGNORE_OUTPUT_CHECKER,
+            language: solutionInfo.solution_language,
+            code: solutionInfo.solution_code,
             evaluation_variant: "checker",
+            evaluator: IGNORE_OUTPUT_CHECKER,
             evaluator_language: "cpp",
             legacy_evaluation: false,
         },
-        testcases.map((testcase) => ({
-            id: testcase.id,
-            input: inputByTestcaseId[testcase.id.toString()],
-            correct_output: "",
-        })),
+        solutionTestcasesWithInput,
         {
-            time_limit_millis: 30_000,
+            time_limit_millis: 60_000,
             memory_limit_megabytes: 2048,
         }
     );
 
-    if (!rawOutData) {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR, error?.message);
+    if (!result) {
+        Logger.error(`Solution evaluation error: ${error}`);
+
+        return {
+            type: "error",
+            error: "system-error",
+        };
     }
 
-    await Promise.all(
-        rawOutData.map(async (result) => {
-            if (result.type !== "success" || result.verdict !== "accepted") {
-                await Database.update(
-                    "testcases",
-                    { status: "solution-error", error: result.verdict },
-                    { id: BigInt(result.testCaseId) }
-                );
+    let processedSuccessfully = true;
 
-                return;
-            }
-
-            const testcase = testcasesById[result.testCaseId];
-
-            if (!testcase) {
-                throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-            }
-
-            const cluster = await Database.selectOneFrom("clusters", ["problem_id"], {
-                id: testcase.cluster_id,
-            });
-
-            if (!cluster) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-            const problem = await Database.selectOneFrom("problems", ["title"], {
-                id: cluster.problem_id,
-            });
-
-            if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-            const outputFilePath = `${problem}/${testcase.cluster_id}/${
-                testcase.id
-            }-${generateSnowflake()}.out`;
-
-            await S3Client.putObject(
-                Globals.s3.buckets.testcases,
-                outputFilePath,
-                result.output ?? ""
-            );
-
+    for (const evaluationResult of result) {
+        if (evaluationResult.type !== "success" || evaluationResult.verdict !== "accepted") {
             await Database.update(
                 "testcases",
-                { output_file: outputFilePath },
-                { id: testcase.id }
+                { status: "solution-error", error: "Solution error" },
+                { id: BigInt(evaluationResult.testCaseId) }
             );
-        })
+            processedSuccessfully = false;
+            continue;
+        }
+
+        const testcase = testcaseById[evaluationResult.testCaseId];
+
+        if (!testcase) {
+            Logger.error(`Testcase not found for id ${evaluationResult.testCaseId}`);
+            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+
+        const outputFilePath = `${problemDetails.problemId}/${testcase.cluster_id}/${
+            testcase.id
+        }-${generateSnowflake()}.out`;
+
+        await S3Client.putObject(
+            Globals.s3.buckets.testcases,
+            outputFilePath,
+            evaluationResult.output ?? ""
+        );
+
+        await Redis.set(outputFilePath, evaluationResult.output ?? "", { EX: 24 * 60 * 60 });
+
+        await Database.update(
+            "testcases",
+            { output_file: outputFilePath, status: "ready" },
+            { id: testcase.id }
+        );
+    }
+
+    return {
+        type: processedSuccessfully ? "success" : "error",
+        error: processedSuccessfully ? "" : "solution-error",
+    };
+};
+
+/*
+const generateTestcaseInput = async (cluster: Cluster, count: number) => {
+    const [data] = await splitAndEvaluateTestcases(
+        {
+            problemId: 0n,
+            language: cluster.generator_language ?? "python",
+            code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
+            evaluator: RETURN_OUTPUT_EVALUATOR,
+            evaluation_variant: "checker",
+            evaluator_language: "cpp",
+            legacy_evaluation: true,
+        },
+        Array.from({ length: count }).map((_, index) => ({
+            id: BigInt(index),
+            cluster_id: cluster.id,
+            input: index.toString(),
+            correct_output: "",
+        })),
+        {
+            time_limit_millis: 60_000,
+            memory_limit_megabytes: 2048,
+        }
     );
+
+    if (!data) return;
+
+    const inputData: Record<string, string> = {};
+
+    for (const result of data) {
+        if (result.type !== "success" || result.verdict !== "custom") {
+            return;
+        }
+
+        inputData[result.testCaseId] = result.extra;
+    }
+
+    return Array.from({ length: count }).map((_, index) => ({
+        id: BigInt(index),
+        cluster_id: cluster.id,
+        input: inputData[index.toString()],
+    }));
+};*/
+
+export const assureClusterGeneration = async (cluster: Cluster) => {
+    if (cluster.status === "ready") return;
+
+    const problem = await Database.selectOneFrom("problems", "*", {
+        id: cluster.problem_id,
+    });
+
+    if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    const testcases = await Database.selectFrom("testcases", "*", {
+        cluster_id: cluster.id,
+    });
+
+    const assureInputResult = await assureTestcaseInput(testcases, {
+        problemId: problem.id,
+    });
+
+    if (assureInputResult.type !== "success") {
+        await Database.update(
+            "clusters",
+            { status: "generator-error", error: assureInputResult.error },
+            { id: cluster.id }
+        );
+    }
+
+    const assureOutputResult = await assureTestcaseOutput(
+        testcases,
+        {
+            solution_code: problem.solution_code,
+            solution_language: problem.solution_language,
+        },
+        { problemId: problem.id }
+    );
+
+    if (assureOutputResult.type !== "success") {
+        await Database.update(
+            "clusters",
+            { status: "solution-error", error: assureOutputResult.error },
+            { id: cluster.id }
+        );
+    }
 };
