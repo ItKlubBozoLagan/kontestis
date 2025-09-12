@@ -175,8 +175,8 @@ export const ProblemViewPage: FC = () => {
                                     setLanguage(event.target.value as EvaluationLanguage)
                                 }
                             >
-                                <option value="python">Python</option>
                                 <option value="cpp">C++</option>
+                                <option value="python">Python</option>
                                 <option value="c">C</option>
                                 <option value="go">Go</option>
                                 <option value="rust">Rust</option>
