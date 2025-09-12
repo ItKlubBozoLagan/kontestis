@@ -10,6 +10,7 @@ on:
             - "packages/**"
             - "!packages/scripts/**"
             - ".github/workflows/function-deploy.yml"
+    workflow_dispatch:
 
 jobs:
     build:

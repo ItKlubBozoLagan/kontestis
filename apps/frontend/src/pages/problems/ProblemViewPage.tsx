@@ -60,7 +60,7 @@ export const ProblemViewPage: FC = () => {
 
     const textAreaReference = useRef<HTMLTextAreaElement | null>(null);
 
-    const [language, setLanguage] = useState<EvaluationLanguage>("python");
+    const [language, setLanguage] = useState<EvaluationLanguage>("cpp");
     const [code, setCode] = useState("");
 
     const problemId = useMemo(() => BigInt(_problemId ?? 0), [_problemId]);
@@ -175,8 +175,8 @@ export const ProblemViewPage: FC = () => {
                                     setLanguage(event.target.value as EvaluationLanguage)
                                 }
                             >
-                                <option value="python">Python</option>
                                 <option value="cpp">C++</option>
+                                <option value="python">Python</option>
                                 <option value="c">C</option>
                                 <option value="go">Go</option>
                                 <option value="rust">Rust</option>
