@@ -60,7 +60,7 @@ export const ProblemViewPage: FC = () => {
 
     const textAreaReference = useRef<HTMLTextAreaElement | null>(null);
 
-    const [language, setLanguage] = useState<EvaluationLanguage>("c++
+    const [language, setLanguage] = useState<EvaluationLanguage>("c++");
     const [code, setCode] = useState("");
 
     const problemId = useMemo(() => BigInt(_problemId ?? 0), [_problemId]);
