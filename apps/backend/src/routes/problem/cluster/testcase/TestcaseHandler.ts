@@ -27,8 +27,6 @@ const TestcaseGeneratorSchema = Type.Object({
     }),
 });
 
-// Make 2 routes, one for manual and one for generator, the manual should accept a file and then store it in S3
-
 TestcaseHandler.post(
     "/with-generator",
     useValidation(TestcaseGeneratorSchema),
@@ -136,20 +134,6 @@ TestcaseHandler.post("/:testcase_id/:type", async (req, res) => {
           ));
 
     return respond(res, StatusCodes.OK, testcase);
-});
-
-TestcaseHandler.patch("/:testcase_id", useValidation(TestcaseSchema), async (req, res) => {
-    const testcase = await extractModifiableTestcase(req);
-
-    await Database.update(
-        "testcases",
-        {
-            input: req.body.input,
-        },
-        { id: testcase.id }
-    );
-
-    return respond(res, StatusCodes.OK);
 });
 
 TestcaseHandler.delete("/:testcase_id", async (req, res) => {

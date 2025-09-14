@@ -119,6 +119,11 @@ app.use((error: Error, _: Request, res: Response, next: NextFunction) => {
 
 Promise.allSettled([
     Database.awaitConnection()
+        .then(() =>
+            initS3().catch((error) => {
+                Logger.panic("S3 failed", error);
+            })
+        )
         .then(async () => {
             Logger.database("Successfully connected to database!");
             await initDatabase();
@@ -137,9 +142,6 @@ Promise.allSettled([
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
-    initS3().catch((error) => {
-        Logger.panic("S3 failed", error);
-    }),
     // for consistency
     initInflux(),
     initAaiEdu(),
