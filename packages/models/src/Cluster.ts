@@ -1,5 +1,6 @@
 import { EvaluationLanguage } from "./Evaluation";
 import { Snowflake } from "./Snowflake";
+import { GeneratorState } from "./Testcase";
 
 export type ClusterV1 = {
     id: Snowflake;
@@ -15,17 +16,8 @@ export type ClusterV2 = ClusterV1 & {
 
 export type ClusterV3 = ClusterV1 & {
     order: number;
-    status:
-        | "ready"
-        | "ready-modified"
-        | "not-ready"
-        | "generator-error"
-        | "validation-error"
-        | "solution-error";
-    mode: "auto" | "manual";
+    status: GeneratorState;
     error?: string;
-    auto_generator_id?: Snowflake;
-    auto_generator_tests: number;
 };
 
 export type ClusterStatus =

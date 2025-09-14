@@ -16,9 +16,8 @@ import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { S3Client } from "../s3/S3";
 import { readBucketStream } from "../utils/stream";
-import { EvaluationInputTestcase, ProblemDetails, splitAndEvaluateTestcases } from "./evaluation";
+import { splitAndEvaluateTestcases } from "./evaluation";
 import { generateTestcases, IGNORE_OUTPUT_CHECKER } from "./generator";
-import { Logger } from "./logger";
 import { generateSnowflake } from "./snowflake";
 
 const RETURN_OUTPUT_EVALUATOR = `
@@ -73,7 +72,7 @@ const fetchTestcaseFile = async (fileName: string) => {
 
     const file = await S3Client.getObject(Globals.s3.buckets.testcases, fileName);
 
-    const result = ((await readBucketStream(file)) as string[]).join("");
+    const result = Buffer.concat(await readBucketStream<Buffer>(file)).toString();
 
     await Redis.set(fileName, result, {
         EX: 3 * 60 * 60,

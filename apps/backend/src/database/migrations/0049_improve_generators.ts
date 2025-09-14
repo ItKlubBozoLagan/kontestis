@@ -15,6 +15,7 @@ import { Logger } from "../../lib/logger";
 import { generateSnowflake } from "../../lib/snowflake";
 import { initS3, S3Client } from "../../s3/S3";
 import { readBucketStream } from "../../utils/stream";
+import { Database } from "../Database";
 
 type MigrationType = {
     generators: GeneratorV1;
@@ -64,25 +65,25 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
     await database.createIndex("generators", "generators_by_contest_id", "contest_id");
     await database.createIndex("generators", "generators_by_organisation_id", "organisation_id");
 
-    await database.raw("ALTER TABLE testcases ADD COLUMN input_type text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN output_type text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN status text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN input_file text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN output_file text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN error text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN generator_input text");
-    await database.raw("ALTER TABLE testcases ADD COLUMN generator_id bigint");
+    await database.raw("ALTER TABLE testcases ADD input_type text");
+    await database.raw("ALTER TABLE testcases ADD output_type text");
+    await database.raw("ALTER TABLE testcases ADD status text");
+    await database.raw("ALTER TABLE testcases ADD input_file text");
+    await database.raw("ALTER TABLE testcases ADD output_file text");
+    await database.raw("ALTER TABLE testcases ADD error text");
+    await database.raw("ALTER TABLE testcases ADD generator_input text");
+    await database.raw("ALTER TABLE testcases ADD generator_id bigint");
 
-    await database.raw("ALTER TABLE clusters ADD COLUMN order bigint");
-    await database.raw("ALTER TABLE clusters ADD COLUMN status text");
-    await database.raw("ALTER TABLE clusters ADD COLUMN mode text");
-    await database.raw("ALTER TABLE clusters ADD COLUMN error text");
-    await database.raw("ALTER TABLE clusters ADD COLUMN auto_generator_id bigint");
-    await database.raw("ALTER TABLE clusters ADD COLUMN auto_generator_tests bigint");
+    await database.raw("ALTER TABLE clusters ADD order bigint");
+    await database.raw("ALTER TABLE clusters ADD status text");
+    await database.raw("ALTER TABLE clusters ADD mode text");
+    await database.raw("ALTER TABLE clusters ADD error text");
+    await database.raw("ALTER TABLE clusters ADD auto_generator_id bigint");
+    await database.raw("ALTER TABLE clusters ADD auto_generator_tests bigint");
 
-    await database.raw("ALTER TABLE testcase_submissions ADD COLUMN input_file text");
-    await database.raw("ALTER TABLE testcase_submissions ADD COLUMN output_file text");
-    await database.raw("ALTER TABLE testcase_submissions ADD COLUMN submission_output_file text");
+    await database.raw("ALTER TABLE testcase_submissions ADD input_file text");
+    await database.raw("ALTER TABLE testcase_submissions ADD output_file text");
+    await database.raw("ALTER TABLE testcase_submissions ADD submission_output_file text");
 
     const testcases = await database.selectFrom("testcases", "*");
 
@@ -156,13 +157,20 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
     for (const cluster of clusters) {
         // Migrate to new generator format
         if (!cluster.generator) {
-            await database.update("clusters", { mode: "manual" }, { id: cluster.id });
+            await database.update("clusters", { status: "not-ready" }, { id: cluster.id });
             continue;
         }
 
         if (!cluster.generator_language || !cluster.generator_code) {
             Logger.error("Generator language or code not found for cluster " + cluster.id);
-            await database.update("clusters", { mode: "manual" }, { id: cluster.id });
+            await database.update(
+                "clusters",
+                {
+                    status: "generator-error",
+                    error: "Invalid generator state, no language and/or code (migration)",
+                },
+                { id: cluster.id }
+            );
             continue;
         }
 
@@ -176,11 +184,24 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
 
         await database.insertInto("generators", generator);
 
-        await database.update(
-            "clusters",
-            { mode: "auto", auto_generator_id: generator.id, auto_generator_tests: 10 },
-            { id: cluster.id }
-        );
+        await database.update("clusters", { status: "not-ready" }, { id: cluster.id });
+
+        const batch = Database.batch();
+
+        for (let index = 0; index < 10; index++) {
+            const testcase: TestcaseV4 = {
+                id: generateSnowflake(),
+                generator_id: generator.id,
+                status: "not-ready",
+                cluster_id: cluster.id,
+                output_type: "auto",
+                input_type: "generator",
+                generator_input: index.toString(),
+            };
+
+            batch.insertInto("testcases", testcase);
+        }
+        await batch.execute();
     }
 
     const testcaseSubmissions = await database.selectFrom("testcase_submissions", "*");
@@ -238,11 +259,11 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
         );
     }
 
-    await database.raw("ALTER TABLE testcases DROP COLUMN input");
+    await database.raw("ALTER TABLE testcases DROP input");
 
-    await database.raw("ALTER TABLE clusters DROP COLUMN generator");
-    await database.raw("ALTER TABLE clusters DROP COLUMN generator_language");
-    await database.raw("ALTER TABLE clusters DROP COLUMN generator_code");
+    await database.raw("ALTER TABLE clusters DROP generator");
+    await database.raw("ALTER TABLE clusters DROP generator_language");
+    await database.raw("ALTER TABLE clusters DROP generator_code");
 
     log("Done");
 };

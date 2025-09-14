@@ -13,16 +13,17 @@ export type TestcaseV2 = Omit<TestcaseV1, "correctoutput"> & {
 
 export type TestcaseV3 = Omit<TestcaseV2, "correct_output">;
 
+export type GeneratorState =
+    | "ready"
+    | "not-ready"
+    | "generator-error"
+    | "validation-error"
+    | "solution-error";
+
 export type TestcaseV4 = Omit<TestcaseV3, "input"> & {
     input_type: "manual" | "generator";
-    output_type: "auto" | "manual";
-    status:
-        | "ready"
-        | "ready-modified"
-        | "not-ready"
-        | "generator-error"
-        | "validation-error"
-        | "solution-error";
+    output_type: "auto" | "manual" | "ai";
+    status: GeneratorState;
     error?: string;
     generator_id?: Snowflake;
     generator_input?: string;
