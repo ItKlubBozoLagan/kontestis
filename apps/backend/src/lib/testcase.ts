@@ -1,11 +1,4 @@
-import {
-    Cluster,
-    ClusterStatus,
-    EvaluationLanguage,
-    Snowflake,
-    Testcase,
-    TestcaseWithData,
-} from "@kontestis/models";
+import { Cluster, EvaluationLanguage, Testcase, TestcaseWithData } from "@kontestis/models";
 import { StatusCodes } from "http-status-codes";
 import { eqIn } from "scyllo";
 
@@ -13,56 +6,12 @@ import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
-import { RedisKeys } from "../redis/RedisKeys";
 import { S3Client } from "../s3/S3";
 import { readBucketStream } from "../utils/stream";
 import { EvaluationInputTestcase, ProblemDetails, splitAndEvaluateTestcases } from "./evaluation";
 import { generateTestcases, IGNORE_OUTPUT_CHECKER } from "./generator";
 import { Logger } from "./logger";
 import { generateSnowflake } from "./snowflake";
-
-const RETURN_OUTPUT_EVALUATOR = `
-#include <iostream>
-#include <string>
-#include <sstream>
-
-// Disable synchronization between C and C++ standard streams
-static const auto disable_sync = []() {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(nullptr);
-    return 0;
-}();
-
-std::string read_until(const std::string& separator) {
-    std::stringstream out;
-    std::string line;
-    while (true) {
-        std::getline(std::cin, line);
-        if (line == separator) {
-            return out.str();
-        }
-        out << line << "\\n";
-    }
-}
-
-int main() {
-    std::string separator;
-    while (true) {
-        std::getline(std::cin, separator);
-        if (!separator.empty() && separator.find_first_not_of(' ') != std::string::npos) {
-            break;
-        }
-    }
-
-    read_until(separator);
-    std::string out = read_until(separator);
-    std::string subOut = read_until(separator);
-
-    std::cout << "custom:" << subOut << std::endl;
-
-    return 0;
-}
-`;
 
 const fetchTestcaseFile = async (fileName: string) => {
     const cachedFile = await Redis.get(fileName);
@@ -80,10 +29,6 @@ const fetchTestcaseFile = async (fileName: string) => {
     });
 
     return result;
-};
-
-export const getClusterStatus = async (clusterId: Snowflake) => {
-    return ((await Redis.get(RedisKeys.CLUSTER_STATUS(clusterId))) ?? "uncached") as ClusterStatus;
 };
 
 export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = async (
@@ -120,10 +65,6 @@ export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = asyn
         input: testcaseInputByTestcaseId[testcase.id.toString()],
         correct_output: testcaseOutputByTestcaseId[testcase.id.toString()],
     }));
-};
-
-type TestcaseWithInput = Testcase & {
-    input: string;
 };
 
 type TestcaseAssureResult =
@@ -362,49 +303,6 @@ export const assureTestcaseOutput: (
     };
 };
 
-/*
-const generateTestcaseInput = async (cluster: Cluster, count: number) => {
-    const [data] = await splitAndEvaluateTestcases(
-        {
-            problemId: 0n,
-            language: cluster.generator_language ?? "python",
-            code: Buffer.from(cluster.generator_code ?? "", "utf8").toString("base64"),
-            evaluator: RETURN_OUTPUT_EVALUATOR,
-            evaluation_variant: "checker",
-            evaluator_language: "cpp",
-            legacy_evaluation: true,
-        },
-        Array.from({ length: count }).map((_, index) => ({
-            id: BigInt(index),
-            cluster_id: cluster.id,
-            input: index.toString(),
-            correct_output: "",
-        })),
-        {
-            time_limit_millis: 60_000,
-            memory_limit_megabytes: 2048,
-        }
-    );
-
-    if (!data) return;
-
-    const inputData: Record<string, string> = {};
-
-    for (const result of data) {
-        if (result.type !== "success" || result.verdict !== "custom") {
-            return;
-        }
-
-        inputData[result.testCaseId] = result.extra;
-    }
-
-    return Array.from({ length: count }).map((_, index) => ({
-        id: BigInt(index),
-        cluster_id: cluster.id,
-        input: inputData[index.toString()],
-    }));
-};*/
-
 export const assureClusterGeneration = async (cluster: Cluster) => {
     if (cluster.status === "ready") return;
 
@@ -412,7 +310,13 @@ export const assureClusterGeneration = async (cluster: Cluster) => {
         id: cluster.problem_id,
     });
 
-    if (!problem) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+    if (!problem) {
+        Logger.error(
+            `Found no problem for cluster ${cluster.id} while attempting cluster generation`
+        );
+
+        return;
+    }
 
     const testcases = await Database.selectFrom("testcases", "*", {
         cluster_id: cluster.id,
@@ -428,6 +332,8 @@ export const assureClusterGeneration = async (cluster: Cluster) => {
             { status: "generator-error", error: assureInputResult.error },
             { id: cluster.id }
         );
+
+        return;
     }
 
     const assureOutputResult = await assureTestcaseOutput(
@@ -445,5 +351,9 @@ export const assureClusterGeneration = async (cluster: Cluster) => {
             { status: "solution-error", error: assureOutputResult.error },
             { id: cluster.id }
         );
+
+        return;
     }
+
+    await Database.update("clusters", { status: "ready" }, { id: cluster.id });
 };
