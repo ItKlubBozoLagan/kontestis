@@ -15,7 +15,7 @@ export type ClusterV2 = ClusterV1 & {
 };
 
 export type ClusterV3 = ClusterV1 & {
-    order: number;
+    order_number: number;
     status: GeneratorState;
     error?: string;
 };

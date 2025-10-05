@@ -74,12 +74,9 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
     await database.raw("ALTER TABLE testcases ADD generator_input text");
     await database.raw("ALTER TABLE testcases ADD generator_id bigint");
 
-    await database.raw("ALTER TABLE clusters ADD order bigint");
+    await database.raw("ALTER TABLE clusters ADD order_number bigint");
     await database.raw("ALTER TABLE clusters ADD status text");
-    await database.raw("ALTER TABLE clusters ADD mode text");
     await database.raw("ALTER TABLE clusters ADD error text");
-    await database.raw("ALTER TABLE clusters ADD auto_generator_id bigint");
-    await database.raw("ALTER TABLE clusters ADD auto_generator_tests bigint");
 
     await database.raw("ALTER TABLE testcase_submissions ADD input_file text");
     await database.raw("ALTER TABLE testcase_submissions ADD output_file text");
@@ -106,23 +103,26 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
     await initS3();
 
     for (const testcase of testcases) {
+        Logger.info("Migrating testcase " + testcase.id);
         const cluster = clustersById[testcase.cluster_id.toString()];
 
         if (!cluster) {
-            Logger.panic("Cluster not found for testcase " + testcase.id);
+            Logger.error("Cluster not found for testcase " + testcase.id);
+            continue;
         }
 
         const problem = problemsById[cluster.problem_id.toString()];
 
         if (!problem) {
-            Logger.panic("Problem not found for testcase " + testcase.id);
+            Logger.error("Problem not found for testcase " + testcase.id);
+            continue;
         }
 
         const inputFilePath = `${problem.title}-${problem.id}/${
             testcase.id
         }-${generateSnowflake()}.in`;
 
-        await S3Client.putObject(Globals.s3.buckets.submission_meta, inputFilePath, testcase.input);
+        await S3Client.putObject(Globals.s3.buckets.testcases, inputFilePath, testcase.input);
 
         await database.update(
             "testcases",
@@ -134,6 +134,8 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
             },
             { id: testcase.id }
         );
+
+        Logger.info("Migrated testcase " + testcase.id);
     }
 
     const clustersByProblemId: Record<string, ClusterV2[]> = {};
@@ -150,7 +152,7 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
         clusters.sort((a, b) => Number(a.id - b.id));
 
         for (const [index, cluster] of clusters.entries()) {
-            await database.update("clusters", { order: index }, { id: cluster.id });
+            await database.update("clusters", { order_number: BigInt(index) }, { id: cluster.id });
         }
     }
 

@@ -21,6 +21,7 @@ ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 // TODO: Order
 const ClusterSchema = Type.Object({
     awarded_score: Type.Number({ minimum: 1, maximum: 1_000_000 }),
+    order_number: Type.Optional(Type.Number({ minimum: 0 })),
 });
 
 ClusterHandler.get("/", async (req, res) => {
@@ -43,7 +44,7 @@ ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
         problem_id: problem.id,
         awarded_score: req.body.awarded_score,
         status: "not-ready",
-        order: clusters.length,
+        order_number: BigInt(clusters.length),
     };
 
     await Database.insertInto("clusters", cluster);
@@ -71,6 +72,20 @@ ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
 
     await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
 
+    const testcases = await Database.selectFrom("testcases", "*", {
+        cluster_id: cluster.id,
+    });
+
+    await Promise.all(
+        testcases
+            .filter((testcase) => testcase.input_type === "auto" || testcase.output_type === "auto")
+            .map((testcase) =>
+                Database.update("testcases", { status: "not-ready" }, { id: testcase.id })
+            )
+    );
+
+    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
+
     const _ = assureClusterGeneration({
         ...cluster,
         status: "not-ready",
@@ -82,13 +97,15 @@ ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
 ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
-    await Database.update(
-        "clusters",
-        {
-            awarded_score: req.body.awarded_score,
-        },
-        { id: cluster.id }
-    );
+    const updateData: Partial<Cluster> = {
+        awarded_score: req.body.awarded_score,
+    };
+
+    if (req.body.order_number !== undefined) {
+        updateData.order_number = req.body.order_number;
+    }
+
+    await Database.update("clusters", updateData, { id: cluster.id });
 
     return respond(res, StatusCodes.OK);
 });

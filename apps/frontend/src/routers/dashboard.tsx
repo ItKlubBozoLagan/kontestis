@@ -21,6 +21,8 @@ import { ContestClusterManagePage } from "../pages/management/contest/problems/c
 import { ContestTestcaseManagePage } from "../pages/management/contest/problems/clusters/testcases/ContestTestcaseManagePage";
 import { ContestProblemManagePage } from "../pages/management/contest/problems/ContestProblemManagePage";
 import { ContestProblemsPage } from "../pages/management/contest/problems/ContestProblemsPage";
+import { GeneratorDetailPage } from "../pages/management/contest/problems/generators/GeneratorDetailPage";
+import { GeneratorManagePage } from "../pages/management/contest/problems/generators/GeneratorManagePage";
 import { ContestQuestionsPage } from "../pages/management/contest/questions/ContestQuestionsPage";
 import { ContestResultsPage } from "../pages/management/contest/results/ContestResultsPage";
 import { FinalSubmissionReviewPage } from "../pages/management/contest/results/FinalSubmissionReviewPage";
@@ -122,6 +124,14 @@ export const dashboardRoutes: RouteObject[] = [
                     {
                         path: "problems/:problemId",
                         element: <ContestProblemManagePage />,
+                    },
+                    {
+                        path: "problems/:problemId/generators",
+                        element: <GeneratorManagePage />,
+                    },
+                    {
+                        path: "problems/:problemId/generators/:generatorId",
+                        element: <GeneratorDetailPage />,
                     },
                     {
                         path: "problems/:problemId/:clusterId",
