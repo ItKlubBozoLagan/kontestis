@@ -8,7 +8,6 @@ import { EditableDisplayBox } from "../../../../../components/EditableDisplayBox
 import { TitledInput } from "../../../../../components/TitledInput";
 import { TitledSection } from "../../../../../components/TitledSection";
 import { Translated } from "../../../../../components/Translated";
-import { useContestContext } from "../../../../../context/constestContext";
 import { useGenerator } from "../../../../../hooks/problem/generator/useGenerator";
 import { useUpdateGenerator } from "../../../../../hooks/problem/generator/useUpdateGenerator";
 import { useTranslation } from "../../../../../hooks/useTranslation";
@@ -28,7 +27,6 @@ export const GeneratorDetailPage: FC = () => {
     const { problemId, generatorId } = useParams<Properties>();
     const { data: generator } = useGenerator([BigInt(problemId ?? 0), BigInt(generatorId ?? 0)]);
     const { mutate: updateGenerator, isSuccess, error } = useUpdateGenerator();
-    const { member } = useContestContext();
     const { t } = useTranslation();
 
     const {
@@ -93,8 +91,8 @@ export const GeneratorDetailPage: FC = () => {
                     >
                         <select
                             {...register("language")}
-                            onChange={(e) => {
-                                setValue("language", e.target.value);
+                            onChange={(event) => {
+                                setValue("language", event.target.value);
                                 submitForm();
                             }}
                             tw={

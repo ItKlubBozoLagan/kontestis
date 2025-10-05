@@ -45,7 +45,9 @@ export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = asyn
     });
 
     if (testcases.some((testcase) => !testcase.input_file || !testcase.output_file)) {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+        Logger.error("Testcase input or output file missing after generation");
+
+        return;
     }
 
     const testcaseInputByTestcaseId: Record<string, string> = {};
@@ -88,10 +90,16 @@ export const assureTestcaseInput: (
     if (notReadyTestcases.some((t) => t.input_type === "manual" && !t.input_file))
         return {
             type: "error",
-            error: "manual-input",
+            error: "Testcase input set up manual but no file uploaded!",
         };
 
     const generatorTestcases = notReadyTestcases.filter((t) => t.input_type === "generator");
+
+    if (generatorTestcases.some((t) => !t.generator_id))
+        return {
+            type: "error",
+            error: "Testcase input set up to be generated but no generator provided!",
+        };
 
     const testcaseById: Record<string, Testcase> = {};
 
@@ -195,7 +203,7 @@ export const assureTestcaseOutput: (
     if (notReadyTestcases.some((t) => t.output_type === "manual" && !t.output_file))
         return {
             type: "error",
-            error: "manual-output",
+            error: "Testcase output set up manual but no file uploaded!",
         };
 
     /*
@@ -240,7 +248,7 @@ export const assureTestcaseOutput: (
             problemId: 0n,
             language: solutionInfo.solution_language,
             // TODO: Fix base64
-            code: Buffer.from(solutionInfo.solution_code ?? "", "utf-8").toString("base64"),
+            code: Buffer.from(solutionInfo.solution_code ?? "", "utf8").toString("base64"),
             evaluation_variant: "checker",
             evaluator: IGNORE_OUTPUT_CHECKER,
             evaluator_language: "cpp",
@@ -268,6 +276,7 @@ export const assureTestcaseOutput: (
         if (evaluationResult.type !== "success" || evaluationResult.verdict !== "accepted") {
             await Database.update(
                 "testcases",
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 { status: "solution-error", error: "Solution error" },
                 { id: BigInt(evaluationResult.testCaseId) }
             );
@@ -296,7 +305,7 @@ export const assureTestcaseOutput: (
 
         await Database.update(
             "testcases",
-            { output_file: outputFilePath, status: "ready" },
+            { output_file: outputFilePath, status: "ready", error: "" },
             { id: testcase.id }
         );
     }
@@ -373,7 +382,7 @@ export const assureClusterGeneration: (cluster: Cluster) => Promise<boolean> = a
         return false;
     }
 
-    await Database.update("clusters", { status: "ready" }, { id: cluster.id });
+    await Database.update("clusters", { status: "ready", error: "" }, { id: cluster.id });
 
     return true;
 };

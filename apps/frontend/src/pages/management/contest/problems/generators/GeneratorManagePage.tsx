@@ -17,7 +17,6 @@ import { useContestContext } from "../../../../../context/constestContext";
 import { useAllGenerators } from "../../../../../hooks/problem/generator/useAllGenerators";
 import { useDeleteGenerator } from "../../../../../hooks/problem/generator/useDeleteGenerator";
 import { useProblem } from "../../../../../hooks/problem/useProblem";
-import { useTranslation } from "../../../../../hooks/useTranslation";
 import { CreateGeneratorModal } from "./CreateGeneratorModal";
 
 type Properties = {
@@ -31,7 +30,6 @@ export const GeneratorManagePage: FC = () => {
     const { member } = useContestContext();
     const { mutate: deleteGenerator } = useDeleteGenerator();
     const [modalOpen, setModalOpen] = useState(false);
-    const { t } = useTranslation();
 
     const handleDelete = (generatorId: bigint) => {
         if (confirm("Are you sure you want to delete this generator?")) {

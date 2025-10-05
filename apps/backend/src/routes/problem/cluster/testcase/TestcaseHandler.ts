@@ -15,8 +15,11 @@ import { generateSnowflake } from "../../../../lib/snowflake";
 import { useValidation } from "../../../../middlewares/useValidation";
 import { S3Client } from "../../../../s3/S3";
 import { respond } from "../../../../utils/response";
+import TestcaseFileHandler from "./TestcaseFileHandler";
 
 const TestcaseHandler = Router({ mergeParams: true });
+
+TestcaseHandler.use("/:testcase_id/file", TestcaseFileHandler);
 
 const TestcaseGeneratorSchema = Type.Object({
     input_type: Type.Literal("generator"),
@@ -61,6 +64,7 @@ TestcaseHandler.post("/", async (req, res) => {
     };
 
     await Database.insertInto("testcases", testcase);
+    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
 
     return respond(res, StatusCodes.OK, testcase);
 });
@@ -80,6 +84,33 @@ TestcaseHandler.get("/:testcase_id", async (req, res) => {
     const testcase = await extractTestcase(req);
 
     return respond(res, StatusCodes.OK, testcase);
+});
+
+TestcaseHandler.patch("/:testcase_id", async (req, res) => {
+    const testcase = await extractModifiableTestcase(req);
+
+    const updateData: Partial<Testcase> = {};
+
+    if (req.body.input_type !== undefined) {
+        updateData.input_type = req.body.input_type;
+    }
+
+    if (req.body.output_type !== undefined) {
+        updateData.output_type = req.body.output_type;
+    }
+
+    if (req.body.generator_id !== undefined) {
+        updateData.generator_id = BigInt(req.body.generator_id);
+    }
+
+    if (req.body.generator_input !== undefined) {
+        updateData.generator_input = req.body.generator_input;
+    }
+
+    await Database.update("testcases", updateData, { id: testcase.id });
+    await Database.update("clusters", { status: "not-ready" }, { id: testcase.cluster_id });
+
+    return respond(res, StatusCodes.OK);
 });
 
 TestcaseHandler.get("/:testcase_id/input", async (req, res) => {

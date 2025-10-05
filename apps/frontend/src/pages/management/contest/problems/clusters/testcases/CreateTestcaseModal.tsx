@@ -31,7 +31,6 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
         handleSubmit,
         reset,
         setValue,
-        watch,
         formState: { errors },
     } = useForm<z.infer<typeof CreateTestcaseSchema>>({
         resolver: zodResolver(CreateTestcaseSchema),
@@ -110,8 +109,12 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
                     {useGenerator && (
                         <>
                             <div tw={"flex flex-col gap-2"}>
-                                <label>Select Generator</label>
-                                <select {...register("generator_id")} tw={"border p-2 rounded"}>
+                                <label htmlFor="generator-select-create">Select Generator</label>
+                                <select
+                                    id="generator-select-create"
+                                    {...register("generator_id")}
+                                    tw={"border p-2 rounded"}
+                                >
                                     <option value="">-- Select a generator --</option>
                                     {(generators ?? []).map((gen) => (
                                         <option key={gen.id.toString()} value={gen.id.toString()}>
