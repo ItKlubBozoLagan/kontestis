@@ -40,7 +40,8 @@ export const generateTestcases = async (
         {
             problemId: 0n,
             language: generator.language ?? "python",
-            code: generator.code,
+            // TODO: Fix the base64 encoding on other side
+            code: Buffer.from(generator.code ?? "", "utf-8").toString("base64"),
             evaluator: IGNORE_OUTPUT_CHECKER,
             evaluation_variant: "checker",
             evaluator_language: "cpp",

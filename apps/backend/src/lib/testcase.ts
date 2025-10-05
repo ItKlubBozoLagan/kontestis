@@ -34,8 +34,10 @@ const fetchTestcaseFile = async (fileName: string) => {
 export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = async (
     cluster: Cluster
 ) => {
-    if (cluster.status !== "ready") {
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+    if (!(await assureClusterGeneration(cluster))) {
+        Logger.info("Cluster generation failed or timed out");
+
+        return [];
     }
 
     const testcases = await Database.selectFrom("testcases", "*", {
@@ -196,6 +198,7 @@ export const assureTestcaseOutput: (
             error: "manual-output",
         };
 
+    /*
     if (
         notReadyTestcases.some(
             // eslint-disable-next-line sonarjs/no-duplicate-string
@@ -205,7 +208,7 @@ export const assureTestcaseOutput: (
         return {
             type: "error",
             error: "validation-error-or-solution-error",
-        };
+        };*/
 
     const solutionTestcases = notReadyTestcases.filter((t) => t.output_type === "auto");
 
@@ -236,7 +239,8 @@ export const assureTestcaseOutput: (
         {
             problemId: 0n,
             language: solutionInfo.solution_language,
-            code: solutionInfo.solution_code,
+            // TODO: Fix base64
+            code: Buffer.from(solutionInfo.solution_code ?? "", "utf-8").toString("base64"),
             evaluation_variant: "checker",
             evaluator: IGNORE_OUTPUT_CHECKER,
             evaluator_language: "cpp",
@@ -303,8 +307,10 @@ export const assureTestcaseOutput: (
     };
 };
 
-export const assureClusterGeneration = async (cluster: Cluster) => {
-    if (cluster.status === "ready") return;
+export const assureClusterGeneration: (cluster: Cluster) => Promise<boolean> = async (
+    cluster: Cluster
+) => {
+    if (cluster.status === "ready") return true;
 
     const problem = await Database.selectOneFrom("problems", "*", {
         id: cluster.problem_id,
@@ -315,7 +321,7 @@ export const assureClusterGeneration = async (cluster: Cluster) => {
             `Found no problem for cluster ${cluster.id} while attempting cluster generation`
         );
 
-        return;
+        return false;
     }
 
     const testcases = await Database.selectFrom("testcases", "*", {
@@ -333,11 +339,19 @@ export const assureClusterGeneration = async (cluster: Cluster) => {
             { id: cluster.id }
         );
 
-        return;
+        Logger.debug(
+            `Cluster ${cluster.id} generation failed on input: ${assureInputResult.error}`
+        );
+
+        return false;
     }
 
+    const updatedTestcases = await Database.selectFrom("testcases", "*", {
+        cluster_id: cluster.id,
+    });
+
     const assureOutputResult = await assureTestcaseOutput(
-        testcases,
+        updatedTestcases,
         {
             solution_code: problem.solution_code,
             solution_language: problem.solution_language,
@@ -352,8 +366,14 @@ export const assureClusterGeneration = async (cluster: Cluster) => {
             { id: cluster.id }
         );
 
-        return;
+        Logger.debug(
+            `Cluster ${cluster.id} generation failed on output: ${assureOutputResult.error}`
+        );
+
+        return false;
     }
 
     await Database.update("clusters", { status: "ready" }, { id: cluster.id });
+
+    return true;
 };

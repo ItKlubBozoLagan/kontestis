@@ -135,7 +135,7 @@ export const splitAndEvaluateTestcases = async (
 
         currentSize += testcase.input.length + (testcase.correct_output?.length ?? 0);
 
-        if (groups.length <= groupId) groups.push([]);
+        while (groups.length <= groupId) groups.push([]);
 
         groups[groupId].push(testcase);
     }

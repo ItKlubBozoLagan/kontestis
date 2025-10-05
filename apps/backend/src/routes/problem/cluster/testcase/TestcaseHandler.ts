@@ -82,6 +82,34 @@ TestcaseHandler.get("/:testcase_id", async (req, res) => {
     return respond(res, StatusCodes.OK, testcase);
 });
 
+TestcaseHandler.get("/:testcase_id/input", async (req, res) => {
+    const testcase = await extractTestcase(req);
+
+    if (!testcase.input_file) {
+        throw new SafeError(StatusCodes.NOT_FOUND, "Input file not found");
+    }
+
+    const data = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.input_file);
+
+    res.setHeader("Content-Type", "text/plain");
+
+    return res.send(data);
+});
+
+TestcaseHandler.get("/:testcase_id/output", async (req, res) => {
+    const testcase = await extractTestcase(req);
+
+    if (!testcase.output_file) {
+        throw new SafeError(StatusCodes.NOT_FOUND, "Output file not found");
+    }
+
+    const data = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.output_file);
+
+    res.setHeader("Content-Type", "text/plain");
+
+    return res.send(data);
+});
+
 // Accept file upload for input, use express file upload
 TestcaseHandler.post("/:testcase_id/:type", async (req, res) => {
     const testcase = await extractModifiableTestcase(req);

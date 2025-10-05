@@ -44,7 +44,6 @@ export const ContestClusterManagePage: FC = () => {
     return (
         <div tw={"w-full flex flex-col gap-6 items-end"}>
             <div tw={"w-3/5 self-center"}>
-                {" "}
                 {cluster && <ClusterInfoSection cluster={cluster} />}
             </div>
             <div tw={"w-full flex flex-col gap-6 items-end"}>
@@ -56,50 +55,48 @@ export const ContestClusterManagePage: FC = () => {
                         cluster={cluster}
                     />
                 )}
-                {!cluster?.generator && (
-                    <div tw={"w-full flex flex-col gap-6 items-end"}>
-                        <CanContestMember
-                            member={member}
-                            permission={ContestMemberPermissions.EDIT}
-                            adminPermission={AdminPermissions.EDIT_CONTEST}
-                        >
-                            <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                                {t(
-                                    "contests.management.individual.problems.cluster.testCase.createButton"
-                                )}
-                            </SimpleButton>
-                        </CanContestMember>
-                        <Table tw={"w-full"}>
-                            <thead>
-                                <TableHeadRow>
-                                    <TableHeadItem>
-                                        {t(
-                                            "contests.management.individual.problems.cluster.testCase.table.head.testCase"
-                                        )}
-                                    </TableHeadItem>
-                                </TableHeadRow>
-                            </thead>
-                            <tbody>
-                                {(testcases ?? [])
-                                    .sort((a, b) => Number(a.id) - Number(b.id))
-                                    .map((testcase, id) => (
-                                        <TableRow key={testcase.id + ""}>
-                                            <TableItem>
-                                                <Link
-                                                    to={testcase.id + ""}
-                                                    tw={"hover:(text-sky-800 cursor-pointer)"}
-                                                >
-                                                    <Translated translationKey="contests.management.individual.problems.cluster.testCase.table.body.testCase">
-                                                        {"#" + String(id + 1)}
-                                                    </Translated>
-                                                </Link>
-                                            </TableItem>
-                                        </TableRow>
-                                    ))}
-                            </tbody>
-                        </Table>
-                    </div>
-                )}
+                <div tw={"w-full flex flex-col gap-6 items-end"}>
+                    <CanContestMember
+                        member={member}
+                        permission={ContestMemberPermissions.EDIT}
+                        adminPermission={AdminPermissions.EDIT_CONTEST}
+                    >
+                        <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
+                            {t(
+                                "contests.management.individual.problems.cluster.testCase.createButton"
+                            )}
+                        </SimpleButton>
+                    </CanContestMember>
+                    <Table tw={"w-full"}>
+                        <thead>
+                            <TableHeadRow>
+                                <TableHeadItem>
+                                    {t(
+                                        "contests.management.individual.problems.cluster.testCase.table.head.testCase"
+                                    )}
+                                </TableHeadItem>
+                            </TableHeadRow>
+                        </thead>
+                        <tbody>
+                            {(testcases ?? [])
+                                .sort((a, b) => Number(a.id) - Number(b.id))
+                                .map((testcase, id) => (
+                                    <TableRow key={testcase.id + ""}>
+                                        <TableItem>
+                                            <Link
+                                                to={testcase.id + ""}
+                                                tw={"hover:(text-sky-800 cursor-pointer)"}
+                                            >
+                                                <Translated translationKey="contests.management.individual.problems.cluster.testCase.table.body.testCase">
+                                                    {"#" + String(id + 1)}
+                                                </Translated>
+                                            </Link>
+                                        </TableItem>
+                                    </TableRow>
+                                ))}
+                        </tbody>
+                    </Table>
+                </div>
             </div>
         </div>
     );

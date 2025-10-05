@@ -1,14 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Snowflake, Testcase } from "@kontestis/models";
-import { cutText } from "@kontestis/utils";
-import React, { FC, useEffect } from "react";
+import React, { FC } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../../../../components/EditableDisplayBox";
 import { TitledSection } from "../../../../../../components/TitledSection";
-import { Translated } from "../../../../../../components/Translated";
-import { useModifyTestcase } from "../../../../../../hooks/problem/cluster/testcase/useCreateTestcase";
+import { useAllGenerators } from "../../../../../../hooks/problem/generator/useAllGenerators";
 import { useTranslation } from "../../../../../../hooks/useTranslation";
 
 type Properties = {
@@ -17,7 +15,7 @@ type Properties = {
 };
 
 const ModifyTestcaseSchema = z.object({
-    input: z.string().min(1),
+    generator_input: z.string().optional(),
 });
 
 export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => {
@@ -28,56 +26,106 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
     } = useForm<z.infer<typeof ModifyTestcaseSchema>>({
         resolver: zodResolver(ModifyTestcaseSchema),
         defaultValues: {
-            input: testcase.input,
+            generator_input: testcase.generator_input ?? "",
         },
     });
 
-    const modifyMutation = useModifyTestcase([problemId, testcase.cluster_id, testcase.id]);
-
-    const onSubmit = handleSubmit((data) => {
-        modifyMutation.reset();
-        modifyMutation.mutate(data);
-    });
-
-    useEffect(() => {
-        if (!modifyMutation.isSuccess) return;
-
-        modifyMutation.reset();
-    }, [modifyMutation.isSuccess]);
+    const { data: generators } = useAllGenerators([problemId]);
 
     const formReference = React.useRef<HTMLFormElement>(null);
 
-    const submitForm = () => {
-        formReference.current?.dispatchEvent(
-            new Event("submit", { cancelable: true, bubbles: true })
-        );
-    };
-
     const { t } = useTranslation();
 
+    const generator = generators?.find((g) => g.id === testcase.generator_id);
+
     return (
-        <form onSubmit={onSubmit} ref={formReference}>
+        <form ref={formReference}>
             <TitledSection
                 title={t("contests.management.individual.problems.cluster.testCase.info")}
             >
                 <EditableDisplayBox
-                    title={t("contests.management.individual.problems.cluster.testCase.input")}
-                    value={cutText(testcase.input, 100)}
-                    submitFunction={submitForm}
-                    largeTextValue
+                    title="Input Type"
+                    value={testcase.input_type}
+                    submitFunction={() => {}}
                 >
-                    <textarea {...register("input")} />
+                    <span>{testcase.input_type}</span>
                 </EditableDisplayBox>
+                <EditableDisplayBox
+                    title="Output Type"
+                    value={testcase.output_type}
+                    submitFunction={() => {}}
+                >
+                    <span>{testcase.output_type}</span>
+                </EditableDisplayBox>
+                <EditableDisplayBox
+                    title="Status"
+                    value={testcase.status}
+                    submitFunction={() => {}}
+                >
+                    <span>{testcase.status}</span>
+                </EditableDisplayBox>
+                {testcase.error && (
+                    <EditableDisplayBox
+                        title="Error"
+                        value={testcase.error}
+                        submitFunction={() => {}}
+                    >
+                        <span tw={"text-red-500"}>{testcase.error}</span>
+                    </EditableDisplayBox>
+                )}
+                {testcase.input_type === "generator" && (
+                    <>
+                        <EditableDisplayBox
+                            title="Generator"
+                            value={generator?.name ?? "Unknown"}
+                            submitFunction={() => {}}
+                        >
+                            <span>{generator?.name ?? `ID: ${testcase.generator_id}`}</span>
+                        </EditableDisplayBox>
+                        <EditableDisplayBox
+                            title="Generator Input"
+                            value={testcase.generator_input ?? ""}
+                            submitFunction={() => {}}
+                        >
+                            <textarea {...register("generator_input")} readOnly />
+                        </EditableDisplayBox>
+                    </>
+                )}
+                {testcase.input_file && (
+                    <EditableDisplayBox
+                        title="Input File"
+                        value="Available"
+                        submitFunction={() => {}}
+                    >
+                        <a
+                            href={`/api/problem/${problemId}/cluster/${testcase.cluster_id}/testcase/${testcase.id}/input`}
+                            target="_blank"
+                            rel="noreferrer"
+                            tw={"text-blue-500 hover:underline"}
+                        >
+                            Download Input
+                        </a>
+                    </EditableDisplayBox>
+                )}
+                {testcase.output_file && (
+                    <EditableDisplayBox
+                        title="Output File"
+                        value="Available"
+                        submitFunction={() => {}}
+                    >
+                        <a
+                            href={`/api/problem/${problemId}/cluster/${testcase.cluster_id}/testcase/${testcase.id}/output`}
+                            target="_blank"
+                            rel="noreferrer"
+                            tw={"text-blue-500 hover:underline"}
+                        >
+                            Download Output
+                        </a>
+                    </EditableDisplayBox>
+                )}
             </TitledSection>
             <div tw={"text-sm text-red-500"}>
                 {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
-                {modifyMutation.error && (
-                    <span>
-                        <Translated translationKey="errorMessages.withInfo">
-                            {modifyMutation.error.message}
-                        </Translated>
-                    </span>
-                )}
             </div>
         </form>
     );
