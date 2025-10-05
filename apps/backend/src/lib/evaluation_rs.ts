@@ -231,7 +231,7 @@ export const subscribeToEvaluatorResponseQueue = async () => {
 
             const message = result.element;
 
-            Logger.debug("Got message: " + message);
+            // Logger.debug("Got message: " + message);
 
             try {
                 const parsed = JSON.parse(message);

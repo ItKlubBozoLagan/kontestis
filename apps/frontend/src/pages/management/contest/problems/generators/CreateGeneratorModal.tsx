@@ -86,8 +86,11 @@ export const CreateGeneratorModal: FC<Modal.Props & Properties> = ({
                         {...register("name")}
                     />
                     <div tw={"flex flex-col gap-2"}>
-                        <label tw={"text-base"}>Language</label>
+                        <label htmlFor="language-select-create" tw={"text-base"}>
+                            Language
+                        </label>
                         <select
+                            id="language-select-create"
                             {...register("language")}
                             tw={
                                 "py-1 px-2 bg-neutral-200 border border-solid border-neutral-300 text-base outline-none hover:bg-neutral-300"

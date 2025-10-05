@@ -29,13 +29,19 @@ export const useCreateTestcase: MutationHandler<Testcase, [Snowflake, Snowflake]
             : wrapAxios(http.post(`/problem/${problemId}/cluster/${clusterId}/testcase/`, {}));
     }, invalidateOnSuccess([["testcases", problemId, clusterId]], options));
 
-export const useModifyTestcase: MutationHandler<
-    CreateTestcaseVariables,
-    Testcase,
-    [Snowflake, Snowflake, Snowflake]
-> = ([problemId, clusterId, testcaseId], options) =>
+type ModifyTestcaseVariables = {
+    input_type?: "manual" | "generator";
+    output_type?: "auto" | "manual" | "ai";
+    generator_id?: string;
+    generator_input?: string;
+};
+
+export const useModifyTestcase: MutationHandler<void, [Snowflake, Snowflake, Snowflake]> = (
+    [problemId, clusterId, testcaseId],
+    options
+) =>
     useMutation(
-        (variables) =>
+        (variables: ModifyTestcaseVariables) =>
             wrapAxios(
                 http.patch(
                     `/problem/${problemId}/cluster/${clusterId}/testcase/${testcaseId}`,
@@ -44,7 +50,7 @@ export const useModifyTestcase: MutationHandler<
             ),
         invalidateOnSuccess(
             [
-                ["testcases", problemId, testcaseId],
+                ["testcases", problemId, clusterId],
                 ["problem", problemId, "cluster", clusterId, "testcase", testcaseId],
             ],
             options
