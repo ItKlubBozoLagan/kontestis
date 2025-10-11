@@ -38,7 +38,6 @@ const I18nEn = {
         },
     },
     aaieduButton: {
-        purposeLogin: "Log in",
         purposeLink: "Link",
     },
     notifications: {

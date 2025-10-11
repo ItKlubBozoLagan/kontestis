@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
 import tw from "twin.macro";
 
-import aaiEduLogo from "/aai-edu.png";
+import aaiEduLogo from "/aai-edu.svg";
 
 import { http, ServerData } from "../api/http";
 import { useTranslation } from "../hooks/useTranslation";
@@ -35,12 +35,10 @@ export const AaiEduButton: FC<Properties> = ({ purpose }) => {
             ]}
             onClick={onAaiEduClick}
         >
-            <img src={aaiEduLogo} alt="AAI@EduHR" tw={"w-24"} />
-            <span tw={"font-bold"}>
-                {purpose === "login"
-                    ? t("aaieduButton.purposeLogin")
-                    : t("aaieduButton.purposeLink")}
-            </span>
+            <img src={aaiEduLogo} alt="AAI@EduHR" tw={"w-32"} />
+            {purpose === "link" && (
+                <span tw={"font-bold mt-1"}>{t("aaieduButton.purposeLink")}</span>
+            )}
         </div>
     );
 };
