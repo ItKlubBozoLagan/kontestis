@@ -53,6 +53,7 @@ type GlobalsType = {
         secretKey: string;
         buckets: {
             submission_meta: string;
+            testcases: string;
         };
     };
 };
@@ -120,6 +121,7 @@ export const Globals: GlobalsType = {
         secretKey: process.env.S3_SECRET_KEY ?? "",
         buckets: {
             submission_meta: process.env.S3_BUCKET_SUBMISSION_META ?? "submission-meta",
+            testcases: "testcases",
         },
     },
 };

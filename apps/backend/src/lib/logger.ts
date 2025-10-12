@@ -26,8 +26,6 @@ export const Logger = createLogger(
                 process.stdout.write(lines.join("\n") + "\n");
                 // eslint-disable-next-line unicorn/no-process-exit
                 process.exit(1);
-
-                return lines;
             },
         ],
     }

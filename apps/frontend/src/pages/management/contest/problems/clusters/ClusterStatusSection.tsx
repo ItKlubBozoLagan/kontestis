@@ -20,7 +20,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
 
     return (
         <div tw={"w-full self-center flex flex-col gap-2"}>
-            {cluster.status === "cached" ? (
+            {cluster.status === "ready" ? (
                 <LimitBox
                     title={t(
                         "contests.management.individual.problems.cluster.info.generator.status.title"
@@ -31,7 +31,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                     icon={FiCheck}
                     tw={"bg-green-100"}
                 />
-            ) : cluster.status === "generator_error" ? (
+            ) : cluster.status === "generator-error" ? (
                 <LimitBox
                     title={t(
                         "contests.management.individual.problems.cluster.info.generator.status.title"
@@ -42,13 +42,24 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                     icon={FiX}
                     tw={"bg-red-200"}
                 />
-            ) : cluster.status === "solution_error" ? (
+            ) : cluster.status === "solution-error" ? (
                 <LimitBox
                     title={t(
                         "contests.management.individual.problems.cluster.info.generator.status.title"
                     )}
                     value={t(
                         "contests.management.individual.problems.cluster.info.generator.status.errors.solution"
+                    )}
+                    icon={FiX}
+                    tw={"bg-red-200"}
+                />
+            ) : cluster.status === "validation-error" ? (
+                <LimitBox
+                    title={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.title"
+                    )}
+                    value={t(
+                        "contests.management.individual.problems.cluster.info.generator.status.errors.validation"
                     )}
                     icon={FiX}
                     tw={"bg-red-200"}
@@ -76,13 +87,20 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                     tw={"bg-blue-100"}
                 />
             )}
+            {cluster.error && (
+                <div tw={"w-full p-3 bg-red-100 border border-red-300 rounded text-sm"}>
+                    <div tw={"font-bold text-red-700"}>Error:</div>
+                    <div tw={"text-red-600 mt-1 font-mono whitespace-pre-wrap"}>
+                        {cluster.error}
+                    </div>
+                </div>
+            )}
             <div tw={"flex justify-around mt-2 gap-2"}>
                 <SimpleButton
                     tw={"w-full"}
                     type={"button"}
                     color={theme`colors.red.300`!}
                     onClick={async () => {
-                        // TODO: mutations
                         await http.post(
                             `/problem/${cluster.problem_id}/cluster/${cluster.id}/cache/drop`
                         );
