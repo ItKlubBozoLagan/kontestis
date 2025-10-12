@@ -15,7 +15,6 @@ import { Logger } from "../../lib/logger";
 import { generateSnowflake } from "../../lib/snowflake";
 import { initS3, S3Client } from "../../s3/S3";
 import { readBucketStream } from "../../utils/stream";
-import { Database } from "../Database";
 
 type MigrationType = {
     generators: GeneratorV1;
@@ -188,7 +187,7 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
 
         await database.update("clusters", { status: "not-ready" }, { id: cluster.id });
 
-        const batch = Database.batch();
+        const batch = database.batch();
 
         for (let index = 0; index < 10; index++) {
             const testcase: TestcaseV4 = {
@@ -220,7 +219,10 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
             clusterSubmissionsById[testcaseSubmission.cluster_submission_id.toString()];
 
         if (!clusterSubmission) {
-            Logger.panic("Cluster not found for testcase submission " + testcaseSubmission.id);
+            Logger.error(
+                "Cluster submission not found for testcase submission " + testcaseSubmission.id
+            );
+            continue;
         }
 
         if (clusterSubmission.submission_id < 0n) {
