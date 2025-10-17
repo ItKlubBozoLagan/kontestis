@@ -35,8 +35,7 @@ export default {
         },
     },
     aaieduButton: {
-        purposeLogin: "Prijava",
-        purposeLink: "Poveži račun",
+        purposeLink: "Poveži",
     },
     notifications: {
         "contest-start": "Natjecanje %1 je počelo!",
