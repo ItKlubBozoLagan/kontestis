@@ -26,7 +26,6 @@ import { startEloTask } from "./tasks/eloTask";
 import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
-import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
 import { subscribeToEvaluatorPubSub } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
@@ -141,6 +140,6 @@ Promise.allSettled([
     app.listen(Globals.port, () => {
         Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
 
-        for (const task of [startEloTask, startInfluxFlushTask, startEloInfluxTask]) task();
+        for (const task of [startEloTask, startInfluxFlushTask]) task();
     });
 });
