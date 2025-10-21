@@ -490,11 +490,12 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
                     eduUser = eduUsers.find((user) => user.id === it.user_id)
                 ) => ({
                     ...it,
-                    ...R.pick(user, ["full_name"]),
                     ...R.pick(
                         organisationMembers.find((member) => member.user_id === it.user_id)!,
                         ["elo"]
                     ),
+                    full_name:
+                        (contest.require_edu_verification && eduUser?.full_name) || user.full_name,
                     email_domain: user.email.split("@").at(-1),
                     edu_mail_domain: eduUser?.email.split("@").at(-1),
                 })
