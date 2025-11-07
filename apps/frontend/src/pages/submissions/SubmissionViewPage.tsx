@@ -66,6 +66,8 @@ export const SubmissionViewPage: FC = () => {
                                 className={`line-numbers match-braces rainbow-braces language-${
                                     submission.language === "gnu_asm_x86_linux"
                                         ? "nasm"
+                                        : submission.language === "o_caml"
+                                        ? "ocaml"
                                         : submission.language
                                 }`}
                             >

@@ -181,6 +181,7 @@ export const ProblemViewPage: FC = () => {
                                 <option value="go">Go</option>
                                 <option value="rust">Rust</option>
                                 <option value="java">Java</option>
+                                <option value="o_caml">OCaml</option>
                                 <option value="gnu_asm_x86_linux">
                                     GNU Assembly (Linux x86_64)
                                 </option>

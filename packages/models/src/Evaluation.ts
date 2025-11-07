@@ -6,6 +6,7 @@ export type EvaluationLanguage =
     | "go"
     | "rust"
     | "gnu_asm_x86_linux"
+    | "o_caml"
     | "output-only";
 
 export type EvaluationVariant = "plain" | "checker" | "interactive" | "output-only";
