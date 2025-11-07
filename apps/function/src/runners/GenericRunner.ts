@@ -58,7 +58,7 @@ const getCompilationProcessForLanguage = (
             };
         case "gnu_asm_x86_linux":
             throw new Error("GNU Assembly is not supported");
-        case "o_caml":
+        case "ocaml":
             throw new Error("OCaml is not supported");
     }
 };
