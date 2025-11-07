@@ -185,22 +185,6 @@ const evaluateCluster = async (
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
-    await Promise.all(
-        testcases.flatMap((testcase) => [
-            S3Client.putObject(
-                // eslint-disable-next-line sonarjs/no-duplicate-string
-                Globals.s3.buckets.submission_meta,
-                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.in`,
-                testcase.input
-            ),
-            S3Client.putObject(
-                Globals.s3.buckets.submission_meta,
-                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.out`,
-                testcase.correct_output
-            ),
-        ])
-    );
-
     const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
 
     if (error || !results) return;
@@ -278,8 +262,14 @@ const evaluateCluster = async (
     await Database.insertInto("cluster_submissions", clusterSubmission);
 
     await Promise.all(
-        results.map((result) =>
-            Database.insertInto("testcase_submissions", {
+        results.map((result) => {
+            const testcase = testCasesById[result.testCaseId];
+            const submissionOutputFile =
+                result.type === "success" && result.output
+                    ? `${pendingSubmission.id}/${cluster.id}/${result.testCaseId}.sout`
+                    : undefined;
+
+            return Database.insertInto("testcase_submissions", {
                 id: generateSnowflake(),
                 testcase_id: BigInt(result.testCaseId),
                 cluster_submission_id: clusterSubmission.id,
@@ -289,8 +279,11 @@ const evaluateCluster = async (
                         ?.score ?? 0,
                 memory_used_megabytes: result.type === "success" ? result.memory : 0,
                 time_used_millis: result.type === "success" ? result.time : 0,
-            })
-        )
+                input_file: testcase?.input_file,
+                output_file: testcase?.output_file,
+                submission_output_file: submissionOutputFile,
+            });
+        })
     );
 
     return {

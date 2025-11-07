@@ -137,9 +137,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                     ))) && (
                                 <>
                                     <TableItem>
-                                        {files.includes(
-                                            `${submissionId}/${clusterId}/${ts.testcase_id}.in`
-                                        ) ? (
+                                        {files.includes(`${ts.testcase_id}.in`) ? (
                                             <FiDownload
                                                 size={16}
                                                 tw={"hover:cursor-pointer hover:text-blue-400"}
@@ -152,9 +150,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                         )}
                                     </TableItem>
                                     <TableItem>
-                                        {files.includes(
-                                            `${submissionId}/${clusterId}/${ts.testcase_id}.out`
-                                        ) ? (
+                                        {files.includes(`${ts.testcase_id}.out`) ? (
                                             <FiDownload
                                                 size={16}
                                                 tw={"hover:cursor-pointer hover:text-blue-400"}
@@ -167,9 +163,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                         )}
                                     </TableItem>
                                     <TableItem>
-                                        {files.includes(
-                                            `${submissionId}/${clusterId}/${ts.testcase_id}.sout`
-                                        ) ? (
+                                        {files.includes(`${ts.testcase_id}.sout`) ? (
                                             <FiDownload
                                                 size={16}
                                                 tw={

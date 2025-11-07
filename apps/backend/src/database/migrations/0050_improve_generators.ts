@@ -15,6 +15,7 @@ import { Logger } from "../../lib/logger";
 import { generateSnowflake } from "../../lib/snowflake";
 import { initS3, S3Client } from "../../s3/S3";
 import { readBucketStream } from "../../utils/stream";
+import { streamQuery } from "../streamQuery";
 
 type MigrationType = {
     generators: GeneratorV1;
@@ -205,10 +206,16 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
         await batch.execute();
     }
 
-    const testcaseSubmissions = await database.selectFrom("testcase_submissions", "*");
+    const testcaseSubmissions = await streamQuery<TestcaseSubmissionV3>(
+        database.client,
+        "SELECT * FROM testcase_submissions"
+    );
 
     const clusterSubmissionsById: Record<string, ClusterSubmissionV2> = {};
-    const clusterSubmissions = await database.selectFrom("cluster_submissions", "*");
+    const clusterSubmissions = await streamQuery<ClusterSubmissionV2>(
+        database.client,
+        "SELECT * FROM cluster_submissions"
+    );
 
     for (const clusterSubmission of clusterSubmissions) {
         clusterSubmissionsById[clusterSubmission.id.toString()] = clusterSubmission;

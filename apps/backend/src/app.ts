@@ -30,11 +30,8 @@ import { startEloInfluxTask } from "./tasks/eloInfluxTask";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
 import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
-import { initS3, S3Client } from "./s3/S3";
+import { initS3 } from "./s3/S3";
 import fileUpload from "express-fileupload";
-import { readBucketStream } from "./utils/stream";
-import { ClusterSubmissionV2, TestcaseSubmissionV2 } from "@kontestis/models";
-import { fromObjectScyllo } from "./utils/scyllo_private";
 
 declare global {
     interface BigInt {
@@ -47,119 +44,6 @@ BigInt.prototype.toJSON = function () {
 };
 
 const app = Express();
-
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const kurac = async (database: typeof Database) => {
-    const testcaseSubmissions: TestcaseSubmissionV2[] = [];
-
-    const a = await database.raw("SELECT * FROM testcase_submissions LIMIT 1");
-
-    await new Promise((r) => {
-        database.client
-            .stream("SELECT * FROM testcase_submissions")
-            .on("readable", function () {
-                let row;
-
-                while ((row = this.read())) {
-                    testcaseSubmissions.push(
-                        fromObjectScyllo(
-                            row,
-                            {
-                                useBigIntAsLong: true,
-                            },
-                            a.columns
-                        )
-                    );
-                }
-            })
-            .on("end", r)
-            .on("error", r);
-    });
-
-    const b = await database.raw("SELECT * FROM cluster_submissions LIMIT 1");
-
-    const clusterSubmissionsById: Record<string, ClusterSubmissionV2> = {};
-    const clusterSubmissions: ClusterSubmissionV2[] = [];
-
-    await new Promise((r) => {
-        database.client
-            .stream("SELECT * FROM cluster_submissions")
-            .on("readable", function () {
-                let row;
-
-                while ((row = this.read())) {
-                    clusterSubmissions.push(
-                        fromObjectScyllo(
-                            row,
-                            {
-                                useBigIntAsLong: true,
-                            },
-                            b.columns
-                        )
-                    );
-                }
-            })
-            .on("end", r)
-            .on("error", r);
-    });
-
-    for (const clusterSubmission of clusterSubmissions) {
-        clusterSubmissionsById[clusterSubmission.id.toString()] = clusterSubmission;
-    }
-
-    const failed = 0;
-
-    for (const testcaseSubmission of testcaseSubmissions) {
-        const clusterSubmission =
-            clusterSubmissionsById[testcaseSubmission.cluster_submission_id.toString()];
-
-        if (!clusterSubmission) {
-            Logger.error(
-                "Cluster submission not found for testcase submission " + testcaseSubmission.id
-            );
-            continue;
-        }
-
-        if (clusterSubmission.submission_id < 0n) {
-            continue;
-        }
-
-        const prefix = `${clusterSubmission.submission_id}/${clusterSubmission.cluster_id}/`;
-
-        const files = await readBucketStream(
-            S3Client.listObjects(Globals.s3.buckets.submission_meta, prefix, true)
-        ).catch((error) => {
-            Logger.error(
-                `Failed to read bucket stream for testcase submission: ${testcaseSubmission.id}`,
-                error
-            );
-        });
-
-        if (!files) continue;
-
-        const fileNames = new Set<string>(files.map((it) => it.name).filter(Boolean) as string[]);
-
-        if (fileNames.size === 0) continue;
-
-        await database.update(
-            "testcase_submissions",
-            {
-                input_file: fileNames.has(`${testcaseSubmission.testcase_id}.in`)
-                    ? `${prefix}${testcaseSubmission.testcase_id}.in`
-                    : undefined,
-                output_file: fileNames.has(`${testcaseSubmission.testcase_id}.out`)
-                    ? `${prefix}${testcaseSubmission.testcase_id}.out`
-                    : undefined,
-                submission_output_file: fileNames.has(`${testcaseSubmission.testcase_id}.sout`)
-                    ? `${prefix}${testcaseSubmission.testcase_id}.sout`
-                    : undefined,
-            },
-            { id: testcaseSubmission.id }
-        );
-    }
-
-    console.log({ failed });
-};
 
 app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
 
