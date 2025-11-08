@@ -440,19 +440,32 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
     }
 
-    const contestMembers = await Database.selectFrom("contest_members", "*", {
+    const _contestMembers = await Database.selectFrom("contest_members", "*", {
         contest_id: contest.id,
     });
 
     const users = (
         await Promise.all(
-            R.chunk(contestMembers, 100).map((chunk) => {
+            R.chunk(_contestMembers, 100).map((chunk) => {
                 return Database.selectFrom("users", "*", {
                     id: eqIn(...chunk.map((it) => it.user_id)),
                 });
             })
         )
     ).flat();
+
+    // if for every contestMember doesn't exist a corresponding user
+    if (!_contestMembers.every((it) => users.some((user) => user.id === it.user_id)))
+        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    const contestMembers = _contestMembers.filter(
+        (it, _, __, user = users.find((user) => user.id === it.user_id)!) =>
+            !hasContestPermission(
+                it.contest_permissions,
+                ContestMemberPermissions.VIEW_PRIVATE,
+                user.permissions
+            )
+    );
 
     const eduUsers = (
         await Promise.all(
@@ -472,10 +485,6 @@ ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
         },
         "ALLOW FILTERING"
     );
-
-    // if for every contestMember doesn't exist a corresponding user
-    if (!contestMembers.every((it) => users.some((user) => user.id === it.user_id)))
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
     return respond(
         res,
