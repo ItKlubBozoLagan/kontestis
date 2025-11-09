@@ -91,6 +91,11 @@ const handleAxiosError = (error: AxiosError) => {
 
     if (error.code !== "ERR_NETWORK" || import.meta.env.DEV) return;
 
+    // NOTE: there is a weird bug in FireFox where requests to specifically this endpoint will fail
+    //  and log the user out, this is a weird hack to avoid this; if the backend *is* completely unresponsive,
+    //  there should be plenty of other requests on any page that will fail and log out correctly
+    if (error.config?.url === "/notifications") return;
+
     useAuthStore.getState().doForceLogout();
     useBackendError.getState().setBackendError("unavailable");
 };
