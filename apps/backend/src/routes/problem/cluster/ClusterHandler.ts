@@ -1,4 +1,4 @@
-import { Cluster } from "@kontestis/models";
+import { Cluster, Testcase } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
@@ -22,6 +22,8 @@ ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 const ClusterSchema = Type.Object({
     awarded_score: Type.Number({ minimum: 1, maximum: 1_000_000 }),
     order_number: Type.Optional(Type.Number({ minimum: 0 })),
+    generator_id: Type.Optional(Type.String()),
+    test_count: Type.Optional(Type.Number({ minimum: 1, maximum: 1000 })),
 });
 
 ClusterHandler.get("/", async (req, res) => {
@@ -49,6 +51,44 @@ ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
 
     await Database.insertInto("clusters", cluster);
 
+    if (req.body.generator_id && req.body.test_count) {
+        const generatorId = BigInt(req.body.generator_id);
+        const testCount = req.body.test_count;
+
+        const generator = await Database.selectOneFrom("generators", ["id"], {
+            id: generatorId,
+            problem_id: problem.id,
+        });
+
+        if (!generator) {
+            await Database.deleteFrom("clusters", "*", { id: cluster.id });
+
+            return respond(res, StatusCodes.BAD_REQUEST, {
+                error: "Generator not found",
+            });
+        }
+
+        const testcases: Testcase[] = [];
+
+        for (let index = 0; index < testCount; index++) {
+            const testcase: Testcase = {
+                id: generateSnowflake(),
+                cluster_id: cluster.id,
+                input_type: "generator",
+                output_type: "auto",
+                status: "not-ready",
+                generator_id: generatorId,
+                generator_input: String(index + 1),
+            };
+
+            testcases.push(testcase);
+        }
+
+        await Promise.all(testcases.map((testcase) => Database.insertInto("testcases", testcase)));
+
+        //const _ = assureClusterGeneration(cluster);
+    }
+
     return respond(res, StatusCodes.OK, cluster);
 });
 
@@ -70,21 +110,19 @@ ClusterHandler.post("/:cluster_id/cache/drop", async (req, res) => {
 ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
-    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
-
     const testcases = await Database.selectFrom("testcases", "*", {
         cluster_id: cluster.id,
     });
 
     await Promise.all(
         testcases
-            .filter((testcase) => testcase.input_type === "auto" || testcase.output_type === "auto")
+            .filter(
+                (testcase) => testcase.input_type === "generator" || testcase.output_type === "auto"
+            )
             .map((testcase) =>
                 Database.update("testcases", { status: "not-ready" }, { id: testcase.id })
             )
     );
-
-    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
 
     const _ = assureClusterGeneration({
         ...cluster,
@@ -102,7 +140,7 @@ ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, r
     };
 
     if (req.body.order_number !== undefined) {
-        updateData.order_number = req.body.order_number;
+        updateData.order_number = BigInt(req.body.order_number);
     }
 
     await Database.update("clusters", updateData, { id: cluster.id });

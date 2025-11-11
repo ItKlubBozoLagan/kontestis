@@ -79,7 +79,7 @@ export const ContestClusterManagePage: FC = () => {
                         </thead>
                         <tbody>
                             {(testcases ?? [])
-                                .sort((a, b) => Number(a.id) - Number(b.id))
+                                .sort((a, b) => Number(a.id - b.id))
                                 .map((testcase, id) => (
                                     <TableRow key={testcase.id + ""}>
                                         <TableItem>

@@ -1,6 +1,6 @@
 import { Testcase } from "@kontestis/models";
 import { FC } from "react";
-import { FiCheck, FiLayers, FiX } from "react-icons/all";
+import { FiCheck, FiClock, FiLayers, FiX } from "react-icons/all";
 
 import { LimitBox } from "../../../../../problems/ProblemViewPage";
 
@@ -17,6 +17,13 @@ export const TestcaseStatusSection: FC<Properties> = ({ testcase }) => {
                     value="Ready"
                     icon={FiCheck}
                     tw={"bg-green-100"}
+                />
+            ) : testcase.status === "pending" ? (
+                <LimitBox
+                    title="Testcase Status"
+                    value="Generating..."
+                    icon={FiClock}
+                    tw={"bg-yellow-100"}
                 />
             ) : testcase.status === "generator-error" ? (
                 <LimitBox
@@ -48,9 +55,13 @@ export const TestcaseStatusSection: FC<Properties> = ({ testcase }) => {
                 />
             )}
             {testcase.error && (
-                <div tw={"w-full p-3 bg-red-100 border border-red-300 rounded text-sm"}>
-                    <div tw={"font-bold text-red-700"}>Error:</div>
-                    <div tw={"text-red-600 mt-1 font-mono whitespace-pre-wrap"}>
+                <div tw={"w-full p-3 bg-red-50 border-2 border-red-300 rounded"}>
+                    <div tw={"font-bold text-red-700 text-sm mb-2"}>Error Details:</div>
+                    <div
+                        tw={
+                            "text-red-600 text-xs font-mono whitespace-pre-wrap bg-red-100 p-2 rounded"
+                        }
+                    >
                         {testcase.error}
                     </div>
                 </div>

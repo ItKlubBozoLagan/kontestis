@@ -116,7 +116,8 @@ export type EvaluationInputTestcase = {
 export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
     testcases: EvaluationInputTestcase[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const groups: EvaluationInputTestcase[][] = [];
@@ -159,7 +160,8 @@ export const splitAndEvaluateTestcases = async (
                               : problemDetails.evaluator_language,
                   },
                   groupTestcases,
-                  problem
+                  problem,
+                  evaluate_all
               ));
 
         if (error) return [undefined, error] as AxiosEvaluationResponse;

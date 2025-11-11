@@ -49,7 +49,6 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         createMutation.reset();
         createMutation.mutate({
             awarded_score: data.awarded_score,
-            generator: false,
             ...(useGenerator && data.generator_id && data.test_count
                 ? {
                       generator_id: data.generator_id,
@@ -155,8 +154,8 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
 
                             {generatorId && testCount && (
                                 <div tw={"text-sm text-gray-600 p-2 bg-gray-100 rounded"}>
-                                    Will create {testCount} testcase(s) with inputs: 0, 1, 2, ...{" "}
-                                    {Number(testCount) - 1}
+                                    Will create {testCount} testcase(s) with inputs: 1, 2, 3, ...{" "}
+                                    {testCount}
                                 </div>
                             )}
                         </>

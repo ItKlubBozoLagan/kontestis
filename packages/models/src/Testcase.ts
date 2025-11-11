@@ -15,6 +15,7 @@ export type TestcaseV3 = Omit<TestcaseV2, "correct_output">;
 
 export type GeneratorState =
     | "ready"
+    | "pending"
     | "not-ready"
     | "generator-error"
     | "validation-error"

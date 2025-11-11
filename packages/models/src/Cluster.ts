@@ -20,15 +20,7 @@ export type ClusterV3 = ClusterV1 & {
     error?: string;
 };
 
-export type ClusterStatus =
-    | "cached"
-    | "uncached"
-    | "pending"
-    | "generator_error"
-    | "solution_error";
-
 export type Cluster = ClusterV3;
 
-export type ClusterWithStatus = Cluster & {
-    status: ClusterStatus;
-};
+export type ClusterWithStatus = Cluster;
+export type ClusterStatus = GeneratorState;

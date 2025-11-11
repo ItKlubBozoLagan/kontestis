@@ -13,6 +13,11 @@ import { generateTestcases, IGNORE_OUTPUT_CHECKER } from "./generator";
 import { Logger } from "./logger";
 import { generateSnowflake } from "./snowflake";
 
+// eslint-disable-next-line sonarjs/no-duplicate-string
+const TESTCASE_STATUS_GENERATOR_ERROR = "generator-error" as const;
+// eslint-disable-next-line sonarjs/no-duplicate-string
+const TESTCASE_STATUS_SOLUTION_ERROR = "solution-error" as const;
+
 const fetchTestcaseFile = async (fileName: string) => {
     const cachedFile = await Redis.get(fileName);
 
@@ -47,7 +52,7 @@ export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = asyn
     if (testcases.some((testcase) => !testcase.input_file || !testcase.output_file)) {
         Logger.error("Testcase input or output file missing after generation");
 
-        return;
+        return [];
     }
 
     const testcaseInputByTestcaseId: Record<string, string> = {};
@@ -102,9 +107,13 @@ export const assureTestcaseInput: (
         };
 
     const testcaseById: Record<string, Testcase> = {};
+    const testcaseOrderById: Record<string, number> = {};
 
-    for (const testcase of testcases) {
+    const sortedTestcases = [...testcases].sort((a, b) => Number(a.id - b.id));
+
+    for (const [index, testcase] of sortedTestcases.entries()) {
         testcaseById[testcase.id.toString()] = testcase;
+        testcaseOrderById[testcase.id.toString()] = index + 1;
     }
 
     const testcasesByGeneratorId: Record<string, Testcase[]> = {};
@@ -140,13 +149,23 @@ export const assureTestcaseInput: (
     );
 
     const testcaseInputsByTestcaseId: Record<string, string> = {};
+    const errorTestcases: Array<{ testcaseNumber: number; generatorInput: string; error: string }> =
+        [];
 
     await Promise.all(
         generationResults.flat().map(async (result) => {
             if (result.type === "error") {
+                const testcase = testcaseById[result.id.toString()];
+                const testcaseNumber = testcaseOrderById[result.id.toString()];
+
+                errorTestcases.push({
+                    testcaseNumber: testcaseNumber,
+                    generatorInput: testcase?.generator_input ?? "unknown",
+                    error: result.error,
+                });
+
                 await Database.update(
                     "testcases",
-                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     { status: "generator-error", error: result.error },
                     { id: result.id }
                 );
@@ -176,11 +195,23 @@ export const assureTestcaseInput: (
         })
     );
 
-    if (generationResults.flat().some((result) => result.type === "error"))
+    if (errorTestcases.length > 0) {
+        errorTestcases.sort((a, b) => a.testcaseNumber - b.testcaseNumber);
+
+        const errorMessage = `Generator failed for ${
+            errorTestcases.length
+        } testcase(s):\n${errorTestcases
+            .map(
+                (errorTestcase) =>
+                    `  - Testcase #${errorTestcase.testcaseNumber} (input "${errorTestcase.generatorInput}"): ${errorTestcase.error}`
+            )
+            .join("\n")}`;
+
         return {
             type: "error",
-            error: "generator-error",
+            error: errorMessage,
         };
+    }
 
     return {
         type: "success",
@@ -198,25 +229,20 @@ export const assureTestcaseOutput: (
     problemDetails: Pick<ProblemDetails, "problemId">
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => Promise<TestcaseAssureResult> = async (testcases, solutionInfo, problemDetails) => {
-    const notReadyTestcases = testcases.filter((t) => t.status !== "ready");
+    // Filter out testcases that are already ready OR have errors (from generator phase)
+    const notReadyTestcases = testcases.filter(
+        (t) =>
+            t.status !== "ready" &&
+            t.status !== "generator-error" &&
+            t.status !== "solution-error" &&
+            t.status !== "validation-error"
+    );
 
     if (notReadyTestcases.some((t) => t.output_type === "manual" && !t.output_file))
         return {
             type: "error",
             error: "Testcase output set up manual but no file uploaded!",
         };
-
-    /*
-    if (
-        notReadyTestcases.some(
-            // eslint-disable-next-line sonarjs/no-duplicate-string
-            (t) => t.status === "validation-error" || t.status === "solution-error"
-        )
-    )
-        return {
-            type: "error",
-            error: "validation-error-or-solution-error",
-        };*/
 
     const solutionTestcases = notReadyTestcases.filter((t) => t.output_type === "auto");
 
@@ -238,6 +264,13 @@ export const assureTestcaseOutput: (
     );
 
     const testcaseById: Record<string, Testcase> = {};
+    const testcaseOrderById: Record<string, number> = {};
+
+    const sortedAllTestcases = [...testcases].sort((a, b) => Number(a.id - b.id));
+
+    for (const [index, testcase] of sortedAllTestcases.entries()) {
+        testcaseOrderById[testcase.id.toString()] = index + 1;
+    }
 
     for (const testcase of notReadyTestcases) {
         testcaseById[testcase.id.toString()] = testcase;
@@ -247,7 +280,6 @@ export const assureTestcaseOutput: (
         {
             problemId: 0n,
             language: solutionInfo.solution_language,
-            // TODO: Fix base64
             code: Buffer.from(solutionInfo.solution_code ?? "", "utf8").toString("base64"),
             evaluation_variant: "checker",
             evaluator: IGNORE_OUTPUT_CHECKER,
@@ -258,7 +290,8 @@ export const assureTestcaseOutput: (
         {
             time_limit_millis: 60_000,
             memory_limit_megabytes: 2048,
-        }
+        },
+        true
     );
 
     if (!result) {
@@ -266,21 +299,43 @@ export const assureTestcaseOutput: (
 
         return {
             type: "error",
-            error: "system-error",
+            error: `System error during solution evaluation: ${error?.message ?? "Unknown error"}`,
         };
     }
 
-    let processedSuccessfully = true;
+    const errorTestcases: Array<{
+        testcaseNumber: number;
+        generatorInput: string;
+        verdict: string;
+        error?: string;
+    }> = [];
 
     for (const evaluationResult of result) {
         if (evaluationResult.type !== "success" || evaluationResult.verdict !== "accepted") {
+            const testcase = testcaseById[evaluationResult.testCaseId];
+            const testcaseNumber = testcaseOrderById[evaluationResult.testCaseId];
+            const errorMessage =
+                evaluationResult.verdict === "compilation_error"
+                    ? evaluationResult.compiler_output ?? "Compilation Error"
+                    : evaluationResult.verdict === "runtime_error"
+                    ? evaluationResult.error
+                    : "Solution Error";
+
+            errorTestcases.push({
+                testcaseNumber: testcaseNumber,
+                generatorInput: testcase?.generator_input ?? "unknown",
+                verdict: evaluationResult.verdict,
+                error: errorMessage,
+            });
+
             await Database.update(
                 "testcases",
-                // eslint-disable-next-line sonarjs/no-duplicate-string
-                { status: "solution-error", error: "Solution error" },
+                {
+                    status: "solution-error",
+                    error: `Verdict: ${evaluationResult.verdict} - ${errorMessage}`,
+                },
                 { id: BigInt(evaluationResult.testCaseId) }
             );
-            processedSuccessfully = false;
             continue;
         }
 
@@ -310,9 +365,32 @@ export const assureTestcaseOutput: (
         );
     }
 
+    if (errorTestcases.length > 0) {
+        errorTestcases.sort((a, b) => a.testcaseNumber - b.testcaseNumber);
+
+        const errorMessage = `Solution failed for ${
+            errorTestcases.length
+        } testcase(s):\n${errorTestcases
+            .map((errorTestcase) => {
+                let message = `  - Testcase #${errorTestcase.testcaseNumber} (input "${errorTestcase.generatorInput}"): ${errorTestcase.verdict}`;
+
+                if (errorTestcase.error) {
+                    message += `\n    ${errorTestcase.error.split("\n").join("\n    ")}`;
+                }
+
+                return message;
+            })
+            .join("\n")}`;
+
+        return {
+            type: "error",
+            error: errorMessage,
+        };
+    }
+
     return {
-        type: processedSuccessfully ? "success" : "error",
-        error: processedSuccessfully ? "" : "solution-error",
+        type: "success",
+        error: "",
     };
 };
 
@@ -320,6 +398,8 @@ export const assureClusterGeneration: (cluster: Cluster) => Promise<boolean> = a
     cluster: Cluster
 ) => {
     if (cluster.status === "ready") return true;
+
+    await Database.update("clusters", { status: "pending" }, { id: cluster.id });
 
     const problem = await Database.selectOneFrom("problems", "*", {
         id: cluster.problem_id,
@@ -344,7 +424,7 @@ export const assureClusterGeneration: (cluster: Cluster) => Promise<boolean> = a
     if (assureInputResult.type !== "success") {
         await Database.update(
             "clusters",
-            { status: "generator-error", error: assureInputResult.error },
+            { status: TESTCASE_STATUS_GENERATOR_ERROR, error: assureInputResult.error },
             { id: cluster.id }
         );
 
@@ -371,7 +451,7 @@ export const assureClusterGeneration: (cluster: Cluster) => Promise<boolean> = a
     if (assureOutputResult.type !== "success") {
         await Database.update(
             "clusters",
-            { status: "solution-error", error: assureOutputResult.error },
+            { status: TESTCASE_STATUS_SOLUTION_ERROR, error: assureOutputResult.error },
             { id: cluster.id }
         );
 

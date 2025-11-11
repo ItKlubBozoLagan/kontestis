@@ -263,10 +263,12 @@ export default {
                                 status: {
                                     title: "Status",
                                     cached: "Spremno (u predmemoriji)",
+                                    notReady: "Nije spremno",
                                     uncached: "Spremno (nije u predmemoriji)",
                                     errors: {
                                         generator: "Greška generatora",
                                         solution: "Greška rješenja",
+                                        validation: "Greška validacije",
                                     },
                                     pending: "U tijeku",
                                 },

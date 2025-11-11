@@ -267,9 +267,11 @@ const I18nEn = {
                                     title: "Status",
                                     cached: "Ready (cached)",
                                     uncached: "Ready (uncached)",
+                                    notReady: "Not ready",
                                     errors: {
                                         generator: "Generator error",
                                         solution: "Solution error",
+                                        validation: "Validation error",
                                     },
                                     pending: "Pending",
                                 },

@@ -23,6 +23,7 @@ type BatchEvaluationPayload = {
     testcases: EvaluationTestcase[];
     time_limit: number;
     memory_limit: number;
+    evaluate_all: boolean;
     checker?: {
         script: string;
         language: EvaluationLanguage;
@@ -45,7 +46,8 @@ const generateBatchPayload = (
     evaluationId: number,
     problemDetails: ProblemDetails,
     testcases: EvaluationInputTestcase[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
 ): { Batch: BatchEvaluationPayload } => ({
     Batch: {
         id: evaluationId,
@@ -58,6 +60,7 @@ const generateBatchPayload = (
         })),
         time_limit: problem.time_limit_millis,
         memory_limit: problem.memory_limit_megabytes * 1024,
+        evaluate_all,
         checker:
             problemDetails.evaluator && problemDetails.evaluator_language
                 ? {
@@ -96,14 +99,16 @@ const generateInteractivePayload = (
     evaluationId: number,
     problemDetails: ProblemDetails,
     testcases: EvaluationInputTestcase[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
 ): { Interactive: InteractiveEvaluationPayload } => {
     assert(problemDetails.evaluator !== undefined);
     assert(problemDetails.evaluator_language !== undefined);
 
     return {
         Interactive: {
-            ...generateBatchPayload(evaluationId, problemDetails, testcases, problem).Batch,
+            ...generateBatchPayload(evaluationId, problemDetails, testcases, problem, evaluate_all)
+                .Batch,
             checker: {
                 script: problemDetails.evaluator,
                 language: problemDetails.evaluator_language,
@@ -193,6 +198,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     testCaseId: testcase.id,
                     type: "error",
                     verdict: "runtime_error",
+                    error: testcase.error ?? "",
                     exitCode: 1,
                     compiler_output: evaluation.compiler_output ?? undefined,
                 };
@@ -269,7 +275,8 @@ export const subscribeToEvaluatorResponseQueue = async () => {
 export const evaluateTestcasesNew = async (
     problemDetails: ProblemDetails,
     testcases: EvaluationInputTestcase[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
 ): Promise<AxiosEvaluationResponse> => {
     const evaluationId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
@@ -280,8 +287,20 @@ export const evaluateTestcasesNew = async (
                 problemDetails.evaluation_variant === "output-only"
                     ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases[0], problem)
                     : problemDetails.evaluation_variant === "interactive"
-                    ? generateInteractivePayload(evaluationId, problemDetails, testcases, problem)
-                    : generateBatchPayload(evaluationId, problemDetails, testcases, problem),
+                    ? generateInteractivePayload(
+                          evaluationId,
+                          problemDetails,
+                          testcases,
+                          problem,
+                          evaluate_all
+                      )
+                    : generateBatchPayload(
+                          evaluationId,
+                          problemDetails,
+                          testcases,
+                          problem,
+                          evaluate_all
+                      ),
         },
     };
 

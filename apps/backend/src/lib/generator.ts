@@ -35,6 +35,7 @@ int main() {
 export const generateTestcases = async (
     generator: Generator,
     generatorInputs: GeneratorInputData[]
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const [rawOutData, error] = await splitAndEvaluateTestcases(
         {
@@ -54,7 +55,8 @@ export const generateTestcases = async (
         {
             time_limit_millis: 30_000,
             memory_limit_megabytes: 2048,
-        }
+        },
+        true
     );
 
     if (!rawOutData) {
@@ -64,12 +66,28 @@ export const generateTestcases = async (
 
     const generationOutput: GenerationOutput[] = [];
 
+    //console.log(rawOutData);
+
     for (const result of rawOutData) {
+        if (result.type === "skipped") {
+            generationOutput.push({
+                id: BigInt(result.testCaseId),
+                type: "error",
+                error: "Generation skipped",
+            });
+            continue;
+        }
+
         if (result.type !== "success") {
             generationOutput.push({
                 id: BigInt(result.testCaseId),
                 type: "error",
-                error: result.verdict === "compilation_error" ? result.error : "Runtime error",
+                error:
+                    result.verdict === "compilation_error"
+                        ? result.compiler_output
+                        : result.verdict === "runtime_error"
+                        ? result.error
+                        : result.verdict,
             });
             continue;
         }
