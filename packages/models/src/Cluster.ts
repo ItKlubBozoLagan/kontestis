@@ -20,7 +20,11 @@ export type ClusterV3 = ClusterV1 & {
     error?: string;
 };
 
-export type Cluster = ClusterV3;
+export type ClusterV4 = ClusterV3 & {
+    is_sample?: boolean;
+};
+
+export type Cluster = ClusterV4;
 
 export type ClusterWithStatus = Cluster;
 export type ClusterStatus = GeneratorState;

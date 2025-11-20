@@ -41,11 +41,11 @@ export const CreateGeneratorModal: FC<Modal.Props & Properties> = ({
         },
     });
 
-    const createMutation = useCreateGenerator();
+    const createMutation = useCreateGenerator(problemId);
 
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
-        createMutation.mutate([problemId, data]);
+        createMutation.mutate(data);
     });
 
     useEffect(() => {

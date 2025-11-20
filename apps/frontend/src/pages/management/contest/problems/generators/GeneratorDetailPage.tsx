@@ -26,7 +26,11 @@ type Properties = {
 export const GeneratorDetailPage: FC = () => {
     const { problemId, generatorId } = useParams<Properties>();
     const { data: generator } = useGenerator([BigInt(problemId ?? 0), BigInt(generatorId ?? 0)]);
-    const { mutate: updateGenerator, isSuccess, error } = useUpdateGenerator();
+    const {
+        mutate: updateGenerator,
+        isSuccess,
+        error,
+    } = useUpdateGenerator([BigInt(problemId ?? 0), BigInt(generatorId ?? 0)]);
     const { t } = useTranslation();
 
     const {
@@ -50,7 +54,7 @@ export const GeneratorDetailPage: FC = () => {
     }, [generator, reset]);
 
     const onSubmit = handleSubmit((data) => {
-        updateGenerator([BigInt(problemId ?? 0), BigInt(generatorId ?? 0), data]);
+        updateGenerator(data);
     });
 
     const formReference = useRef<HTMLFormElement>(null);

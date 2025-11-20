@@ -1,25 +1,20 @@
 import { Generator, Snowflake } from "@kontestis/models";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
-type CreateGeneratorRequest = {
+type CreateGeneratorVariables = {
     name: string;
     code: string;
     language: string;
 };
 
-export const useCreateGenerator: MutationHandler<
-    Generator,
-    [Snowflake, CreateGeneratorRequest]
-> = () => {
-    const queryClient = useQueryClient();
+export const useCreateGenerator: MutationHandler<CreateGeneratorVariables, Generator, Snowflake> = (
+    problemId,
+    options
+) =>
+    useMutation(
+        (data) => wrapAxios(http.post(`/problem/${problemId}/generator`, data)),
 
-    return useMutation({
-        mutationFn: ([problemId, data]: [Snowflake, CreateGeneratorRequest]) =>
-            wrapAxios(http.post(`/problem/${problemId}/generator`, data)),
-        onSuccess: (_, [problemId]) => {
-            queryClient.invalidateQueries(["problem", problemId, "generator"]);
-        },
-    });
-};
+        invalidateOnSuccess([["problem", problemId, "generator"]], options)
+    );

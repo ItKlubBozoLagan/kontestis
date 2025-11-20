@@ -179,15 +179,22 @@ const evaluateCluster = async (
     pendingSubmission: PendingSubmission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const testcases = await getAllTestcases(cluster).then((testcases) =>
-        problemDetails.evaluation_variant === "output-only" ? testcases.slice(0, 1) : testcases
-    );
+    const testcases = (
+        await getAllTestcases(cluster).then((testcases) =>
+            problemDetails.evaluation_variant === "output-only" ? testcases.slice(0, 1) : testcases
+        )
+    ).sort((a, b) => Number(a.id - b.id));
 
     const testCasesById: Record<string, Testcase> = {};
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
-    const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
+    const [results, error] = await splitAndEvaluateTestcases(
+        problemDetails,
+        testcases,
+        problem,
+        cluster.is_sample
+    );
 
     if (error || !results) return;
 
@@ -406,6 +413,11 @@ export const beginEvaluation = async (
                   0
               );
 
+        const samplesPassed =
+            clusterSubmissions
+                .filter((cs) => clusters.find((c) => c.id === cs?.cluster_id)?.is_sample)
+                .every((cs) => cs?.verdict === "accepted") ?? false;
+
         const newSubmission: Submission = {
             ...pendingSubmission,
             problem_id: problemDetails.problemId,
@@ -420,6 +432,7 @@ export const beginEvaluation = async (
             time_used_millis: time,
             memory_used_megabytes: memory,
             compiler_output: clusterSubmissions.find((it) => it?.compilerOutput)?.compilerOutput,
+            samples_passed: samplesPassed,
         } as Submission;
 
         await Promise.all([
@@ -432,6 +445,7 @@ export const beginEvaluation = async (
                           compiler_output: newSubmission.compiler_output,
                           memory_used_megabytes: newSubmission.memory_used_megabytes,
                           time_used_millis: newSubmission.time_used_millis,
+                          samples_passed: newSubmission.samples_passed,
                           error:
                               verdict === "compilation_error"
                                   ? clusterSubmissions.find(

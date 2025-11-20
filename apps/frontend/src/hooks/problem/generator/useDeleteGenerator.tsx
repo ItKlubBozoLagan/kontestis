@@ -1,17 +1,13 @@
 import { Snowflake } from "@kontestis/models";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation } from "react-query";
 
-import { http, MutationHandler, wrapAxios } from "../../../api/http";
+import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../api/http";
 
-export const useDeleteGenerator: MutationHandler<void, [Snowflake, Snowflake]> = () => {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ([problemId, generatorId]: [Snowflake, Snowflake]) =>
-            wrapAxios(http.delete(`/problem/${problemId}/generator/${generatorId}`)),
-        onSuccess: (_, [problemId]) => {
-            queryClient.invalidateQueries(["problem", problemId, "generator"]);
-            queryClient.invalidateQueries(["problem", problemId, "cluster"]);
-        },
-    });
-};
+export const useDeleteGenerator: MutationHandler<Snowflake, Generator, Snowflake> = (problemId) =>
+    useMutation(
+        (generatorId) => wrapAxios(http.delete(`/problem/${problemId}/generator/${generatorId}`)),
+        invalidateOnSuccess([
+            ["problem", problemId, "generator"],
+            ["problem", problemId, "cluster"],
+        ])
+    );

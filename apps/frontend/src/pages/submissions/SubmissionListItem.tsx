@@ -7,7 +7,7 @@ import {
     SubmissionWithUserInfo,
 } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
-import { FiLoader } from "react-icons/all";
+import { FiCheck, FiLoader, FiMinus, FiX } from "react-icons/all";
 import { Link } from "react-router-dom";
 import tw from "twin.macro";
 
@@ -37,6 +37,7 @@ export const SubmissionListItem: FC<Properties> = ({
     problem,
     contest,
     finalSubmissions,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
     const { user } = useAuthStore();
 
@@ -89,6 +90,15 @@ export const SubmissionListItem: FC<Properties> = ({
                             score={submission.awarded_score}
                             maxScore={problem.score}
                         />
+                    </TableItem>
+                    <TableItem>
+                        {submission.samples_passed === undefined ? (
+                            <FiMinus />
+                        ) : submission.samples_passed ? (
+                            <FiCheck tw={"text-green-600"} size={"16px"} />
+                        ) : (
+                            <FiX tw={"text-red-600"} size={"16px"} />
+                        )}
                     </TableItem>
                     {adminView && (
                         <TableItem>

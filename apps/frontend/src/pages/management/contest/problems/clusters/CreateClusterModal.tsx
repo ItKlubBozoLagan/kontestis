@@ -19,6 +19,7 @@ const CreateClusterSchema = z.object({
     test_count: z
         .union([z.coerce.number().min(1).max(100), z.string().length(0), z.undefined()])
         .optional(),
+    is_sample: z.boolean().optional(),
 });
 
 type Properties = {
@@ -49,6 +50,7 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
         createMutation.reset();
         createMutation.mutate({
             awarded_score: data.awarded_score,
+            is_sample: data.is_sample,
             ...(useGenerator && data.generator_id && data.test_count
                 ? {
                       generator_id: data.generator_id,
@@ -102,6 +104,12 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                         tw={"max-w-full"}
                         {...register("awarded_score")}
                     />
+                    <div tw={"flex items-center gap-2"}>
+                        <input type="checkbox" {...register("is_sample")} />
+                        <label>
+                            {t("contests.management.individual.problems.cluster.modal.isSample")}
+                        </label>
+                    </div>
 
                     <div tw={"flex items-center gap-2"}>
                         <input

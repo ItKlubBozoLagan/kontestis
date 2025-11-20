@@ -84,7 +84,7 @@ export const generateTestcases = async (
                 type: "error",
                 error:
                     result.verdict === "compilation_error"
-                        ? result.compiler_output
+                        ? result.compiler_output ?? ""
                         : result.verdict === "runtime_error"
                         ? result.error
                         : result.verdict,

@@ -14,10 +14,11 @@ type CreateTestcaseVariables =
           generator_input: string;
       };
 
-export const useCreateTestcase: MutationHandler<Testcase, [Snowflake, Snowflake]> = (
-    [problemId, clusterId],
-    options
-) =>
+export const useCreateTestcase: MutationHandler<
+    CreateTestcaseVariables,
+    Testcase,
+    [Snowflake, Snowflake]
+> = ([problemId, clusterId], options) =>
     useMutation((variables: CreateTestcaseVariables) => {
         return variables.input_type === "generator"
             ? wrapAxios(
@@ -36,10 +37,11 @@ type ModifyTestcaseVariables = {
     generator_input?: string;
 };
 
-export const useModifyTestcase: MutationHandler<void, [Snowflake, Snowflake, Snowflake]> = (
-    [problemId, clusterId, testcaseId],
-    options
-) =>
+export const useModifyTestcase: MutationHandler<
+    ModifyTestcaseVariables,
+    Testcase,
+    [Snowflake, Snowflake, Snowflake]
+> = ([problemId, clusterId, testcaseId], options) =>
     useMutation(
         (variables: ModifyTestcaseVariables) =>
             wrapAxios(

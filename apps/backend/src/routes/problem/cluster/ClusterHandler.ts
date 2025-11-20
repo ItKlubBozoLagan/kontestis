@@ -20,10 +20,11 @@ ClusterHandler.use("/:cluster_id/testcase", TestcaseHandler);
 
 // TODO: Order
 const ClusterSchema = Type.Object({
-    awarded_score: Type.Number({ minimum: 1, maximum: 1_000_000 }),
+    awarded_score: Type.Number({ minimum: 0, maximum: 1_000_000 }),
     order_number: Type.Optional(Type.Number({ minimum: 0 })),
     generator_id: Type.Optional(Type.String()),
     test_count: Type.Optional(Type.Number({ minimum: 1, maximum: 1000 })),
+    is_sample: Type.Optional(Type.Boolean()),
 });
 
 ClusterHandler.get("/", async (req, res) => {
@@ -41,12 +42,15 @@ ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
 
     const clusters = await Database.selectFrom("clusters", ["id"], { problem_id: problem.id });
 
+    const isSample = req.body.is_sample ?? false;
+
     const cluster: Cluster = {
         id: generateSnowflake(),
         problem_id: problem.id,
-        awarded_score: req.body.awarded_score,
+        awarded_score: isSample ? 0 : req.body.awarded_score,
         status: "not-ready",
         order_number: BigInt(clusters.length),
+        is_sample: isSample,
     };
 
     await Database.insertInto("clusters", cluster);
@@ -135,8 +139,11 @@ ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
 ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
+    const isSample = req.body.is_sample ?? cluster.is_sample ?? false;
+
     const updateData: Partial<Cluster> = {
-        awarded_score: req.body.awarded_score,
+        awarded_score: isSample ? 0 : req.body.awarded_score,
+        is_sample: isSample,
     };
 
     if (req.body.order_number !== undefined) {

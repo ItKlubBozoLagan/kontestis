@@ -246,7 +246,6 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                                         prependIcon={FiUpload}
                                         onClick={() => triggerFileInput("input")}
                                         disabled={uploadingInput}
-                                        small
                                     >
                                         {uploadingInput ? "Uploading..." : "Upload Input"}
                                     </SimpleButton>
@@ -284,7 +283,6 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                                         prependIcon={FiUpload}
                                         onClick={() => triggerFileInput("output")}
                                         disabled={uploadingOutput}
-                                        small
                                     >
                                         {uploadingOutput ? "Uploading..." : "Upload Output"}
                                     </SimpleButton>

@@ -4,7 +4,6 @@ import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
-import { extractCluster } from "../../extractors/extractCluster";
 import { extractContest } from "../../extractors/extractContest";
 import { extractProblem } from "../../extractors/extractProblem";
 import { extractSubmission } from "../../extractors/extractSubmission";
@@ -22,8 +21,13 @@ SubmissionFileHandler.get("/:cluster_id", async (req, res) => {
     const problem = await extractProblem(req, submission.problem_id);
     const contest = await extractContest(req, problem.contest_id);
 
+    const cluster = await Database.selectOneFrom("clusters", ["is_sample"], {
+        id: BigInt(req.params.cluster_id),
+    });
+
     if (
         !isContestOver(contest) &&
+        !(cluster?.is_sample ?? false) &&
         !(await hasContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id))
     )
         return respond(res, StatusCodes.OK, []);
@@ -79,13 +83,22 @@ SubmissionFileHandler.get("/:cluster_id/:testcase_id/:type", async (req, res) =>
         throw new SafeError(StatusCodes.BAD_REQUEST, "Invalid type");
 
     const submission = await extractSubmission(req);
-    const cluster = await extractCluster(req);
+    const cluster = await Database.selectOneFrom("clusters", ["is_sample", "id"], {
+        id: BigInt(req.params.cluster_id),
+    });
+
+    if (!cluster) {
+        throw new SafeError(StatusCodes.NOT_FOUND);
+    }
+
     const problem = await extractProblem(req, submission.problem_id);
     const contest = await extractContest(req, problem.contest_id);
 
     const testcaseId = BigInt(req.params.testcase_id);
 
-    if (!isContestOver(contest))
+    const isSample = cluster.is_sample ?? false;
+
+    if (!isContestOver(contest) && !isSample)
         await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
 
     const allClusterSubmsissions = await Database.selectFrom(

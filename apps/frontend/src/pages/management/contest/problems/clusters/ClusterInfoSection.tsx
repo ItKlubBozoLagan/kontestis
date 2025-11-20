@@ -19,6 +19,7 @@ type Properties = {
 const ModifyClusterSchema = z.object({
     awarded_score: z.coerce.number(),
     order_number: z.coerce.number().optional(),
+    is_sample: z.boolean().optional(),
 });
 
 export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
@@ -30,7 +31,8 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
         resolver: zodResolver(ModifyClusterSchema),
         defaultValues: {
             awarded_score: cluster.awarded_score,
-            order_number: cluster.order_number,
+            order_number: Number(cluster.order_number),
+            is_sample: cluster.is_sample,
         },
     });
 
@@ -73,6 +75,18 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                     submitFunction={submitForm}
                 >
                     <TitledInput {...register("order_number")} />
+                </EditableDisplayBox>
+                <EditableDisplayBox
+                    title={t("contests.management.individual.problems.cluster.info.isSample")}
+                    value={cluster.is_sample ? "Yes" : "No"}
+                    submitFunction={submitForm}
+                >
+                    <div tw={"flex items-center gap-2"}>
+                        <input type="checkbox" {...register("is_sample")} />
+                        <label>
+                            {t("contests.management.individual.problems.cluster.info.isSample")}
+                        </label>
+                    </div>
                 </EditableDisplayBox>
                 <ClusterStatusSection cluster={cluster} />
                 <div tw={"text-sm text-red-500"}>

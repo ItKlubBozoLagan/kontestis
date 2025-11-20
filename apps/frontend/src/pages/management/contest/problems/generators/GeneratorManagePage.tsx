@@ -28,12 +28,12 @@ export const GeneratorManagePage: FC = () => {
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
     const { data: generators } = useAllGenerators([BigInt(problemId ?? 0)]);
     const { member } = useContestContext();
-    const { mutate: deleteGenerator } = useDeleteGenerator();
+    const { mutate: deleteGenerator } = useDeleteGenerator(BigInt(problemId ?? 0));
     const [modalOpen, setModalOpen] = useState(false);
 
     const handleDelete = (generatorId: bigint) => {
         if (confirm("Are you sure you want to delete this generator?")) {
-            deleteGenerator([BigInt(problemId ?? 0), generatorId]);
+            deleteGenerator(generatorId);
         }
     };
 
@@ -86,9 +86,7 @@ export const GeneratorManagePage: FC = () => {
                                 <TableItem>
                                     <div tw={"flex gap-2"}>
                                         <Link to={generator.id + ""}>
-                                            <SimpleButton prependIcon={FiEdit} small>
-                                                Edit
-                                            </SimpleButton>
+                                            <SimpleButton prependIcon={FiEdit}>Edit</SimpleButton>
                                         </Link>
                                         <CanContestMember
                                             member={member}
@@ -97,9 +95,7 @@ export const GeneratorManagePage: FC = () => {
                                         >
                                             <SimpleButton
                                                 prependIcon={FiTrash2}
-                                                small
                                                 onClick={() => handleDelete(generator.id)}
-                                                danger
                                             >
                                                 Delete
                                             </SimpleButton>
