@@ -19,6 +19,7 @@ import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters
 import { useProblem } from "../../../../hooks/problem/useProblem";
 import { useGlobalProblemSubmissions } from "../../../../hooks/submission/useGlobalProblemSubmissions";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import { signBigint } from "../../../../util/number";
 import { SubmissionListTable } from "../../../submissions/SubmissionListTable";
 import { CreateClusterModal } from "./clusters/CreateClusterModal";
 import { ProblemInfoSection } from "./ProblemInfoSection";
@@ -93,7 +94,13 @@ export const ContestProblemManagePage: FC = () => {
                 </thead>
                 <tbody>
                     {(clusters ?? [])
-                        .sort((a, b) => Number(a.id - b.id))
+                        .sort((a, b) =>
+                            signBigint(
+                                a.order_number === b.order_number
+                                    ? a.id - b.id
+                                    : a.order_number - b.order_number
+                            )
+                        )
                         .map((cluster, id) => (
                             <TableRow key={cluster.id + ""}>
                                 <TableItem>

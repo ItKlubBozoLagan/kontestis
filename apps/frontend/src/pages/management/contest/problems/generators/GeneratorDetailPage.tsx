@@ -68,7 +68,7 @@ export const GeneratorDetailPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col gap-6"}>
             <div tw={"text-2xl font-bold"}>Edit Generator: {generator?.name}</div>
-            {isSuccess && <div tw={"text-sm text-green-500"}>Generator updated successfully!</div>}
+            {isSuccess && <div tw={"text-lg text-green-700"}>Generator updated successfully!</div>}
             <div tw={"text-sm text-red-500"}>
                 {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
                 {error && (

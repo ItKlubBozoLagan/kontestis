@@ -75,6 +75,7 @@ import { migration_submission_compiler_output } from "./migrations/0048_submissi
 import { migration_contest_show_leaderboard } from "./migrations/0049_contest_show_leaderboard";
 import { migration_improve_generators } from "./migrations/0050_improve_generators";
 import { migration_add_sample_clusters } from "./migrations/0051_add_sample_clusters";
+import { migration_generator_id_index } from "./migrations/0052_generator_id_index";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -161,6 +162,7 @@ const migrations: Migration<any>[] = [
     migration_contest_show_leaderboard,
     migration_improve_generators,
     migration_add_sample_clusters,
+    migration_generator_id_index,
 ];
 
 export const initDatabase = async () => {

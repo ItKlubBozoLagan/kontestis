@@ -4,7 +4,7 @@ import { ClusterSubmission } from "@kontestis/models";
 import Convert from "ansi-to-html";
 import escapeHtml from "escape-html";
 import Prism from "prismjs";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/all";
 import { useParams } from "react-router";
 import tw from "twin.macro";
@@ -19,6 +19,7 @@ import { useSubmissionFiles } from "../../hooks/submission/useSubmissionFiles";
 import { useCopy } from "../../hooks/useCopy";
 import { useTranslation } from "../../hooks/useTranslation";
 import { convertFromBase64 } from "../../util/base";
+import { signBigint } from "../../util/number";
 import { SubmissionTestcaseTable } from "./SubmissionTestcaseTable";
 
 Prism.manual = true;
@@ -40,12 +41,25 @@ export const SubmissionViewPage: FC = () => {
         enabled: !!submission,
     });
 
-    const sampleClusters = submissionClusters?.filter(
-        (sc) => clusters?.find((c) => c.id === sc.cluster_id)?.is_sample
-    );
-    const regularClusters = submissionClusters?.filter(
-        (sc) => !clusters?.find((c) => c.id === sc.cluster_id)?.is_sample
-    );
+    const fullSubmissionClusters = useMemo(() => {
+        if (!submissionClusters || !clusters) return;
+
+        return submissionClusters
+            .map((it) => ({
+                ...it,
+                cluster: clusters.find((cluster) => cluster.id === it.cluster_id)!,
+            }))
+            .sort((a, b) =>
+                signBigint(
+                    a.cluster.order_number === b.cluster.order_number
+                        ? a.cluster.id - b.cluster.id
+                        : a.cluster.order_number - b.cluster.order_number
+                )
+            );
+    }, [submissionClusters, clusters]);
+
+    const sampleClusters = fullSubmissionClusters?.filter((sc) => sc.cluster.is_sample);
+    const regularClusters = fullSubmissionClusters?.filter((sc) => !sc.cluster.is_sample);
 
     useEffect(() => {
         if (!isSubmissionSuccess) return;
@@ -150,62 +164,7 @@ export const SubmissionViewPage: FC = () => {
                                 </TableHeadRow>
                             </thead>
                             <tbody>
-                                {sampleClusters
-                                    ?.sort((a, b) =>
-                                        Number(BigInt(a.cluster_id) - BigInt(b.cluster_id))
-                                    )
-                                    .map((submission, index) => (
-                                        <TableRow key={submission.id.toString()}>
-                                            <TableItem
-                                                tw={"hover:(text-sky-800 cursor-pointer)"}
-                                                onClick={() => {
-                                                    setSelectedCluster(submission);
-                                                    setDisplayTestcase(true);
-                                                }}
-                                            >
-                                                <Translated translationKey="submissions.table.body.sampleIndex">
-                                                    {String(index + 1)}
-                                                </Translated>
-                                            </TableItem>
-                                            <TableItem
-                                                css={
-                                                    submission.verdict === "accepted"
-                                                        ? tw`text-green-600`
-                                                        : tw`text-red-600`
-                                                }
-                                            >
-                                                {submission.verdict}
-                                            </TableItem>
-                                            <TableItem>{submission.time_used_millis} ms</TableItem>
-                                            <TableItem>
-                                                {submission.memory_used_megabytes} MiB
-                                            </TableItem>
-                                            <TableItem>
-                                                <Translated translationKey="submissions.table.body.pointsAchieved">
-                                                    {submission.awarded_score}
-                                                </Translated>
-                                            </TableItem>
-                                        </TableRow>
-                                    ))}
-                            </tbody>
-                        </Table>
-                    )}
-                    <Table tw={"w-full"}>
-                        <thead>
-                            <TableHeadRow>
-                                <TableHeadItem>{t("submissions.table.head.cluster")}</TableHeadItem>
-                                <TableHeadItem>{t("submissions.table.head.verdict")}</TableHeadItem>
-                                <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
-                                <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
-                                <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
-                            </TableHeadRow>
-                        </thead>
-                        <tbody>
-                            {regularClusters
-                                ?.sort((a, b) =>
-                                    Number(BigInt(a.cluster_id) - BigInt(b.cluster_id))
-                                )
-                                .map((submission, index) => (
+                                {sampleClusters?.map((submission, index) => (
                                     <TableRow key={submission.id.toString()}>
                                         <TableItem
                                             tw={"hover:(text-sky-800 cursor-pointer)"}
@@ -214,7 +173,7 @@ export const SubmissionViewPage: FC = () => {
                                                 setDisplayTestcase(true);
                                             }}
                                         >
-                                            <Translated translationKey="submissions.table.body.clusterIndex">
+                                            <Translated translationKey="submissions.table.body.sampleIndex">
                                                 {String(index + 1)}
                                             </Translated>
                                         </TableItem>
@@ -238,6 +197,51 @@ export const SubmissionViewPage: FC = () => {
                                         </TableItem>
                                     </TableRow>
                                 ))}
+                            </tbody>
+                        </Table>
+                    )}
+                    <Table tw={"w-full"}>
+                        <thead>
+                            <TableHeadRow>
+                                <TableHeadItem>{t("submissions.table.head.cluster")}</TableHeadItem>
+                                <TableHeadItem>{t("submissions.table.head.verdict")}</TableHeadItem>
+                                <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
+                                <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
+                                <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
+                            </TableHeadRow>
+                        </thead>
+                        <tbody>
+                            {regularClusters?.map((submission, index) => (
+                                <TableRow key={submission.id.toString()}>
+                                    <TableItem
+                                        tw={"hover:(text-sky-800 cursor-pointer)"}
+                                        onClick={() => {
+                                            setSelectedCluster(submission);
+                                            setDisplayTestcase(true);
+                                        }}
+                                    >
+                                        <Translated translationKey="submissions.table.body.clusterIndex">
+                                            {String(index + 1)}
+                                        </Translated>
+                                    </TableItem>
+                                    <TableItem
+                                        css={
+                                            submission.verdict === "accepted"
+                                                ? tw`text-green-600`
+                                                : tw`text-red-600`
+                                        }
+                                    >
+                                        {submission.verdict}
+                                    </TableItem>
+                                    <TableItem>{submission.time_used_millis} ms</TableItem>
+                                    <TableItem>{submission.memory_used_megabytes} MiB</TableItem>
+                                    <TableItem>
+                                        <Translated translationKey="submissions.table.body.pointsAchieved">
+                                            {submission.awarded_score}
+                                        </Translated>
+                                    </TableItem>
+                                </TableRow>
+                            ))}
                         </tbody>
                     </Table>
                 </div>

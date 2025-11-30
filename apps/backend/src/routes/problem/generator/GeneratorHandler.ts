@@ -12,6 +12,7 @@ import { extractUser } from "../../../extractors/extractUser";
 import { generateSnowflake } from "../../../lib/snowflake";
 import { useValidation } from "../../../middlewares/useValidation";
 import { EvaluationLanguageSchema } from "../../../utils/evaluation.schema";
+import { R } from "../../../utils/remeda";
 import { respond } from "../../../utils/response";
 
 const GeneratorHandler = Router({ mergeParams: true });
@@ -79,15 +80,30 @@ GeneratorHandler.delete("/:generator_id", async (req, res) => {
 
     await Database.deleteFrom("generators", "*", { id: generator.id });
 
-    // Update any testcases that use this generator
-    await Database.update(
+    const testcases = await Database.selectFrom(
         "testcases",
-        {
-            status: "generator-error",
-            error: "Generator deleted",
-        },
-        { generator_id: generator.id }
+        ["id"],
+        { generator_id: generator.id },
+        "ALLOW FILTERING"
     );
+
+    // Update any testcases that use this generator
+    for (const chunk of R.chunk(testcases, 20)) {
+        const batch = Database.batch();
+
+        for (const testcase of chunk) {
+            batch.update(
+                "testcases",
+                {
+                    status: "generator-error",
+                    error: "Generator deleted",
+                    generator_id: null,
+                },
+                { id: testcase.id }
+            );
+        }
+        await batch.execute();
+    }
 
     return respond(res, StatusCodes.OK);
 });

@@ -2,6 +2,7 @@ import { Cluster } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiCheck, FiChevronDown, FiChevronUp, FiClock, FiLayers, FiX } from "react-icons/all";
 import { useQueryClient } from "react-query";
+import stripAnsi from "strip-ansi";
 import { theme } from "twin.macro";
 
 import { http } from "../../../../../api/http";
@@ -131,7 +132,7 @@ export const ClusterStatusSection: FC<Properties> = ({ cluster }) => {
                                     "text-red-600 text-xs font-mono whitespace-pre-wrap bg-red-100 p-2 rounded"
                                 }
                             >
-                                {errorInfo.details}
+                                {stripAnsi(errorInfo.details)}
                             </div>
                         </div>
                     )}
