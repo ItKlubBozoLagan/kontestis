@@ -28,7 +28,7 @@ export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
         [contest, contestEnded, user]
     );
 
-    const { isSuccess, data } = useAllContestMembers(contest.id, {
+    const { isSuccess, data } = useAllContestMembers([contest.id, {}], {
         enabled: leaderboardVisible,
     });
 

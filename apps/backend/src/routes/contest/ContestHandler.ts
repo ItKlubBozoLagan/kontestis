@@ -33,6 +33,7 @@ import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import {
+    hasContestPermission as requestHasContestPermission,
     hasOrganisationPermission,
     mustHaveContestPermission,
     mustHaveCurrentOrganisationPermission,
@@ -430,88 +431,106 @@ ContestHandler.get("/members/self", async (req, res) => {
     );
 });
 
-ContestHandler.get("/:contest_id/leaderboard", async (req, res) => {
-    const contest = await extractContest(req);
+const LeaderboardQuerySchema = Type.Object({
+    show_all_users: Type.Optional(Type.Union([Type.Literal("true"), Type.Literal("false")])),
+});
 
-    if (
-        (!contest.show_leaderboard_during_contest || !isContestRunning(contest)) &&
-        !isContestOver(contest)
-    ) {
-        await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
-    }
+ContestHandler.get(
+    "/:contest_id/leaderboard",
+    useValidation(LeaderboardQuerySchema, { query: true }),
+    async (req, res) => {
+        const contest = await extractContest(req);
 
-    const _contestMembers = await Database.selectFrom("contest_members", "*", {
-        contest_id: contest.id,
-    });
+        if (
+            (!contest.show_leaderboard_during_contest || !isContestRunning(contest)) &&
+            !isContestOver(contest)
+        ) {
+            await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
+        }
 
-    const users = (
-        await Promise.all(
-            R.chunk(_contestMembers, 100).map((chunk) => {
-                return Database.selectFrom("users", "*", {
-                    id: eqIn(...chunk.map((it) => it.user_id)),
-                });
-            })
-        )
-    ).flat();
+        const _contestMembers = await Database.selectFrom("contest_members", "*", {
+            contest_id: contest.id,
+        });
 
-    // if for every contestMember doesn't exist a corresponding user
-    if (!_contestMembers.every((it) => users.some((user) => user.id === it.user_id)))
-        throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-    const contestMembers = _contestMembers.filter(
-        (it, _, __, user = users.find((user) => user.id === it.user_id)!) =>
-            !hasContestPermission(
-                it.contest_permissions,
-                ContestMemberPermissions.VIEW_PRIVATE,
-                user.permissions
-            )
-    );
-
-    const eduUsers = (
-        await Promise.all(
-            R.chunk(contestMembers, 100).map((chunk) => {
-                return Database.selectFrom("edu_users", "*", {
-                    id: eqIn(...chunk.map((it) => it.user_id)),
-                });
-            })
-        )
-    ).flat();
-
-    const organisationMembers = await Database.selectFrom(
-        "organisation_members",
-        "*",
-        {
-            organisation_id: contest.organisation_id,
-        },
-        "ALLOW FILTERING"
-    );
-
-    return respond(
-        res,
-        StatusCodes.OK,
-        contestMembers
-            .map(
-                (
-                    it,
-                    _,
-                    __,
-                    user = users.find((user) => user.id === it.user_id)!,
-                    eduUser = eduUsers.find((user) => user.id === it.user_id)
-                ) => ({
-                    ...it,
-                    ...R.pick(
-                        organisationMembers.find((member) => member.user_id === it.user_id)!,
-                        ["elo"]
-                    ),
-                    full_name:
-                        (contest.require_edu_verification && eduUser?.full_name) || user.full_name,
-                    email_domain: user.email.split("@").at(-1),
-                    edu_mail_domain: eduUser?.email.split("@").at(-1),
+        const users = (
+            await Promise.all(
+                R.chunk(_contestMembers, 100).map((chunk) => {
+                    return Database.selectFrom("users", "*", {
+                        id: eqIn(...chunk.map((it) => it.user_id)),
+                    });
                 })
             )
-            .map((it) => ({ ...it, score: it.score ?? {} }))
-    );
-});
+        ).flat();
+
+        // if for every contestMember doesn't exist a corresponding user
+        if (!_contestMembers.every((it) => users.some((user) => user.id === it.user_id)))
+            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+        const showAll =
+            req.query.show_all_users === "true" &&
+            (await requestHasContestPermission(
+                req,
+                ContestMemberPermissions.VIEW_PRIVATE,
+                contest.id
+            ).catch(() => false));
+
+        const contestMembers = _contestMembers.filter(
+            (it, _, __, user = users.find((user) => user.id === it.user_id)!) =>
+                showAll ||
+                !hasContestPermission(
+                    it.contest_permissions,
+                    ContestMemberPermissions.VIEW_PRIVATE,
+                    user.permissions
+                )
+        );
+
+        const eduUsers = (
+            await Promise.all(
+                R.chunk(contestMembers, 100).map((chunk) => {
+                    return Database.selectFrom("edu_users", "*", {
+                        id: eqIn(...chunk.map((it) => it.user_id)),
+                    });
+                })
+            )
+        ).flat();
+
+        const organisationMembers = await Database.selectFrom(
+            "organisation_members",
+            "*",
+            {
+                organisation_id: contest.organisation_id,
+            },
+            "ALLOW FILTERING"
+        );
+
+        return respond(
+            res,
+            StatusCodes.OK,
+            contestMembers
+                .map(
+                    (
+                        it,
+                        _,
+                        __,
+                        user = users.find((user) => user.id === it.user_id)!,
+                        eduUser = eduUsers.find((user) => user.id === it.user_id)
+                    ) => ({
+                        ...it,
+                        ...R.pick(
+                            organisationMembers.find((member) => member.user_id === it.user_id)!,
+                            ["elo"]
+                        ),
+                        full_name:
+                            (contest.require_edu_verification && eduUser?.full_name) ||
+                            user.full_name,
+                        email_domain: user.email.split("@").at(-1),
+                        edu_mail_domain: eduUser?.email.split("@").at(-1),
+                    })
+                )
+                .map((it) => ({ ...it, score: it.score ?? {} }))
+        );
+    }
+);
 
 ContestHandler.get("/:contest_id", async (req, res) => {
     const contest = await extractContest(req);
