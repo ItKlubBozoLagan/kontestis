@@ -36,7 +36,7 @@ const calculateGradeFromScale = (
 export const ContestResultsPage: FC = () => {
     const { contest } = useContestContext();
 
-    const { data: members } = useAllContestMembers(contest.id);
+    const { data: members } = useAllContestMembers([contest.id, {}]);
     const { data: problems } = useAllProblems(contest.id);
     const { data: gradingScales } = useAllContestGradingScales(contest.id);
 

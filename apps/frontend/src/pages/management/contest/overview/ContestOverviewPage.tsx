@@ -96,7 +96,7 @@ export const ContestOverviewPage: FC = () => {
 
     // I guess we could make a route to get this info without getting all data, but it should be fine
     const questions = useAllContestQuestions(contest.id);
-    const members = useAllContestMembers(contest.id);
+    const members = useAllContestMembers([contest.id, {}]);
     const announcements = useAllContestAnnouncements(contest.id);
 
     const { t } = useTranslation();
