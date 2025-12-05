@@ -6,6 +6,7 @@ import {
     EduUser,
     ExamFinalSubmission,
     ExamGradingScale,
+    Generator,
     MailPreference,
     ManagedUser,
     Organisation,
@@ -72,6 +73,9 @@ import { migration_fix_contest_members_table } from "./migrations/0046_fix_conte
 import { migration_add_managed_users } from "./migrations/0047_add_managed_users";
 import { migration_submission_compiler_output } from "./migrations/0048_submission_compiler_output";
 import { migration_contest_show_leaderboard } from "./migrations/0049_contest_show_leaderboard";
+import { migration_improve_generators } from "./migrations/0050_improve_generators";
+import { migration_add_sample_clusters } from "./migrations/0051_add_sample_clusters";
+import { migration_generator_id_index } from "./migrations/0052_generator_id_index";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -93,6 +97,7 @@ export const Database = new ScylloClient<{
     mail_preferences: MailPreference;
     edu_users: EduUser;
     managed_users: ManagedUser;
+    generators: Generator;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -155,6 +160,9 @@ const migrations: Migration<any>[] = [
     migration_add_managed_users,
     migration_submission_compiler_output,
     migration_contest_show_leaderboard,
+    migration_improve_generators,
+    migration_add_sample_clusters,
+    migration_generator_id_index,
 ];
 
 export const initDatabase = async () => {

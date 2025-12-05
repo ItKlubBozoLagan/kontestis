@@ -46,7 +46,6 @@ out = read_until(separator)
 subOut = read_until(separator)
 
 print("AC" if out.strip() == subOut.strip() else "WA")
-
 `;
 
 export const CreateProblemModal: FC<Modal.Props> = ({ ...properties }) => {

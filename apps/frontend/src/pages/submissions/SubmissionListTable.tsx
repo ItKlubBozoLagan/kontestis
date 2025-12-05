@@ -45,6 +45,7 @@ export const SubmissionListTable: FC<Properties> = ({
                     <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.language")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
+                    <TableHeadItem>{t("submissions.table.head.samples")}</TableHeadItem>
                     {!adminView && contest && contest.exam && (
                         <TableHeadItem>{t("submissions.table.head.final")}</TableHeadItem>
                     )}

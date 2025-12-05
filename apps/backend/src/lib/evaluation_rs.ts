@@ -1,18 +1,13 @@
 import assert from "node:assert";
 
-import {
-    EvaluationLanguage,
-    EvaluationResult,
-    Problem,
-    TestcaseWithOutput,
-} from "@kontestis/models";
+import { EvaluationLanguage, EvaluationResult, Problem } from "@kontestis/models";
 import { Static, Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
-import { AxiosEvaluationResponse, ProblemDetails } from "./evaluation";
+import { AxiosEvaluationResponse, EvaluationInputTestcase, ProblemDetails } from "./evaluation";
 import { Logger } from "./logger";
 
 type EvaluationTestcase = {
@@ -28,6 +23,7 @@ type BatchEvaluationPayload = {
     testcases: EvaluationTestcase[];
     time_limit: number;
     memory_limit: number;
+    evaluate_all: boolean;
     checker?: {
         script: string;
         language: EvaluationLanguage;
@@ -49,8 +45,9 @@ type OutputOnlyEvaluationPayload = Pick<BatchEvaluationPayload, "id" | "checker"
 const generateBatchPayload = (
     evaluationId: number,
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    testcases: EvaluationInputTestcase[],
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
 ): { Batch: BatchEvaluationPayload } => ({
     Batch: {
         id: evaluationId,
@@ -63,6 +60,7 @@ const generateBatchPayload = (
         })),
         time_limit: problem.time_limit_millis,
         memory_limit: problem.memory_limit_megabytes * 1024,
+        evaluate_all,
         checker:
             problemDetails.evaluator && problemDetails.evaluator_language
                 ? {
@@ -76,7 +74,7 @@ const generateBatchPayload = (
 const generateOutputOnlyPayload = (
     evaluationId: number,
     problemDetails: ProblemDetails,
-    testcase: TestcaseWithOutput,
+    testcase: EvaluationInputTestcase,
     _problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ): { OutputOnly: OutputOnlyEvaluationPayload } => ({
     OutputOnly: {
@@ -85,7 +83,7 @@ const generateOutputOnlyPayload = (
         testcase: {
             id: testcase.id.toString(),
             input: testcase.input,
-            output: testcase.correct_output,
+            output: testcase.correct_output ?? "",
         },
         checker:
             problemDetails.evaluator && problemDetails.evaluator_language
@@ -100,15 +98,17 @@ const generateOutputOnlyPayload = (
 const generateInteractivePayload = (
     evaluationId: number,
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    testcases: EvaluationInputTestcase[],
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
 ): { Interactive: InteractiveEvaluationPayload } => {
     assert(problemDetails.evaluator !== undefined);
     assert(problemDetails.evaluator_language !== undefined);
 
     return {
         Interactive: {
-            ...generateBatchPayload(evaluationId, problemDetails, testcases, problem).Batch,
+            ...generateBatchPayload(evaluationId, problemDetails, testcases, problem, evaluate_all)
+                .Batch,
             checker: {
                 script: problemDetails.evaluator,
                 language: problemDetails.evaluator_language,
@@ -146,7 +146,7 @@ export type SuccessfulEvaluationRS = Static<typeof SuccessfulEvaluationSchema>;
 
 const convertSuccessfulEvaluationToEvaluationResult = (
     evaluation: SuccessfulEvaluationRS,
-    testcases: TestcaseWithOutput[]
+    testcases: EvaluationInputTestcase[]
 ): EvaluationResult[] => {
     if (evaluation.verdict.type === "compilation_error")
         return testcases.map((testcase) => ({
@@ -198,6 +198,7 @@ const convertSuccessfulEvaluationToEvaluationResult = (
                     testCaseId: testcase.id,
                     type: "error",
                     verdict: "runtime_error",
+                    error: testcase.error ?? "",
                     exitCode: 1,
                     compiler_output: evaluation.compiler_output ?? undefined,
                 };
@@ -236,7 +237,7 @@ export const subscribeToEvaluatorResponseQueue = async () => {
 
             const message = result.element;
 
-            Logger.debug("Got message: " + message);
+            // Logger.debug("Got message: " + message);
 
             try {
                 const parsed = JSON.parse(message);
@@ -273,8 +274,9 @@ export const subscribeToEvaluatorResponseQueue = async () => {
 
 export const evaluateTestcasesNew = async (
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    testcases: EvaluationInputTestcase[],
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
 ): Promise<AxiosEvaluationResponse> => {
     const evaluationId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
@@ -285,8 +287,20 @@ export const evaluateTestcasesNew = async (
                 problemDetails.evaluation_variant === "output-only"
                     ? generateOutputOnlyPayload(evaluationId, problemDetails, testcases[0], problem)
                     : problemDetails.evaluation_variant === "interactive"
-                    ? generateInteractivePayload(evaluationId, problemDetails, testcases, problem)
-                    : generateBatchPayload(evaluationId, problemDetails, testcases, problem),
+                    ? generateInteractivePayload(
+                          evaluationId,
+                          problemDetails,
+                          testcases,
+                          problem,
+                          evaluate_all
+                      )
+                    : generateBatchPayload(
+                          evaluationId,
+                          problemDetails,
+                          testcases,
+                          problem,
+                          evaluate_all
+                      ),
         },
     };
 

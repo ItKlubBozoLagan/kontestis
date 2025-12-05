@@ -256,6 +256,7 @@ export default {
                         info: {
                             title: "Info",
                             score: "Bodovi",
+                            isSample: "Primjer",
                             generator: {
                                 label: "Generator",
                                 plain: "Obican",
@@ -263,10 +264,12 @@ export default {
                                 status: {
                                     title: "Status",
                                     cached: "Spremno (u predmemoriji)",
+                                    notReady: "Nije spremno",
                                     uncached: "Spremno (nije u predmemoriji)",
                                     errors: {
                                         generator: "Greška generatora",
                                         solution: "Greška rješenja",
+                                        validation: "Greška validacije",
                                     },
                                     pending: "U tijeku",
                                 },
@@ -288,6 +291,7 @@ export default {
                         modal: {
                             title: "Dodaj klaster za %1",
                             awardedScore: "Dodjeljeni bodovi",
+                            isSample: "Primjer",
                             createButton: "Dodaj",
                         },
                         testCase: {
@@ -417,15 +421,18 @@ export default {
                 language: "Jezik",
                 points: "Bodovi",
                 final: "Finalno",
-                cluster: "Klaster",
+                cluster: "Grupa",
+                sample: "Primjer",
                 testcase: "Test podatak",
+                samples: "Primjeri",
             },
             body: {
                 final: "Konačno",
                 notFinal: "Postavi kao konačno",
                 notExam: "Nije predano",
                 pointsAchieved: " %1 bodova",
-                clusterIndex: "Klaster %1",
+                clusterIndex: "Grupa %1",
+                sampleIndex: "Primjer %1",
                 testcaseIndex: "Test podatak %1",
             },
             overflow: {

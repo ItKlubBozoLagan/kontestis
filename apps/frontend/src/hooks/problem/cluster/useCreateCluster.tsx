@@ -5,28 +5,36 @@ import { http, invalidateOnSuccess, MutationHandler, wrapAxios } from "../../../
 
 type CreateClusterVariables = {
     awarded_score: number;
-    generator: boolean;
-    generator_language?: string;
-    generator_code?: string;
+    is_sample?: boolean;
+    generator_id?: string;
+    test_count?: number;
 };
-// TODO: Make generators work
+
 export const useCreateCluster: MutationHandler<CreateClusterVariables, Cluster, Snowflake> = (
     problemId,
     options
 ) =>
-    useMutation(
-        (variables) => wrapAxios(http.post(`/problem/${problemId}/cluster/`, variables)),
-        invalidateOnSuccess([["clusters", problemId]], options)
-    );
+    useMutation((variables) => {
+        if (variables.is_sample) {
+            variables.awarded_score = 0;
+        }
+
+        return wrapAxios(http.post(`/problem/${problemId}/cluster/`, variables));
+    }, invalidateOnSuccess([["clusters", problemId]], options));
 
 export const useModifyCluster: MutationHandler<
-    CreateClusterVariables,
+    Omit<CreateClusterVariables, "generator_id" | "test_count">,
     Cluster,
     [Snowflake, Snowflake]
 > = ([problemId, clusterId], options) =>
     useMutation(
-        (variables) =>
-            wrapAxios(http.patch(`/problem/${problemId}/cluster/${clusterId}`, variables)),
+        (variables) => {
+            if (variables.is_sample) {
+                variables.awarded_score = 0;
+            }
+
+            return wrapAxios(http.patch(`/problem/${problemId}/cluster/${clusterId}`, variables));
+        },
         invalidateOnSuccess(
             [
                 ["clusters", problemId],

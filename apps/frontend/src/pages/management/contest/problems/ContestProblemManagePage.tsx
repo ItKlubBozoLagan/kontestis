@@ -19,6 +19,7 @@ import { useAllClusters } from "../../../../hooks/problem/cluster/useAllClusters
 import { useProblem } from "../../../../hooks/problem/useProblem";
 import { useGlobalProblemSubmissions } from "../../../../hooks/submission/useGlobalProblemSubmissions";
 import { useTranslation } from "../../../../hooks/useTranslation";
+import { signBigint } from "../../../../util/number";
 import { SubmissionListTable } from "../../../submissions/SubmissionListTable";
 import { CreateClusterModal } from "./clusters/CreateClusterModal";
 import { ProblemInfoSection } from "./ProblemInfoSection";
@@ -54,6 +55,20 @@ export const ContestProblemManagePage: FC = () => {
             <div tw={"w-3/5 self-center"}>
                 {problem && <ProblemInfoSection problem={problem} />}
             </div>
+            <div tw={"w-full flex gap-4 justify-end"}>
+                <Link to="generators">
+                    <SimpleButton>Manage Generators</SimpleButton>
+                </Link>
+                <CanContestMember
+                    member={member}
+                    permission={ContestMemberPermissions.EDIT}
+                    adminPermission={AdminPermissions.EDIT_CONTEST}
+                >
+                    <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
+                        {t("contests.management.individual.problems.cluster.createButton")}
+                    </SimpleButton>
+                </CanContestMember>
+            </div>
             {problem && (
                 <CreateClusterModal
                     isOpen={modalOpen}
@@ -62,15 +77,6 @@ export const ContestProblemManagePage: FC = () => {
                     problem={problem}
                 />
             )}
-            <CanContestMember
-                member={member}
-                permission={ContestMemberPermissions.EDIT}
-                adminPermission={AdminPermissions.EDIT_CONTEST}
-            >
-                <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
-                    {t("contests.management.individual.problems.cluster.createButton")}
-                </SimpleButton>
-            </CanContestMember>
             <Table tw={"w-full"}>
                 <thead>
                     <TableHeadRow>
@@ -88,7 +94,13 @@ export const ContestProblemManagePage: FC = () => {
                 </thead>
                 <tbody>
                     {(clusters ?? [])
-                        .sort((a, b) => Number(a.id - b.id))
+                        .sort((a, b) =>
+                            signBigint(
+                                a.order_number === b.order_number
+                                    ? a.id - b.id
+                                    : a.order_number - b.order_number
+                            )
+                        )
                         .map((cluster, id) => (
                             <TableRow key={cluster.id + ""}>
                                 <TableItem>

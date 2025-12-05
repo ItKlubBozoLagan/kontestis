@@ -8,6 +8,7 @@ export * from "./ContestQuestion";
 export * from "./Evaluation";
 export * from "./ExamFinalSubmission";
 export * from "./ExamGradingScale";
+export * from "./Generator";
 export * from "./KnownUserData";
 export * from "./MailPreferences";
 export * from "./Organisation";

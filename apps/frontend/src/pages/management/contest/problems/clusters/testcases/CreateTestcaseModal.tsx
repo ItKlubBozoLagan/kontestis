@@ -1,18 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Cluster } from "@kontestis/models";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "react-modal";
 import { z } from "zod";
 
 import { SimpleButton } from "../../../../../../components/SimpleButton";
+import { TitledInput } from "../../../../../../components/TitledInput";
+import { TitledSwitch } from "../../../../../../components/TitledSwitch";
 import { Translated } from "../../../../../../components/Translated";
 import { useCreateTestcase } from "../../../../../../hooks/problem/cluster/testcase/useCreateTestcase";
+import { useAllGenerators } from "../../../../../../hooks/problem/generator/useAllGenerators";
 import { useTranslation } from "../../../../../../hooks/useTranslation";
 import { ModalStyles } from "../../../../../../util/ModalStyles";
 
 const CreateTestcaseSchema = z.object({
-    input: z.string().min(1),
+    input_type: z.enum(["manual", "generator"]),
+    output_type: z.enum(["auto", "manual"]),
+    generator_id: z.string().optional(),
+    generator_input: z.string().optional(),
 });
 
 type Properties = {
@@ -24,17 +30,38 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
         register,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors },
     } = useForm<z.infer<typeof CreateTestcaseSchema>>({
         resolver: zodResolver(CreateTestcaseSchema),
+        defaultValues: {
+            input_type: "manual",
+            output_type: "auto",
+        },
     });
+
+    const { data: generators } = useAllGenerators([cluster.problem_id]);
+    const [useGenerator, setUseGenerator] = useState(false);
 
     const createMutation = useCreateTestcase([cluster.problem_id, cluster.id]);
 
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
 
-        createMutation.mutate(data);
+        if (data.input_type === "generator") {
+            // Pass all required fields for generator-based testcases
+            createMutation.mutate({
+                input_type: "generator",
+                output_type: data.output_type,
+                generator_id: data.generator_id!,
+                generator_input: data.generator_input!,
+            });
+        } else {
+            // For manual testcases, just pass the input_type
+            createMutation.mutate({
+                input_type: "manual",
+            });
+        }
     });
 
     useEffect(() => {
@@ -67,14 +94,52 @@ export const CreateTestcaseModal: FC<Modal.Props & Properties> = ({ cluster, ...
                 )}
             </div>
             <form onSubmit={onSubmit}>
-                <div tw={"flex flex-col items-stretch gap-2 p-1"}>
-                    <span tw={"mt-2"}>
-                        {t("contests.management.individual.problems.cluster.testCase.input")}
-                    </span>
-                    <textarea
-                        tw={"w-full h-16 resize-none font-mono text-sm"}
-                        {...register("input")}
-                    ></textarea>
+                <div tw={"flex flex-col items-stretch gap-3"}>
+                    <TitledSwitch
+                        label="Input Type"
+                        choice={["Manual", "Generator"]}
+                        onChange={(value) => {
+                            const isGenerator = value === "Generator";
+
+                            setUseGenerator(isGenerator);
+                            setValue("input_type", isGenerator ? "generator" : "manual");
+                        }}
+                    />
+
+                    {useGenerator && (
+                        <>
+                            <div tw={"flex flex-col gap-2"}>
+                                <label htmlFor="generator-select-create">Select Generator</label>
+                                <select
+                                    id="generator-select-create"
+                                    {...register("generator_id")}
+                                    tw={"border p-2 rounded"}
+                                >
+                                    <option value="">-- Select a generator --</option>
+                                    {(generators ?? []).map((gen) => (
+                                        <option key={gen.id.toString()} value={gen.id.toString()}>
+                                            {gen.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <TitledInput
+                                bigLabel
+                                label="Generator Input"
+                                tw={"max-w-full"}
+                                placeholder="Input passed to generator (e.g., test number)"
+                                {...register("generator_input")}
+                            />
+                            <TitledSwitch
+                                label="Output Type"
+                                choice={["Auto", "Manual"]}
+                                onChange={(value) => {
+                                    setValue("output_type", value === "Auto" ? "auto" : "manual");
+                                }}
+                            />
+                        </>
+                    )}
+
                     <SimpleButton tw={"mt-2"}>
                         {t(
                             "contests.management.individual.problems.cluster.testCase.modal.CreateButton"

@@ -45,6 +45,7 @@ export type EvaluationResult = {
     | {
           type: "error";
           verdict: "runtime_error";
+          error: string;
           exitCode: number;
       }
     | {

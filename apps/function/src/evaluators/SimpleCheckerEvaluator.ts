@@ -93,6 +93,7 @@ export const evaluateChecker = async (
                 testCaseId: testcase.id,
                 verdict: "runtime_error",
                 exitCode: result.exitCode,
+                error: result.stdErr.toString("utf8"),
             });
             continue;
         }

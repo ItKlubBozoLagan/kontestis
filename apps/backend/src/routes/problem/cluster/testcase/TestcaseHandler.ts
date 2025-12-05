@@ -4,33 +4,67 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { Database } from "../../../../database/Database";
+import { SafeError } from "../../../../errors/SafeError";
 import { extractCluster } from "../../../../extractors/extractCluster";
 import { extractModifiableCluster } from "../../../../extractors/extractModifiableCluster";
 import { extractModifiableTestcase } from "../../../../extractors/extractModifiableTestcase";
+import { extractProblem } from "../../../../extractors/extractProblem";
 import { extractTestcase } from "../../../../extractors/extractTestcase";
+import { Globals } from "../../../../globals";
 import { generateSnowflake } from "../../../../lib/snowflake";
 import { useValidation } from "../../../../middlewares/useValidation";
+import { S3Client } from "../../../../s3/S3";
 import { respond } from "../../../../utils/response";
+import TestcaseFileHandler from "./TestcaseFileHandler";
 
 const TestcaseHandler = Router({ mergeParams: true });
 
-// Around 8MB
-const TESTCASE_MAX_SIZE = 1 << 23;
+TestcaseHandler.use("/:testcase_id/file", TestcaseFileHandler);
 
-const TestcaseSchema = Type.Object({
-    input: Type.String({ maxLength: TESTCASE_MAX_SIZE }),
+const TestcaseGeneratorSchema = Type.Object({
+    input_type: Type.Literal("generator"),
+    output_type: Type.Union([Type.Literal("auto"), Type.Literal("manual")]),
+    generator_id: Type.String(),
+    generator_input: Type.String({
+        maxLength: 1 << 10,
+    }),
 });
 
-TestcaseHandler.post("/", useValidation(TestcaseSchema), async (req, res) => {
+TestcaseHandler.post(
+    "/with-generator",
+    useValidation(TestcaseGeneratorSchema),
+    async (req, res) => {
+        const cluster = await extractModifiableCluster(req);
+
+        const testcase: Testcase = {
+            id: generateSnowflake(),
+            status: "not-ready",
+            cluster_id: cluster.id,
+            input_type: "generator",
+            output_type: req.body.output_type,
+            generator_id: BigInt(req.body.generator_id),
+            generator_input: req.body.generator_input,
+        };
+
+        await Database.insertInto("testcases", testcase);
+
+        return respond(res, StatusCodes.OK, testcase);
+    }
+);
+
+TestcaseHandler.post("/", async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
     const testcase: Testcase = {
         id: generateSnowflake(),
+        status: "not-ready",
         cluster_id: cluster.id,
-        input: req.body.input,
+        input_type: "manual",
+        output_type: "manual",
     };
 
     await Database.insertInto("testcases", testcase);
+    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
 
     return respond(res, StatusCodes.OK, testcase);
 });
@@ -52,18 +86,113 @@ TestcaseHandler.get("/:testcase_id", async (req, res) => {
     return respond(res, StatusCodes.OK, testcase);
 });
 
-TestcaseHandler.patch("/:testcase_id", useValidation(TestcaseSchema), async (req, res) => {
+TestcaseHandler.patch("/:testcase_id", async (req, res) => {
     const testcase = await extractModifiableTestcase(req);
 
-    await Database.update(
-        "testcases",
-        {
-            input: req.body.input,
-        },
-        { id: testcase.id }
-    );
+    const updateData: Partial<Testcase> = {};
+
+    if (req.body.input_type !== undefined) {
+        updateData.input_type = req.body.input_type;
+    }
+
+    if (req.body.output_type !== undefined) {
+        updateData.output_type = req.body.output_type;
+    }
+
+    if (req.body.generator_id !== undefined) {
+        updateData.generator_id = BigInt(req.body.generator_id);
+    }
+
+    if (req.body.generator_input !== undefined) {
+        updateData.generator_input = req.body.generator_input;
+    }
+
+    await Database.update("testcases", updateData, { id: testcase.id });
+    await Database.update("clusters", { status: "not-ready" }, { id: testcase.cluster_id });
 
     return respond(res, StatusCodes.OK);
+});
+
+TestcaseHandler.get("/:testcase_id/input", async (req, res) => {
+    const testcase = await extractTestcase(req);
+
+    if (!testcase.input_file) {
+        throw new SafeError(StatusCodes.NOT_FOUND, "Input file not found");
+    }
+
+    const data = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.input_file);
+
+    res.setHeader("Content-Type", "text/plain");
+
+    return res.send(data);
+});
+
+TestcaseHandler.get("/:testcase_id/output", async (req, res) => {
+    const testcase = await extractTestcase(req);
+
+    if (!testcase.output_file) {
+        throw new SafeError(StatusCodes.NOT_FOUND, "Output file not found");
+    }
+
+    const data = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.output_file);
+
+    res.setHeader("Content-Type", "text/plain");
+
+    return res.send(data);
+});
+
+// Accept file upload for input, use express file upload
+TestcaseHandler.post("/:testcase_id/:type", async (req, res) => {
+    const testcase = await extractModifiableTestcase(req);
+    const problem = await extractProblem(req);
+
+    if (!req.files?.input) {
+        throw new SafeError(StatusCodes.BAD_REQUEST, "No input file provided");
+    }
+
+    if (req.params.type !== "input" && req.params.type !== "output") {
+        throw new SafeError(StatusCodes.BAD_REQUEST, "Invalid type");
+    }
+
+    if (req.params.type === "output" && testcase.output_type !== "manual") {
+        throw new SafeError(StatusCodes.BAD_REQUEST, "Testcase output is not manual");
+    }
+
+    if (req.params.type === "input" && testcase.input_type !== "manual") {
+        throw new SafeError(StatusCodes.BAD_REQUEST, "Testcase input is not manual");
+    }
+
+    const inputFile = req.files.input;
+
+    if (Array.isArray(inputFile)) {
+        throw new SafeError(StatusCodes.BAD_REQUEST, "Got multiple files");
+    }
+
+    const filePath = `${problem.title}-${problem.id}/${testcase.id}-${generateSnowflake()}.${
+        req.params.type === "input" ? "in" : "out"
+    }`;
+
+    await S3Client.putObject(Globals.s3.buckets.testcases, filePath, inputFile.data);
+
+    await (req.params.type === "input"
+        ? Database.update(
+              "testcases",
+              {
+                  status: "not-ready",
+                  input_file: filePath,
+              },
+              { id: testcase.id }
+          )
+        : Database.update(
+              "testcases",
+              {
+                  status: "not-ready",
+                  output_file: filePath,
+              },
+              { id: testcase.id }
+          ));
+
+    return respond(res, StatusCodes.OK, testcase);
 });
 
 TestcaseHandler.delete("/:testcase_id", async (req, res) => {

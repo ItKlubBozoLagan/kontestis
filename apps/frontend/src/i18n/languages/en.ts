@@ -259,6 +259,7 @@ const I18nEn = {
                         info: {
                             title: "Info",
                             score: "Score",
+                            isSample: "Sample",
                             generator: {
                                 label: "Generator",
                                 plain: "Plain",
@@ -267,9 +268,11 @@ const I18nEn = {
                                     title: "Status",
                                     cached: "Ready (cached)",
                                     uncached: "Ready (uncached)",
+                                    notReady: "Not ready",
                                     errors: {
                                         generator: "Generator error",
                                         solution: "Solution error",
+                                        validation: "Validation error",
                                     },
                                     pending: "Pending",
                                 },
@@ -291,6 +294,7 @@ const I18nEn = {
                         modal: {
                             title: "Create cluster for %1",
                             awardedScore: "Awarded score",
+                            isSample: "Sample",
                             createButton: "Create",
                         },
                         testCase: {
@@ -421,7 +425,9 @@ const I18nEn = {
                 points: "Points",
                 final: "Final",
                 cluster: "Cluster",
+                sample: "Sample",
                 testcase: "Testcase",
+                samples: "Samples",
             },
             body: {
                 final: "Final",
@@ -429,6 +435,7 @@ const I18nEn = {
                 notExam: "Not submitted",
                 pointsAchieved: " %1 points",
                 clusterIndex: "Cluster %1",
+                sampleIndex: "Sample %1",
                 testcaseIndex: "Testcase %1",
             },
             overflow: {
