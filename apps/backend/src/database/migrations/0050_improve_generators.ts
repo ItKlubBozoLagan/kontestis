@@ -3,6 +3,7 @@ import {
     ClusterV2,
     ClusterV3,
     GeneratorV1,
+    ProblemV4,
     ProblemV5,
     TestcaseSubmissionV3,
     TestcaseV3,
@@ -82,11 +83,14 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
     await database.raw("ALTER TABLE testcase_submissions ADD output_file text");
     await database.raw("ALTER TABLE testcase_submissions ADD submission_output_file text");
 
-    const testcases = await database.selectFrom("testcases", "*");
+    const testcases = await streamQuery<TestcaseV3>(database.client, "SELECT * FROM testcases");
 
-    const clusters = await database.selectFrom("clusters", "*");
+    const clusters = await streamQuery<ClusterV2>(database.client, "SELECT * FROM clusters");
 
-    const problems = await database.selectFrom("problems", ["id", "title"]);
+    const problems = await streamQuery<Pick<ProblemV4, "id" | "title">>(
+        database.client,
+        "SELECT id, title FROM problems"
+    );
 
     const clustersById: Record<string, ClusterV2> = {};
 
