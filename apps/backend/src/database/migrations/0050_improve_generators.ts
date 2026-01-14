@@ -108,6 +108,7 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
 
     for (const testcase of testcases) {
         Logger.info("Migrating testcase " + testcase.id);
+
         const cluster = clustersById[testcase.cluster_id.toString()];
 
         if (!cluster) {
@@ -127,6 +128,13 @@ export const migration_improve_generators: Migration<MigrationType> = async (dat
         }-${generateSnowflake()}.in`;
 
         await S3Client.putObject(Globals.s3.buckets.testcases, inputFilePath, testcase.input);
+
+        if (cluster.generator) {
+            Logger.info("Unlinking testcase due to existing generator: " + testcase.id);
+            await database
+                .update("testcases", { cluster_id: -cluster.id }, { id: testcase.id })
+                .catch(() => Logger.error("Failed unlinking: " + testcase.id));
+        }
 
         await database.update(
             "testcases",
