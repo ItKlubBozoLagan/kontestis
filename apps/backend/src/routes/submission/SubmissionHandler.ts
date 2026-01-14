@@ -152,6 +152,7 @@ SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
             "memory_used_megabytes",
             "verdict",
             "awarded_score",
+            "samples_passed",
         ],
         { problem_id: problem.id }
     );
@@ -370,6 +371,7 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
             "memory_used_megabytes",
             "verdict",
             "awarded_score",
+            "samples_passed",
         ],
         {
             problem_id: problem.id,

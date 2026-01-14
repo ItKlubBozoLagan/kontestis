@@ -17,10 +17,12 @@ import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import ClusterHandler from "./cluster/ClusterHandler";
+import GeneratorHandler from "./generator/GeneratorHandler";
 
 const ProblemHandler = Router();
 
 ProblemHandler.use("/:problem_id/cluster", ClusterHandler);
+ProblemHandler.use("/:problem_id/generator", GeneratorHandler);
 
 const ProblemSchema = Type.Object({
     title: Type.String(),

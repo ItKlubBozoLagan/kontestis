@@ -1,5 +1,6 @@
 import { EvaluationLanguage } from "./Evaluation";
 import { Snowflake } from "./Snowflake";
+import { GeneratorState } from "./Testcase";
 
 export type ClusterV1 = {
     id: Snowflake;
@@ -13,15 +14,17 @@ export type ClusterV2 = ClusterV1 & {
     generator_code?: string;
 };
 
-export type ClusterStatus =
-    | "cached"
-    | "uncached"
-    | "pending"
-    | "generator_error"
-    | "solution_error";
-
-export type Cluster = ClusterV2;
-
-export type ClusterWithStatus = Cluster & {
-    status: ClusterStatus;
+export type ClusterV3 = ClusterV1 & {
+    order_number: bigint;
+    status: GeneratorState;
+    error?: string;
 };
+
+export type ClusterV4 = ClusterV3 & {
+    is_sample?: boolean;
+};
+
+export type Cluster = ClusterV4;
+
+export type ClusterWithStatus = Cluster;
+export type ClusterStatus = GeneratorState;

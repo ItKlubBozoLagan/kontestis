@@ -45,7 +45,11 @@ export type SubmissionV6 = SubmissionV5 & {
     compiler_output?: string;
 };
 
-export type Submission = SubmissionV6;
+export type SubmissionV7 = SubmissionV6 & {
+    samples_passed?: boolean;
+};
+
+export type Submission = SubmissionV7;
 
 export type SubmissionWithUserInfo = Submission & {
     full_name: string;
@@ -54,6 +58,7 @@ export type SubmissionWithUserInfo = Submission & {
 export type PendingSubmission = Omit<
     Submission,
     | "verdict"
+    | "samples_passed"
     | "awarded_score"
     | "problem_id"
     | "time_used_millis"
