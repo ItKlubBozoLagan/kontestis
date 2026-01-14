@@ -144,7 +144,7 @@ const AddParticipantSchema = z.object({
 export const ContestParticipantsPage: FC = () => {
     const { contest } = useContestContext();
 
-    const { data: members } = useAllContestMembers(contest.id);
+    const { data: members } = useAllContestMembers([contest.id, { showAllUsers: true }]);
 
     const addMutation = useAddParticipant(contest.id);
 

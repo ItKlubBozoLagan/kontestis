@@ -7,17 +7,19 @@ import { z } from "zod";
 
 import { SimpleButton } from "../../../../../components/SimpleButton";
 import { TitledInput } from "../../../../../components/TitledInput";
-import { TitledSwitch } from "../../../../../components/TitledSwitch";
 import { Translated } from "../../../../../components/Translated";
 import { useCreateCluster } from "../../../../../hooks/problem/cluster/useCreateCluster";
+import { useAllGenerators } from "../../../../../hooks/problem/generator/useAllGenerators";
 import { useTranslation } from "../../../../../hooks/useTranslation";
 import { ModalStyles } from "../../../../../util/ModalStyles";
 
 const CreateClusterSchema = z.object({
     awarded_score: z.coerce.number(),
-    generator: z.coerce.boolean(),
-    generator_language: z.string(),
-    generator_code: z.string(),
+    generator_id: z.string().optional(),
+    test_count: z
+        .union([z.coerce.number().min(1).max(100), z.string().length(0), z.undefined()])
+        .optional(),
+    is_sample: z.boolean().optional(),
 });
 
 type Properties = {
@@ -26,34 +28,44 @@ type Properties = {
 
 export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...properties }) => {
     const {
-        setValue,
         register,
         handleSubmit,
         reset,
+        watch,
+        setValue,
         formState: { errors },
     } = useForm<z.infer<typeof CreateClusterSchema>>({
         resolver: zodResolver(CreateClusterSchema),
-        defaultValues: {
-            generator: false,
-            generator_language: "python",
-            generator_code: "",
-        },
     });
 
     const createMutation = useCreateCluster(problem.id);
+    const { data: generators } = useAllGenerators([problem.id]);
+    const [useGenerator, setUseGenerator] = useState(false);
+
+    const generatorId = watch("generator_id");
+
+    const testCount = watch("test_count");
 
     const onSubmit = handleSubmit((data) => {
         createMutation.reset();
-        createMutation.mutate(data);
+        createMutation.mutate({
+            awarded_score: data.awarded_score,
+            is_sample: data.is_sample,
+            ...(useGenerator && data.generator_id && data.test_count
+                ? {
+                      generator_id: data.generator_id,
+                      test_count: data.test_count as number,
+                  }
+                : {}),
+        });
     });
-
-    const [generator, setGenerator] = useState(false);
 
     useEffect(() => {
         if (!createMutation.isSuccess) return;
 
         createMutation.reset();
         reset();
+        setUseGenerator(false);
         properties.onAfterClose?.();
     }, [createMutation.isSuccess]);
 
@@ -92,68 +104,71 @@ export const CreateClusterModal: FC<Modal.Props & Properties> = ({ problem, ...p
                         tw={"max-w-full"}
                         {...register("awarded_score")}
                     />
-                    <TitledSwitch
-                        label={t(
-                            "contests.management.individual.problems.cluster.info.generator.label"
-                        )}
-                        choice={[
-                            t(
-                                "contests.management.individual.problems.cluster.info.generator.plain"
-                            ),
-                            t(
-                                "contests.management.individual.problems.cluster.info.generator.generator"
-                            ),
-                        ]}
-                        onChange={(value) => {
-                            setGenerator(
-                                value ===
-                                    t(
-                                        "contests.management.individual.problems.cluster.info.generator.generator"
-                                    )
-                            );
-                            setValue(
-                                "generator",
-                                value ===
-                                    t(
-                                        "contests.management.individual.problems.cluster.info.generator.generator"
-                                    )
-                            );
-                        }}
-                    />
-                    {generator && (
-                        <div>
-                            <div tw={"flex flex-col gap-2"}>
-                                <span tw={"mt-2"}>
-                                    {t(
-                                        "contests.management.individual.problems.cluster.info.generator_language"
-                                    )}
-                                </span>
+                    <div tw={"flex items-center gap-2"}>
+                        <input type="checkbox" {...register("is_sample")} />
+                        <label>
+                            {t("contests.management.individual.problems.cluster.modal.isSample")}
+                        </label>
+                    </div>
+
+                    <div tw={"flex items-center gap-2"}>
+                        <input
+                            type="checkbox"
+                            id="use-generator"
+                            checked={useGenerator}
+                            onChange={(event) => {
+                                setUseGenerator(event.target.checked);
+
+                                if (!event.target.checked) {
+                                    // Clear fields when unchecking
+                                    setValue("generator_id", "");
+                                    // eslint-disable-next-line unicorn/no-useless-undefined
+                                    setValue("test_count", undefined);
+                                }
+                            }}
+                        />
+                        <label htmlFor="use-generator">Auto-create testcases with generator</label>
+                    </div>
+
+                    {useGenerator && (
+                        <>
+                            <div>
+                                <label htmlFor="generator-select">Select Generator</label>
                                 <select
-                                    name="languages"
-                                    onChange={(event) =>
-                                        setValue("generator_language", event.target.value)
-                                    }
+                                    id="generator-select"
+                                    tw={"w-full p-2 border rounded"}
+                                    {...register("generator_id")}
                                 >
-                                    <option value="python">Python</option>
-                                    <option value="cpp">C++</option>
-                                    <option value="c">C</option>
-                                    <option value="go">Go</option>
-                                    <option value="rust">Rust</option>
-                                    <option value="java">Java</option>
-                                    <option value="esl">ESL</option>
+                                    <option value="">-- Select Generator --</option>
+                                    {generators?.map((generator) => (
+                                        <option
+                                            key={generator.id.toString()}
+                                            value={generator.id.toString()}
+                                        >
+                                            {generator.name}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
-                            <span tw={"mt-2"}>
-                                {t(
-                                    "contests.management.individual.problems.cluster.info.generator_code"
-                                )}
-                            </span>
-                            <textarea
-                                tw={"w-full h-32 resize-none font-mono text-sm"}
-                                {...register("generator_code")}
-                            ></textarea>
-                        </div>
+
+                            <TitledInput
+                                bigLabel
+                                type="number"
+                                label="Number of Testcases"
+                                placeholder="Enter number of testcases (1-100)"
+                                tw={"max-w-full"}
+                                {...register("test_count")}
+                            />
+
+                            {generatorId && testCount && (
+                                <div tw={"text-sm text-gray-600 p-2 bg-gray-100 rounded"}>
+                                    Will create {testCount} testcase(s) with inputs: 1, 2, 3, ...{" "}
+                                    {testCount}
+                                </div>
+                            )}
+                        </>
                     )}
+
                     <SimpleButton tw={"mt-2"} disabled={createMutation.isLoading}>
                         {t("contests.management.individual.problems.cluster.modal.createButton")}
                     </SimpleButton>

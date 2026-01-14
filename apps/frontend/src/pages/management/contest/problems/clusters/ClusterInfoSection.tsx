@@ -1,13 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ClusterWithStatus } from "@kontestis/models";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { EditableDisplayBox } from "../../../../../components/EditableDisplayBox";
 import { TitledInput } from "../../../../../components/TitledInput";
 import { TitledSection } from "../../../../../components/TitledSection";
-import { TitledSwitch } from "../../../../../components/TitledSwitch";
 import { Translated } from "../../../../../components/Translated";
 import { useModifyCluster } from "../../../../../hooks/problem/cluster/useCreateCluster";
 import { useTranslation } from "../../../../../hooks/useTranslation";
@@ -19,14 +18,12 @@ type Properties = {
 
 const ModifyClusterSchema = z.object({
     awarded_score: z.coerce.number(),
-    generator: z.coerce.boolean(),
-    generator_language: z.string(),
-    generator_code: z.string(),
+    order_number: z.coerce.number().optional(),
+    is_sample: z.boolean().optional(),
 });
 
 export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
     const {
-        setValue,
         register,
         handleSubmit,
         formState: { errors },
@@ -34,9 +31,8 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
         resolver: zodResolver(ModifyClusterSchema),
         defaultValues: {
             awarded_score: cluster.awarded_score,
-            generator: cluster.generator,
-            generator_language: cluster.generator_language ?? "python",
-            generator_code: cluster.generator_code ?? "",
+            order_number: Number(cluster.order_number),
+            is_sample: cluster.is_sample,
         },
     });
 
@@ -46,8 +42,6 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
         modifyMutation.reset();
         modifyMutation.mutate(data);
     });
-
-    const [generator, setGenerator] = useState(cluster.generator);
 
     useEffect(() => {
         if (!modifyMutation.isSuccess) return;
@@ -75,79 +69,26 @@ export const ClusterInfoSection: FC<Properties> = ({ cluster }) => {
                 >
                     <TitledInput {...register("awarded_score")} />
                 </EditableDisplayBox>
-                <TitledSwitch
-                    label={t(
-                        "contests.management.individual.problems.cluster.info.generator.label"
-                    )}
-                    choice={[
-                        t("contests.management.individual.problems.cluster.info.generator.plain"),
-                        t(
-                            "contests.management.individual.problems.cluster.info.generator.generator"
-                        ),
-                    ]}
-                    defaultIndex={cluster.generator ? 1 : 0}
-                    onChange={(value) => {
-                        setGenerator(
-                            value ===
-                                t(
-                                    "contests.management.individual.problems.cluster.info.generator.generator"
-                                )
-                        );
-                        setValue(
-                            "generator",
-                            value ===
-                                t(
-                                    "contests.management.individual.problems.cluster.info.generator.generator"
-                                )
-                        );
-
-                        if (
-                            (value ===
-                                t(
-                                    "contests.management.individual.problems.cluster.info.generator.generator"
-                                )) !==
-                            cluster.generator
-                        )
-                            submitForm();
-                    }}
-                />
-                <ClusterStatusSection cluster={cluster} />
-                {generator && (
-                    <div tw={"w-full flex flex-col gap-5 mt-5"}>
-                        <EditableDisplayBox
-                            title={t(
-                                "contests.management.individual.problems.cluster.info.generator_language"
-                            )}
-                            value={cluster.generator_language + ""}
-                            submitFunction={submitForm}
-                        >
-                            <select
-                                name="languages"
-                                onChange={(event) =>
-                                    setValue("generator_language", event.target.value)
-                                }
-                                defaultValue={cluster.generator_language ?? ""}
-                            >
-                                <option value="python">Python</option>
-                                <option value="cpp">C++</option>
-                                <option value="c">C</option>
-                                <option value="go">Go</option>
-                                <option value="rust">Rust</option>
-                                <option value="java">Java</option>
-                            </select>
-                        </EditableDisplayBox>
-                        <EditableDisplayBox
-                            title={t(
-                                "contests.management.individual.problems.cluster.info.generator_code"
-                            )}
-                            value={cluster.generator_code ?? ""}
-                            submitFunction={submitForm}
-                            largeTextValue
-                        >
-                            <textarea {...register("generator_code")} />
-                        </EditableDisplayBox>
+                <EditableDisplayBox
+                    title="Order"
+                    value={cluster.order_number?.toString() ?? "0"}
+                    submitFunction={submitForm}
+                >
+                    <TitledInput {...register("order_number")} />
+                </EditableDisplayBox>
+                <EditableDisplayBox
+                    title={t("contests.management.individual.problems.cluster.info.isSample")}
+                    value={cluster.is_sample ? "Yes" : "No"}
+                    submitFunction={submitForm}
+                >
+                    <div tw={"flex items-center gap-2"}>
+                        <input type="checkbox" {...register("is_sample")} />
+                        <label>
+                            {t("contests.management.individual.problems.cluster.info.isSample")}
+                        </label>
                     </div>
-                )}
+                </EditableDisplayBox>
+                <ClusterStatusSection cluster={cluster} />
                 <div tw={"text-sm text-red-500"}>
                     {Object.keys(errors).length > 0 && <span>{t("errorMessages.invalid")}</span>}
                     {modifyMutation.error && (

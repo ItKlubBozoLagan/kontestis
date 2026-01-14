@@ -11,7 +11,6 @@ import {
     Submission,
     SuccessfulEvaluationResult,
     Testcase,
-    TestcaseWithOutput,
 } from "@kontestis/models";
 import { AxiosError } from "axios";
 
@@ -78,7 +77,7 @@ const updateContestMemberScore = async (
 
 const evaluateTestcases = async (
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
+    testcases: EvaluationInputTestcase[],
     problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
 ) => {
     return (await evaluatorAxios
@@ -108,13 +107,20 @@ const evaluateTestcases = async (
 
 const GROUP_SIZE_LIMIT = (1 << 25) - (1 << 22);
 
+export type EvaluationInputTestcase = {
+    id: Snowflake;
+    input: string;
+    correct_output: string;
+};
+
 export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
-    testcases: TestcaseWithOutput[],
-    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">
+    testcases: EvaluationInputTestcase[],
+    problem: Pick<Problem, "time_limit_millis" | "memory_limit_megabytes">,
+    evaluate_all: boolean = false
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const groups: TestcaseWithOutput[][] = [];
+    const groups: EvaluationInputTestcase[][] = [];
 
     let currentSize = 0;
     let groupId = 0;
@@ -130,7 +136,7 @@ export const splitAndEvaluateTestcases = async (
 
         currentSize += testcase.input.length + (testcase.correct_output?.length ?? 0);
 
-        if (groups.length <= groupId) groups.push([]);
+        while (groups.length <= groupId) groups.push([]);
 
         groups[groupId].push(testcase);
     }
@@ -154,7 +160,8 @@ export const splitAndEvaluateTestcases = async (
                               : problemDetails.evaluator_language,
                   },
                   groupTestcases,
-                  problem
+                  problem,
+                  evaluate_all
               ));
 
         if (error) return [undefined, error] as AxiosEvaluationResponse;
@@ -172,31 +179,22 @@ const evaluateCluster = async (
     pendingSubmission: PendingSubmission
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
-    const testcases = await getAllTestcases(cluster).then((testcases) =>
-        problemDetails.evaluation_variant === "output-only" ? testcases.slice(0, 1) : testcases
-    );
+    const testcases = (
+        await getAllTestcases(cluster).then((testcases) =>
+            problemDetails.evaluation_variant === "output-only" ? testcases.slice(0, 1) : testcases
+        )
+    ).sort((a, b) => Number(a.id - b.id));
 
     const testCasesById: Record<string, Testcase> = {};
 
     for (const testcase of testcases) testCasesById[testcase.id.toString()] = testcase;
 
-    await Promise.all(
-        testcases.flatMap((testcase) => [
-            S3Client.putObject(
-                // eslint-disable-next-line sonarjs/no-duplicate-string
-                Globals.s3.buckets.submission_meta,
-                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.in`,
-                testcase.input
-            ),
-            S3Client.putObject(
-                Globals.s3.buckets.submission_meta,
-                `${pendingSubmission.id}/${cluster.id}/${testcase.id}.out`,
-                testcase.correct_output
-            ),
-        ])
+    const [results, error] = await splitAndEvaluateTestcases(
+        problemDetails,
+        testcases,
+        problem,
+        cluster.is_sample
     );
-
-    const [results, error] = await splitAndEvaluateTestcases(problemDetails, testcases, problem);
 
     if (error || !results) return;
 
@@ -273,8 +271,14 @@ const evaluateCluster = async (
     await Database.insertInto("cluster_submissions", clusterSubmission);
 
     await Promise.all(
-        results.map((result) =>
-            Database.insertInto("testcase_submissions", {
+        results.map((result) => {
+            const testcase = testCasesById[result.testCaseId];
+            const submissionOutputFile =
+                result.type === "success" && result.output
+                    ? `${pendingSubmission.id}/${cluster.id}/${result.testCaseId}.sout`
+                    : undefined;
+
+            return Database.insertInto("testcase_submissions", {
                 id: generateSnowflake(),
                 testcase_id: BigInt(result.testCaseId),
                 cluster_submission_id: clusterSubmission.id,
@@ -284,8 +288,11 @@ const evaluateCluster = async (
                         ?.score ?? 0,
                 memory_used_megabytes: result.type === "success" ? result.memory : 0,
                 time_used_millis: result.type === "success" ? result.time : 0,
-            })
-        )
+                input_file: testcase?.input_file,
+                output_file: testcase?.output_file,
+                submission_output_file: submissionOutputFile,
+            });
+        })
     );
 
     return {
@@ -406,6 +413,11 @@ export const beginEvaluation = async (
                   0
               );
 
+        const samplesPassed =
+            clusterSubmissions
+                .filter((cs) => clusters.find((c) => c.id === cs?.cluster_id)?.is_sample)
+                .every((cs) => cs?.verdict === "accepted") ?? false;
+
         const newSubmission: Submission = {
             ...pendingSubmission,
             problem_id: problemDetails.problemId,
@@ -420,6 +432,7 @@ export const beginEvaluation = async (
             time_used_millis: time,
             memory_used_megabytes: memory,
             compiler_output: clusterSubmissions.find((it) => it?.compilerOutput)?.compilerOutput,
+            samples_passed: samplesPassed,
         } as Submission;
 
         await Promise.all([
@@ -432,6 +445,7 @@ export const beginEvaluation = async (
                           compiler_output: newSubmission.compiler_output,
                           memory_used_megabytes: newSubmission.memory_used_megabytes,
                           time_used_millis: newSubmission.time_used_millis,
+                          samples_passed: newSubmission.samples_passed,
                           error:
                               verdict === "compilation_error"
                                   ? clusterSubmissions.find(

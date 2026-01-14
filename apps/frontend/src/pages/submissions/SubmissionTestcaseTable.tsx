@@ -27,6 +27,7 @@ type Properties = {
     clusterSubmissionId: bigint;
     clusterId: bigint;
     files: string[];
+    isSample?: boolean;
     back: () => void;
 };
 
@@ -35,6 +36,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
     clusterId,
     files,
     back,
+    isSample,
     submissionId,
 }) => {
     const { data: submission } = useSubmission(submissionId);
@@ -80,7 +82,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                     <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
-                    {isContestFinished ? (
+                    {isContestFinished || isSample ? (
                         <>
                             <TableHeadItem>Input</TableHeadItem>
                             <TableHeadItem>Output</TableHeadItem>
@@ -101,7 +103,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
             </thead>
             <tbody>
                 {testcaseSubmissions
-                    ?.sort((a, b) => Number(BigInt(a.testcase_id) - BigInt(b.testcase_id)))
+                    ?.sort((a, b) => Number(a.testcase_id - b.testcase_id))
                     .map((ts, index) => (
                         <TableRow key={ts.id.toString()}>
                             <TableItem>
@@ -126,6 +128,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                 </Translated>
                             </TableItem>
                             {(isContestFinished ||
+                                isSample ||
                                 hasAdminPermission(
                                     user.permissions,
                                     AdminPermissions.EDIT_CONTEST
@@ -137,9 +140,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                     ))) && (
                                 <>
                                     <TableItem>
-                                        {files.includes(
-                                            `${submissionId}/${clusterId}/${ts.testcase_id}.in`
-                                        ) ? (
+                                        {files.includes(`${ts.testcase_id}.in`) ? (
                                             <FiDownload
                                                 size={16}
                                                 tw={"hover:cursor-pointer hover:text-blue-400"}
@@ -152,9 +153,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                         )}
                                     </TableItem>
                                     <TableItem>
-                                        {files.includes(
-                                            `${submissionId}/${clusterId}/${ts.testcase_id}.out`
-                                        ) ? (
+                                        {files.includes(`${ts.testcase_id}.out`) ? (
                                             <FiDownload
                                                 size={16}
                                                 tw={"hover:cursor-pointer hover:text-blue-400"}
@@ -167,9 +166,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                         )}
                                     </TableItem>
                                     <TableItem>
-                                        {files.includes(
-                                            `${submissionId}/${clusterId}/${ts.testcase_id}.sout`
-                                        ) ? (
+                                        {files.includes(`${ts.testcase_id}.sout`) ? (
                                             <FiDownload
                                                 size={16}
                                                 tw={

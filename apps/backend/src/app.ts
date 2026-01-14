@@ -30,6 +30,7 @@ import { NotificationsHandler } from "./routes/notifications/NotificationsHandle
 import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
 import { initS3 } from "./s3/S3";
+import fileUpload from "express-fileupload";
 
 declare global {
     interface BigInt {
@@ -79,6 +80,8 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.use(fileUpload());
+
 app.use(json({ limit: "50mb" }), (req, _, next) => {
     // json from express@5 yields undefined for empty bodies,
     //  this breaks validation, so we're falling back to an empty object
@@ -115,6 +118,11 @@ app.use((error: Error, _: Request, res: Response, next: NextFunction) => {
 
 Promise.allSettled([
     Database.awaitConnection()
+        .then(() =>
+            initS3().catch((error) => {
+                Logger.panic("S3 failed", error);
+            })
+        )
         .then(async () => {
             Logger.database("Successfully connected to database!");
             await initDatabase();
@@ -133,14 +141,12 @@ Promise.allSettled([
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
-    initS3().catch((error) => {
-        Logger.panic("S3 failed", error);
-    }),
     // for consistency
     initInflux(),
     initAaiEdu(),
 ]).then(async () => {
     Logger.info("Ready");
+    // kurac(Database);
 
     app.listen(Globals.port, () => {
         Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
