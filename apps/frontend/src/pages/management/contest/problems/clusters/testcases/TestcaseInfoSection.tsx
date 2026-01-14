@@ -2,7 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Snowflake, Testcase } from "@kontestis/models";
 import React, { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FiDownload, FiUpload, FiX } from "react-icons/all";
+import { FiDownload, FiEdit, FiUpload, FiX } from "react-icons/all";
+import { useQueryClient } from "react-query";
 import { z } from "zod";
 
 import { http, wrapAxios } from "../../../../../../api/http";
@@ -46,10 +47,17 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
     });
 
     const { data: generators } = useAllGenerators([problemId]);
+    const queryClient = useQueryClient();
     const modifyMutation = useModifyTestcase([problemId, testcase.cluster_id, testcase.id]);
     const [uploadingInput, setUploadingInput] = useState(false);
     const [uploadingOutput, setUploadingOutput] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [showInputTextArea, setShowInputTextArea] = useState(false);
+    const [showOutputTextArea, setShowOutputTextArea] = useState(false);
+    const [inputTextContent, setInputTextContent] = useState("");
+    const [outputTextContent, setOutputTextContent] = useState("");
+    const [submittingInputText, setSubmittingInputText] = useState(false);
+    const [submittingOutputText, setSubmittingOutputText] = useState(false);
 
     const inputFileReference = useRef<HTMLInputElement>(null);
     const outputFileReference = useRef<HTMLInputElement>(null);
@@ -104,8 +112,16 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                 }
             );
 
-            // Refresh testcase data
-            window.location.reload();
+            // Invalidate testcase queries to refetch updated data
+            await queryClient.invalidateQueries([
+                "problem",
+                problemId,
+                "cluster",
+                testcase.cluster_id,
+                "testcase",
+                testcase.id,
+            ]);
+            await queryClient.invalidateQueries(["testcases", problemId, testcase.cluster_id]);
         } catch (error: any) {
             setUploadError(error.message || "Upload failed");
         } finally {
@@ -118,6 +134,49 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
             inputFileReference.current?.click();
         } else {
             outputFileReference.current?.click();
+        }
+    };
+
+    const handleTextContentSubmit = async (type: "input" | "output") => {
+        const content = type === "input" ? inputTextContent : outputTextContent;
+        const setSubmitting = type === "input" ? setSubmittingInputText : setSubmittingOutputText;
+        const setShowTextArea = type === "input" ? setShowInputTextArea : setShowOutputTextArea;
+
+        setSubmitting(true);
+        setUploadError(null);
+
+        try {
+            const blob = new Blob([content], { type: "text/plain" });
+            const file = new File([blob], `${type}.txt`, { type: "text/plain" });
+            const formData = new FormData();
+
+            formData.append("input", file);
+
+            await http.post(
+                `/problem/${problemId}/cluster/${testcase.cluster_id}/testcase/${testcase.id}/${type}`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            setShowTextArea(false);
+            // Invalidate testcase queries to refetch updated data
+            await queryClient.invalidateQueries([
+                "problem",
+                problemId,
+                "cluster",
+                testcase.cluster_id,
+                "testcase",
+                testcase.id,
+            ]);
+            await queryClient.invalidateQueries(["testcases", problemId, testcase.cluster_id]);
+        } catch (error: any) {
+            setUploadError(error.message || "Submit failed");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -216,75 +275,137 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                     )}
 
                     <div tw={"flex flex-col items-start gap-3 mt-4 w-full ml-5"}>
-                        <div tw={"flex items-center gap-4 justify-between"}>
-                            <div tw={"flex items-center gap-2"}>
-                                <span tw={"font-semibold"}>Input File:</span>
-                                {testcase.input_file ? (
-                                    <FiDownload
-                                        size={18}
-                                        tw={"hover:cursor-pointer hover:text-blue-400"}
-                                        onClick={() => downloadTestcaseFile("input")}
-                                    />
-                                ) : (
-                                    <FiX tw={"text-neutral-500"} size={18} />
+                        <div tw={"flex flex-col gap-2 w-full"}>
+                            <div tw={"flex items-center gap-4"}>
+                                <div tw={"flex items-center gap-2"}>
+                                    <span tw={"font-semibold"}>Input File:</span>
+                                    {testcase.input_file ? (
+                                        <FiDownload
+                                            size={18}
+                                            tw={"hover:cursor-pointer hover:text-blue-400"}
+                                            onClick={() => downloadTestcaseFile("input")}
+                                        />
+                                    ) : (
+                                        <FiX tw={"text-neutral-500"} size={18} />
+                                    )}
+                                </div>
+                                {testcase.input_type === "manual" && (
+                                    <>
+                                        <input
+                                            type="file"
+                                            ref={inputFileReference}
+                                            style={{ display: "none" }}
+                                            onChange={(event) => {
+                                                const file = event.target.files?.[0];
+
+                                                if (file) handleFileUpload("input", file);
+                                            }}
+                                        />
+                                        <SimpleButton
+                                            type="button"
+                                            prependIcon={FiUpload}
+                                            onClick={() => triggerFileInput("input")}
+                                            disabled={uploadingInput}
+                                        >
+                                            {uploadingInput ? "Uploading..." : "Upload Input"}
+                                        </SimpleButton>
+                                        <SimpleButton
+                                            type="button"
+                                            prependIcon={FiEdit}
+                                            onClick={() => setShowInputTextArea(!showInputTextArea)}
+                                        >
+                                            {showInputTextArea ? "Cancel" : "Enter Text"}
+                                        </SimpleButton>
+                                    </>
                                 )}
                             </div>
-                            {testcase.input_type === "manual" && (
-                                <>
-                                    <input
-                                        type="file"
-                                        ref={inputFileReference}
-                                        style={{ display: "none" }}
-                                        onChange={(event) => {
-                                            const file = event.target.files?.[0];
-
-                                            if (file) handleFileUpload("input", file);
-                                        }}
+                            {showInputTextArea && testcase.input_type === "manual" && (
+                                <div tw={"flex flex-col gap-2 w-full max-w-lg"}>
+                                    <textarea
+                                        tw={
+                                            "w-full h-32 p-2 border border-solid border-neutral-300 rounded font-mono text-sm resize-y"
+                                        }
+                                        placeholder="Enter input data here..."
+                                        value={inputTextContent}
+                                        onChange={(event) =>
+                                            setInputTextContent(event.target.value)
+                                        }
                                     />
                                     <SimpleButton
                                         type="button"
-                                        prependIcon={FiUpload}
-                                        onClick={() => triggerFileInput("input")}
-                                        disabled={uploadingInput}
+                                        onClick={() => handleTextContentSubmit("input")}
+                                        disabled={submittingInputText || !inputTextContent.trim()}
                                     >
-                                        {uploadingInput ? "Uploading..." : "Upload Input"}
+                                        {submittingInputText ? "Submitting..." : "Submit Input"}
                                     </SimpleButton>
-                                </>
+                                </div>
                             )}
                         </div>
 
-                        <div tw={"flex items-center gap-4 justify-between"}>
-                            <div tw={"flex items-center gap-2"}>
-                                <span tw={"font-semibold"}>Output File:</span>
-                                {testcase.output_file ? (
-                                    <FiDownload
-                                        size={18}
-                                        tw={"hover:cursor-pointer hover:text-blue-400"}
-                                        onClick={() => downloadTestcaseFile("output")}
-                                    />
-                                ) : (
-                                    <FiX tw={"text-neutral-500"} size={18} />
+                        <div tw={"flex flex-col gap-2 w-full"}>
+                            <div tw={"flex items-center gap-4"}>
+                                <div tw={"flex items-center gap-2"}>
+                                    <span tw={"font-semibold"}>Output File:</span>
+                                    {testcase.output_file ? (
+                                        <FiDownload
+                                            size={18}
+                                            tw={"hover:cursor-pointer hover:text-blue-400"}
+                                            onClick={() => downloadTestcaseFile("output")}
+                                        />
+                                    ) : (
+                                        <FiX tw={"text-neutral-500"} size={18} />
+                                    )}
+                                </div>
+                                {testcase.output_type === "manual" && (
+                                    <>
+                                        <input
+                                            type="file"
+                                            ref={outputFileReference}
+                                            style={{ display: "none" }}
+                                            onChange={(event) => {
+                                                const file = event.target.files?.[0];
+
+                                                if (file) handleFileUpload("output", file);
+                                            }}
+                                        />
+                                        <SimpleButton
+                                            type="button"
+                                            prependIcon={FiUpload}
+                                            onClick={() => triggerFileInput("output")}
+                                            disabled={uploadingOutput}
+                                        >
+                                            {uploadingOutput ? "Uploading..." : "Upload Output"}
+                                        </SimpleButton>
+                                        <SimpleButton
+                                            type="button"
+                                            prependIcon={FiEdit}
+                                            onClick={() =>
+                                                setShowOutputTextArea(!showOutputTextArea)
+                                            }
+                                        >
+                                            {showOutputTextArea ? "Cancel" : "Enter Text"}
+                                        </SimpleButton>
+                                    </>
                                 )}
                             </div>
-                            {testcase.output_type === "manual" && (
-                                <div tw={"flex gap-2"}>
-                                    <input
-                                        type="file"
-                                        ref={outputFileReference}
-                                        style={{ display: "none" }}
-                                        onChange={(event) => {
-                                            const file = event.target.files?.[0];
-
-                                            if (file) handleFileUpload("output", file);
-                                        }}
+                            {showOutputTextArea && testcase.output_type === "manual" && (
+                                <div tw={"flex flex-col gap-2 w-full max-w-lg"}>
+                                    <textarea
+                                        tw={
+                                            "w-full h-32 p-2 border border-solid border-neutral-300 rounded font-mono text-sm resize-y"
+                                        }
+                                        placeholder="Enter output data here..."
+                                        value={outputTextContent}
+                                        onChange={(event) =>
+                                            setOutputTextContent(event.target.value)
+                                        }
                                     />
                                     <SimpleButton
                                         type="button"
-                                        prependIcon={FiUpload}
-                                        onClick={() => triggerFileInput("output")}
-                                        disabled={uploadingOutput}
+                                        onClick={() => handleTextContentSubmit("output")}
+                                        disabled={submittingOutputText || !outputTextContent.trim()}
                                     >
-                                        {uploadingOutput ? "Uploading..." : "Upload Output"}
+                                        {submittingOutputText ? "Submitting..." : "Submit Output"}
                                     </SimpleButton>
                                 </div>
                             )}
