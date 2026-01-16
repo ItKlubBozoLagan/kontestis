@@ -85,6 +85,7 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
         ...contest,
         id: generateSnowflake(),
         organisation_id: organisationId,
+        name: contest.name + " (Copy)",
     };
 
     await Database.insertInto("contests", newContest);
@@ -102,6 +103,28 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
             await Database.insertInto("problems", newProblem);
 
             const clusters = await Database.selectFrom("clusters", "*", { problem_id: problem.id });
+
+            const generators = await Database.selectFrom("generators", "*", {
+                problem_id: problem.id,
+            });
+
+            const generatorIdTranslation: Record<string, string> = {};
+
+            await Promise.all(
+                generators.map(async (generator) => {
+                    const newId = generateSnowflake();
+
+                    generatorIdTranslation[generator.id.toString()] = newId.toString();
+
+                    await Database.insertInto("generators", {
+                        ...generator,
+                        id: newId,
+                        contest_id: newContest.id,
+                        organisation_id: organisationId,
+                        problem_id: newProblem.id,
+                    });
+                })
+            );
 
             await Promise.all(
                 clusters.map(async (cluster) => {
@@ -122,6 +145,11 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
                             await Database.insertInto("testcases", {
                                 ...testcase,
                                 id: generateSnowflake(),
+                                generator_id: testcase.generator_id
+                                    ? BigInt(
+                                          generatorIdTranslation[testcase.generator_id.toString()]
+                                      )
+                                    : null,
                                 cluster_id: newCluster.id,
                             });
                         })
