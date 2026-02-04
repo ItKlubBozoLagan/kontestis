@@ -1,4 +1,7 @@
-import "@/styles/prism-custom.css";
+/* eslint-disable simple-import-sort/imports */
+// Import Prism core FIRST before any components or styles
+// DO NOT REORDER - Prism must be imported before its language components
+import Prism from "prismjs";
 import "prismjs/components/prism-c";
 import "prismjs/components/prism-cpp";
 import "prismjs/components/prism-python";
@@ -8,6 +11,8 @@ import "prismjs/components/prism-rust";
 import "prismjs/components/prism-go";
 import "prismjs/components/prism-nasm";
 import "prismjs/components/prism-ocaml";
+import "@/styles/prism-custom.css";
+/* eslint-enable simple-import-sort/imports */
 
 import {
     AdminPermissions,
@@ -28,8 +33,6 @@ import {
     Timer,
     X,
 } from "lucide-react";
-// Import Prism core FIRST, then language components
-import Prism from "prismjs";
 import { useCallback, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
