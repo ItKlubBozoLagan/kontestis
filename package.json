@@ -22,5 +22,12 @@
         "eslint-plugin-v3xlabs": "^1.6.0",
         "husky": "^8.0.3"
     },
+    "pnpm": {
+        "overrides": {
+            "@types/react": "^18.2.48",
+            "@types/react-dom": "^18.2.18",
+            "zod": "^3.22.4"
+        }
+    },
     "packageManager": "pnpm@9.10.0+sha512.73a29afa36a0d092ece5271de5177ecbf8318d454ecd701343131b8ebc0c1a91c487da46ab77c8e596d6acf1461e3594ced4becedf8921b074fbd8653ed7051c"
 }
