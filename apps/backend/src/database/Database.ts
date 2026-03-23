@@ -1,6 +1,7 @@
 import {
     Cluster,
     ContestAnnouncement,
+    ContestChatMessage,
     ContestMember,
     ContestQuestion,
     EduUser,
@@ -76,6 +77,7 @@ import { migration_contest_show_leaderboard } from "./migrations/0049_contest_sh
 import { migration_improve_generators } from "./migrations/0050_improve_generators";
 import { migration_add_sample_clusters } from "./migrations/0051_add_sample_clusters";
 import { migration_generator_id_index } from "./migrations/0052_generator_id_index";
+import { migration_contest_chat_messages } from "./migrations/0053_contest_chat_messages";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -88,6 +90,7 @@ export const Database = new ScylloClient<{
     testcase_submissions: TestcaseSubmission;
     contest_members: ContestMember;
     contest_questions: ContestQuestion;
+    contest_chat_messages: ContestChatMessage;
     contest_announcements: ContestAnnouncement;
     organisations: Organisation;
     organisation_members: OrganisationMember;
@@ -163,6 +166,7 @@ const migrations: Migration<any>[] = [
     migration_improve_generators,
     migration_add_sample_clusters,
     migration_generator_id_index,
+    migration_contest_chat_messages,
 ];
 
 export const initDatabase = async () => {

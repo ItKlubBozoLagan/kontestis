@@ -1,68 +1,109 @@
 import { FC, useMemo } from "react";
+import { FiMessageSquare } from "react-icons/all";
+import { Link } from "react-router-dom";
 
+import {
+    Table,
+    TableHeadItem,
+    TableHeadRow,
+    TableItem,
+    TableRow,
+} from "../../../../components/Table";
 import { useContestContext } from "../../../../context/constestContext";
+import { useAllContestMembers } from "../../../../hooks/contest/participants/useAllContestMembers";
 import { useAllContestQuestions } from "../../../../hooks/contest/questions/useAllContestQuestions";
 import { useTranslation } from "../../../../hooks/useTranslation";
-import { ContestQuestionItem } from "./ContestQuestionItem";
 
 export const ContestQuestionsPage: FC = () => {
     const { contest } = useContestContext();
 
-    const { data: questions } = useAllContestQuestions(contest.id);
-
-    const answered = useMemo(
-        () => questions?.filter((question) => (question.response?.length ?? 0) > 0),
-        [questions]
-    );
-
-    const notAnswered = useMemo(
-        () => questions?.filter((question) => (question.response?.length ?? 0) === 0),
-        [questions]
-    );
+    const { data: threads } = useAllContestQuestions(contest.id);
+    const { data: members } = useAllContestMembers([contest.id, { showAllUsers: true }]);
 
     const { t } = useTranslation();
 
+    const getMemberName = (memberId: bigint) => {
+        const member = members?.find((m) => m.id === memberId);
+
+        return member?.full_name ?? t("contests.management.individual.questions.unknownMember");
+    };
+
+    const sortedThreads = useMemo(
+        () =>
+            (threads ?? []).sort((a, b) => {
+                const aTime = a.last_message_at?.getTime() ?? Number(a.id >> 22n);
+                const bTime = b.last_message_at?.getTime() ?? Number(b.id >> 22n);
+
+                return bTime - aTime;
+            }),
+        [threads]
+    );
+
+    if (sortedThreads.length === 0) {
+        return (
+            <span tw={"w-full text-center"}>
+                {t("contests.management.individual.questions.empty")}
+            </span>
+        );
+    }
+
     return (
-        <div tw={"w-full flex justify-center gap-2"}>
-            {questions?.length === 0 && (
-                <span tw={"w-full text-center"}>
-                    {t("contests.management.individual.questions.empty")}
-                </span>
-            )}
-            {questions?.length !== 0 && (
-                <div tw={"w-full flex flex-col justify-center gap-8"}>
-                    <div tw={"flex flex-col gap-4"}>
-                        <span tw={"text-3xl text-neutral-800"}>
-                            {t("contests.management.individual.questions.unAnswered.label")}
-                        </span>
-                        <div tw={"flex flex-wrap gap-4 justify-center"}>
-                            {(notAnswered ?? [])
-                                .sort((a, b) => Number(a.id - b.id))
-                                .map((question) => (
-                                    <ContestQuestionItem
-                                        key={question.id.toString()}
-                                        question={question}
-                                    />
-                                ))}
-                        </div>
-                    </div>
-                    <div tw={"flex flex-col gap-4"}>
-                        <span tw={"text-3xl text-neutral-800"}>
-                            {t("contests.management.individual.questions.answered.label")}
-                        </span>
-                        <div tw={"flex flex-wrap gap-4 justify-center"}>
-                            {(answered ?? [])
-                                .sort((a, b) => Number(b.id - a.id))
-                                .map((question) => (
-                                    <ContestQuestionItem
-                                        key={question.id.toString()}
-                                        question={question}
-                                    />
-                                ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+        <Table tw={"w-full"}>
+            <thead>
+                <TableHeadRow>
+                    <TableHeadItem>
+                        {t("contests.management.individual.questions.table.subject")}
+                    </TableHeadItem>
+                    <TableHeadItem>
+                        {t("contests.management.individual.questions.table.member")}
+                    </TableHeadItem>
+                    <TableHeadItem>
+                        {t("contests.management.individual.questions.table.status")}
+                    </TableHeadItem>
+                    <TableHeadItem>
+                        {t("contests.management.individual.questions.table.lastActivity")}
+                    </TableHeadItem>
+                </TableHeadRow>
+            </thead>
+            <tbody>
+                {sortedThreads.map((thread) => {
+                    const needsReply =
+                        !thread.last_message_member_id ||
+                        thread.last_message_member_id === thread.contest_member_id;
+
+                    return (
+                        <TableRow key={thread.id.toString()}>
+                            <TableItem tw={"hover:(text-sky-800 cursor-pointer)"}>
+                                <Link to={`${thread.id}`} tw={"flex items-center gap-2"}>
+                                    <FiMessageSquare tw={"text-lg shrink-0"} />
+                                    <span tw={"truncate max-w-[300px]"}>{thread.question}</span>
+                                </Link>
+                            </TableItem>
+                            <TableItem>{getMemberName(thread.contest_member_id)}</TableItem>
+                            <TableItem>
+                                {needsReply ? (
+                                    <span tw={"text-yellow-700"}>
+                                        {t(
+                                            "contests.management.individual.questions.table.needsReply"
+                                        )}
+                                    </span>
+                                ) : (
+                                    <span tw={"text-green-700"}>
+                                        {t(
+                                            "contests.management.individual.questions.table.replied"
+                                        )}
+                                    </span>
+                                )}
+                            </TableItem>
+                            <TableItem>
+                                {thread.last_message_at
+                                    ? thread.last_message_at.toLocaleString()
+                                    : "-"}
+                            </TableItem>
+                        </TableRow>
+                    );
+                })}
+            </tbody>
+        </Table>
     );
 };

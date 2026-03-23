@@ -1,5 +1,6 @@
 import {
     AdminPermissions,
+    ContestChatMessage,
     ContestMemberPermissions,
     ContestQuestion,
     hasAdminPermission,
@@ -8,6 +9,7 @@ import {
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
+import { eqIn } from "scyllo";
 
 import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
@@ -26,18 +28,35 @@ const QuestionSchema = Type.Object({
     question: Type.String(),
 });
 
+// Create a new thread (with initial message)
 ContestQuestionHandler.post("/", useValidation(QuestionSchema), async (req, res) => {
     const member = await extractContestMember(req);
     const contest = await extractContest(req);
+
+    const now = new Date();
 
     const question: ContestQuestion = {
         id: generateSnowflake(),
         contest_id: member.contest_id,
         question: req.body.question,
         contest_member_id: member.id,
+        last_message_at: now,
+        last_message_member_id: member.id,
     };
 
-    await Database.insertInto("contest_questions", question);
+    const firstMessage: ContestChatMessage = {
+        id: generateSnowflake(),
+        thread_id: question.id,
+        contest_id: member.contest_id,
+        author_member_id: member.id,
+        content: req.body.question,
+        created_at: now,
+    };
+
+    await Promise.all([
+        Database.insertInto("contest_questions", question),
+        Database.insertInto("contest_chat_messages", firstMessage),
+    ]);
 
     const members = await Database.selectFrom(
         "contest_members",
@@ -47,9 +66,8 @@ ContestQuestionHandler.post("/", useValidation(QuestionSchema), async (req, res)
         }
     );
 
-    // can't really do this filter on the database level
-    const privileged = members.filter((member) =>
-        hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS)
+    const privileged = members.filter((m) =>
+        hasContestPermission(m.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS)
     );
 
     const _ = pushNotificationsToMany(
@@ -63,6 +81,7 @@ ContestQuestionHandler.post("/", useValidation(QuestionSchema), async (req, res)
     return respond(res, StatusCodes.OK, question);
 });
 
+// List all threads
 ContestQuestionHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
     const contest = await extractContest(req);
@@ -86,6 +105,151 @@ ContestQuestionHandler.get("/", async (req, res) => {
     );
 });
 
+// Get messages for a thread
+ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
+    const questionId = extractIdFromParameters(req, "question_id");
+    const user = await extractUser(req);
+    const thread = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
+
+    if (!thread) throw new SafeError(StatusCodes.NOT_FOUND);
+
+    const member = await extractContestMember(req, thread.contest_id);
+
+    const isOwner = member.id === thread.contest_member_id;
+    const canView = hasContestPermission(
+        member.contest_permissions,
+        ContestMemberPermissions.VIEW_QUESTIONS,
+        user.permissions
+    );
+
+    if (!isOwner && !canView) throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const messages = await Database.selectFrom("contest_chat_messages", "*", {
+        thread_id: questionId,
+    });
+
+    // Resolve author names
+    const uniqueMemberIds = [...new Set(messages.map((m) => m.author_member_id))];
+
+    const memberRows = await Promise.all(
+        uniqueMemberIds.map((id) =>
+            Database.selectOneFrom("contest_members", ["id", "user_id"], { id })
+        )
+    );
+
+    const userIds = memberRows.filter(Boolean).map((m) => m!.user_id);
+
+    const users =
+        userIds.length > 0
+            ? await Database.selectFrom("users", ["id", "full_name"], {
+                  id: eqIn(...userIds),
+              })
+            : [];
+
+    const nameMap = new Map<string, string>();
+
+    for (const memberRow of memberRows) {
+        if (!memberRow) continue;
+
+        const u = users.find((usr) => usr.id === memberRow.user_id);
+
+        if (u) nameMap.set(memberRow.id.toString(), u.full_name);
+    }
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        messages
+            .sort((a, b) => Number(a.id - b.id))
+            .map((m) => ({
+                ...m,
+                author_name: nameMap.get(m.author_member_id.toString()) ?? undefined,
+            }))
+    );
+});
+
+const MessageSchema = Type.Object({
+    content: Type.String(),
+});
+
+// Send a message in a thread
+ContestQuestionHandler.post(
+    "/:question_id/messages",
+    useValidation(MessageSchema),
+    async (req, res) => {
+        const questionId = extractIdFromParameters(req, "question_id");
+        const user = await extractUser(req);
+        const thread = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
+        const contest = await extractContest(req);
+
+        if (!thread) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        const member = await extractContestMember(req, thread.contest_id);
+
+        const isOwner = member.id === thread.contest_member_id;
+        const canAnswer = hasContestPermission(
+            member.contest_permissions,
+            ContestMemberPermissions.ANSWER_QUESTIONS,
+            user.permissions
+        );
+
+        if (!isOwner && !canAnswer) throw new SafeError(StatusCodes.FORBIDDEN);
+
+        const now = new Date();
+
+        const message: ContestChatMessage = {
+            id: generateSnowflake(),
+            thread_id: questionId,
+            contest_id: thread.contest_id,
+            author_member_id: member.id,
+            content: req.body.content,
+            created_at: now,
+        };
+
+        await Promise.all([
+            Database.insertInto("contest_chat_messages", message),
+            Database.update(
+                "contest_questions",
+                { last_message_at: now, last_message_member_id: member.id },
+                { id: thread.id }
+            ),
+        ]);
+
+        // Notify the other side
+        if (isOwner) {
+            // Member sent a message -> notify management
+            const members = await Database.selectFrom(
+                "contest_members",
+                ["user_id", "contest_permissions"],
+                { contest_id: thread.contest_id }
+            );
+
+            const privileged = members.filter((m) =>
+                hasContestPermission(m.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS)
+            );
+
+            const _ = pushNotificationsToMany(
+                { type: "new-question", data: contest.name },
+                privileged.map((it) => it.user_id)
+            );
+        } else {
+            // Management sent a message -> notify thread owner
+            const targetMember = await Database.selectOneFrom("contest_members", ["user_id"], {
+                id: thread.contest_member_id,
+            });
+
+            if (targetMember) {
+                const _ = pushNotificationsToMany({ type: "question-answer", data: contest.name }, [
+                    targetMember.user_id,
+                ]);
+            }
+        }
+
+        return respond(res, StatusCodes.OK, message);
+    }
+);
+
+// Legacy: answer a question (kept for backward compatibility)
 const QuestionAnswerSchema = Type.Object({
     response: Type.String(),
 });

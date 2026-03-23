@@ -1,35 +1,26 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
-import { FC, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
-import { z } from "zod";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
-import { SimpleButton } from "../../components/SimpleButton";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
-import { TitledInput } from "../../components/TitledInput";
 import { TitledSection } from "../../components/TitledSection";
 import { useAllContestAnnouncements } from "../../hooks/contest/announcements/useAllContestAnnouncements";
-import { useAllContestQuestions } from "../../hooks/contest/questions/useAllContestQuestions";
-import { useCreateQuestion } from "../../hooks/contest/questions/useCreateQuestion";
 import { useContest } from "../../hooks/contest/useContest";
+import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 import { ContestStatusStyleColorMap, useContestStatus } from "../../hooks/useContestStatus";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
+import { ContestChatSection } from "./ContestChatSection";
 import { Leaderboard } from "./Leaderboard";
 
 type Properties = {
     contestId: string;
 };
-
-const QuestionSchema = z.object({
-    question: z.string().min(1),
-});
 
 export const ContestViewPage: FC = () => {
     const { contestId } = useParams<Properties>();
@@ -42,9 +33,12 @@ export const ContestViewPage: FC = () => {
     });
 
     const { data: announcements } = useAllContestAnnouncements(BigInt(contestId ?? 0n));
-    const { data: questions } = useAllContestQuestions(BigInt(contestId ?? 0n));
+    const { data: selfMembers } = useSelfContestMembers();
 
-    const [questionsExpanded, setQuestionsExpanded] = useState(false);
+    const selfMember = useMemo(
+        () => selfMembers?.find((m) => m.contest_id === contest?.id),
+        [selfMembers, contest]
+    );
 
     const { t } = useTranslation();
 
@@ -56,22 +50,6 @@ export const ContestViewPage: FC = () => {
             Date.now() < contest.start_time.getTime() + 1000 * contest.duration_seconds
         );
     }, [contest]);
-
-    const { register, handleSubmit, reset } = useForm<z.infer<typeof QuestionSchema>>({
-        resolver: zodResolver(QuestionSchema),
-    });
-
-    const createQuestionMutation = useCreateQuestion(contest?.id ?? 0n);
-
-    const onQuestionSubmit = handleSubmit((data) => {
-        createQuestionMutation.mutate(data);
-    });
-
-    useEffect(() => {
-        if (!createQuestionMutation.isSuccess) return;
-
-        reset();
-    }, [createQuestionMutation.isSuccess]);
 
     const problemScores = useAllProblemScores();
 
@@ -111,49 +89,9 @@ export const ContestViewPage: FC = () => {
                             </span>
                         ))}
                     </TitledSection>
-                    <TitledSection
-                        title={t("contests.individual.questions.label")}
-                        tw={"flex w-full flex-col gap-4"}
-                    >
-                        <form onSubmit={onQuestionSubmit} tw={"w-full"}>
-                            <div tw={"flex flex-col gap-4 w-full"}>
-                                <TitledInput
-                                    label={t("contests.individual.questions.ask")}
-                                    bigLabel
-                                    tw={"w-full max-w-full"}
-                                    {...register("question")}
-                                ></TitledInput>
-                                <SimpleButton>
-                                    {t("contests.individual.questions.sendButton")}
-                                </SimpleButton>
-                            </div>
-                        </form>
-                        {(questions ?? [])
-                            .sort((a, b) => Number(a.id - b.id))
-                            .slice(!questionsExpanded ? -1 : 0)
-                            .reverse()
-                            .map((question) => (
-                                <TitledSection
-                                    title={question.question}
-                                    key={question.id.toString()}
-                                >
-                                    <span tw={"text-center"}>
-                                        {question.response ??
-                                            t("contests.individual.questions.list.waiting")}
-                                    </span>
-                                </TitledSection>
-                            ))}
-                        {questions && questions.length > 1 && (
-                            <span
-                                tw={"text-neutral-800 cursor-pointer"}
-                                onClick={() => setQuestionsExpanded((q) => !q)}
-                            >
-                                {!questionsExpanded
-                                    ? t("contests.individual.questions.list.all")
-                                    : t("contests.individual.questions.list.collapse")}
-                            </span>
-                        )}
-                    </TitledSection>
+                    {selfMember && (
+                        <ContestChatSection contestId={contest.id} selfMemberId={selfMember.id} />
+                    )}
                 </div>
             )}
             {(contestStatus.status !== "pending" ||
