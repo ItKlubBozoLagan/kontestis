@@ -30,7 +30,7 @@ export const ContestQuestionsPage: FC = () => {
 
     const sortedThreads = useMemo(
         () =>
-            (threads ?? []).sort((a, b) => {
+            [...(threads ?? [])].sort((a, b) => {
                 const aTime = a.last_message_at?.getTime() ?? Number(a.id >> 22n);
                 const bTime = b.last_message_at?.getTime() ?? Number(b.id >> 22n);
 

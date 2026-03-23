@@ -14,7 +14,6 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 type Properties = {
     contestId: Snowflake;
-    selfMemberId: Snowflake;
 };
 
 const NewThreadSchema = z.object({
@@ -40,7 +39,7 @@ export const ContestChatSection: FC<Properties> = ({ contestId }) => {
         reset();
     }, [createThreadMutation.isSuccess]);
 
-    const sortedThreads = (threads ?? []).sort((a, b) => {
+    const sortedThreads = [...(threads ?? [])].sort((a, b) => {
         const aTime = a.last_message_at?.getTime() ?? Number(a.id >> 22n);
         const bTime = b.last_message_at?.getTime() ?? Number(b.id >> 22n);
 
@@ -62,25 +61,31 @@ export const ContestChatSection: FC<Properties> = ({ contestId }) => {
                 />
                 <SimpleButton>{t("contests.individual.questions.sendButton")}</SimpleButton>
             </form>
-            {sortedThreads.map((thread) => (
-                <Link
-                    key={thread.id.toString()}
-                    to={`/contest/${contestId}/thread/${thread.id}`}
-                    tw={
-                        "w-full bg-neutral-100 border-2 border-solid border-neutral-200 p-4 flex justify-between gap-4 hover:(bg-neutral-200 cursor-pointer)"
-                    }
-                >
-                    <div tw={"flex items-center gap-4 text-lg"}>
-                        <FiMessageSquare size={"18px"} />
-                        <span tw={"truncate"}>{thread.question}</span>
-                    </div>
-                    {!thread.last_message_at && !thread.response && (
-                        <span tw={"text-sm text-neutral-500 whitespace-nowrap"}>
-                            {t("contests.individual.questions.list.waiting")}
-                        </span>
-                    )}
-                </Link>
-            ))}
+            {sortedThreads.map((thread) => {
+                const waiting =
+                    !thread.last_message_member_id ||
+                    thread.last_message_member_id === thread.contest_member_id;
+
+                return (
+                    <Link
+                        key={thread.id.toString()}
+                        to={`/contest/${contestId}/thread/${thread.id}`}
+                        tw={
+                            "w-full bg-neutral-100 border-2 border-solid border-neutral-200 p-4 flex justify-between gap-4 hover:(bg-neutral-200 cursor-pointer)"
+                        }
+                    >
+                        <div tw={"flex items-center gap-4 text-lg"}>
+                            <FiMessageSquare size={"18px"} />
+                            <span tw={"truncate"}>{thread.question}</span>
+                        </div>
+                        {waiting && (
+                            <span tw={"text-sm text-neutral-500 whitespace-nowrap"}>
+                                {t("contests.individual.questions.list.waiting")}
+                            </span>
+                        )}
+                    </Link>
+                );
+            })}
         </TitledSection>
     );
 };

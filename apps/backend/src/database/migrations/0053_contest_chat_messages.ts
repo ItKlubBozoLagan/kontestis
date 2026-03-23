@@ -1,6 +1,8 @@
 import { ContestChatMessageV1, ContestQuestionV1 } from "@kontestis/models";
 import { Migration } from "scyllo";
 
+import { getSnowflakeTime } from "../../lib/snowflake";
+
 type MigrationType = {
     contest_chat_messages: ContestChatMessageV1;
     contest_questions: ContestQuestionV1 & {
@@ -45,7 +47,7 @@ export const migration_contest_chat_messages: Migration<MigrationType> = async (
     const questions = await database.selectFrom("contest_questions", "*", {});
 
     for (const question of questions) {
-        const questionTime = new Date(Number(question.id >> 22n) + 1_640_995_200_000);
+        const questionTime = getSnowflakeTime(question.id);
 
         // Insert the question text as the first message
         await database.insertInto("contest_chat_messages", {

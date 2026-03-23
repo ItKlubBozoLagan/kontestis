@@ -128,16 +128,17 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
         thread_id: questionId,
     });
 
-    // Resolve author names
+    // Resolve author names (batch lookup)
     const uniqueMemberIds = [...new Set(messages.map((m) => m.author_member_id))];
 
-    const memberRows = await Promise.all(
-        uniqueMemberIds.map((id) =>
-            Database.selectOneFrom("contest_members", ["id", "user_id"], { id })
-        )
-    );
+    const memberRows =
+        uniqueMemberIds.length > 0
+            ? await Database.selectFrom("contest_members", ["id", "user_id"], {
+                  id: eqIn(...uniqueMemberIds),
+              })
+            : [];
 
-    const userIds = memberRows.filter(Boolean).map((m) => m!.user_id);
+    const userIds = memberRows.map((m) => m.user_id);
 
     const users =
         userIds.length > 0
@@ -149,8 +150,6 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
     const nameMap = new Map<string, string>();
 
     for (const memberRow of memberRows) {
-        if (!memberRow) continue;
-
         const u = users.find((usr) => usr.id === memberRow.user_id);
 
         if (u) nameMap.set(memberRow.id.toString(), u.full_name);
@@ -160,7 +159,7 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
         res,
         StatusCodes.OK,
         messages
-            .sort((a, b) => Number(a.id - b.id))
+            .sort((a, b) => (a.id === b.id ? 0 : a.id < b.id ? -1 : 1))
             .map((m) => ({
                 ...m,
                 author_name: nameMap.get(m.author_member_id.toString()) ?? undefined,
@@ -180,9 +179,14 @@ ContestQuestionHandler.post(
         const questionId = extractIdFromParameters(req, "question_id");
         const user = await extractUser(req);
         const thread = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
-        const contest = await extractContest(req);
 
         if (!thread) throw new SafeError(StatusCodes.NOT_FOUND);
+
+        const contest = await Database.selectOneFrom("contests", ["id", "name"], {
+            id: thread.contest_id,
+        });
+
+        if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
 
         const member = await extractContestMember(req, thread.contest_id);
 
@@ -246,61 +250,6 @@ ContestQuestionHandler.post(
         }
 
         return respond(res, StatusCodes.OK, message);
-    }
-);
-
-// Legacy: answer a question (kept for backward compatibility)
-const QuestionAnswerSchema = Type.Object({
-    response: Type.String(),
-});
-
-ContestQuestionHandler.patch(
-    "/:question_id",
-    useValidation(QuestionAnswerSchema),
-    async (req, res) => {
-        const questionId = extractIdFromParameters(req, "question_id");
-        const user = await extractUser(req);
-        const question = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
-
-        const contest = await extractContest(req);
-
-        if (!question) throw new SafeError(StatusCodes.NOT_FOUND);
-
-        const member = await extractContestMember(req, question.contest_id);
-
-        if (
-            !hasContestPermission(
-                member.contest_permissions,
-                ContestMemberPermissions.ANSWER_QUESTIONS,
-                user.permissions
-            )
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
-
-        await Database.update(
-            "contest_questions",
-            {
-                response: req.body.response,
-                response_author_id: member.id,
-            },
-            { id: question.id }
-        );
-
-        const targetMember = await Database.selectOneFrom("contest_members", ["user_id"], {
-            id: question.contest_member_id,
-        });
-
-        if (!targetMember) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-
-        const _ = pushNotificationsToMany(
-            {
-                type: "question-answer",
-                data: contest.name,
-            },
-            [targetMember.user_id]
-        );
-
-        return respond(res, StatusCodes.OK);
     }
 );
 

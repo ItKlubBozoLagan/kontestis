@@ -89,9 +89,7 @@ export const ContestViewPage: FC = () => {
                             </span>
                         ))}
                     </TitledSection>
-                    {selfMember && (
-                        <ContestChatSection contestId={contest.id} selfMemberId={selfMember.id} />
-                    )}
+                    {selfMember && <ContestChatSection contestId={contest.id} />}
                 </div>
             )}
             {(contestStatus.status !== "pending" ||
