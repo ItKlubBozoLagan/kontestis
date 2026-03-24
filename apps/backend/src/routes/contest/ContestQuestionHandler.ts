@@ -25,7 +25,7 @@ import { respond } from "../../utils/response";
 const ContestQuestionHandler = Router({ mergeParams: true });
 
 const QuestionSchema = Type.Object({
-    question: Type.String(),
+    question: Type.String({ minLength: 1 }),
 });
 
 // Create a new thread (with initial message)
@@ -106,6 +106,7 @@ ContestQuestionHandler.get("/", async (req, res) => {
 });
 
 // Get messages for a thread
+// eslint-disable-next-line sonarjs/cognitive-complexity
 ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
     const questionId = extractIdFromParameters(req, "question_id");
     const user = await extractUser(req);
@@ -113,16 +114,18 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
 
     if (!thread) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const member = await extractContestMember(req, thread.contest_id);
+    if (!hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) {
+        const member = await extractContestMember(req, thread.contest_id);
 
-    const isOwner = member.id === thread.contest_member_id;
-    const canView = hasContestPermission(
-        member.contest_permissions,
-        ContestMemberPermissions.VIEW_QUESTIONS,
-        user.permissions
-    );
+        const isOwner = member.id === thread.contest_member_id;
+        const canView = hasContestPermission(
+            member.contest_permissions,
+            ContestMemberPermissions.VIEW_QUESTIONS,
+            user.permissions
+        );
 
-    if (!isOwner && !canView) throw new SafeError(StatusCodes.FORBIDDEN);
+        if (!isOwner && !canView) throw new SafeError(StatusCodes.FORBIDDEN);
+    }
 
     const messages = await Database.selectFrom("contest_chat_messages", "*", {
         thread_id: questionId,
@@ -147,12 +150,14 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
               })
             : [];
 
+    const userNameById = new Map(users.map((u) => [u.id.toString(), u.full_name]));
+
     const nameMap = new Map<string, string>();
 
     for (const memberRow of memberRows) {
-        const u = users.find((usr) => usr.id === memberRow.user_id);
+        const name = userNameById.get(memberRow.user_id.toString());
 
-        if (u) nameMap.set(memberRow.id.toString(), u.full_name);
+        if (name) nameMap.set(memberRow.id.toString(), name);
     }
 
     return respond(
@@ -168,7 +173,7 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
 });
 
 const MessageSchema = Type.Object({
-    content: Type.String(),
+    content: Type.String({ minLength: 1 }),
 });
 
 // Send a message in a thread
@@ -188,16 +193,34 @@ ContestQuestionHandler.post(
 
         if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const member = await extractContestMember(req, thread.contest_id);
+        const isAdmin = hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST);
 
-        const isOwner = member.id === thread.contest_member_id;
-        const canAnswer = hasContestPermission(
-            member.contest_permissions,
-            ContestMemberPermissions.ANSWER_QUESTIONS,
-            user.permissions
-        );
+        let memberId: bigint;
+        let isOwner: boolean;
 
-        if (!isOwner && !canAnswer) throw new SafeError(StatusCodes.FORBIDDEN);
+        if (isAdmin) {
+            // Admin may not be a contest member — use a synthetic member id for authorship
+            const member = await Database.selectOneFrom("contest_members", ["id"], {
+                user_id: user.id,
+                contest_id: thread.contest_id,
+            });
+
+            memberId = member?.id ?? user.id;
+            isOwner = memberId === thread.contest_member_id;
+        } else {
+            const member = await extractContestMember(req, thread.contest_id);
+
+            isOwner = member.id === thread.contest_member_id;
+            const canAnswer = hasContestPermission(
+                member.contest_permissions,
+                ContestMemberPermissions.ANSWER_QUESTIONS,
+                user.permissions
+            );
+
+            if (!isOwner && !canAnswer) throw new SafeError(StatusCodes.FORBIDDEN);
+
+            memberId = member.id;
+        }
 
         const now = new Date();
 
@@ -205,7 +228,7 @@ ContestQuestionHandler.post(
             id: generateSnowflake(),
             thread_id: questionId,
             contest_id: thread.contest_id,
-            author_member_id: member.id,
+            author_member_id: memberId,
             content: req.body.content,
             created_at: now,
         };
@@ -214,7 +237,7 @@ ContestQuestionHandler.post(
             Database.insertInto("contest_chat_messages", message),
             Database.update(
                 "contest_questions",
-                { last_message_at: now, last_message_member_id: member.id },
+                { last_message_at: now, last_message_member_id: memberId },
                 { id: thread.id }
             ),
         ]);

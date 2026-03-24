@@ -31,10 +31,14 @@ export const ContestQuestionsPage: FC = () => {
     const sortedThreads = useMemo(
         () =>
             [...(threads ?? [])].sort((a, b) => {
-                const aTime = a.last_message_at?.getTime() ?? Number(a.id >> 22n);
-                const bTime = b.last_message_at?.getTime() ?? Number(b.id >> 22n);
+                const aTime = a.last_message_at?.getTime();
+                const bTime = b.last_message_at?.getTime();
 
-                return bTime - aTime;
+                if (aTime && bTime) return bTime - aTime;
+
+                if (a.id === b.id) return 0;
+
+                return a.id > b.id ? -1 : 1;
             }),
         [threads]
     );

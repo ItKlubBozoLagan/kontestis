@@ -1,7 +1,7 @@
 import { ContestChatMessageV1, ContestQuestionV1 } from "@kontestis/models";
 import { Migration } from "scyllo";
 
-import { getSnowflakeTime } from "../../lib/snowflake";
+import { generateSnowflake, getSnowflakeTime } from "../../lib/snowflake";
 
 type MigrationType = {
     contest_chat_messages: ContestChatMessageV1;
@@ -67,7 +67,7 @@ export const migration_contest_chat_messages: Migration<MigrationType> = async (
             const responseTime = new Date(questionTime.getTime() + 1000);
 
             await database.insertInto("contest_chat_messages", {
-                id: question.id + 1n,
+                id: generateSnowflake(),
                 thread_id: question.id,
                 contest_id: question.contest_id,
                 author_member_id: question.response_author_id,
