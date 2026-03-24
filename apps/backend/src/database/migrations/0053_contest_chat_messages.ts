@@ -1,14 +1,11 @@
-import { ContestChatMessageV1, ContestQuestionV1 } from "@kontestis/models";
+import { ContestChatMessageV1, ContestQuestionV2 } from "@kontestis/models";
 import { Migration } from "scyllo";
 
 import { generateSnowflake, getSnowflakeTime } from "../../lib/snowflake";
 
 type MigrationType = {
     contest_chat_messages: ContestChatMessageV1;
-    contest_questions: ContestQuestionV1 & {
-        last_message_at?: Date;
-        last_message_member_id?: bigint;
-    };
+    contest_questions: ContestQuestionV2;
 };
 
 export const migration_contest_chat_messages: Migration<MigrationType> = async (database, log) => {
