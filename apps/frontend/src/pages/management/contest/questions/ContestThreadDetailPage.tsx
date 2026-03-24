@@ -38,7 +38,7 @@ export const ContestThreadDetailPage: FC = () => {
     );
 
     const { data: messages } = useThreadMessages([contest.id, threadIdBigInt]);
-    const { data: members } = useAllContestMembers([contest.id, { showAllUsers: true }]);
+    const { data: members } = useAllContestMembers([contest.id, {}]);
     const sendMessageMutation = useSendMessage([contest.id, threadIdBigInt]);
 
     const { register, handleSubmit, reset } = useForm<z.infer<typeof MessageSchema>>({

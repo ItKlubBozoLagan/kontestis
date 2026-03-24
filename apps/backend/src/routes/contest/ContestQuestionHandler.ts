@@ -153,11 +153,27 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
     const userNameById = new Map(users.map((u) => [u.id.toString(), u.full_name]));
 
     const nameMap = new Map<string, string>();
+    const unresolvedIds: bigint[] = [];
 
     for (const memberRow of memberRows) {
         const name = userNameById.get(memberRow.user_id.toString());
 
         if (name) nameMap.set(memberRow.id.toString(), name);
+    }
+
+    // Collect author IDs that weren't found in contest_members (e.g. legacy data)
+    for (const id of uniqueMemberIds) {
+        if (!nameMap.has(id.toString())) unresolvedIds.push(id);
+    }
+
+    if (unresolvedIds.length > 0) {
+        const fallbackUsers = await Database.selectFrom("users", ["id", "full_name"], {
+            id: eqIn(...unresolvedIds),
+        });
+
+        for (const u of fallbackUsers) {
+            nameMap.set(u.id.toString(), u.full_name);
+        }
     }
 
     return respond(
@@ -193,34 +209,18 @@ ContestQuestionHandler.post(
 
         if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const isAdmin = hasAdminPermission(user.permissions, AdminPermissions.EDIT_CONTEST);
+        const member = await extractContestMember(req, thread.contest_id);
 
-        let memberId: bigint;
-        let isOwner: boolean;
+        const isOwner = member.id === thread.contest_member_id;
+        const canAnswer = hasContestPermission(
+            member.contest_permissions,
+            ContestMemberPermissions.ANSWER_QUESTIONS,
+            user.permissions
+        );
 
-        if (isAdmin) {
-            // Admin may not be a contest member — use a synthetic member id for authorship
-            const member = await Database.selectOneFrom("contest_members", ["id"], {
-                user_id: user.id,
-                contest_id: thread.contest_id,
-            });
+        if (!isOwner && !canAnswer) throw new SafeError(StatusCodes.FORBIDDEN);
 
-            memberId = member?.id ?? user.id;
-            isOwner = memberId === thread.contest_member_id;
-        } else {
-            const member = await extractContestMember(req, thread.contest_id);
-
-            isOwner = member.id === thread.contest_member_id;
-            const canAnswer = hasContestPermission(
-                member.contest_permissions,
-                ContestMemberPermissions.ANSWER_QUESTIONS,
-                user.permissions
-            );
-
-            if (!isOwner && !canAnswer) throw new SafeError(StatusCodes.FORBIDDEN);
-
-            memberId = member.id;
-        }
+        const memberId = member.id;
 
         const now = new Date();
 

@@ -18,7 +18,7 @@ export const ContestQuestionsPage: FC = () => {
     const { contest } = useContestContext();
 
     const { data: threads } = useAllContestQuestions(contest.id);
-    const { data: members } = useAllContestMembers([contest.id, { showAllUsers: true }]);
+    const { data: members } = useAllContestMembers([contest.id, {}]);
 
     const { t } = useTranslation();
 
