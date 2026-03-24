@@ -11,6 +11,7 @@ import { AdminOverviewPage } from "../pages/admin/overview/AdminOverviewPage";
 import { AdminUsersPage } from "../pages/admin/users/AdminUsersPage";
 import { AaiLinkPage } from "../pages/auth/AaiLinkPage";
 import { ContestsPage } from "../pages/contests/ContestsPage";
+import { ContestThreadPage } from "../pages/contests/ContestThreadPage";
 import { ContestViewPage } from "../pages/contests/ContestViewPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { ContestAnnouncementsPage } from "../pages/management/contest/announcements/ContestAnnouncementsPage";
@@ -24,6 +25,7 @@ import { ContestProblemsPage } from "../pages/management/contest/problems/Contes
 import { GeneratorDetailPage } from "../pages/management/contest/problems/generators/GeneratorDetailPage";
 import { GeneratorManagePage } from "../pages/management/contest/problems/generators/GeneratorManagePage";
 import { ContestQuestionsPage } from "../pages/management/contest/questions/ContestQuestionsPage";
+import { ContestThreadDetailPage } from "../pages/management/contest/questions/ContestThreadDetailPage";
 import { ContestResultsPage } from "../pages/management/contest/results/ContestResultsPage";
 import { FinalSubmissionReviewPage } from "../pages/management/contest/results/FinalSubmissionReviewPage";
 import { FinalSubmissionsPage } from "../pages/management/contest/results/FinalSubmissionsPage";
@@ -54,6 +56,10 @@ export const dashboardRoutes: RouteObject[] = [
             {
                 path: "contest/:contestId",
                 element: <ContestViewPage />,
+            },
+            {
+                path: "contest/:contestId/thread/:threadId",
+                element: <ContestThreadPage />,
             },
             {
                 path: "problems",
@@ -148,6 +154,10 @@ export const dashboardRoutes: RouteObject[] = [
                     {
                         path: "questions",
                         element: <ContestQuestionsPage />,
+                    },
+                    {
+                        path: "questions/:threadId",
+                        element: <ContestThreadDetailPage />,
                     },
                     {
                         path: "participants",

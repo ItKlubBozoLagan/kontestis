@@ -9,4 +9,9 @@ export type ContestQuestionV1 = {
     response?: string;
 };
 
-export type ContestQuestion = ContestQuestionV1;
+export type ContestQuestionV2 = ContestQuestionV1 & {
+    last_message_at?: Date;
+    last_message_member_id?: Snowflake;
+};
+
+export type ContestQuestion = ContestQuestionV2;
