@@ -23,7 +23,7 @@ export type GeneratorState =
 
 export type TestcaseV4 = Omit<TestcaseV3, "input"> & {
     input_type: "manual" | "generator";
-    output_type: "auto" | "manual" | "ai";
+    output_type: "auto" | "manual";
     status: GeneratorState;
     error?: string;
     generator_id?: Snowflake | null;
