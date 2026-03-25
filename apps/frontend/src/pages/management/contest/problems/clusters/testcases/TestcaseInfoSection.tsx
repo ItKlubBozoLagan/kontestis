@@ -25,7 +25,7 @@ type Properties = {
 
 const ModifyTestcaseSchema = z.object({
     input_type: z.enum(["manual", "generator"]),
-    output_type: z.enum(["auto", "manual", "ai"]),
+    output_type: z.enum(["auto", "manual"]),
     generator_input: z.string().optional(),
     generator_id: z.string().optional(),
 });
@@ -221,21 +221,10 @@ export const TestcaseInfoSection: FC<Properties> = ({ problemId, testcase }) => 
                     >
                         <TitledSwitch
                             label=""
-                            choice={["Auto", "Manual", "AI"]}
-                            defaultIndex={
-                                testcase.output_type === "auto"
-                                    ? 0
-                                    : testcase.output_type === "manual"
-                                    ? 1
-                                    : 2
-                            }
+                            choice={["Auto", "Manual"]}
+                            defaultIndex={testcase.output_type === "auto" ? 0 : 1}
                             onChange={(value) => {
-                                const newType =
-                                    value === "Auto"
-                                        ? "auto"
-                                        : value === "Manual"
-                                        ? "manual"
-                                        : "ai";
+                                const newType = value === "Auto" ? "auto" : "manual";
 
                                 setValue("output_type", newType);
                             }}
