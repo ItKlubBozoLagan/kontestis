@@ -25,14 +25,16 @@ export const extractUser = async (req: Request): Promise<FullUser> => {
                 id: tokenData.id,
             });
 
+            if (!temporaryUser) {
+                throw new SafeError(StatusCodes.UNAUTHORIZED);
+            }
+
             return {
                 ...tokenData,
                 is_edu: false as const,
                 auth_source: authSource,
                 is_temporary: true,
-                temporary_data: temporaryUser
-                    ? { organisation_id: temporaryUser.organisation_id }
-                    : undefined,
+                temporary_data: { organisation_id: temporaryUser.organisation_id },
             };
         }
 
