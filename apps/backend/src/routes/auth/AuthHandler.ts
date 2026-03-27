@@ -13,11 +13,13 @@ import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
 import { AaiEduHandler } from "./AaiEduHandler";
 import ManagedHandler from "./ManagedHandler";
+import TemporaryHandler from "./TemporaryHandler";
 
 const AuthHandler = Router();
 
 AuthHandler.use("/aai-edu", AaiEduHandler);
 AuthHandler.use("/managed", ManagedHandler);
+AuthHandler.use("/temporary", TemporaryHandler);
 
 const OAuthSchema = Type.Object({
     credential: Type.String(),

@@ -14,6 +14,7 @@ import {
     OrganisationMember,
     Problem,
     SiteNotification,
+    TemporaryUser,
 } from "@kontestis/models";
 import { ClusterSubmission } from "@kontestis/models";
 import { Contest } from "@kontestis/models";
@@ -78,6 +79,7 @@ import { migration_improve_generators } from "./migrations/0050_improve_generato
 import { migration_add_sample_clusters } from "./migrations/0051_add_sample_clusters";
 import { migration_generator_id_index } from "./migrations/0052_generator_id_index";
 import { migration_contest_chat_messages } from "./migrations/0053_contest_chat_messages";
+import { migration_add_temporary_users } from "./migrations/0054_add_temporary_users";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -100,6 +102,7 @@ export const Database = new ScylloClient<{
     mail_preferences: MailPreference;
     edu_users: EduUser;
     managed_users: ManagedUser;
+    temporary_users: TemporaryUser;
     generators: Generator;
 }>({
     client: {
@@ -167,6 +170,7 @@ const migrations: Migration<any>[] = [
     migration_add_sample_clusters,
     migration_generator_id_index,
     migration_contest_chat_messages,
+    migration_add_temporary_users,
 ];
 
 export const initDatabase = async () => {

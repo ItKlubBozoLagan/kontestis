@@ -56,6 +56,16 @@ export type ManagedUserV1 = {
 
 export type ManagedUser = ManagedUserV1;
 
+export type TemporaryUserV1 = {
+    id: Snowflake;
+    username: string;
+    password: string;
+    organisation_id: Snowflake;
+    created_at?: Date;
+};
+
+export type TemporaryUser = TemporaryUserV1;
+
 export type EduUser = EduUserV1;
 
 export type EduUserLinksV1 = {
@@ -65,10 +75,12 @@ export type EduUserLinksV1 = {
 
 export type User = UserV6;
 
-export type AuthSource = "google" | "aai-edu" | "managed";
+export type AuthSource = "google" | "aai-edu" | "managed" | "temporary";
 
 export type FullUser = User & {
     auth_source: AuthSource;
+    is_temporary?: boolean;
+    temporary_data?: { organisation_id: Snowflake };
 } & (
         | {
               is_edu: false;
