@@ -381,7 +381,6 @@ ContestHandler.get("/", async (req, res) => {
     const contests = await Database.selectFrom("contests", "*", {
         organisation_id: organisation.id,
     });
-    const returnedContests: Array<Contest> = [];
 
     const hasViewContestsPermission = await hasOrganisationPermission(
         req,
