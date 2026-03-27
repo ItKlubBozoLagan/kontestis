@@ -30,7 +30,8 @@ export const TemporaryLoginPage: FC = () => {
     });
 
     const onSubmit = handleSubmit(async (data) => {
-        setError();
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        setError(undefined);
         setLoading(true);
 
         try {
