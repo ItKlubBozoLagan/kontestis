@@ -24,6 +24,7 @@ const AuthSourceType = Type.Union([
     Type.Literal("google"),
     Type.Literal("aai-edu"),
     Type.Literal("managed"),
+    Type.Literal("temporary"),
 ]);
 
 export const generateJwt = <

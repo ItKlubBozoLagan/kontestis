@@ -350,7 +350,32 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
     respond(res, StatusCodes.OK);
 });
 
+const getContestsForTemporaryUser = async (userId: bigint): Promise<Contest[]> => {
+    const contestMembers = await Database.selectFrom(
+        "contest_members",
+        "*",
+        { user_id: userId },
+        "ALLOW FILTERING"
+    );
+
+    const memberContests = await Promise.all(
+        contestMembers
+            .filter((m) =>
+                hasContestPermission(m.contest_permissions, ContestMemberPermissions.VIEW)
+            )
+            .map((m) => Database.selectOneFrom("contests", "*", { id: m.contest_id }))
+    );
+
+    return memberContests.filter((c): c is Contest => c !== null);
+};
+
 ContestHandler.get("/", async (req, res) => {
+    const optionalUser = await extractOptionalUser(req);
+
+    if (optionalUser?.is_temporary) {
+        return respond(res, StatusCodes.OK, await getContestsForTemporaryUser(optionalUser.id));
+    }
+
     const organisation = await extractCurrentOrganisation(req);
 
     const contests = await Database.selectFrom("contests", "*", {
@@ -363,8 +388,6 @@ ContestHandler.get("/", async (req, res) => {
         OrganisationPermissions.VIEW_CONTEST,
         organisation.id
     );
-
-    const optionalUser = await extractOptionalUser(req);
 
     const isEduUser = optionalUser?.is_edu ?? false;
 
@@ -384,33 +407,22 @@ ContestHandler.get("/", async (req, res) => {
         contestMembersByContestId[member.contest_id.toString()] = member;
     }
 
-    for (const contest of contests) {
-        if (hasViewContestsPermission) {
-            returnedContests.push(contest);
-            continue;
-        }
+    const isContestVisible = (contest: Contest): boolean => {
+        if (hasViewContestsPermission) return true;
 
-        if (contest.public && contest.require_edu_verification && isEduUser) {
-            returnedContests.push(contest);
-            continue;
-        }
+        if (contest.public && contest.require_edu_verification && isEduUser) return true;
 
-        if (contest.public && !contest.require_edu_verification) {
-            returnedContests.push(contest);
-            continue;
-        }
+        if (contest.public && !contest.require_edu_verification) return true;
 
         const member = contestMembersByContestId[contest.id.toString()];
 
-        if (
-            member &&
+        return (
+            !!member &&
             hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW)
-        ) {
-            returnedContests.push(contest);
-        }
-    }
+        );
+    };
 
-    return respond(res, StatusCodes.OK, returnedContests);
+    return respond(res, StatusCodes.OK, contests.filter(isContestVisible));
 });
 ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
     const contest = await extractContest(req);

@@ -24,6 +24,7 @@ import { useModifyContestMember } from "../../../../hooks/contest/participants/u
 import { useRemoveParticipant } from "../../../../hooks/contest/participants/useRemoveParticipant";
 import { useTranslation } from "../../../../hooks/useTranslation";
 import { useAuthStore } from "../../../../state/auth";
+import { BulkCreateTemporaryUsers } from "./BulkCreateTemporaryUsers";
 
 type MemberBoxProperties = {
     member: ContestMemberWithInfo;
@@ -209,6 +210,9 @@ export const ContestParticipantsPage: FC = () => {
                     )
                 )}
             </div>
+            <div tw={"w-[calc(100% + 1rem)] -mx-2 h-[1px] bg-neutral-400 my-2"}></div>
+            <BulkCreateTemporaryUsers />
+            <div tw={"w-[calc(100% + 1rem)] -mx-2 h-[1px] bg-neutral-400 my-2"}></div>
             {members && (
                 <>
                     {members

@@ -20,6 +20,22 @@ export const extractUser = async (req: Request): Promise<FullUser> => {
 
         const { user: tokenData, authSource } = jwtData;
 
+        if (authSource === "temporary") {
+            const temporaryUser = await Database.selectOneFrom("temporary_users", "*", {
+                id: tokenData.id,
+            });
+
+            return {
+                ...tokenData,
+                is_edu: false as const,
+                auth_source: authSource,
+                is_temporary: true,
+                temporary_data: temporaryUser
+                    ? { organisation_id: temporaryUser.organisation_id }
+                    : undefined,
+            };
+        }
+
         const eduUser = await Database.selectOneFrom("edu_users", "*", {
             id: tokenData.id,
         });

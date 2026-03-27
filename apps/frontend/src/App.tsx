@@ -12,6 +12,7 @@ import { http, wrapAxios } from "./api/http";
 import { dashboardRoutes } from "./routers/dashboard";
 import { loginRoutes } from "./routers/login";
 import { organisationRoutes } from "./routers/organisation";
+import { temporaryRoutes } from "./routers/temporary";
 import { useAuthStore } from "./state/auth";
 import { useOrganisationStore } from "./state/organisation";
 import { useTokenStore } from "./state/token";
@@ -23,7 +24,7 @@ BigInt.prototype.toJSON = function () {
 };
 
 export const App = () => {
-    const { isLoggedIn, setUser, setIsLoggedIn, forceLogout, doForceLogout } = useAuthStore();
+    const { isLoggedIn, user, setUser, setIsLoggedIn, forceLogout, doForceLogout } = useAuthStore();
     const { token } = useTokenStore();
     const {
         isSelected,
@@ -68,8 +69,16 @@ export const App = () => {
             .catch(() => doForceLogout());
     }, [token]);
 
+    const isTemporary = isLoggedIn && user?.auth_source === "temporary";
+
     const matched = useRoutes(
-        isLoggedIn ? (isSelected ? dashboardRoutes : organisationRoutes) : loginRoutes
+        isLoggedIn
+            ? isTemporary
+                ? temporaryRoutes
+                : isSelected
+                ? dashboardRoutes
+                : organisationRoutes
+            : loginRoutes
     );
 
     useEffect(() => {
@@ -89,6 +98,13 @@ export const App = () => {
 
         doForceLogout(false);
     }, [location, forceLogout]);
+
+    useEffect(() => {
+        if (!isLoggedIn || !user?.is_temporary || !user?.temporary_data) return;
+
+        setOrganisationId(user.temporary_data.organisation_id);
+        setIsOrganisationSelected(true);
+    }, [isLoggedIn, user]);
 
     useEffect(() => {
         if (!isLoggedIn) return;
