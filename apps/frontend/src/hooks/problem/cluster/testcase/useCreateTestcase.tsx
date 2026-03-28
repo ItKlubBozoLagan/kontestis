@@ -32,7 +32,7 @@ export const useCreateTestcase: MutationHandler<
 
 type ModifyTestcaseVariables = {
     input_type?: "manual" | "generator";
-    output_type?: "auto" | "manual" | "ai";
+    output_type?: "auto" | "manual";
     generator_id?: string;
     generator_input?: string;
 };

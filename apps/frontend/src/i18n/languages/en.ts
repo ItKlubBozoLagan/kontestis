@@ -125,12 +125,17 @@ const I18nEn = {
             },
             questions: {
                 label: "Questions",
-                ask: "Ask a question",
+                newThread: "Ask a question...",
                 sendButton: "Send",
                 list: {
-                    waiting: "Waiting for response!",
+                    waiting: "Waiting for response",
                     all: "Show older",
                     collapse: "Collapse",
+                },
+                chat: {
+                    you: "You",
+                    management: "Management",
+                    placeholder: "Type a message...",
                 },
             },
         },
@@ -321,13 +326,18 @@ const I18nEn = {
                     sendButton: "Send",
                 },
                 questions: {
-                    empty: "None so far",
-                    answerButton: "Answer",
-                    unAnswered: {
-                        label: "Not answered",
-                    },
-                    answered: {
-                        label: "Answered",
+                    empty: "No threads yet",
+                    replyButton: "Reply",
+                    replyPlaceholder: "Type a reply...",
+                    backToList: "Back to all threads",
+                    unknownMember: "Unknown member",
+                    table: {
+                        subject: "Subject",
+                        member: "Member",
+                        status: "Status",
+                        lastActivity: "Last activity",
+                        needsReply: "Needs reply",
+                        replied: "Replied",
                     },
                 },
                 participants: {

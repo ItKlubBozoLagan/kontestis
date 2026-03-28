@@ -1,6 +1,7 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { useLocation } from "react-router";
+import { Link } from "react-router-dom";
 
 import { http, ServerData } from "../../api/http";
 import { AaiEduButton } from "../../components/AaiEduButton";
@@ -100,6 +101,11 @@ const LoginBase: FC = () => {
                             </div>
                         </div>
                     </div>
+                    <span tw={"text-sm text-neutral-500"}>
+                        <Link to={"/temp-login"} tw={"text-sky-600"}>
+                            Log in as temporary user
+                        </Link>
+                    </span>
                 </div>
             </TitledSection>
         </div>

@@ -122,12 +122,17 @@ export default {
             },
             questions: {
                 label: "Pitanja",
-                ask: "Postavi pitanje",
+                newThread: "Postavi pitanje...",
                 sendButton: "Pošalji",
                 list: {
-                    waiting: "Čekanje odgovora!",
+                    waiting: "Čekanje odgovora",
                     all: "prikaži starije",
                     collapse: "Sažmi",
+                },
+                chat: {
+                    you: "Vi",
+                    management: "Upravljanje",
+                    placeholder: "Unesite poruku...",
                 },
             },
         },
@@ -318,13 +323,18 @@ export default {
                     sendButton: "Pošalji",
                 },
                 questions: {
-                    empty: "Nema pitanja za sada",
-                    answerButton: "Odgovori",
-                    unAnswered: {
-                        label: "Nije odgovoreno",
-                    },
-                    answered: {
-                        label: "Odgovoreno",
+                    empty: "Nema tema za sada",
+                    replyButton: "Odgovori",
+                    replyPlaceholder: "Unesite odgovor...",
+                    backToList: "Natrag na sve teme",
+                    unknownMember: "Nepoznati član",
+                    table: {
+                        subject: "Tema",
+                        member: "Član",
+                        status: "Status",
+                        lastActivity: "Zadnja aktivnost",
+                        needsReply: "Treba odgovor",
+                        replied: "Odgovoreno",
                     },
                 },
                 participants: {
