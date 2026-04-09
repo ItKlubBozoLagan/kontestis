@@ -1,4 +1,4 @@
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useEffect, useState } from "react";
 import { FiPlus } from "react-icons/all";
 import { useParams } from "react-router";
@@ -44,7 +44,7 @@ export const ContestProblemManagePage: FC = () => {
         setIsReevaluating((submissions ?? []).some((s) => s.reevaluation));
     }, [submissions]);
 
-    const { member } = useContestContext();
+    const { contest, member } = useContestContext();
 
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -60,9 +60,9 @@ export const ContestProblemManagePage: FC = () => {
                     <SimpleButton>Manage Generators</SimpleButton>
                 </Link>
                 <CanContestMember
+                    contest={contest}
                     member={member}
                     permission={ContestMemberPermissions.EDIT}
-                    adminPermission={AdminPermissions.EDIT_CONTEST}
                 >
                     <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
                         {t("contests.management.individual.problems.cluster.createButton")}

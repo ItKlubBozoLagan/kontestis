@@ -1,10 +1,16 @@
-import { AdminPermissions, Contest, hasAdminPermission, ProblemWithScore } from "@kontestis/models";
+import {
+    Contest,
+    ContestMember,
+    ContestMemberPermissions,
+    ProblemWithScore,
+} from "@kontestis/models";
 import React, { FC, useMemo } from "react";
 import tw from "twin.macro";
 
 import { ProblemScoreBox } from "../../components/ProblemScoreBox";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { useAllContestMembers } from "../../hooks/contest/participants/useAllContestMembers";
+import { useContestPermission } from "../../hooks/contest/useContestPermission";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 import { R } from "../../util/remeda";
@@ -12,20 +18,24 @@ import { R } from "../../util/remeda";
 type Properties = {
     contest: Contest;
     problems: ProblemWithScore[];
+    selfMember: ContestMember | undefined;
 };
 
-export const Leaderboard: FC<Properties> = ({ contest, problems }) => {
+export const Leaderboard: FC<Properties> = ({ contest, problems, selfMember }) => {
     const { user } = useAuthStore();
 
     const contestEnded =
         Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000;
 
+    const canViewPrivate = useContestPermission(
+        ContestMemberPermissions.VIEW_PRIVATE,
+        contest,
+        selfMember
+    );
+
     const leaderboardVisible = useMemo(
-        () =>
-            contest.show_leaderboard_during_contest ||
-            contestEnded ||
-            hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST),
-        [contest, contestEnded, user]
+        () => contest.show_leaderboard_during_contest || contestEnded || canViewPrivate,
+        [contest, contestEnded, canViewPrivate]
     );
 
     const { isSuccess, data } = useAllContestMembers([contest.id, {}], {
