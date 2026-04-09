@@ -1,7 +1,6 @@
 import { hasPermission, PermissionData } from "permissio";
 
-import { AdminPermissions, hasAdminPermission } from "./AdminPermissions";
-import { OrganisationPermissions } from "./OrganisationPermissions";
+import { hasOrganisationPermission, OrganisationPermissions } from "./OrganisationPermissions";
 
 export enum ContestMemberPermissions {
     ADMIN,
@@ -39,12 +38,19 @@ export const ContestMemberPermissionNames = ((values = Object.keys(ContestMember
 export const hasContestPermission = (
     data: PermissionData,
     permission: ContestMemberPermissions,
+    orgMemberPermissions?: PermissionData,
     adminPermissions?: PermissionData
 ) => {
-    return (
-        hasPermission(data, ContestMemberPermissions.ADMIN) ||
-        hasPermission(data, permission) ||
-        (adminPermissions !== undefined &&
-            hasAdminPermission(adminPermissions, AdminPermissions.ADMIN))
-    );
+    const permissionKey = ContestMemberPermissions[permission] as ContestMemberPermissionKeys;
+
+    if (
+        hasOrganisationPermission(
+            orgMemberPermissions,
+            ContestMemberToOrganisationPermissionMap[permissionKey],
+            adminPermissions
+        )
+    )
+        return true;
+
+    return hasPermission(data, ContestMemberPermissions.ADMIN) || hasPermission(data, permission);
 };

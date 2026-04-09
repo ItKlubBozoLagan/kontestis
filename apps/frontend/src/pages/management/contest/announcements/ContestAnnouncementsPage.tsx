@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -50,9 +50,9 @@ export const ContestAnnouncementsPage: FC = () => {
         <div tw={"flex gap-2 w-full justify-center"}>
             <div tw={"flex flex-col items-center gap-6 w-full"}>
                 <CanContestMember
+                    contest={contest}
                     member={member}
                     permission={ContestMemberPermissions.CREATE_ANNOUNCEMENT}
-                    adminPermission={AdminPermissions.EDIT_CONTEST}
                 >
                     <form onSubmit={onSubmit}>
                         <div tw={"flex flex-col gap-2 w-96"}>
