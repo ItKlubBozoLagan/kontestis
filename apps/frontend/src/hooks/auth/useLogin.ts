@@ -3,8 +3,11 @@ import { useMutation } from "react-query";
 import { http, MutationHandler, wrapAxios } from "../../api/http";
 
 type LoginVariables = {
-    email: string;
-    password: string;
+    data: {
+        email: string;
+        password: string;
+    };
+    captcha_token: string;
 };
 
 type LoginData = {
@@ -12,4 +15,13 @@ type LoginData = {
 };
 
 export const useLogin: MutationHandler<LoginVariables, LoginData> = (options) =>
-    useMutation((variables) => wrapAxios(http.post("/auth/managed/login", variables)), options);
+    useMutation(
+        ({ data, captcha_token }) =>
+            wrapAxios(
+                http.post(
+                    `/auth/managed/login?captcha_token=${encodeURIComponent(captcha_token)}`,
+                    data
+                )
+            ),
+        options
+    );

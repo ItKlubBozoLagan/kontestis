@@ -17,6 +17,7 @@ import { Redis } from "../../redis/Redis";
 import { RedisKeys } from "../../redis/RedisKeys";
 import { randomSequence } from "../../utils/random";
 import { respond } from "../../utils/response";
+import { isHttpUrl } from "../../utils/url";
 
 const ManagedHandler = Router();
 
@@ -35,44 +36,50 @@ const LoginSchema = Type.Object({
     password: Type.String({ minLength: 4, maxLength: 1 << 10 }),
 });
 
-ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async (req, res) => {
-    const managedUser = await Database.selectOneFrom("managed_users", "*", {
-        email: req.body.email,
-    });
+ManagedHandler.post(
+    "/login",
+    useCaptchaSchema,
+    useCaptcha,
+    useValidation(LoginSchema, { body: true }),
+    async (req, res) => {
+        const managedUser = await Database.selectOneFrom("managed_users", "*", {
+            email: req.body.email,
+        });
 
-    if (!managedUser) throw new SafeError(StatusCodes.UNAUTHORIZED);
+        if (!managedUser) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-    const verifyResult = await verify(managedUser.password, req.body.password);
+        const verifyResult = await verify(managedUser.password, req.body.password);
 
-    if (!verifyResult) throw new SafeError(StatusCodes.UNAUTHORIZED);
+        if (!verifyResult) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-    const user = await Database.selectOneFrom("users", "*", {
-        id: managedUser.id,
-    });
+        const user = await Database.selectOneFrom("users", "*", {
+            id: managedUser.id,
+        });
 
-    if (!user) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+        if (!user) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
-    if (!managedUser.confirmed_at) {
-        const confirmationCode = await Redis.get(
-            RedisKeys.MANAGED_USER_CONFIRMATION_CODE(managedUser.id)
-        );
+        if (!managedUser.confirmed_at) {
+            const confirmationCode = await Redis.get(
+                RedisKeys.MANAGED_USER_CONFIRMATION_CODE(managedUser.id)
+            );
 
-        if (confirmationCode !== null) {
-            throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY);
+            if (confirmationCode !== null) {
+                throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY);
+            }
+
+            await processEmailVerification(user);
+
+            throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY, "verification-repeat");
         }
 
-        await processEmailVerification(user);
+        await processLogin(user, {
+            newLogin: false,
+            confirm: true,
+        });
 
-        throw new SafeError(StatusCodes.UNPROCESSABLE_ENTITY, "verification-repeat");
+        return respond(res, StatusCodes.OK, { token: generateJwt(user.id, "managed", {}) });
     }
-
-    await processLogin(user, {
-        newLogin: false,
-        confirm: true,
-    });
-
-    return respond(res, StatusCodes.OK, { token: generateJwt(user.id, "managed", {}) });
-});
+);
 
 const RegisterSchema = Type.Object({
     email: Type.RegEx(/^[^@]+@[^@]+\.[^@]+$/),
@@ -87,6 +94,9 @@ ManagedHandler.post(
     useCaptcha,
     useValidation(RegisterSchema, { body: true }),
     async (req, res) => {
+        if (req.body.picture_url && !isHttpUrl(req.body.picture_url))
+            throw new SafeError(StatusCodes.BAD_REQUEST);
+
         const existingUser = await Database.selectOneFrom("users", ["id"], {
             email: req.body.email.toLowerCase(),
         });
