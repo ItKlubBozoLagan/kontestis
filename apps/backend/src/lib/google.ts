@@ -19,7 +19,7 @@ type VerifyTokenResponse = {
     picture: string;
 };
 
-type NiceTokenResponse = Omit<VerifyTokenResponse, "sub" | "aud" | "picture"> & {
+type NiceTokenResponse = Omit<VerifyTokenResponse, "sub" | "picture"> & {
     id: string;
     picture_url: string;
 };
