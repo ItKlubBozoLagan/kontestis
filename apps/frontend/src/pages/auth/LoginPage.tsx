@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { http, ServerData } from "../../api/http";
 import { AaiEduButton } from "../../components/AaiEduButton";
 import { TitledSection } from "../../components/TitledSection";
+import { withCaptcha } from "../../hoc/withCaptcha";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useTokenStore } from "../../state/token";
 import { ManagedLoginForm } from "./ManagedLoginForm";
@@ -112,8 +113,10 @@ const LoginBase: FC = () => {
     );
 };
 
+const LoginBaseWithCaptcha = withCaptcha(LoginBase);
+
 export const LoginPage: FC = () => (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_OAUTH_CLIENT_ID}>
-        <LoginBase />
+        <LoginBaseWithCaptcha />
     </GoogleOAuthProvider>
 );

@@ -14,17 +14,29 @@ const transporter = createTransport({
     },
 });
 
+const escapeHtml = (value: string): string =>
+    value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        // eslint-disable-next-line quotes
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
 export const sendRegistrationMail = async (user: User, code: string) => {
     Logger.debug("Sending verification email to: " + user.email);
 
     const subject = "Kontestis - E-mail verification";
+    const confirmationUrl = `${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}`;
     const text = `Hello ${user.full_name},
 
-    Please verify your email by clicking on the following link: ${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}`;
+    Please verify your email by clicking on the following link: ${confirmationUrl}`;
 
-    const html = `Hello ${user.full_name},
+    const escapedConfirmationUrl = escapeHtml(confirmationUrl);
 
-    Please verify your email by clicking on the following link: <a href="${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}">${Globals.backendUrl}/api/auth/managed/confirm/${user.id}/${code}</a>`;
+    const html = `Hello ${escapeHtml(user.full_name)},
+
+    Please verify your email by clicking on the following link: <a href="${escapedConfirmationUrl}">${escapedConfirmationUrl}</a>`;
 
     await transporter
         .sendMail({
@@ -74,7 +86,7 @@ export const sendMail = async (
             </p>
             <br/>
             <div>
-              <p>${text.replaceAll("\n", "<br/>")}</p>
+              <p>${escapeHtml(text).replaceAll("\n", "<br/>")}</p>
             </div>
         `,
     });

@@ -12,7 +12,7 @@ import { generateSnowflake } from "./snowflake";
 
 type VerifyTokenResponse = {
     sub: string;
-    hd: string;
+    aud: string;
     email: string;
     email_verified: string;
     name: string;
@@ -43,19 +43,23 @@ const googleServiceTokenCache: TokenCache = {
 };
 
 export const verifyToken = async (token: string): Promise<NiceTokenResponse> => {
-    const niceGoogleResponse = await axios
-        .get<VerifyTokenResponse>("https://oauth2.googleapis.com/tokeninfo", {
+    const { data } = await axios.get<VerifyTokenResponse>(
+        "https://oauth2.googleapis.com/tokeninfo",
+        {
             params: { id_token: token },
-        })
-        .then(({ data }) => ({
-            ...R.omit(data, ["sub", "picture"]),
-            id: data.sub,
-            picture_url: data.picture,
-        }));
+        }
+    );
 
-    if (niceGoogleResponse.email_verified !== "true") throw new Error("email not verified");
+    if (!Globals.oauthClientId || data.aud !== Globals.oauthClientId)
+        throw new Error("invalid token audience");
 
-    return niceGoogleResponse;
+    if (data.email_verified !== "true") throw new Error("email not verified");
+
+    return {
+        ...R.omit(data, ["sub", "picture"]),
+        id: data.sub,
+        picture_url: data.picture,
+    };
 };
 
 export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Promise<User> => {
