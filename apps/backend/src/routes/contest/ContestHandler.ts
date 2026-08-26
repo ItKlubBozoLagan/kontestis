@@ -4,7 +4,6 @@ import {
     AdminPermissions,
     Cluster,
     Contest,
-    ContestMember,
     ContestMemberPermissions,
     DEFAULT_ELO,
     hasAdminPermission,
@@ -16,9 +15,7 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
-import { eqIn } from "scyllo";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
@@ -38,8 +35,8 @@ import {
     mustHaveContestPermission,
     mustHaveCurrentOrganisationPermission,
 } from "../../preconditions/hasPermission";
+import { Repositories } from "../../repositories/Repositories";
 import { randomSequence } from "../../utils/random";
-import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import ContestAnnouncementHandler from "./ContestAnnouncementHandler";
 import ContestGradingHandler from "./ContestGradingHandler";
@@ -88,9 +85,9 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
         name: contest.name + " (Copy)",
     };
 
-    await Database.insertInto("contests", newContest);
+    await Repositories.contests.insert(newContest);
 
-    const problems = await Database.selectFrom("problems", "*", { contest_id: contest.id });
+    const problems = await Repositories.problems.select("*", { contest_id: contest.id });
 
     await Promise.all(
         problems.map(async (problem) => {
@@ -100,11 +97,11 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
                 contest_id: newContest.id,
             };
 
-            await Database.insertInto("problems", newProblem);
+            await Repositories.problems.insert(newProblem);
 
-            const clusters = await Database.selectFrom("clusters", "*", { problem_id: problem.id });
+            const clusters = await Repositories.clusters.select("*", { problem_id: problem.id });
 
-            const generators = await Database.selectFrom("generators", "*", {
+            const generators = await Repositories.generators.select("*", {
                 problem_id: problem.id,
             });
 
@@ -116,7 +113,7 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
 
                     generatorIdTranslation[generator.id.toString()] = newId.toString();
 
-                    await Database.insertInto("generators", {
+                    await Repositories.generators.insert({
                         ...generator,
                         id: newId,
                         contest_id: newContest.id,
@@ -134,15 +131,15 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
                         problem_id: newProblem.id,
                     };
 
-                    await Database.insertInto("clusters", newCluster);
+                    await Repositories.clusters.insert(newCluster);
 
-                    const testcases = await Database.selectFrom("testcases", "*", {
+                    const testcases = await Repositories.testcases.select("*", {
                         cluster_id: cluster.id,
                     });
 
                     await Promise.all(
                         testcases.map(async (testcase) => {
-                            await Database.insertInto("testcases", {
+                            await Repositories.testcases.insert({
                                 ...testcase,
                                 id: generateSnowflake(),
                                 generator_id: testcase.generator_id
@@ -159,7 +156,7 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
         })
     );
 
-    await Database.insertInto("contest_members", {
+    await Repositories.contest_members.insert({
         id: generateSnowflake(),
         contest_id: newContest.id,
         user_id: user.id,
@@ -211,8 +208,8 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
     };
 
     await Promise.all([
-        Database.insertInto("contests", contest),
-        Database.insertInto("contest_members", {
+        Repositories.contests.insert(contest),
+        Repositories.contest_members.insert({
             id: generateSnowflake(),
             user_id: user.id,
             contest_id: contest.id,
@@ -232,8 +229,7 @@ const JoinSchema = Type.Object({
 ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
     const user = await extractUser(req);
 
-    const contest = await Database.selectOneFrom(
-        "contests",
+    const contest = await Repositories.contests.selectOne(
         ["id", "organisation_id", "start_time", "duration_seconds"],
         {
             join_code: req.body.join_code,
@@ -245,13 +241,13 @@ ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
     if (contest.start_time.getTime() + contest.duration_seconds * 1000 < Date.now())
         throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const organisationMember = await Database.selectOneFrom("organisation_members", ["id"], {
+    const organisationMember = await Repositories.organisation_members.selectOne(["id"], {
         organisation_id: contest.organisation_id,
         user_id: user.id,
     });
 
     if (!organisationMember)
-        await Database.insertInto("organisation_members", {
+        await Repositories.organisation_members.insert({
             id: generateSnowflake(),
             user_id: user.id,
             organisation_id: contest.organisation_id,
@@ -259,13 +255,13 @@ ContestHandler.post("/join", useValidation(JoinSchema), async (req, res) => {
             elo: DEFAULT_ELO,
         });
 
-    const contestMember = await Database.selectOneFrom("contest_members", ["id"], {
+    const contestMember = await Repositories.contest_members.selectOne(["id"], {
         contest_id: contest.id,
         user_id: user.id,
     });
 
     if (!contestMember)
-        await Database.insertInto("contest_members", {
+        await Repositories.contest_members.insert({
             id: generateSnowflake(),
             user_id: user.id,
             contest_id: contest.id,
@@ -282,7 +278,7 @@ ContestHandler.patch("/:contest_id/join", async (req, res) => {
 
     const code = randomSequence(8);
 
-    await Database.update("contests", { join_code: code }, { id: contest.id });
+    await Repositories.contests.update({ join_code: code }, { id: contest.id });
 
     return respond(res, StatusCodes.OK, { code });
 });
@@ -303,8 +299,7 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
 
     const newName = req.body.name;
 
-    await Database.update(
-        "contests",
+    await Repositories.contests.update(
         {
             name: newName,
             start_time: date,
@@ -317,25 +312,17 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
         { id: contest.id }
     );
 
-    const members = await Database.selectFrom("contest_members", ["user_id"], {
+    const members = await Repositories.contest_members.select(["user_id"], {
         contest_id: contest.id,
     });
 
     // yes ik, very hacky
-    const oldContestNotifications = await Database.selectFrom(
-        "notifications",
-        ["id"],
-        {
-            data: contest.name,
-        },
-        // eslint-disable-next-line sonarjs/no-duplicate-string
-        "ALLOW FILTERING"
-    );
+    const oldContestNotifications = await Repositories.notifications.select(["id"], {
+        data: contest.name,
+    });
 
     await Promise.all(
-        oldContestNotifications.map((it) =>
-            Database.deleteFrom("notifications", "*", { id: it.id })
-        )
+        oldContestNotifications.map((it) => Repositories.notifications.delete("*", { id: it.id }))
     );
 
     const _ = pushContestNotifications(
@@ -351,22 +338,13 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
 });
 
 const getContestsForTemporaryUser = async (userId: bigint): Promise<Contest[]> => {
-    const contestMembers = await Database.selectFrom(
-        "contest_members",
-        "*",
-        { user_id: userId },
-        "ALLOW FILTERING"
-    );
+    const contests = await Repositories.contests.selectForTemporaryUser(userId);
 
-    const memberContests = await Promise.all(
-        contestMembers
-            .filter((m) =>
-                hasContestPermission(m.contest_permissions, ContestMemberPermissions.VIEW)
-            )
-            .map((m) => Database.selectOneFrom("contests", "*", { id: m.contest_id }))
+    return contests.flatMap(({ member_contest_permissions: permissions, ...contest }) =>
+        permissions !== null && hasContestPermission(permissions, ContestMemberPermissions.VIEW)
+            ? [contest]
+            : []
     );
-
-    return memberContests.filter((c): c is Contest => c !== null);
 };
 
 ContestHandler.get("/", async (req, res) => {
@@ -378,9 +356,10 @@ ContestHandler.get("/", async (req, res) => {
 
     const organisation = await extractCurrentOrganisation(req);
 
-    const contests = await Database.selectFrom("contests", "*", {
-        organisation_id: organisation.id,
-    });
+    const contests = await Repositories.contests.selectForOrganisationWithMembership(
+        organisation.id,
+        optionalUser?.id
+    );
 
     const hasViewContestsPermission = await hasOrganisationPermission(
         req,
@@ -390,46 +369,34 @@ ContestHandler.get("/", async (req, res) => {
 
     const isEduUser = optionalUser?.is_edu ?? false;
 
-    // TODO: FIX
-    const contestMembers = optionalUser
-        ? await Database.selectFrom(
-              "contest_members",
-              "*",
-              { user_id: optionalUser.id },
-              "ALLOW FILTERING"
-          )
-        : [];
-
-    const contestMembersByContestId: Record<string, ContestMember> = {};
-
-    for (const member of contestMembers) {
-        contestMembersByContestId[member.contest_id.toString()] = member;
-    }
-
-    const isContestVisible = (contest: Contest): boolean => {
+    const isContestVisible = (contest: (typeof contests)[number]): boolean => {
         if (hasViewContestsPermission) return true;
 
         if (contest.public && contest.require_edu_verification && isEduUser) return true;
 
         if (contest.public && !contest.require_edu_verification) return true;
 
-        const member = contestMembersByContestId[contest.id.toString()];
-
         return (
-            !!member &&
-            hasContestPermission(member.contest_permissions, ContestMemberPermissions.VIEW)
+            contest.member_contest_permissions !== null &&
+            hasContestPermission(contest.member_contest_permissions, ContestMemberPermissions.VIEW)
         );
     };
 
-    return respond(res, StatusCodes.OK, contests.filter(isContestVisible));
+    return respond(
+        res,
+        StatusCodes.OK,
+        contests
+            .filter(isContestVisible)
+            .map(({ member_contest_permissions: _, ...contest }) => contest)
+    );
 });
 ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
     const contest = await extractContest(req);
 
     await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
 
-    const targetUser = await Database.selectOneFrom("users", ["id", "full_name"], {
-        id: req.params.user_id,
+    const targetUser = await Repositories.users.selectOne(["id", "full_name"], {
+        id: BigInt(req.params.user_id),
     });
 
     if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
@@ -456,12 +423,7 @@ ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
 
 ContestHandler.get("/members/self", async (req, res) => {
     const user = await extractUser(req);
-    const contestMembers = await Database.selectFrom(
-        "contest_members",
-        "*",
-        { user_id: user.id },
-        "ALLOW FILTERING"
-    );
+    const contestMembers = await Repositories.contest_members.select("*", { user_id: user.id });
 
     return respond(
         res,
@@ -487,22 +449,19 @@ ContestHandler.get(
             await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
         }
 
-        const _contestMembers = await Database.selectFrom("contest_members", "*", {
-            contest_id: contest.id,
-        });
+        const joinedMembers = await Repositories.contest_members.selectLeaderboard(
+            contest.id,
+            contest.organisation_id
+        );
 
-        const users = (
-            await Promise.all(
-                R.chunk(_contestMembers, 100).map((chunk) => {
-                    return Database.selectFrom("users", "*", {
-                        id: eqIn(...chunk.map((it) => it.user_id)),
-                    });
-                })
+        if (
+            joinedMembers.some(
+                (member) =>
+                    member.user_full_name === null ||
+                    member.user_email === null ||
+                    member.user_permissions === null
             )
-        ).flat();
-
-        // if for every contestMember doesn't exist a corresponding user
-        if (!_contestMembers.every((it) => users.some((user) => user.id === it.user_id)))
+        )
             throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
 
         const showAll =
@@ -513,60 +472,38 @@ ContestHandler.get(
                 contest.id
             ).catch(() => false));
 
-        const contestMembers = _contestMembers.filter(
-            (it, _, __, user = users.find((user) => user.id === it.user_id)!) =>
+        const contestMembers = joinedMembers.filter(
+            (member) =>
                 showAll ||
                 !hasContestPermission(
-                    it.contest_permissions,
+                    member.contest_permissions,
                     ContestMemberPermissions.VIEW_PRIVATE,
-                    user.permissions
+                    member.user_permissions!
                 )
-        );
-
-        const eduUsers = (
-            await Promise.all(
-                R.chunk(contestMembers, 100).map((chunk) => {
-                    return Database.selectFrom("edu_users", "*", {
-                        id: eqIn(...chunk.map((it) => it.user_id)),
-                    });
-                })
-            )
-        ).flat();
-
-        const organisationMembers = await Database.selectFrom(
-            "organisation_members",
-            "*",
-            {
-                organisation_id: contest.organisation_id,
-            },
-            "ALLOW FILTERING"
         );
 
         return respond(
             res,
             StatusCodes.OK,
-            contestMembers
-                .map(
-                    (
-                        it,
-                        _,
-                        __,
-                        user = users.find((user) => user.id === it.user_id)!,
-                        eduUser = eduUsers.find((user) => user.id === it.user_id)
-                    ) => ({
-                        ...it,
-                        ...R.pick(
-                            organisationMembers.find((member) => member.user_id === it.user_id)!,
-                            ["elo"]
-                        ),
-                        full_name:
-                            (contest.require_edu_verification && eduUser?.full_name) ||
-                            user.full_name,
-                        email_domain: user.email.split("@").at(-1),
-                        edu_mail_domain: eduUser?.email.split("@").at(-1),
-                    })
-                )
-                .map((it) => ({ ...it, score: it.score ?? {} }))
+            contestMembers.map(
+                ({
+                    user_full_name,
+                    user_email,
+                    user_permissions: _,
+                    edu_full_name,
+                    edu_email,
+                    organisation_elo,
+                    ...member
+                }) => ({
+                    ...member,
+                    elo: organisation_elo ?? DEFAULT_ELO,
+                    full_name:
+                        (contest.require_edu_verification && edu_full_name) || user_full_name!,
+                    email_domain: user_email!.split("@").at(-1),
+                    edu_mail_domain: edu_email?.split("@").at(-1),
+                    score: member.score ?? {},
+                })
+            )
         );
     }
 );

@@ -74,11 +74,13 @@ export const validateJwt = async (
 
     if (!compiledValidJWTSchema.Check(jwt)) return null;
 
+    if (!/^\d+$/.test(jwt.user_id) || !/^\d+$/.test(jwt.jti)) return null;
+
     const user = await Database.selectOneFrom("users", "*", {
-        id: jwt.user_id,
+        id: BigInt(jwt.user_id),
     });
 
-    if (!user || !/^\d+$/.test(jwt.jti)) return null;
+    if (!user) return null;
 
     return {
         user,

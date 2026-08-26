@@ -3,7 +3,6 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../../../../database/Database";
 import { SafeError } from "../../../../errors/SafeError";
 import { extractCluster } from "../../../../extractors/extractCluster";
 import { extractModifiableCluster } from "../../../../extractors/extractModifiableCluster";
@@ -13,6 +12,7 @@ import { extractTestcase } from "../../../../extractors/extractTestcase";
 import { Globals } from "../../../../globals";
 import { generateSnowflake } from "../../../../lib/snowflake";
 import { useValidation } from "../../../../middlewares/useValidation";
+import { Repositories } from "../../../../repositories/Repositories";
 import { S3Client } from "../../../../s3/S3";
 import { respond } from "../../../../utils/response";
 import TestcaseFileHandler from "./TestcaseFileHandler";
@@ -46,7 +46,7 @@ TestcaseHandler.post(
             generator_input: req.body.generator_input,
         };
 
-        await Database.insertInto("testcases", testcase);
+        await Repositories.testcases.insert(testcase);
 
         return respond(res, StatusCodes.OK, testcase);
     }
@@ -63,8 +63,8 @@ TestcaseHandler.post("/", async (req, res) => {
         output_type: "manual",
     };
 
-    await Database.insertInto("testcases", testcase);
-    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
+    await Repositories.testcases.insert(testcase);
+    await Repositories.clusters.update({ status: "not-ready" }, { id: cluster.id });
 
     return respond(res, StatusCodes.OK, testcase);
 });
@@ -72,7 +72,7 @@ TestcaseHandler.post("/", async (req, res) => {
 TestcaseHandler.get("/", async (req, res) => {
     const cluster = await extractCluster(req);
 
-    const testcases = await Database.selectFrom("testcases", "*", {
+    const testcases = await Repositories.testcases.select("*", {
         cluster_id: cluster.id,
     });
 
@@ -107,8 +107,8 @@ TestcaseHandler.patch("/:testcase_id", async (req, res) => {
         updateData.generator_input = req.body.generator_input;
     }
 
-    await Database.update("testcases", updateData, { id: testcase.id });
-    await Database.update("clusters", { status: "not-ready" }, { id: testcase.cluster_id });
+    await Repositories.testcases.update(updateData, { id: testcase.id });
+    await Repositories.clusters.update({ status: "not-ready" }, { id: testcase.cluster_id });
 
     return respond(res, StatusCodes.OK);
 });
@@ -175,16 +175,14 @@ TestcaseHandler.post("/:testcase_id/:type", async (req, res) => {
     await S3Client.putObject(Globals.s3.buckets.testcases, filePath, inputFile.data);
 
     await (req.params.type === "input"
-        ? Database.update(
-              "testcases",
+        ? Repositories.testcases.update(
               {
                   status: "not-ready",
                   input_file: filePath,
               },
               { id: testcase.id }
           )
-        : Database.update(
-              "testcases",
+        : Repositories.testcases.update(
               {
                   status: "not-ready",
                   output_file: filePath,
@@ -198,8 +196,8 @@ TestcaseHandler.post("/:testcase_id/:type", async (req, res) => {
 TestcaseHandler.delete("/:testcase_id", async (req, res) => {
     const testcase = await extractModifiableTestcase(req);
 
-    await Database.deleteFrom("testcases", "*", { id: testcase.id });
-    await Database.deleteFrom("testcase_submissions", "*", {
+    await Repositories.testcases.delete("*", { id: testcase.id });
+    await Repositories.testcase_submissions.delete("*", {
         testcase_id: testcase.id,
     });
 

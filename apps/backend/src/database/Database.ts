@@ -80,8 +80,11 @@ import { migration_add_sample_clusters } from "./migrations/0051_add_sample_clus
 import { migration_generator_id_index } from "./migrations/0052_generator_id_index";
 import { migration_contest_chat_messages } from "./migrations/0053_contest_chat_messages";
 import { migration_add_temporary_users } from "./migrations/0054_add_temporary_users";
+import { migrateScyllaToPostgres } from "./postgres/migrateScylla";
+import { PostgresDatabase } from "./postgres/PostgresDatabase";
+import { runPostgresMigrations } from "./postgres/runMigrations";
 
-export const Database = new ScylloClient<{
+export const LegacyDatabase = new ScylloClient<{
     users: User;
     contests: Contest;
     problems: Problem;
@@ -174,6 +177,13 @@ const migrations: Migration<any>[] = [
 ];
 
 export const initDatabase = async () => {
-    await Database.useKeyspace(Globals.dbKeyspace, true);
-    await Database.migrate(migrations, true);
+    await runPostgresMigrations(Database);
+    await migrateScyllaToPostgres();
 };
+
+export const initLegacyDatabase = async () => {
+    await LegacyDatabase.useKeyspace(Globals.dbKeyspace, false);
+    await LegacyDatabase.migrate(migrations, true);
+};
+
+export const Database = new PostgresDatabase();

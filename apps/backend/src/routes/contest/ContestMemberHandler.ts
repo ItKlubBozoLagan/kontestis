@@ -4,7 +4,6 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { grantPermission } from "permissio";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractUser } from "../../extractors/extractUser";
@@ -12,6 +11,7 @@ import { pushContestNotifications } from "../../lib/contest";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { mustHaveContestPermission } from "../../preconditions/hasPermission";
+import { Repositories } from "../../repositories/Repositories";
 import { respond } from "../../utils/response";
 
 const ContestMemberHandler = Router({ mergeParams: true });
@@ -24,7 +24,7 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
     const contest = await extractContest(req);
     const user = await extractUser(req);
     const targetUser = req.body.email
-        ? await Database.selectOneFrom("users", "*", { email: req.body.email }, "ALLOW FILTERING")
+        ? await Repositories.users.selectOne("*", { email: req.body.email })
         : undefined;
 
     if (req.body.email && !targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
@@ -33,7 +33,7 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
         await mustHaveContestPermission(req, ContestMemberPermissions.ADD_USER, contest.id);
     }
 
-    const addedMember = await Database.selectOneFrom("contest_members", ["id"], {
+    const addedMember = await Repositories.contest_members.selectOne(["id"], {
         user_id: targetUser ? targetUser.id : user.id,
         contest_id: contest.id,
     });
@@ -43,7 +43,7 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
 
     if (addedMember) throw new SafeError(StatusCodes.CONFLICT);
 
-    await Database.insertInto("contest_members", {
+    await Repositories.contest_members.insert({
         id: generateSnowflake(),
         user_id: targetUser ? targetUser.id : user.id,
         contest_id: contest.id,
@@ -58,14 +58,9 @@ ContestMemberHandler.post("/register", useValidation(RegisterSchema), async (req
 ContestMemberHandler.get("/", async (req, res) => {
     const contest = await extractContest(req);
 
-    const contestMembers = await Database.selectFrom(
-        "contest_members",
-        "*",
-        {
-            contest_id: contest.id,
-        },
-        "ALLOW FILTERING"
-    );
+    const contestMembers = await Repositories.contest_members.select("*", {
+        contest_id: contest.id,
+    });
 
     return respond(
         res,
@@ -78,7 +73,7 @@ ContestMemberHandler.get("/:user_id", async (req, res) => {
     const contest = await extractContest(req);
     const targetId = BigInt(req.params.user_id);
 
-    const contestMember = await Database.selectOneFrom("contest_members", "*", {
+    const contestMember = await Repositories.contest_members.selectOne("*", {
         contest_id: contest.id,
         user_id: targetId,
     });
@@ -112,15 +107,14 @@ ContestMemberHandler.patch("/:user_id", async (req, res) => {
         contest.id
     );
 
-    const targetMember = await Database.selectOneFrom("contest_members", "*", {
+    const targetMember = await Repositories.contest_members.selectOne("*", {
         user_id: targetId,
         contest_id: contest.id,
     });
 
     if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    await Database.update(
-        "contest_members",
+    await Repositories.contest_members.update(
         { contest_permissions: newPermissions },
         { user_id: targetId, contest_id: contest.id, id: targetMember.id }
     );
@@ -134,14 +128,14 @@ ContestMemberHandler.delete("/:user_id", async (req, res) => {
 
     await mustHaveContestPermission(req, ContestMemberPermissions.REMOVE_USER, contest.id);
 
-    const targetMember = await Database.selectOneFrom("contest_members", ["id"], {
+    const targetMember = await Repositories.contest_members.selectOne(["id"], {
         user_id: targetId,
         contest_id: contest.id,
     });
 
     if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    await Database.deleteFrom("contest_members", "*", {
+    await Repositories.contest_members.delete("*", {
         id: targetMember.id,
         user_id: targetId,
         contest_id: contest.id,

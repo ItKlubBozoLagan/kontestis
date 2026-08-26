@@ -5,7 +5,6 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { EMPTY_PERMISSIONS } from "permissio";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { Globals } from "../../globals";
 import { generateGravatarUrl, generateJwt, processLogin } from "../../lib/auth";
@@ -15,6 +14,7 @@ import { useCaptcha, useCaptchaSchema } from "../../middlewares/useCaptcha";
 import { useValidation } from "../../middlewares/useValidation";
 import { Redis } from "../../redis/Redis";
 import { RedisKeys } from "../../redis/RedisKeys";
+import { Repositories } from "../../repositories/Repositories";
 import { randomSequence } from "../../utils/random";
 import { respond } from "../../utils/response";
 
@@ -36,7 +36,7 @@ const LoginSchema = Type.Object({
 });
 
 ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async (req, res) => {
-    const managedUser = await Database.selectOneFrom("managed_users", "*", {
+    const managedUser = await Repositories.managed_users.selectOne("*", {
         email: req.body.email,
     });
 
@@ -46,7 +46,7 @@ ManagedHandler.post("/login", useValidation(LoginSchema, { body: true }), async 
 
     if (!verifyResult) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-    const user = await Database.selectOneFrom("users", "*", {
+    const user = await Repositories.users.selectOne("*", {
         id: managedUser.id,
     });
 
@@ -87,7 +87,7 @@ ManagedHandler.post(
     useCaptcha,
     useValidation(RegisterSchema, { body: true }),
     async (req, res) => {
-        const existingUser = await Database.selectOneFrom("users", ["id"], {
+        const existingUser = await Repositories.users.selectOne(["id"], {
             email: req.body.email.toLowerCase(),
         });
 
@@ -112,8 +112,8 @@ ManagedHandler.post(
                 req.body.picture_url ?? generateGravatarUrl(managedUser.email.toLowerCase()),
         };
 
-        await Database.insertInto("managed_users", managedUser);
-        await Database.insertInto("users", user);
+        await Repositories.managed_users.insert(managedUser);
+        await Repositories.users.insert(user);
 
         await Promise.all([
             processLogin(user, {
@@ -128,8 +128,8 @@ ManagedHandler.post(
 );
 
 ManagedHandler.get("/confirm/:user_id/:code", async (req, res) => {
-    const user = await Database.selectOneFrom("managed_users", ["id", "confirmed_at"], {
-        id: req.params.user_id,
+    const user = await Repositories.managed_users.selectOne(["id", "confirmed_at"], {
+        id: BigInt(req.params.user_id),
     });
 
     if (!user) throw new SafeError(StatusCodes.NOT_FOUND);
@@ -140,8 +140,7 @@ ManagedHandler.get("/confirm/:user_id/:code", async (req, res) => {
 
     if (confirmationCode !== req.params.code) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    await Database.update(
-        "managed_users",
+    await Repositories.managed_users.update(
         {
             confirmed_at: new Date(),
         },

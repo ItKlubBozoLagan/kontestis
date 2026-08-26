@@ -1,7 +1,7 @@
 import { ContestMemberV2, ExamFinalSubmissionV2, SubmissionV5 } from "@kontestis/models";
 import { eqIn, Migration } from "scyllo";
 
-import { Database } from "../Database";
+import { LegacyDatabase as Database } from "../Database";
 
 type MigrationType = {
     contest_members: ContestMemberV2;
