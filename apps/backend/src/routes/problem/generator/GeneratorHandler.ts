@@ -3,7 +3,6 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../../../database/Database";
 import { extractGenerator } from "../../../extractors/extractGenerator";
 import { extractModifiableGenerator } from "../../../extractors/extractModifiableGenerator";
 import { extractModifiableProblem } from "../../../extractors/extractModifiableProblem";
@@ -11,6 +10,7 @@ import { extractProblem } from "../../../extractors/extractProblem";
 import { extractUser } from "../../../extractors/extractUser";
 import { generateSnowflake } from "../../../lib/snowflake";
 import { useValidation } from "../../../middlewares/useValidation";
+import { Repositories } from "../../../repositories/Repositories";
 import { EvaluationLanguageSchema } from "../../../utils/evaluation.schema";
 import { R } from "../../../utils/remeda";
 import { respond } from "../../../utils/response";
@@ -26,7 +26,7 @@ const GeneratorSchema = Type.Object({
 GeneratorHandler.get("/", async (req, res) => {
     const problem = await extractProblem(req);
 
-    const generators = await Database.selectFrom("generators", "*", {
+    const generators = await Repositories.generators.select("*", {
         problem_id: problem.id,
     });
 
@@ -47,7 +47,7 @@ GeneratorHandler.post("/", useValidation(GeneratorSchema), async (req, res) => {
         language: req.body.language,
     };
 
-    await Database.insertInto("generators", generator);
+    await Repositories.generators.insert(generator);
 
     return respond(res, StatusCodes.OK, generator);
 });
@@ -62,8 +62,7 @@ GeneratorHandler.get("/:generator_id", async (req, res) => {
 GeneratorHandler.patch("/:generator_id", useValidation(GeneratorSchema), async (req, res) => {
     const generator = await extractModifiableGenerator(req);
 
-    await Database.update(
-        "generators",
+    await Repositories.generators.update(
         {
             name: req.body.name,
             code: req.body.code,
@@ -78,31 +77,24 @@ GeneratorHandler.patch("/:generator_id", useValidation(GeneratorSchema), async (
 GeneratorHandler.delete("/:generator_id", async (req, res) => {
     const generator = await extractModifiableGenerator(req);
 
-    await Database.deleteFrom("generators", "*", { id: generator.id });
+    await Repositories.generators.delete("*", { id: generator.id });
 
-    const testcases = await Database.selectFrom(
-        "testcases",
-        ["id"],
-        { generator_id: generator.id },
-        "ALLOW FILTERING"
-    );
+    const testcases = await Repositories.testcases.select(["id"], { generator_id: generator.id });
 
     // Update any testcases that use this generator
     for (const chunk of R.chunk(testcases, 20)) {
-        const batch = Database.batch();
-
-        for (const testcase of chunk) {
-            batch.update(
-                "testcases",
-                {
-                    status: "generator-error",
-                    error: "Generator deleted",
-                    generator_id: null,
-                },
-                { id: testcase.id }
-            );
-        }
-        await batch.execute();
+        await Repositories.transaction(async (repositories) => {
+            for (const testcase of chunk) {
+                await repositories.testcases.update(
+                    {
+                        status: "generator-error",
+                        error: "Generator deleted",
+                        generator_id: null,
+                    },
+                    { id: testcase.id }
+                );
+            }
+        });
     }
 
     return respond(res, StatusCodes.OK);

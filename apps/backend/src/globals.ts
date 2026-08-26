@@ -10,6 +10,9 @@ type GlobalsType = {
     dbPort: number;
     dbKeyspace: string;
     dbDatacenter: string;
+    postgresUrl: string;
+    scyllaMigrationEnabled: boolean;
+    databaseMigrationBatchSize: number;
     evaluatorEndpoint: string;
     redisUrl: string;
     oauthAllowedDomains: string[];
@@ -68,6 +71,13 @@ export const Globals: GlobalsType = {
     dbPort: process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 9042,
     dbKeyspace: process.env.DB_KEYSPACE ?? "",
     dbDatacenter: process.env.DB_DATACENTER ?? "",
+    postgresUrl:
+        process.env.DATABASE_URL ?? "postgresql://kontestis:kontestis@localhost:5432/kontestis",
+    scyllaMigrationEnabled:
+        (process.env.SCYLLA_MIGRATION_ENABLED ?? "false").toLowerCase() === "true",
+    databaseMigrationBatchSize: process.env.DATABASE_MIGRATION_BATCH_SIZE
+        ? Number.parseInt(process.env.DATABASE_MIGRATION_BATCH_SIZE)
+        : 500,
     evaluatorEndpoint:
         process.env.EVALUATOR_ENDPOINT ?? "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",

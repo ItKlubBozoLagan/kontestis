@@ -3,12 +3,12 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
 import { generateGravatarUrl, generateJwt } from "../../lib/auth";
 import { processUserFromTokenData, verifyToken } from "../../lib/google";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
 import { AaiEduHandler } from "./AaiEduHandler";
@@ -35,8 +35,7 @@ AuthHandler.post("/google-login", useValidation(OAuthSchema), async (req, res) =
 
     const tokenData = await processUserFromTokenData(googleResponse);
 
-    await Database.update(
-        "users",
+    await Repositories.users.update(
         {
             full_name: tokenData.full_name,
             picture_url: tokenData.picture_url || generateGravatarUrl(tokenData.email),
@@ -67,7 +66,7 @@ AuthHandler.get("/info/:id", async (req, res) => {
 
     if (id === user.id) return respond(res, StatusCodes.OK, user);
 
-    const userData = Database.selectOneFrom("users", "*", { id: id });
+    const userData = Repositories.users.selectOne("*", { id: id });
 
     if (!userData) throw new SafeError(StatusCodes.NOT_FOUND);
 
@@ -80,7 +79,7 @@ AuthHandler.get("/", async (req, res) => {
     if (!hasAdminPermission(user.permissions, AdminPermissions.VIEW_USER))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const users = await Database.selectFrom("users", "*", {});
+    const users = await Repositories.users.select("*", {});
 
     return respond(res, StatusCodes.OK, users);
 });
@@ -93,7 +92,7 @@ AuthHandler.patch("/:user_id", async (req, res) => {
     if (!hasAdminPermission(user.permissions, AdminPermissions.EDIT_USER))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const target = await Database.selectOneFrom("users", ["id"], { id: targetId });
+    const target = await Repositories.users.selectOne(["id"], { id: targetId });
 
     if (!target) throw new SafeError(StatusCodes.NOT_FOUND);
 
@@ -101,7 +100,7 @@ AuthHandler.patch("/:user_id", async (req, res) => {
 
     if (typeof newPermissions === "undefined") throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    await Database.update("users", { permissions: newPermissions }, { id: target.id });
+    await Repositories.users.update({ permissions: newPermissions }, { id: target.id });
 
     return respond(res, StatusCodes.OK);
 });

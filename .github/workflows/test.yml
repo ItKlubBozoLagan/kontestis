@@ -6,13 +6,43 @@ on:
             - "main"
             - "dev"
         paths:
+            - "apps/backend/**"
             - "packages/utils/**"
+            - "packages/models/**"
+            - "pnpm-lock.yaml"
+            - ".github/workflows/test.yml"
+    pull_request:
+        branches:
+            - "main"
+            - "dev"
+        paths:
+            - "apps/backend/**"
+            - "packages/utils/**"
+            - "packages/models/**"
+            - "pnpm-lock.yaml"
             - ".github/workflows/test.yml"
 
 jobs:
     deploy:
         name: "🧪 Test"
         runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: kontestis
+                    POSTGRES_USER: kontestis
+                    POSTGRES_PASSWORD: kontestis
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U kontestis -d kontestis"
+                    --health-interval 2s
+                    --health-timeout 5s
+                    --health-retries 20
+        env:
+            DATABASE_URL: postgresql://kontestis:kontestis@localhost:5432/kontestis
+            JWT_SECRET: ci-only-secret
         steps:
             - uses: actions/checkout@v3
 
@@ -28,8 +58,16 @@ jobs:
                   cache: "pnpm"
 
             - name: Install packages
-              # currently the only package that has tests
-              run: pnpm --filter=@kontestis/utils... install
+              run: pnpm install
 
             - name: Lint
-              run: pnpm test
+              run: pnpm lint
+
+            - name: Typecheck
+              run: pnpm typecheck
+
+            - name: Backend tests
+              run: pnpm --filter @kontestis/backend test
+
+            - name: Utility tests
+              run: pnpm --filter @kontestis/utils test

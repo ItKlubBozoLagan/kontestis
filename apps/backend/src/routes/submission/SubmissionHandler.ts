@@ -9,9 +9,7 @@ import {
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { eqIn } from "scyllo";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractClusterSubmission } from "../../extractors/extractClusterSubmission";
 import { extractContest } from "../../extractors/extractContest";
@@ -32,6 +30,7 @@ import { useValidation } from "../../middlewares/useValidation";
 import { mustHaveContestPermission } from "../../preconditions/hasPermission";
 import { Redis } from "../../redis/Redis";
 import { RedisKeys } from "../../redis/RedisKeys";
+import { Repositories } from "../../repositories/Repositories";
 import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { R } from "../../utils/remeda";
@@ -67,8 +66,7 @@ SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (r
         );
     };
 
-    const problemWithFullData = await Database.selectOneFrom(
-        "problems",
+    const problemWithFullData = await Repositories.problems.selectOne(
         ["evaluation_script", "evaluation_variant", "evaluation_language"],
         { id: problem.id }
     );
@@ -98,8 +96,7 @@ SubmissionHandler.post("/reevaluate/:submission_id", async (req, res) => {
 
     await mustHaveContestPermission(req, ContestMemberPermissions.EDIT, problem.contest_id);
 
-    const problemWithFullData = await Database.selectOneFrom(
-        "problems",
+    const problemWithFullData = await Repositories.problems.selectOne(
         ["evaluation_script", "evaluation_variant", "evaluation_language"],
         { id: problem.id }
     );
@@ -130,8 +127,8 @@ const GetSchema = Type.Object({
 });
 
 SubmissionHandler.get("/", useValidation(GetSchema, { query: true }), async (req, res) => {
-    const submissions = await Database.selectFrom("submissions", ["id"], {
-        user_id: req.query.user_id,
+    const submissions = await Repositories.submissions.select(["id"], {
+        user_id: BigInt(req.query.user_id),
     });
 
     return respond(res, StatusCodes.OK, submissions);
@@ -140,41 +137,15 @@ SubmissionHandler.get("/", useValidation(GetSchema, { query: true }), async (req
 SubmissionHandler.get("/by-problem-all/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
     const contest = await extractContest(req, problem.contest_id);
-    const submissions = await Database.selectFrom(
-        "submissions",
-        [
-            "id",
-            "user_id",
-            "problem_id",
-            "language",
-            "created_at",
-            "time_used_millis",
-            "memory_used_megabytes",
-            "verdict",
-            "awarded_score",
-            "samples_passed",
-        ],
-        { problem_id: problem.id }
-    );
+    const submissions = await Repositories.submissions.selectWithUserInfoByProblem(problem.id);
 
     const reevaluationIds = new Set<string>(
         await Redis.sMembers(RedisKeys.REEVALUATION_IDS(problem.id))
     );
 
-    const users = (
-        await Promise.all(
-            R.chunk(submissions, 100).map((chunk) =>
-                Database.selectFrom("users", "*", {
-                    id: eqIn(...chunk.map((s) => s.user_id)),
-                })
-            )
-        )
-    ).flat();
-
     const submissionsWithInfo = submissions.map((it) => ({
         ...it,
         reevaluation: reevaluationIds.has(it.id.toString()),
-        ...R.pick(users.find((user) => user.id === it.user_id)!, ["full_name"]),
     }));
 
     if (Date.now() > contest.start_time.getTime() + contest.duration_seconds * 1000)
@@ -193,25 +164,16 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
 
     if (!contest.exam) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    // TODO: see if there is a better way to structure this data to make the updates simpler but also allow for the needed queries
-    const finalSubmissionsRecords = await Database.selectFrom("exam_final_submissions", "*", {
-        contest_id: contest.id,
-        user_id: user.id,
-    });
-
-    const finalSubmissions = await Database.selectFrom("submissions", "*", {
-        id: eqIn(...finalSubmissionsRecords.map((r) => r.submission_id)),
-    });
-
-    const existingSubmission = finalSubmissions.find((s) => s.problem_id === submission.problem_id);
-
-    if (existingSubmission) {
-        const existingFinalSubmissionRecord = finalSubmissionsRecords.find(
-            (record) => record.submission_id === existingSubmission.id
+    const existingFinalSubmissionRecord =
+        await Repositories.exam_final_submissions.selectForProblem(
+            contest.id,
+            user.id,
+            submission.problem_id
         );
 
-        await Database.deleteFrom("exam_final_submissions", "*", {
-            id: existingFinalSubmissionRecord!.id,
+    if (existingFinalSubmissionRecord) {
+        await Repositories.exam_final_submissions.delete("*", {
+            id: existingFinalSubmissionRecord.id,
         });
     }
 
@@ -224,17 +186,20 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
         reviewed: false,
     };
 
-    const member = await Database.selectOneFrom("contest_members", "*", {
+    const member = await Repositories.contest_members.selectOne("*", {
         user_id: submission.user_id,
         contest_id: problem.contest_id,
     });
 
-    await Database.insertInto("exam_final_submissions", finalSubmission);
+    await Repositories.exam_final_submissions.insert(finalSubmission);
 
     if (!member) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    await Database.raw(
-        `UPDATE contest_members SET exam_score['${submission.problem_id}']=${submission.awarded_score} WHERE id=${member.id} AND contest_id=${member.contest_id} AND user_id=${member.user_id}`
+    await Repositories.contest_members.setScore(
+        member,
+        "exam_score",
+        submission.problem_id,
+        submission.awarded_score
     );
 
     return respond(res, StatusCodes.OK, finalSubmission);
@@ -251,13 +216,13 @@ SubmissionHandler.patch(
     async (req, res) => {
         const finalSubmissionId = extractIdFromParameters(req, "final_submission_id");
 
-        const finalSubmission = await Database.selectOneFrom("exam_final_submissions", "*", {
+        const finalSubmission = await Repositories.exam_final_submissions.selectOne("*", {
             id: finalSubmissionId,
         });
 
         if (!finalSubmission) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const member = await Database.selectOneFrom("contest_members", "*", {
+        const member = await Repositories.contest_members.selectOne("*", {
             user_id: finalSubmission.user_id,
             contest_id: finalSubmission.contest_id,
         });
@@ -268,8 +233,7 @@ SubmissionHandler.patch(
 
         await extractModifiableContest(req, finalSubmission.contest_id);
 
-        await Database.update(
-            "exam_final_submissions",
+        await Repositories.exam_final_submissions.update(
             {
                 final_score: req.body.final_score,
                 reviewed: req.body.reviewed,
@@ -281,8 +245,11 @@ SubmissionHandler.patch(
             }
         );
 
-        await Database.raw(
-            `UPDATE contest_members SET exam_score['${submission.problem_id}']=${req.body.final_score} WHERE id=${member.id} AND contest_id=${member.contest_id} AND user_id=${member.user_id}`
+        await Repositories.contest_members.setScore(
+            member,
+            "exam_score",
+            submission.problem_id,
+            req.body.final_score
         );
 
         return respond(res, StatusCodes.OK);
@@ -325,27 +292,10 @@ SubmissionHandler.get(
                 throw new SafeError(StatusCodes.FORBIDDEN);
         }
 
-        const finalSubmissions = await Database.selectFrom("exam_final_submissions", "*", {
-            user_id: targetId,
-            contest_id: contest.id,
-        });
-
-        const submissions = await Database.selectFrom("submissions", ["id", "problem_id"], {
-            id: eqIn(...finalSubmissions.map((finalSubmission) => finalSubmission.submission_id)),
-        });
-
         return respond(
             res,
             StatusCodes.OK,
-            R.map(finalSubmissions, (finalSubmission) =>
-                R.addProp(
-                    finalSubmission,
-                    "problem_id",
-                    submissions.find(
-                        (submission) => submission.id === finalSubmission.submission_id
-                    )?.problem_id ?? 0
-                )
-            )
+            await Repositories.exam_final_submissions.selectWithProblemIds(contest.id, targetId)
         );
     }
 );
@@ -359,8 +309,7 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
 
     const userId = req.query.user_id ? BigInt(req.query.user_id as string) : user!.id;
 
-    const submissions = await Database.selectFrom(
-        "submissions",
+    const submissions = await Repositories.submissions.select(
         [
             "id",
             "user_id",
@@ -376,8 +325,7 @@ SubmissionHandler.get("/by-problem/:problem_id", async (req, res) => {
         {
             problem_id: problem.id,
             user_id: userId,
-        },
-        "ALLOW FILTERING"
+        }
     );
 
     const pendingSubmissions = await getAllPendingSubmissions({
@@ -418,7 +366,7 @@ SubmissionHandler.get("/:submission_id", async (req, res) => {
 SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {
     const submission = await extractSubmission(req);
 
-    const clusters = await Database.selectFrom("cluster_submissions", "*", {
+    const clusters = await Repositories.cluster_submissions.select("*", {
         submission_id: submission.id,
     });
 
@@ -428,7 +376,7 @@ SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {
 SubmissionHandler.get("/testcase/:cluster_submission_id", async (req, res) => {
     const clusterSubmission = await extractClusterSubmission(req);
 
-    const testcases = await Database.selectFrom("testcase_submissions", "*", {
+    const testcases = await Repositories.testcase_submissions.select("*", {
         cluster_submission_id: clusterSubmission.id,
     });
 

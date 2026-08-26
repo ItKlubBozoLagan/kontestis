@@ -2,7 +2,6 @@ import { ContestMemberPermissions } from "@kontestis/models";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractProblem } from "../../extractors/extractProblem";
@@ -10,6 +9,7 @@ import { extractSubmission } from "../../extractors/extractSubmission";
 import { Globals } from "../../globals";
 import { isContestOver } from "../../lib/contest";
 import { hasContestPermission, mustHaveContestPermission } from "../../preconditions/hasPermission";
+import { Repositories } from "../../repositories/Repositories";
 import { respond } from "../../utils/response";
 import { s3OfflinePresignGetObject } from "../../utils/s3";
 
@@ -21,7 +21,7 @@ SubmissionFileHandler.get("/:cluster_id", async (req, res) => {
     const problem = await extractProblem(req, submission.problem_id);
     const contest = await extractContest(req, problem.contest_id);
 
-    const cluster = await Database.selectOneFrom("clusters", ["is_sample"], {
+    const cluster = await Repositories.clusters.selectOne(["is_sample"], {
         id: BigInt(req.params.cluster_id),
     });
 
@@ -34,8 +34,7 @@ SubmissionFileHandler.get("/:cluster_id", async (req, res) => {
 
     const clusterId = BigInt(req.params.cluster_id);
 
-    const allClusterSubmsissions = await Database.selectFrom(
-        "cluster_submissions",
+    const allClusterSubmsissions = await Repositories.cluster_submissions.select(
         ["id", "cluster_id"],
         {
             submission_id: submission.id,
@@ -49,8 +48,7 @@ SubmissionFileHandler.get("/:cluster_id", async (req, res) => {
     }
 
     // Get testcase submissions with file references
-    const testcaseSubmissions = await Database.selectFrom(
-        "testcase_submissions",
+    const testcaseSubmissions = await Repositories.testcase_submissions.select(
         ["testcase_id", "input_file", "output_file", "submission_output_file"],
         {
             cluster_submission_id: clusterSubmission.id,
@@ -83,7 +81,7 @@ SubmissionFileHandler.get("/:cluster_id/:testcase_id/:type", async (req, res) =>
         throw new SafeError(StatusCodes.BAD_REQUEST, "Invalid type");
 
     const submission = await extractSubmission(req);
-    const cluster = await Database.selectOneFrom("clusters", ["is_sample", "id"], {
+    const cluster = await Repositories.clusters.selectOne(["is_sample", "id"], {
         id: BigInt(req.params.cluster_id),
     });
 
@@ -101,29 +99,25 @@ SubmissionFileHandler.get("/:cluster_id/:testcase_id/:type", async (req, res) =>
     if (!isContestOver(contest) && !isSample)
         await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
 
-    const allClusterSubmsissions = await Database.selectFrom(
-        "cluster_submissions",
+    const clusterSubmission = await Repositories.cluster_submissions.selectOne(
         ["id", "cluster_id"],
         {
             submission_id: submission.id,
+            cluster_id: cluster.id,
         }
     );
-
-    const clusterSubmission = allClusterSubmsissions.find((cs) => cs.cluster_id === cluster.id);
 
     if (!clusterSubmission) {
         throw new SafeError(StatusCodes.NOT_FOUND, "Cluster submission not found");
     }
 
-    const allTestcaseSubmissions = await Database.selectFrom(
-        "testcase_submissions",
+    const testcaseSubmission = await Repositories.testcase_submissions.selectOne(
         ["testcase_id", "input_file", "output_file", "submission_output_file"],
         {
             cluster_submission_id: clusterSubmission.id,
+            testcase_id: testcaseId,
         }
     );
-
-    const testcaseSubmission = allTestcaseSubmissions.find((ts) => ts.testcase_id === testcaseId);
 
     if (!testcaseSubmission) {
         throw new SafeError(StatusCodes.NOT_FOUND, "Testcase submission not found");
