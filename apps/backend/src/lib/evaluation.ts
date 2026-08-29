@@ -17,6 +17,7 @@ import { AxiosError } from "axios";
 import { evaluatorAxios } from "../api/evaluatorAxios";
 import { Database } from "../database/Database";
 import { Globals } from "../globals";
+import { EvaluationFileInput } from "../nats/evaluationFiles";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { S3Client } from "../s3/S3";
@@ -25,7 +26,7 @@ import { evaluateTestcasesNew } from "./evaluation_rs";
 import { Logger } from "./logger";
 import { completePendingSubmission, storePendingSubmission } from "./pendingSubmission";
 import { generateSnowflake } from "./snowflake";
-import { getAllTestcases } from "./testcase";
+import { getAllTestcases, getAllTestcasesForCurrentEvaluation } from "./testcase";
 
 const ERR_UNEXPECTED_STATE = new Error("unexpected state");
 
@@ -91,8 +92,8 @@ const evaluateTestcases = async (
                 memory_limit: problem.memory_limit_megabytes,
                 testcases: testcases.map((testcase) => ({
                     id: testcase.id.toString(),
-                    in: testcase.input,
-                    out: testcase.correct_output,
+                    in: inlineFileData(testcase.input),
+                    out: inlineFileData(testcase.correct_output),
                 })),
                 evaluator_language: problemDetails.evaluator_language,
                 evaluator: Buffer.from(problemDetails.evaluator ?? "", "utf8").toString("base64"),
@@ -109,9 +110,18 @@ const GROUP_SIZE_LIMIT = (1 << 25) - (1 << 22);
 
 export type EvaluationInputTestcase = {
     id: Snowflake;
-    input: string;
-    correct_output: string;
+    input: EvaluationFileInput;
+    correct_output: EvaluationFileInput;
 };
+
+const inlineFileData = (file: EvaluationFileInput) => {
+    if (typeof file !== "string") throw new Error("legacy evaluator requires inline testcase data");
+
+    return file;
+};
+
+const inlineFileSize = (file: EvaluationFileInput) =>
+    typeof file === "string" ? Buffer.byteLength(file) : 0;
 
 export const splitAndEvaluateTestcases = async (
     problemDetails: ProblemDetails,
@@ -127,14 +137,14 @@ export const splitAndEvaluateTestcases = async (
 
     for (const testcase of testcases) {
         if (
-            currentSize + testcase.input.length + (testcase.correct_output?.length ?? 0) >
+            currentSize + inlineFileSize(testcase.input) + inlineFileSize(testcase.correct_output) >
             GROUP_SIZE_LIMIT
         ) {
             groupId++;
             currentSize = 0;
         }
 
-        currentSize += testcase.input.length + (testcase.correct_output?.length ?? 0);
+        currentSize += inlineFileSize(testcase.input) + inlineFileSize(testcase.correct_output);
 
         while (groups.length <= groupId) groups.push([]);
 
@@ -180,7 +190,10 @@ const evaluateCluster = async (
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const testcases = (
-        await getAllTestcases(cluster).then((testcases) =>
+        await (problemDetails.legacy_evaluation
+            ? getAllTestcases(cluster)
+            : getAllTestcasesForCurrentEvaluation(cluster)
+        ).then((testcases) =>
             problemDetails.evaluation_variant === "output-only" ? testcases.slice(0, 1) : testcases
         )
     ).sort((a, b) => Number(a.id - b.id));

@@ -12,9 +12,10 @@ export const s3OfflinePresignGetObject = async (
     bucketName: string,
     objectName: string,
     expire: number,
-    parameters?: Record<string, string>
+    parameters?: Record<string, string>,
+    instanceUrl: string = Globals.s3.instanceUrl
 ) => {
-    let baseUrl = `${Globals.s3.instanceUrl}/${bucketName}/${objectName}`;
+    let baseUrl = `${instanceUrl}/${bucketName}/${objectName}`;
 
     if (parameters) {
         const query = new URLSearchParams();

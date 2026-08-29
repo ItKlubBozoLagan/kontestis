@@ -1,5 +1,21 @@
 import { hostname } from "node:os";
 
+const parseInteger = (value: string | undefined, fallback: number) => {
+    const parsed = value === undefined ? fallback : Number.parseInt(value, 10);
+
+    if (!Number.isSafeInteger(parsed) || parsed <= 0) throw new Error(`invalid integer: ${value}`);
+
+    return parsed;
+};
+
+const sanitizeNatsToken = (value: string) => {
+    const sanitized = value.trim().replace(/[^\w-]/g, "-");
+
+    if (!sanitized) throw new Error("NATS evaluation instance id must contain a valid token");
+
+    return sanitized;
+};
+
 type GlobalsType = {
     INSTANCE_ID: string;
 
@@ -28,8 +44,19 @@ type GlobalsType = {
     backendUrl: string;
     frontendUrl: string;
 
-    evaluatorRedisQueueKey: string;
-    evaluatorRedisResponseQueuePrefix: string;
+    nats: {
+        servers: string[];
+        credsFile?: string;
+        provisionCredsFile?: string;
+        evaluationNamespace: string;
+        evaluationInstanceId: string;
+        objectThresholdBytes: number;
+        objectMaxBytes: number;
+        queueMaxBytes: number;
+        replicas: number;
+        responseTimeoutMillis: number;
+        fileRetryLimit: number;
+    };
 
     jwtSecret: string;
 
@@ -46,6 +73,7 @@ type GlobalsType = {
     s3: {
         endpoint: string;
         instanceUrl: string;
+        evaluatorInstanceUrl: string;
         port: number;
         useSSL: boolean;
         validateSSL: boolean;
@@ -91,9 +119,36 @@ export const Globals: GlobalsType = {
     emailNotifierAccountPassword: process.env.EMAIL_ACCOUNT_PASSWORD ?? "",
     backendUrl: process.env.EMAIL_SETTINGS_BASE_URL ?? "http://localhost:8080",
     frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
-    evaluatorRedisQueueKey: process.env.EVALUATOR_QUEUE_KEY ?? "evaluator_msg_queue",
-    evaluatorRedisResponseQueuePrefix:
-        process.env.EVALUATOR_RESPONSE_QUEUE_CHANNEL ?? "evaluator_evaluations",
+    nats: {
+        servers: (process.env.NATS_SERVERS ?? "nats://localhost:4222")
+            .split(",")
+            .map((server) => server.trim())
+            .filter(Boolean),
+        credsFile: process.env.NATS_CREDS_FILE || undefined,
+        provisionCredsFile: process.env.NATS_PROVISION_CREDS_FILE || undefined,
+        evaluationNamespace: process.env.NATS_EVALUATION_NAMESPACE ?? "kontestis.evaluation.v1",
+        evaluationInstanceId: sanitizeNatsToken(
+            process.env.NATS_EVALUATION_INSTANCE_ID ?? hostname()
+        ),
+        objectThresholdBytes: parseInteger(
+            process.env.EVALUATION_NATS_OBJECT_THRESHOLD_BYTES,
+            16 * 1024 * 1024
+        ),
+        objectMaxBytes: parseInteger(
+            process.env.NATS_EVALUATION_OBJECT_MAX_BYTES,
+            2 * 1024 * 1024 * 1024
+        ),
+        queueMaxBytes: parseInteger(
+            process.env.NATS_EVALUATION_QUEUE_MAX_BYTES,
+            10 * 1024 * 1024 * 1024
+        ),
+        replicas: parseInteger(process.env.NATS_EVALUATION_REPLICAS, 1),
+        responseTimeoutMillis: parseInteger(
+            process.env.NATS_EVALUATION_RESPONSE_TIMEOUT_MILLIS,
+            6 * 24 * 60 * 60 * 1000
+        ),
+        fileRetryLimit: parseInteger(process.env.NATS_EVALUATION_FILE_RETRY_LIMIT, 5),
+    },
     jwtSecret: !process.env.JWT_SECRET
         ? (() => {
               throw new Error("missing JWT_SECRET");
@@ -114,6 +169,10 @@ export const Globals: GlobalsType = {
     s3: {
         endpoint: process.env.S3_ENDPOINT ?? "localhost",
         instanceUrl: process.env.S3_INSTANCE_URL ?? "http://localhost:9000",
+        evaluatorInstanceUrl:
+            process.env.S3_EVALUATOR_INSTANCE_URL ??
+            process.env.S3_INSTANCE_URL ??
+            "http://localhost:9000",
         port: process.env.S3_PORT ? Number.parseInt(process.env.S3_PORT) : 443,
         useSSL: process.env.S3_USE_SSL === "true",
         validateSSL: process.env.S3_VALIDATE_SSL !== "false",
