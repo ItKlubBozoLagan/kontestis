@@ -1,11 +1,12 @@
-import { Contest, DEFAULT_ELO, ProblemV2 } from "@kontestis/models";
+import { randomBytes } from "node:crypto";
+
+import { Contest, DEFAULT_ELO, EloHistoryEntry, ProblemV2, Snowflake } from "@kontestis/models";
 import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
-import { Influx } from "../influx/Influx";
-import { createInfluxUInt } from "../influx/InfluxClient";
 import { computeELODifference, ContestMemberLeaderboardInfo } from "../lib/elo";
 import { Logger } from "../lib/logger";
+import { legacyPendingEloContests } from "../metrics/prometheus";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
 import { R } from "../utils/remeda";
@@ -69,12 +70,6 @@ const calculateProblemDifficulties = (
 };
 
 const handleContest = async (contest: Contest) => {
-    const cacheKey = RedisKeys.TASK_ELO_PROCESSING(contest.id);
-
-    if (await Redis.exists(cacheKey)) return;
-
-    await Redis.set(cacheKey, contest.id.toString(), { EX: 60 });
-
     const members = await Database.selectFrom(
         "contest_members",
         "*",
@@ -83,7 +78,11 @@ const handleContest = async (contest: Contest) => {
         "ALLOW FILTERING"
     );
 
-    if (members.length === 0) return;
+    if (members.length === 0) {
+        await Database.update("contests", { elo_applied: true }, { id: contest.id });
+
+        return;
+    }
 
     const organisationMembers = await Database.selectFrom(
         "organisation_members",
@@ -112,6 +111,47 @@ const handleContest = async (contest: Contest) => {
                 )
             )
     );
+
+    if (usersWithElo.length === 0) {
+        await Database.update("contests", { elo_applied: true }, { id: contest.id });
+
+        return;
+    }
+
+    const eventId = `contest:${contest.id}`;
+    const existingHistory = (
+        await Promise.all(
+            usersWithElo.map((user) =>
+                Database.selectOneFrom("elo_history", "*", {
+                    user_id: user.id,
+                    organisation_id: contest.organisation_id,
+                    event_id: eventId,
+                })
+            )
+        )
+    ).filter((entry): entry is EloHistoryEntry => entry !== undefined);
+
+    if (existingHistory.length === usersWithElo.length) {
+        await Promise.all(
+            usersWithElo.map((user) => {
+                const history = existingHistory.find((entry) => entry.user_id === user.id)!;
+
+                return Database.update(
+                    "organisation_members",
+                    { elo: history.resulting_elo },
+                    {
+                        id: user.organisationMemberId,
+                        user_id: user.id,
+                        organisation_id: contest.organisation_id,
+                    }
+                );
+            })
+        );
+
+        await Database.update("contests", { elo_applied: true }, { id: contest.id });
+
+        return;
+    }
 
     const problems = await Database.selectFrom("problems", "*", {
         contest_id: contest.id,
@@ -190,14 +230,33 @@ const handleContest = async (contest: Contest) => {
 
             await Database.update(
                 "problems",
-                { tags: [...problem.tags, `*${difficulty}`] },
+                {
+                    tags: [...problem.tags.filter((tag) => !/^\*\d+$/.test(tag)), `*${difficulty}`],
+                },
                 { id: problemId }
             );
         })
     );
 
-    await Promise.all([
-        ...usersWithElo.map((user) =>
+    const recordedAt = existingHistory[0]?.recorded_at ?? new Date();
+
+    await Promise.all(
+        usersWithElo.map((user) =>
+            Database.insertInto("elo_history", {
+                user_id: user.id,
+                organisation_id: contest.organisation_id,
+                event_id: eventId,
+                recorded_at: recordedAt,
+                contest_id: contest.id,
+                delta: newUserEloValues[user.id.toString()] - user.elo,
+                resulting_elo: newUserEloValues[user.id.toString()],
+                source: "contest",
+            })
+        )
+    );
+
+    await Promise.all(
+        usersWithElo.map((user) =>
             Database.update(
                 "organisation_members",
                 {
@@ -209,17 +268,8 @@ const handleContest = async (contest: Contest) => {
                     organisation_id: contest.organisation_id,
                 }
             )
-        ),
-        Influx.insertMany(
-            usersWithElo.map((user) =>
-                Influx.createLine(
-                    "elo",
-                    { userId: user.id.toString(), orgId: contest.organisation_id.toString() },
-                    { score: createInfluxUInt(newUserEloValues[user.id.toString()]) }
-                )
-            )
-        ),
-    ]);
+        )
+    );
 
     await Database.update(
         "contests",
@@ -230,27 +280,100 @@ const handleContest = async (contest: Contest) => {
             id: contest.id,
         }
     );
-
-    await Redis.del(cacheKey);
 };
 
-export const startEloTask = async () => {
+const withOrganisationLock = async (organisationId: Snowflake, action: () => Promise<void>) => {
+    const key = RedisKeys.TASK_ELO_ORGANISATION(organisationId);
+    const token = randomBytes(24).toString("base64url");
+    const lockDurationSeconds = 120;
+    const acquired = await Redis.set(key, token, { EX: lockDurationSeconds, NX: true });
+
+    if (!acquired) return;
+
+    const renew = setInterval(() => {
+        Redis.eval(
+            `if redis.call("GET", KEYS[1]) == ARGV[1] then
+                return redis.call("EXPIRE", KEYS[1], ARGV[2])
+            end
+            return 0`,
+            {
+                keys: [key],
+                arguments: [token, lockDurationSeconds.toString()],
+            }
+        ).catch(console.error);
+    }, (lockDurationSeconds * 1000) / 3);
+
+    try {
+        await action();
+    } finally {
+        clearInterval(renew);
+        await Redis.eval(
+            `if redis.call("GET", KEYS[1]) == ARGV[1] then
+                return redis.call("DEL", KEYS[1])
+            end
+            return 0`,
+            { keys: [key], arguments: [token] }
+        );
+    }
+};
+
+const processPendingElo = async () => {
+    const potentiallyPending = await Database.selectFrom("contests", "*", {
+        elo_applied: false,
+    });
+
+    const endedOfficial = potentiallyPending.filter(
+        (contest) =>
+            Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000 &&
+            contest.official
+    );
+    const legacyPending = endedOfficial.filter((contest) => contest.elo_processing_version !== 1);
+    const toDo = endedOfficial.filter((contest) => contest.elo_processing_version === 1);
+
+    legacyPendingEloContests.set(legacyPending.length);
+
+    if (legacyPending.length > 0)
+        Logger.error(
+            "Skipping legacy contests with unknown ELO application state",
+            legacyPending.map((contest) => contest.id)
+        );
+
+    Logger.debug(
+        "Computing ELO for",
+        toDo.map((contest) => contest.id)
+    );
+
+    const byOrganisation = new Map<string, Contest[]>();
+
+    for (const contest of toDo) {
+        const key = contest.organisation_id.toString();
+        const contests = byOrganisation.get(key) ?? [];
+
+        contests.push(contest);
+        byOrganisation.set(key, contests);
+    }
+
+    await Promise.all(
+        [...byOrganisation.values()].map((contests) =>
+            withOrganisationLock(contests[0].organisation_id, async () => {
+                const chronological = contests.sort(
+                    (a, b) =>
+                        a.start_time.getTime() +
+                        a.duration_seconds * 1000 -
+                        (b.start_time.getTime() + b.duration_seconds * 1000)
+                );
+
+                for (const contest of chronological) await handleContest(contest);
+            })
+        )
+    );
+};
+
+const runPendingElo = () => processPendingElo().catch(console.error);
+
+export const startEloTask = () => {
     Logger.info("Started ELO task");
-    setInterval(async () => {
-        const potentiallyPending = await Database.selectFrom("contests", "*", {
-            elo_applied: false,
-        });
 
-        const toDo = potentiallyPending.filter(
-            (contest) =>
-                Date.now() >= contest.start_time.getTime() + contest.duration_seconds * 1000 &&
-                contest.official
-        );
-
-        Logger.debug(
-            "Computing ELO for",
-            toDo.map((it) => it.id)
-        );
-        await Promise.all(toDo.map(handleContest)).catch(console.error);
-    }, 60 * 1000);
+    runPendingElo();
+    setInterval(runPendingElo, 60 * 1000);
 };

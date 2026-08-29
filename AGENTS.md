@@ -14,7 +14,8 @@ Read the relevant scoped file before changing that part of the tree.
 Kontestis is a programming-contest and exam platform. It is a pnpm TypeScript monorepo with:
 
 - `apps/frontend`: React 18 + Vite 4 single-page application.
-- `apps/backend`: Express 5 API backed by ScyllaDB, Redis, InfluxDB, and S3/MinIO.
+- `apps/backend`: Express 5 API backed by ScyllaDB, Redis, and S3/MinIO, with Prometheus metrics
+  and a private Grafana embedding proxy.
 - `apps/function`: legacy HTTP code-evaluation service. The current evaluator path is a separate
   Redis-queue consumer, not this app.
 - `packages/models`: shared database/API types and permission definitions.
@@ -35,8 +36,8 @@ permissions are separate bitsets defined in `packages/models/src/permissions`.
 - Install from the repository root with `pnpm install` so workspace packages are linked correctly.
 - For the Docker development stack, copy `global.env.example` to the ignored `global.env` and set
   at least `JWT_SECRET`, then run `docker compose up`. Do not commit real environment values.
-- Docker Compose exposes frontend `3000`, backend `8080`, legacy evaluator `8081`, Scylla `9042`,
-  Redis `6379`, InfluxDB `8086`, and MinIO `9000`/`9001`.
+- Docker Compose exposes frontend `3000`, backend `8080`, legacy evaluator `8081`, Grafana `3001`,
+  Prometheus `9090`, Scylla `9042`, Redis `6379`, and MinIO `9000`/`9001`.
 - Backend startup expects MinIO buckets named `submission-meta` and `testcases`. A fresh MinIO volume
   must have them created before S3-backed features work.
 
@@ -49,7 +50,7 @@ pnpm --filter @kontestis/function dev
 ```
 
 The backend still needs its external services and environment variables. `docker compose up scylla
-redis influxdb minio` is a convenient way to start only the infrastructure.
+redis minio` is a convenient way to start only the core storage infrastructure.
 
 ## Repository contracts
 
@@ -81,14 +82,16 @@ Useful package-specific checks:
 
 ```sh
 pnpm --filter @kontestis/backend typecheck
+pnpm --filter @kontestis/backend test
 pnpm --filter @kontestis/frontend typecheck
 pnpm --filter @kontestis/frontend build
 pnpm --filter @kontestis/function typecheck
 pnpm --filter @kontestis/utils test
 ```
 
-Only `packages/utils` currently owns automated tests. Backend, frontend, or evaluator changes need
-focused manual verification in addition to typecheck/lint.
+`packages/utils` owns the broad Jest suite, while the backend has focused Vitest coverage for pure
+logic. Service-backed backend flows, frontend behavior, and evaluator changes still need focused
+manual verification in addition to typecheck/lint.
 
 ## Change discipline
 

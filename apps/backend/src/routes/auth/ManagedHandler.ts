@@ -73,6 +73,7 @@ ManagedHandler.post(
         }
 
         await processLogin(user, {
+            authSource: "managed",
             newLogin: false,
             confirm: true,
         });
@@ -127,7 +128,8 @@ ManagedHandler.post(
 
         await Promise.all([
             processLogin(user, {
-                newLogin: false,
+                authSource: "managed",
+                newLogin: true,
                 confirm: false,
             }),
             processEmailVerification(user),

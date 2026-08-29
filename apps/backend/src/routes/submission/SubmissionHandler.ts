@@ -19,12 +19,9 @@ import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractFinalSubmission } from "../../extractors/extractFinalSubmission";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractOptionalUser } from "../../extractors/extractOptionalUser";
-import { extractCurrentOrganisation } from "../../extractors/extractOrganisation";
 import { extractProblem } from "../../extractors/extractProblem";
 import { extractSubmission } from "../../extractors/extractSubmission";
 import { extractUser } from "../../extractors/extractUser";
-import { Influx } from "../../influx/Influx";
-import { createInfluxUInt } from "../../influx/InfluxClient";
 import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
@@ -50,22 +47,9 @@ const SubmissionSchema = Type.Object({
 SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (req, res) => {
     const problem = await extractProblem(req);
     const user = await extractUser(req);
-    const org = await extractCurrentOrganisation(req);
 
     if (problem.evaluation_variant !== "output-only" && req.body.code.length >= 64_000)
         throw new SafeError(StatusCodes.BAD_REQUEST);
-
-    const endListener = async (submission: Submission) => {
-        await Influx.insert(
-            "submissions",
-            {
-                userId: user.id.toString(),
-                orgId: org.id.toString(),
-                successful: String(submission.verdict === "accepted"),
-            },
-            { id: createInfluxUInt(submission.id) }
-        );
-    };
 
     const problemWithFullData = await Database.selectOneFrom(
         "problems",
@@ -86,7 +70,7 @@ SubmissionHandler.post("/:problem_id", useValidation(SubmissionSchema), async (r
             evaluator: problemWithFullData.evaluation_script,
             legacy_evaluation: problem.legacy_evaluation,
         },
-        endListener
+        () => Promise.resolve()
     );
 
     return respond(res, StatusCodes.ACCEPTED, { submission: submissionId });

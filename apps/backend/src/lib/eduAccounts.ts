@@ -82,6 +82,7 @@ export const loginEduUser = async (
         });
 
     await processLogin(eduUser, {
+        authSource: "aai-edu",
         newLogin: !existingEduUser && !existingMailUser,
         confirm: true,
     });

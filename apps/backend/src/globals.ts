@@ -14,10 +14,14 @@ type GlobalsType = {
     redisUrl: string;
     oauthClientId: string;
     defaultOrganisationName: string;
-    influxUrl: string;
-    influxToken: string;
-    influxOrg: string;
-    influxBucket: string;
+    metricsBearerToken: string;
+    grafanaEnabled: boolean;
+    grafanaInternalUrl: string;
+    grafanaPublicUrl: string;
+    grafanaDashboardPath: string;
+    grafanaJwtPrivateKeyPath: string;
+    grafanaJwtIssuer: string;
+    grafanaJwtAudience: string;
     evaluatorServiceAccountEmail: string;
     evaluatorServiceAccountPrivateKey: Buffer | null;
     emailNotifierAccountMail: string;
@@ -73,10 +77,25 @@ export const Globals: GlobalsType = {
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "",
     defaultOrganisationName: process.env.DEFAULT_ORGANISATION_NAME ?? "Kontestis",
-    influxUrl: process.env.INFLUXDB_URL ?? "http://localhost:8086",
-    influxToken: process.env.INFLUXDB_TOKEN ?? "devtoken",
-    influxOrg: process.env.INFLUXDB_ORG ?? "kontestis-org",
-    influxBucket: process.env.INFLUXDB_BUCKET ?? "kontestis",
+    metricsBearerToken:
+        process.env.METRICS_BEARER_TOKEN ??
+        (process.env.MODE === "production"
+            ? (() => {
+                  throw new Error("missing METRICS_BEARER_TOKEN");
+              })()
+            : "dev-prometheus-token"),
+    grafanaEnabled: process.env.GRAFANA_EMBED_ENABLED === "true",
+    grafanaInternalUrl: process.env.GRAFANA_INTERNAL_URL ?? "http://localhost:3001",
+    grafanaPublicUrl: (process.env.GRAFANA_PUBLIC_URL ?? "http://localhost:8080/grafana").replace(
+        /\/$/,
+        ""
+    ),
+    grafanaDashboardPath:
+        process.env.GRAFANA_DASHBOARD_PATH ??
+        "/d/kontestis-observability/kontestis-observability?orgId=1&kiosk",
+    grafanaJwtPrivateKeyPath: process.env.GRAFANA_JWT_PRIVATE_KEY_PATH ?? "",
+    grafanaJwtIssuer: process.env.GRAFANA_JWT_ISSUER ?? "kontestis",
+    grafanaJwtAudience: process.env.GRAFANA_JWT_AUDIENCE ?? "grafana",
     evaluatorServiceAccountEmail: process.env.GOOGLE_EVALUATOR_SERVICE_ACCOUNT_EMAIL ?? "",
     evaluatorServiceAccountPrivateKey: process.env
         .GOOGLE_EVALUATOR_SERVICE_ACCOUNT_PRIVATE_KEY_BASE64

@@ -5,6 +5,7 @@ import {
     ContestMember,
     ContestQuestion,
     EduUser,
+    EloHistoryEntry,
     ExamFinalSubmission,
     ExamGradingScale,
     Generator,
@@ -80,6 +81,7 @@ import { migration_add_sample_clusters } from "./migrations/0051_add_sample_clus
 import { migration_generator_id_index } from "./migrations/0052_generator_id_index";
 import { migration_contest_chat_messages } from "./migrations/0053_contest_chat_messages";
 import { migration_add_temporary_users } from "./migrations/0054_add_temporary_users";
+import { migration_add_elo_history } from "./migrations/0055_add_elo_history";
 
 export const Database = new ScylloClient<{
     users: User;
@@ -104,6 +106,7 @@ export const Database = new ScylloClient<{
     managed_users: ManagedUser;
     temporary_users: TemporaryUser;
     generators: Generator;
+    elo_history: EloHistoryEntry;
 }>({
     client: {
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
@@ -171,6 +174,7 @@ const migrations: Migration<any>[] = [
     migration_generator_id_index,
     migration_contest_chat_messages,
     migration_add_temporary_users,
+    migration_add_elo_history,
 ];
 
 export const initDatabase = async () => {

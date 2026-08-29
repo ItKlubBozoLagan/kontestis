@@ -9,11 +9,8 @@ import { http, wrapAxios } from "../api/http";
 import { BigTitledSection } from "../components/BigTitledSection";
 import { ContestJoinButton } from "../components/ContestJoinButton";
 import { Header } from "../components/Header";
-import { YearActivityCalendar } from "../components/YearActivityCalendar";
 import { useAllContests } from "../hooks/contest/useAllContests";
-import { useSubmissionStat } from "../hooks/stats/useSubmissionStat";
 import { useAllSubmissions } from "../hooks/submission/useAllSubmissions";
-import { useFormatCountStat } from "../hooks/useFormatCountStat";
 import { useInterval } from "../hooks/useInterval";
 import { useSiteAlerts } from "../hooks/useSiteAlerts";
 import { useTranslation } from "../hooks/useTranslation";
@@ -53,14 +50,6 @@ export const DashboardPage: FC = () => {
             ),
         [problemQueries]
     );
-
-    const [submissionsAccepted, setSubmissionsAccepted] = useState(false);
-
-    const { data: submissionStat } = useSubmissionStat({
-        accepted: submissionsAccepted,
-    });
-
-    const submissionDataset = useFormatCountStat(submissionStat);
 
     const { t } = useTranslation();
 
@@ -119,17 +108,6 @@ export const DashboardPage: FC = () => {
                             )}
                         </div>
                     )}
-                </div>
-            </BigTitledSection>
-            <BigTitledSection header={t("dashboard.activity.title")} tw={"border-neutral-300"}>
-                <div tw={"w-fit"}>
-                    <YearActivityCalendar
-                        title={t("account.stats.submissions.title")}
-                        dataset={submissionDataset}
-                        loading={!submissionStat}
-                        toggles={[t("account.stats.submissions.toggles.showAccepted")]}
-                        onToggleUpdate={(_, value) => setSubmissionsAccepted(value)}
-                    />
                 </div>
             </BigTitledSection>
         </div>

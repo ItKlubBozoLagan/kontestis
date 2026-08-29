@@ -20,8 +20,6 @@ services:
   backend:
     image: "node:hydrogen-alpine"
     tty: true
-    volumes:
-      - ".:/app"
     working_dir: "/app/apps/backend"
     command: "npm run dev"
     depends_on:
@@ -31,6 +29,8 @@ services:
         condition: service_started
       function:
         condition: service_started
+      grafana-keygen:
+        condition: service_completed_successfully
     ports:
       - "8080:8080"
     env_file:
@@ -43,7 +43,11 @@ services:
       - DB_KEYSPACE=kontestis
       - DB_DATACENTER=datacenter1
       - REDIS_URL=redis://redis:6379
-      - INFLUXDB_URL=http://influxdb:8086
+      - METRICS_BEARER_TOKEN=dev-prometheus-token
+      - GRAFANA_EMBED_ENABLED=true
+      - GRAFANA_INTERNAL_URL=http://grafana:3000
+      - GRAFANA_PUBLIC_URL=http://localhost:8080/grafana
+      - GRAFANA_JWT_PRIVATE_KEY_PATH=/run/kontestis-grafana/private.pem
       - OAUTH_CLIENT_ID=953907026294-3ev1hl5pqitqkks4alkkqhs5616oidq7.apps.googleusercontent.com
       - EVALUATOR_ENDPOINT=http://function:8080
       - CAPTCHA_DISABLED=true
@@ -51,6 +55,9 @@ services:
       - S3_PORT=9000
       - S3_ACCESS_KEY=root
       - S3_SECRET_KEY=password
+    volumes:
+      - ".:/app"
+      - "grafana-jwt-keys:/run/kontestis-grafana:ro"
 
   function:
     build:
@@ -89,21 +96,61 @@ services:
     ports:
       - "6379:6379"
 
-
-  influxdb:
-    image: influxdb:2.6-alpine
+  grafana-keygen:
+    image: "alpine:3.21"
     volumes:
-      - "./tools/influx:/var/lib/influxdb2"
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=root
-      - DOCKER_INFLUXDB_INIT_PASSWORD=root1234
-      - DOCKER_INFLUXDB_INIT_ORG=kontestis-org
-      - DOCKER_INFLUXDB_INIT_BUCKET=kontestis
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=devtoken
-      - TZ=Europe/Zagreb
+      - "grafana-jwt-keys:/keys"
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        apk add --no-cache openssl
+        if [ ! -s /keys/private.pem ]; then
+          openssl genrsa -out /keys/private.pem 2048
+          openssl rsa -in /keys/private.pem -pubout -out /keys/public.pem
+          chmod 600 /keys/private.pem
+          chmod 644 /keys/public.pem
+        fi
+
+  prometheus:
+    image: "prom/prometheus:v2.55.1"
+    depends_on:
+      backend:
+        condition: service_started
+    volumes:
+      - "./infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      - "prometheus-data:/prometheus"
     ports:
-      - "8086:8086"
+      - "9090:9090"
+
+  grafana:
+    image: "grafana/grafana:11.4.0"
+    depends_on:
+      grafana-keygen:
+        condition: service_completed_successfully
+      prometheus:
+        condition: service_started
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:8080/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_JWT_ENABLED=true
+      - GF_AUTH_JWT_HEADER_NAME=X-Kontestis-Grafana-JWT
+      - GF_AUTH_JWT_USERNAME_ATTRIBUTE_PATH=sub
+      - GF_AUTH_JWT_ROLE_ATTRIBUTE_PATH=role
+      - GF_AUTH_JWT_ROLE_ATTRIBUTE_STRICT=true
+      - GF_AUTH_JWT_AUTO_SIGN_UP=true
+      - GF_AUTH_JWT_KEY_FILE=/keys/public.pem
+      - 'GF_AUTH_JWT_EXPECTED_CLAIMS={"iss":"kontestis","aud":"grafana"}'
+      - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - "./infrastructure/observability/grafana/provisioning:/etc/grafana/provisioning:ro"
+      - "./infrastructure/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro"
+      - "grafana-jwt-keys:/keys:ro"
+      - "grafana-data:/var/lib/grafana"
+    ports:
+      - "3001:3000"
+
 
   minio:
     image: "minio/minio:RELEASE.2025-02-18T16-25-55Z"
@@ -116,3 +163,8 @@ services:
     environment:
       MINIO_ROOT_USER: root 
       MINIO_ROOT_PASSWORD: password
+
+volumes:
+  grafana-data:
+  grafana-jwt-keys:
+  prometheus-data:

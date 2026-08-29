@@ -86,6 +86,8 @@ ContestHandler.post("/:contest_id/copy", useValidation(CopySchema), async (req, 
         id: generateSnowflake(),
         organisation_id: organisationId,
         name: contest.name + " (Copy)",
+        elo_applied: false,
+        elo_processing_version: 1,
     };
 
     await Database.insertInto("contests", newContest);
@@ -204,6 +206,7 @@ ContestHandler.post("/", useValidation(ContestSchema), async (req, res) => {
         official: req.body.official,
         public: req.body.public,
         elo_applied: false,
+        elo_processing_version: 1,
         exam: req.body.exam,
         join_code: randomSequence(8),
         require_edu_verification: false,
@@ -313,6 +316,11 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
             official: req.body.official,
             exam: req.body.exam,
             show_leaderboard_during_contest: req.body.show_leaderboard,
+            elo_processing_version:
+                contest.elo_processing_version === 1 ||
+                date.getTime() + req.body.duration_seconds * 1000 > Date.now()
+                    ? 1
+                    : contest.elo_processing_version,
         },
         { id: contest.id }
     );

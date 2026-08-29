@@ -18,12 +18,10 @@ import { reject, respond } from "./utils/response";
 import { Redis } from "./redis/Redis";
 import { Globals } from "./globals";
 import OrganisationHandler from "./routes/organisation/OrganisationHandler";
-import { initInflux } from "./influx/Influx";
 import rateLimit from "express-rate-limit";
 import { ipFromRequest } from "./utils/request";
 import RedisStore from "rate-limit-redis";
 import { startEloTask } from "./tasks/eloTask";
-import { startInfluxFlushTask } from "./tasks/influxFlushTask";
 import { StatsHandler } from "./routes/stats/StatsHandler";
 import expressPackageJson from "express/package.json";
 import { NotificationsHandler } from "./routes/notifications/NotificationsHandler";
@@ -31,6 +29,9 @@ import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
 import { initS3 } from "./s3/S3";
 import fileUpload from "express-fileupload";
+import { timingSafeEqual } from "node:crypto";
+import { GrafanaProxy } from "./grafana/GrafanaProxy";
+import { prometheusRegistry, trackApiRequest } from "./metrics/prometheus";
 
 declare global {
     interface BigInt {
@@ -45,6 +46,27 @@ BigInt.prototype.toJSON = function () {
 const app = Express();
 
 app.use(cors({ exposedHeaders: ["Content-Disposition"] }));
+
+app.get("/metrics", async (req, res) => {
+    const authorization = req.headers.authorization ?? "";
+    const expected = `Bearer ${Globals.metricsBearerToken}`;
+    const authorized =
+        authorization.length === expected.length &&
+        timingSafeEqual(Buffer.from(authorization), Buffer.from(expected));
+
+    if (!authorized) return reject(res, StatusCodes.UNAUTHORIZED);
+
+    res.header("Content-Type", prometheusRegistry.contentType);
+
+    return res.send(await prometheusRegistry.metrics());
+});
+
+app.use("/grafana", GrafanaProxy);
+
+app.use((req, res, next) => {
+    trackApiRequest(req, res);
+    next();
+});
 
 app.use(
     rateLimit({
@@ -141,8 +163,6 @@ Promise.allSettled([
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
-    // for consistency
-    initInflux(),
     initAaiEdu(),
 ]).then(async () => {
     Logger.info("Ready");
@@ -151,6 +171,6 @@ Promise.allSettled([
     app.listen(Globals.port, () => {
         Logger.info(`Listening on ${Globals.port} (Express ${expressPackageJson.version})`);
 
-        for (const task of [startEloTask, startInfluxFlushTask]) task();
+        startEloTask();
     });
 });

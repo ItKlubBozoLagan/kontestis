@@ -6,6 +6,7 @@ export * from "./ContestAnnouncement";
 export * from "./ContestChatMessage";
 export * from "./ContestMember";
 export * from "./ContestQuestion";
+export * from "./EloHistory";
 export * from "./Evaluation";
 export * from "./ExamFinalSubmission";
 export * from "./ExamGradingScale";

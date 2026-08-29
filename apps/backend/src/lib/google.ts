@@ -100,6 +100,7 @@ export const processUserFromTokenData = async (tokenData: NiceTokenResponse): Pr
     }
 
     await processLogin(user, {
+        authSource: "google",
         newLogin: !potentialEntry && !eduUser,
         confirm: true,
     });

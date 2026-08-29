@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: kontestis-backend
+    authorization:
+      credentials: dev-prometheus-token
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - backend:8080
