@@ -1,84 +1,38 @@
-import { FC, useState } from "react";
+import { FC, useEffect } from "react";
 
-import { HistoryLineChart } from "../../../../components/HistoryLineChart";
-import { StatisticRange } from "../../../../hooks/stats/types";
-import { useAdminActivityStat } from "../../../../hooks/stats/useAdminActivityStat";
-import {
-    AdminLoginStatParamaters,
-    useAdminLoginsStat,
-} from "../../../../hooks/stats/useAdminLoginsStat";
-import { useFormatCountStat } from "../../../../hooks/useFormatCountStat";
+import { LoadingSpinner } from "../../../../components/LoadingSpinner";
+import { useGrafanaSession } from "../../../../hooks/stats/useGrafanaSession";
 import { useTranslation } from "../../../../hooks/useTranslation";
 
 export const AdminStatisticsCharts: FC = () => {
-    const [activityRange, setActivityRange] = useState<StatisticRange>("24h");
-    const [loginParameters, setLoginParameters] = useState<AdminLoginStatParamaters>({
-        range: "24h",
-        unique: false,
-        newLogins: false,
-    });
-
-    const { data: activity, isLoading: activityIsLoading } = useAdminActivityStat(
-        {
-            range: activityRange,
-        },
-        {
-            refetchInterval: 5000,
-        }
-    );
-    const { data: logins, isLoading: loginsIsLoading } = useAdminLoginsStat(loginParameters, {
-        refetchInterval: 5000,
-    });
-
-    const activityDataset = useFormatCountStat(activity?.stats);
-
-    const loginsDataset = useFormatCountStat(logins?.stats);
-
     const { t } = useTranslation();
+    const session = useGrafanaSession();
+    const { mutate } = session;
+
+    useEffect(() => {
+        mutate();
+    }, [mutate]);
+
+    if (session.isLoading)
+        return (
+            <div tw={"w-full h-64 flex items-center justify-center"}>
+                <LoadingSpinner size={"lg"} />
+            </div>
+        );
+
+    if (!session.data)
+        return (
+            <div tw={"w-full h-48 flex items-center justify-center bg-neutral-100"}>
+                <span tw={"text-neutral-600"}>{t("admin.overview.charts.unavailable")}</span>
+            </div>
+        );
 
     return (
-        <div tw={"flex gap-4"}>
-            {activityDataset && (
-                <HistoryLineChart
-                    title={t("admin.overview.charts.activityLabel")}
-                    dark
-                    datasets={[activityDataset]}
-                    loading={activityIsLoading}
-                    onRangeChange={setActivityRange}
-                    activeRange={activityRange}
-                    previousPeriodChange={activity?.previousPeriodChange}
-                />
-            )}
-            {loginsDataset && (
-                <HistoryLineChart
-                    title={t("admin.overview.charts.loginLabel")}
-                    dark
-                    datasets={[loginsDataset]}
-                    loading={loginsIsLoading}
-                    onRangeChange={(range) =>
-                        setLoginParameters((parameters) => ({ ...parameters, range }))
-                    }
-                    activeRange={loginParameters.range}
-                    previousPeriodChange={logins?.previousPeriodChange}
-                    toggles={[
-                        t("admin.overview.charts.loginToggleNewUsers"),
-                        t("admin.overview.charts.loginToggleUnique"),
-                    ]}
-                    onToggleUpdate={(toggle, value) => {
-                        if (toggle === t("admin.overview.charts.loginToggleNewUsers"))
-                            setLoginParameters((parameters) => ({
-                                ...parameters,
-                                newLogins: value,
-                            }));
-
-                        if (toggle === t("admin.overview.charts.loginToggleUnique"))
-                            setLoginParameters((parameters) => ({
-                                ...parameters,
-                                unique: value,
-                            }));
-                    }}
-                />
-            )}
-        </div>
+        <iframe
+            src={session.data.embedUrl}
+            title={t("admin.overview.charts.title")}
+            tw={"w-full h-[560px] border-0 bg-neutral-100"}
+            referrerPolicy={"no-referrer"}
+        />
     );
 };

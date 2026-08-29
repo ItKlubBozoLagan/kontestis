@@ -64,9 +64,6 @@ export default {
             problems: "Ukupno zadataka",
             submissions: "Ukupno rješenja",
         },
-        activity: {
-            title: "Vaša aktivnost",
-        },
         alerts: {
             title: "Obavijesti",
             none: "Nema za sada!",
@@ -472,19 +469,6 @@ export default {
             professionalStatus: "Profesionalni status",
         },
         stats: {
-            submissions: {
-                title: "Poslana rješenja",
-                toggles: {
-                    showAccepted: "prikaži točna",
-                    showRandom: "nasumično",
-                },
-                total: "Ukupno",
-                hover: {
-                    oneSubmission: "Poslano rješenje, ",
-                    fewSubmissions: "Poslana rješenja, ",
-                    moreSubmissions: "Poslanih rješenja, ",
-                },
-            },
             elo: {
                 title: "Elo",
             },
@@ -539,10 +523,8 @@ export default {
         },
         overview: {
             charts: {
-                activityLabel: "Aktivnost",
-                loginLabel: "Prijave",
-                loginToggleNewUsers: "nove",
-                loginToggleUnique: "unikatne",
+                title: "Kontestis analitika",
+                unavailable: "Analitika trenutno nije dostupna.",
             },
             metrics: {
                 rawSystem: {

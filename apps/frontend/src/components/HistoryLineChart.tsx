@@ -60,8 +60,7 @@ export type Properties<T extends string> = {
               onToggleUpdate?: undefined;
           }
         | {
-              // toggles are supposed to be settings that can be turned on or off (true of false)
-              //  e.g. logins can show a graph of non-unique (all) and unique logins, here unique is a toggle
+              // toggles are settings that can be turned on or off
               toggles: T[];
               onToggleUpdate?: (toggle: T, value: boolean) => void;
           }

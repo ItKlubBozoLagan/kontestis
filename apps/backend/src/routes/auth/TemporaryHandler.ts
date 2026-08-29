@@ -16,6 +16,7 @@ import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
 import { generateGravatarUrl, generateJwt } from "../../lib/auth";
 import { generateSnowflake } from "../../lib/snowflake";
+import { recordLogin } from "../../metrics/prometheus";
 import { useValidation } from "../../middlewares/useValidation";
 import { randomSequence } from "../../utils/random";
 import { respond } from "../../utils/response";
@@ -43,6 +44,8 @@ TemporaryHandler.post("/login", useValidation(LoginSchema, { body: true }), asyn
     });
 
     if (!user) throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+
+    recordLogin("temporary", false);
 
     return respond(res, StatusCodes.OK, { token: generateJwt(user.id, "temporary", {}) });
 });

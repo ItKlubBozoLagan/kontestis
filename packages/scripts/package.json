@@ -6,6 +6,8 @@
     "scripts": {
         "exec-script": "cd src && ts-node --swc",
         "exec-dev": "cd src && nodemon -e ts --exec ts-node --swc",
+        "elo-history-backfill": "ts-node --swc src/elo-history-backfill.ts",
+        "elo-history-audit": "ts-node --swc src/elo-history-audit.ts",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
@@ -16,6 +18,8 @@
         "ts-node": "^10.9.1"
     },
     "dependencies": {
+        "@influxdata/influxdb-client": "^1.33.2",
+        "cassandra-driver": "^4.8.0",
         "@lvksh/logger": "^1.6.4",
         "chalk": "^4.1.2",
         "glob": "^11.0.1",

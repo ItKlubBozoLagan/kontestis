@@ -13,7 +13,6 @@ export const Logger = createLogger(
         error: chalk.red` ERROR `,
         database: chalk.cyan` DATABASE `,
         redis: chalk.redBright` REDIS `,
-        influx: chalk.magentaBright` INFLUX `,
         console: chalk.green` CONSOLE `,
         panic: chalk.bgRed.white`!! PANIC !!`,
     },

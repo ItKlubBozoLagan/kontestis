@@ -1,18 +1,16 @@
-import { AdminPermissions, DEFAULT_ELO } from "@kontestis/models";
-import { Type } from "@sinclair/typebox";
+import { AdminPermissions } from "@kontestis/models";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { hasPermission } from "permissio";
 
+import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractCurrentOrganisation } from "../../extractors/extractOrganisation";
+import { extractOrganisationMember } from "../../extractors/extractOrganisationMember";
 import { extractUser } from "../../extractors/extractUser";
-import { Influx } from "../../influx/Influx";
 import { useValidation } from "../../middlewares/useValidation";
-import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
-import { fillIfEmpty, getWindowFromRange } from "../../utils/stats";
-import { BooleanStringSchema } from "../../utils/types";
+import { reconstructEloStatistics } from "../../utils/stats";
 import { AdminStatsHandler } from "./AdminStatsHandler";
 import { RangeQuerySchema } from "./schemas";
 
@@ -34,85 +32,15 @@ StatsHandler.use(
 StatsHandler.get("/elo", useValidation(RangeQuerySchema, { query: true }), async (req, res) => {
     const user = await extractUser(req);
     const organisation = await extractCurrentOrganisation(req);
+    const member = await extractOrganisationMember(req, organisation.id);
 
     const { range } = req.query;
+    const history = await Database.selectFrom("elo_history", "*", {
+        user_id: user.id,
+        organisation_id: organisation.id,
+    });
 
-    const stats = fillIfEmpty(
-        await Influx.aggregateLastPerWindow(
-            "elo",
-            getWindowFromRange(range),
-            {
-                userId: user.id.toString(),
-                orgId: organisation.id.toString(),
-            },
-            `-${range}`
-        ),
-        "last",
-        range
-    );
-
-    const lastBefore = await Influx.lastNumberInRange(
-        "elo",
-        {
-            userId: user.id.toString(),
-            orgId: organisation.id.toString(),
-        },
-        {
-            start: new Date(0),
-            end: `-${range}`,
-        }
-    );
-
-    const starting = lastBefore === -1 ? DEFAULT_ELO : lastBefore;
-
-    let lastEncountered = 0;
-
-    for (const stat of R.reverse(stats)) {
-        if (stat.last === 0) {
-            stat.last = lastEncountered === 0 ? starting : lastEncountered;
-            continue;
-        }
-
-        lastEncountered = stat.last;
-    }
-
-    respond(res, StatusCodes.OK, stats);
+    respond(res, StatusCodes.OK, reconstructEloStatistics(member.elo, history, range));
 });
-
-StatsHandler.get(
-    "/submissions",
-    useValidation(
-        Type.Object({
-            accepted: Type.Optional(BooleanStringSchema),
-        }),
-        { query: true }
-    ),
-    async (req, res) => {
-        const user = await extractUser(req);
-        const organisation = await extractCurrentOrganisation(req);
-
-        const { accepted } = req.query;
-
-        respond(
-            res,
-            StatusCodes.OK,
-            fillIfEmpty(
-                await Influx.aggregateCountPerWindow(
-                    "submissions",
-                    "1d",
-                    {
-                        userId: user.id.toString(),
-                        orgId: organisation.id.toString(),
-                        successful: !accepted || accepted === "false" ? undefined : accepted,
-                    },
-                    "-1y"
-                ),
-                "count",
-                "30d",
-                365
-            )
-        );
-    }
-);
 
 export { StatsHandler };

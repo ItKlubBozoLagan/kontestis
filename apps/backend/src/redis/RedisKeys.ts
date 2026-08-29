@@ -14,7 +14,9 @@ export const RedisKeys = {
         `cluster:${clusterId}:testcase:${testcase}:data-input`,
     CACHED_TESTCASE_OUTPUT: (clusterId: Snowflake, testcase: Snowflake) =>
         `cluster:${clusterId}:testcase:${testcase}:data-output`,
-    TASK_ELO_PROCESSING: (contestId: Snowflake) => `tasks:elo:${contestId}`,
+    TASK_ELO_ORGANISATION: (organisationId: Snowflake) => `tasks:elo:org:${organisationId}`,
+    GRAFANA_EMBED_TICKET: (ticket: string) => `grafana:ticket:${ticket}`,
+    GRAFANA_EMBED_SESSION: (session: string) => `grafana:session:${session}`,
     MANAGED_USER_CONFIRMATION_CODE: (userId: Snowflake) => `user:confirmation:${userId}`,
     EVALUATION_RESULT_QUEUE: `${Globals.evaluatorRedisResponseQueuePrefix}:${Globals.INSTANCE_ID}`,
 };

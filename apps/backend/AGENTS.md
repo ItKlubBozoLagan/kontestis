@@ -5,7 +5,8 @@ This file applies to `apps/backend`.
 ## Runtime map
 
 - `src/app.ts` loads environment configuration first, builds the Express app, mounts `/api/*`
-  routers, initializes Scylla/S3, Redis, InfluxDB, and AAI@Edu, then starts background tasks.
+  routers plus Prometheus/Grafana surfaces, initializes Scylla/S3, Redis, and AAI@Edu, then starts
+  background tasks.
 - `src/globals.ts` is the authoritative environment-variable/default map.
 - `src/routes` contains domain routers. Nested resources are mounted by their parent handler.
 - `src/extractors` loads and memoizes request resources and usually enforces visibility.
@@ -13,7 +14,8 @@ This file applies to `apps/backend`.
 - `src/database/Database.ts` declares the Scyllo table map and the ordered migration list.
 - `src/lib` contains domain workflows such as auth, scoring, testcase generation, mail, and
   evaluation. `src/tasks` contains long-running scheduled work.
-- `src/s3`, `src/redis`, and `src/influx` wrap external stores.
+- `src/s3` and `src/redis` wrap external stores. `src/metrics` owns Prometheus instrumentation,
+  while `src/grafana` owns the private iframe proxy.
 
 Top-level routers are mounted as `/api/auth`, `/api/organisation`, `/api/contest`, `/api/problem`,
 `/api/submission`, `/api/stats`, and `/api/notifications`.
@@ -83,7 +85,8 @@ pnpm --filter @kontestis/backend typecheck
 pnpm lint
 ```
 
-There is no backend test suite. Manually exercise changed endpoints with Scylla/Redis and any
-relevant S3, Influx, or evaluator service running. Remember that the server can log a dependency
-panic and still reach its final `Promise.allSettled` startup path, so a listening port alone does not
-prove all integrations initialized correctly.
+The backend has focused Vitest coverage for pure behavior, but service-backed routes still need
+manual verification with Scylla/Redis and any relevant S3, Prometheus, Grafana, or evaluator
+service running. Remember that the server can log a dependency panic and still reach its final
+`Promise.allSettled` startup path, so a listening port alone does not prove all integrations
+initialized correctly.

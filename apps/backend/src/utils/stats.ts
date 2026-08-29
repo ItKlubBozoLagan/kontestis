@@ -1,57 +1,70 @@
+import { EloHistoryEntry } from "@kontestis/models";
 import { Static } from "@sinclair/typebox";
 
-import { AllowedCountWindows, InfluxAggregateNumberResult } from "../influx/InfluxClient";
 import { RangeQueryUnion } from "../routes/stats/schemas";
 
 type Range = Static<typeof RangeQueryUnion>;
 
-export const getWindowFromRange = (range: Range): AllowedCountWindows =>
-    range === "24h" ? "1h" : ["7d", "30d"].includes(range) ? "1d" : "1mo";
-
-const rangeItemLengthMap: Record<Range, number> = {
-    "24h": 24,
-    "7d": 7,
-    "30d": 30,
-    "1y": 12,
+export type EloStatistic = {
+    time: Date;
+    last: number;
 };
 
-// very simple, if empty, give array where count = 0
-//  influx will usually handle all the sorting and making the array nice
-//  unless there is no data at all, it then returns nothing
-export const fillIfEmpty = <K extends string>(
-    source: InfluxAggregateNumberResult<K>,
-    key: K,
+const bucketStarts = (range: Range, now: Date): Date[] => {
+    const count = range === "24h" ? 24 : range === "7d" ? 7 : range === "30d" ? 30 : 12;
+
+    return Array.from({ length: count }, (_, index) => {
+        if (range === "24h")
+            return new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                now.getHours() - index
+            );
+
+        if (range === "1y") return new Date(now.getFullYear(), now.getMonth() - index, 1);
+
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate() - index);
+    });
+};
+
+export const reconstructEloStatistics = (
+    currentElo: number,
+    history: EloHistoryEntry[],
     range: Range,
-    alternateSize?: number
-): InfluxAggregateNumberResult<K> => {
-    if (source.length > 0) return source.slice(0, alternateSize ?? rangeItemLengthMap[range]);
+    now = new Date()
+): EloStatistic[] => {
+    let rating = currentElo;
+    const eventValues = [...history]
+        .sort(
+            (a, b) =>
+                b.recorded_at.getTime() - a.recorded_at.getTime() ||
+                b.event_id.localeCompare(a.event_id)
+        )
+        .map((event) => {
+            const value = rating;
 
-    const now = new Date();
+            rating -= event.delta;
 
-    switch (range) {
-        case "24h":
-            return Array.from({ length: alternateSize ?? 24 }, (_, index) => ({
-                time: new Date(
-                    now.getFullYear(),
-                    now.getMonth(),
-                    now.getDate(),
-                    now.getHours() - index
-                ),
-                [key]: 0,
-            })) as InfluxAggregateNumberResult<K>;
-        case "7d":
-        case "30d":
-            return Array.from(
-                { length: alternateSize ?? (range === "7d" ? 7 : 30) },
-                (_, index) => ({
-                    time: new Date(now.getFullYear(), now.getMonth(), now.getDate() - index),
-                    [key]: 0,
-                })
-            ) as InfluxAggregateNumberResult<K>;
-        case "1y":
-            return Array.from({ length: alternateSize ?? 12 }, (_, index) => ({
-                time: new Date(now.getFullYear(), now.getMonth() - index),
-                [key]: 0,
-            })) as InfluxAggregateNumberResult<K>;
-    }
+            return { time: event.recorded_at, value };
+        })
+        .reverse();
+    const baseline = rating;
+    const starts = bucketStarts(range, now);
+
+    return starts.map((start, index) => {
+        const [previousStart] = starts.slice(Math.max(0, index - 1));
+        const endExclusive = index === 0 ? now.getTime() + 1 : previousStart.getTime();
+        let value = baseline;
+
+        for (const event of eventValues) {
+            if (event.time.getTime() >= endExclusive) break;
+
+            const { value: eventValue } = event;
+
+            value = eventValue;
+        }
+
+        return { time: start, last: value };
+    });
 };

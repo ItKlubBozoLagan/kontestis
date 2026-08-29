@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "strict": true
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "**/*.spec.ts"],
   "ts-node": {
     "files": true
   }

@@ -14,7 +14,7 @@ import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import { Database } from "../database/Database";
 import { DEFAULT_ORGANISATION } from "../extractors/extractOrganisation";
 import { Globals } from "../globals";
-import { Influx } from "../influx/Influx";
+import { recordLogin } from "../metrics/prometheus";
 import { randomSequence } from "../utils/random";
 import { generateSnowflake } from "./snowflake";
 
@@ -93,6 +93,7 @@ export const generateGravatarUrl = (email: string) => {
 export const processLogin = async (
     user: User,
     options: {
+        authSource: AuthSource;
         newLogin: boolean;
         confirm: boolean;
     }
@@ -134,9 +135,5 @@ export const processLogin = async (
             await Database.update("managed_users", { confirmed_at: new Date() }, { id: user.id });
     }
 
-    await Influx.insert(
-        "logins",
-        { userId: user.id.toString(), newLogin: String(options.newLogin) },
-        { happened: true }
-    );
+    recordLogin(options.authSource, options.newLogin);
 };

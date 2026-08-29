@@ -67,9 +67,6 @@ const I18nEn = {
             problems: "Total Problems",
             submissions: "Total Submissions",
         },
-        activity: {
-            title: "Your activity",
-        },
         alerts: {
             title: "Site alerts",
             none: "None so far!",
@@ -475,19 +472,6 @@ const I18nEn = {
             professionalStatus: "Professional status",
         },
         stats: {
-            submissions: {
-                title: "Submissions",
-                toggles: {
-                    showAccepted: "show accepted",
-                    showRandom: "random data",
-                },
-                total: "Total",
-                hover: {
-                    oneSubmission: "Submission on",
-                    fewSubmissions: "Submissions on",
-                    moreSubmissions: "Submissions on",
-                },
-            },
             elo: {
                 title: "Elo",
             },
@@ -543,10 +527,8 @@ const I18nEn = {
         },
         overview: {
             charts: {
-                activityLabel: "Activity",
-                loginLabel: "Logins",
-                loginToggleNewUsers: "new users",
-                loginToggleUnique: "unique",
+                title: "Kontestis analytics",
+                unavailable: "Analytics are currently unavailable.",
             },
             metrics: {
                 rawSystem: {

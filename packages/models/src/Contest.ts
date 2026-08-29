@@ -39,7 +39,11 @@ export type ContestV8 = ContestV7 & {
     show_leaderboard_during_contest: boolean;
 };
 
-export type Contest = ContestV8;
+export type ContestV9 = ContestV8 & {
+    elo_processing_version?: number;
+};
+
+export type Contest = ContestV9;
 
 export type ContestWithPermissions = Contest & {
     registered: boolean;
