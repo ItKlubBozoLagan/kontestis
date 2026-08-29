@@ -10,9 +10,9 @@
     },
     "devDependencies": {
         "@swc/core": "^1.3.46",
-        "@types/node": "^18.15.11",
+        "@types/node": "^18.19.123",
         "nodemon": "^2.0.22",
-        "typescript": "5.0.4",
+        "typescript": "5.9.2",
         "ts-node": "^10.9.1"
     },
     "dependencies": {

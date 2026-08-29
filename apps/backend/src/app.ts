@@ -58,7 +58,7 @@ app.use(
             reject(res, StatusCodes.TOO_MANY_REQUESTS, ReasonPhrases.TOO_MANY_REQUESTS),
         store: new RedisStore({
             prefix: "__kontestis_rate_limit",
-            sendCommand: async (...redisArguments) => {
+            sendCommand: async (...redisArguments: string[]) => {
                 // a weird and stupid hack that will wait for redis to come online before proceeding
                 await new Promise<void>((resolve) => {
                     const interval = setInterval(() => {
@@ -134,13 +134,13 @@ Promise.allSettled([
     Redis.connect()
         .then(async () => {
             Logger.redis("Connected to Redis");
-            const _ = subscribeToEvaluatorResponseQueue();
-
-            Logger.redis("Subscribed to evaluator pub sub");
         })
         .catch((error) => {
             Logger.panic("Redis failed", error);
         }),
+    subscribeToEvaluatorResponseQueue().catch((error) => {
+        Logger.panic("NATS evaluation messaging failed", error);
+    }),
     // for consistency
     initInflux(),
     initAaiEdu(),

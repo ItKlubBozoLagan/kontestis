@@ -5,6 +5,7 @@ import { eqIn } from "scyllo";
 import { Database } from "../database/Database";
 import { SafeError } from "../errors/SafeError";
 import { Globals } from "../globals";
+import { StoredEvaluationFile } from "../nats/evaluationFiles";
 import { Redis } from "../redis/Redis";
 import { S3Client } from "../s3/S3";
 import { readBucketStream } from "../utils/stream";
@@ -73,6 +74,42 @@ export const getAllTestcases: (c: Cluster) => Promise<TestcaseWithData[]> = asyn
         ...testcase,
         input: testcaseInputByTestcaseId[testcase.id.toString()],
         correct_output: testcaseOutputByTestcaseId[testcase.id.toString()],
+    }));
+};
+
+export const getAllTestcasesForCurrentEvaluation: (
+    cluster: Cluster
+) => Promise<
+    Array<Testcase & { input: StoredEvaluationFile; correct_output: StoredEvaluationFile }>
+> = async (cluster) => {
+    if (!(await assureClusterGeneration(cluster))) {
+        Logger.info("Cluster generation failed or timed out");
+
+        return [];
+    }
+
+    const testcases = await Database.selectFrom("testcases", "*", {
+        cluster_id: cluster.id,
+    });
+
+    if (testcases.some((testcase) => !testcase.input_file || !testcase.output_file)) {
+        Logger.error("Testcase input or output file missing after generation");
+
+        return [];
+    }
+
+    return testcases.map((testcase) => ({
+        ...testcase,
+        input: {
+            type: "s3_object",
+            bucket: Globals.s3.buckets.testcases,
+            key: testcase.input_file!,
+        },
+        correct_output: {
+            type: "s3_object",
+            bucket: Globals.s3.buckets.testcases,
+            key: testcase.output_file!,
+        },
     }));
 };
 
@@ -246,22 +283,22 @@ export const assureTestcaseOutput: (
 
     const solutionTestcases = notReadyTestcases.filter((t) => t.output_type === "auto");
 
-    const solutionTestcasesWithInput: EvaluationInputTestcase[] = await Promise.all(
-        solutionTestcases.map(async (t) => {
-            if (!t.input_file) {
-                Logger.error("Testcase input file not found for testcase " + t.id);
-                throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
-            }
+    const solutionTestcasesWithInput: EvaluationInputTestcase[] = solutionTestcases.map((t) => {
+        if (!t.input_file) {
+            Logger.error("Testcase input file not found for testcase " + t.id);
+            throw new SafeError(StatusCodes.INTERNAL_SERVER_ERROR);
+        }
 
-            const input = await fetchTestcaseFile(t.input_file);
-
-            return {
-                ...t,
-                input,
-                correct_output: "",
-            };
-        })
-    );
+        return {
+            ...t,
+            input: {
+                type: "s3_object",
+                bucket: Globals.s3.buckets.testcases,
+                key: t.input_file,
+            },
+            correct_output: "",
+        };
+    });
 
     const testcaseById: Record<string, Testcase> = {};
     const testcaseOrderById: Record<string, number> = {};

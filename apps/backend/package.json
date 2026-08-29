@@ -7,6 +7,9 @@
         "start": "ts-node --skipIgnore src/app.ts",
         "dev": "nodemon -e ts --exec ts-node --swc src/app.ts",
         "create-migration": "bash scripts/create_migration.sh src/database/migrations",
+        "provision-nats": "ts-node --skipIgnore scripts/provision_nats.ts",
+        "smoke-nats-evaluation": "ts-node --skipIgnore scripts/smoke_nats_evaluation.ts",
+        "smoke-nats-files": "ts-node --skipIgnore scripts/smoke_nats_file_sources.ts",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
@@ -22,6 +25,10 @@
         "@kontestis/utils": "workspace:^1.0.0",
         "@kubernetes/client-node": "^0.18.1",
         "@lvksh/logger": "^1.6.4",
+        "@nats-io/jetstream": "^3.4.0",
+        "@nats-io/nats-core": "^3.4.0",
+        "@nats-io/obj": "^3.4.0",
+        "@nats-io/transport-node": "^3.4.0",
         "@sinclair/typebox": "^0.26.8",
         "@types/md5": "^2.3.2",
         "apidoc": "^0.53.1",
@@ -61,9 +68,9 @@
         "@types/express-fileupload": "^1.5.1",
         "@types/express-serve-static-core": "^4.17.30",
         "@types/jsonwebtoken": "^8.5.9",
-        "@types/node": "^18.15.11",
+        "@types/node": "^18.19.123",
         "@types/nodemailer": "^6.4.14",
         "nodemon": "^2.0.22",
-        "typescript": "5.0.4"
+        "typescript": "5.9.2"
     }
 }
