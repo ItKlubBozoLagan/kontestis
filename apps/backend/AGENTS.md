@@ -62,13 +62,14 @@ data as a real schema migration, not a harmless smoke test.
 There are two evaluator paths in `src/lib/evaluation.ts`:
 
 - `legacy_evaluation: true` sends an HTTP request through `evaluatorAxios` to `apps/function`.
-- Current problems enqueue a payload in Redis via `evaluation_rs.ts` and wait on an
-  instance-specific Redis result queue. That consumer is external to this repository.
+- Current problems publish through NATS JetStream via `evaluation_rs.ts` and wait on an
+  instance-specific durable result consumer. The worker is external to this repository; its v1
+  wire contract is documented in `docs/evaluator-nats-contract.md`.
 
-Do not change one contract assuming it changes the other. Redis queue names come from `Globals` and
-`RedisKeys`; the backend subscribes after Redis connects. Testcase inputs/outputs and captured
-submission output are stored in S3/MinIO, while Redis also holds pending submissions, generator
-state/cache, reevaluation IDs, rate limits, and task locks.
+Do not change one contract assuming it changes the other. The backend initializes NATS evaluation
+messaging independently from Redis. Testcase inputs/outputs and captured submission output are
+stored in S3/MinIO, while Redis still holds pending submissions, generator state/cache,
+reevaluation IDs, rate limits, and task locks.
 
 ## Configuration and verification
 

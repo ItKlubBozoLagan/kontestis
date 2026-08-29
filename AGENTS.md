@@ -36,7 +36,7 @@ permissions are separate bitsets defined in `packages/models/src/permissions`.
 - For the Docker development stack, copy `global.env.example` to the ignored `global.env` and set
   at least `JWT_SECRET`, then run `docker compose up`. Do not commit real environment values.
 - Docker Compose exposes frontend `3000`, backend `8080`, legacy evaluator `8081`, Scylla `9042`,
-  Redis `6379`, InfluxDB `8086`, and MinIO `9000`/`9001`.
+  Redis `6379`, NATS `4222`/`8222`, InfluxDB `8086`, and MinIO `9000`/`9001`.
 - Backend startup expects MinIO buckets named `submission-meta` and `testcases`. A fresh MinIO volume
   must have them created before S3-backed features work.
 
