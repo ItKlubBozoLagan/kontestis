@@ -10,6 +10,9 @@ type GlobalsType = {
     dbPort: number;
     dbKeyspace: string;
     dbDatacenter: string;
+    dbPreprovisioned: boolean;
+    dbUsername: string;
+    dbPassword: string;
     evaluatorEndpoint: string;
     redisUrl: string;
     oauthClientId: string;
@@ -68,6 +71,9 @@ export const Globals: GlobalsType = {
     dbPort: process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 9042,
     dbKeyspace: process.env.DB_KEYSPACE ?? "",
     dbDatacenter: process.env.DB_DATACENTER ?? "",
+    dbPreprovisioned: process.env.DB_PREPROVISIONED === "true",
+    dbUsername: process.env.DB_USERNAME ?? "",
+    dbPassword: process.env.DB_PASSWORD ?? "",
     evaluatorEndpoint:
         process.env.EVALUATOR_ENDPOINT ?? "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",
