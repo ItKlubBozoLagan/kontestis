@@ -1,25 +1,17 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-    Snowflake,
-} from "@kontestis/models";
+import { ContestMemberPermissions, Snowflake } from "@kontestis/models";
 import { FC, useCallback } from "react";
 import { FiChevronsLeft, FiDownload, FiX } from "react-icons/all";
 import tw from "twin.macro";
 
 import { http, wrapAxios } from "../../api/http";
-import { CanContestMember } from "../../components/CanContestMember";
 import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../components/Table";
 import { Translated } from "../../components/Translated";
 import { useContest } from "../../hooks/contest/useContest";
-import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
+import { useContestPermission } from "../../hooks/contest/useContestPermission";
 import { useProblem } from "../../hooks/problem/useProblem";
 import { useSubmission } from "../../hooks/submission/useSubmission";
 import { useSubmissionTestcases } from "../../hooks/submission/useSubmissionTestcases";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useAuthStore } from "../../state/auth";
 import { downloadFile } from "../../util/download";
 
 type Properties = {
@@ -42,12 +34,10 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
     const { data: submission } = useSubmission(submissionId);
     const { data: problem } = useProblem(submission?.problem_id ?? 0n, { enabled: !!submission });
     const { data: contest } = useContest(problem?.contest_id ?? 0n, { enabled: !!problem });
-    const { data: members } = useSelfContestMembers();
-    const member = (members ?? []).find((member) => !!contest && member.contest_id === contest.id);
+
+    const canViewPrivate = useContestPermission(ContestMemberPermissions.VIEW_PRIVATE, contest);
 
     const { data: testcaseSubmissions } = useSubmissionTestcases(clusterSubmissionId);
-
-    const { user } = useAuthStore();
 
     const downloadSubmissionFile = useCallback(
         async (testcaseId: Snowflake, type: "in" | "out" | "sout") => {
@@ -82,22 +72,12 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                     <TableHeadItem>{t("submissions.table.head.time")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.memory")}</TableHeadItem>
                     <TableHeadItem>{t("submissions.table.head.points")}</TableHeadItem>
-                    {isContestFinished || isSample ? (
+                    {(isContestFinished || isSample || canViewPrivate) && (
                         <>
                             <TableHeadItem>Input</TableHeadItem>
                             <TableHeadItem>Output</TableHeadItem>
                             <TableHeadItem>Submission</TableHeadItem>
                         </>
-                    ) : (
-                        <CanContestMember
-                            member={member}
-                            permission={ContestMemberPermissions.VIEW_PRIVATE}
-                            adminPermission={AdminPermissions.EDIT_CONTEST}
-                        >
-                            <TableHeadItem>Input</TableHeadItem>
-                            <TableHeadItem>Output</TableHeadItem>
-                            <TableHeadItem>Submission</TableHeadItem>
-                        </CanContestMember>
                     )}
                 </TableHeadRow>
             </thead>
@@ -127,17 +107,7 @@ export const SubmissionTestcaseTable: FC<Properties> = ({
                                     {ts.awarded_score ?? "?"}
                                 </Translated>
                             </TableItem>
-                            {(isContestFinished ||
-                                isSample ||
-                                hasAdminPermission(
-                                    user.permissions,
-                                    AdminPermissions.EDIT_CONTEST
-                                ) ||
-                                (member &&
-                                    hasContestPermission(
-                                        member.contest_permissions,
-                                        ContestMemberPermissions.VIEW_PRIVATE
-                                    ))) && (
+                            {(isContestFinished || isSample || canViewPrivate) && (
                                 <>
                                     <TableItem>
                                         {files.includes(`${ts.testcase_id}.in`) ? (
