@@ -130,8 +130,6 @@ Promise.allSettled([
         })
         .catch((error) => {
             Logger.panic("Scylla failed", error);
-
-            if (Globals.dbPreprovisioned) throw error;
         }),
     Redis.connect()
         .then(async () => {
@@ -146,11 +144,7 @@ Promise.allSettled([
     // for consistency
     initInflux(),
     initAaiEdu(),
-]).then(async ([databaseResult]) => {
-    if (Globals.dbPreprovisioned && databaseResult.status === "rejected") {
-        throw databaseResult.reason;
-    }
-
+]).then(async () => {
     Logger.info("Ready");
     // kurac(Database);
 
