@@ -1,5 +1,19 @@
 import { hostname } from "node:os";
 
+const databasePreprovisionedValue = process.env.DB_PREPROVISIONED;
+
+if (databasePreprovisionedValue !== undefined && databasePreprovisionedValue !== "true") {
+    throw new Error("DB_PREPROVISIONED must be true when set");
+}
+
+const databasePreprovisioned = databasePreprovisionedValue === "true";
+const databaseUsername = process.env.DB_USERNAME;
+const databasePassword = process.env.DB_PASSWORD;
+
+if (databasePreprovisioned && (!databaseUsername || !databasePassword)) {
+    throw new Error("DB_USERNAME and DB_PASSWORD are required in preprovisioned mode");
+}
+
 type GlobalsType = {
     INSTANCE_ID: string;
 
@@ -10,6 +24,9 @@ type GlobalsType = {
     dbPort: number;
     dbKeyspace: string;
     dbDatacenter: string;
+    dbPreprovisioned: boolean;
+    dbUsername: string;
+    dbPassword: string;
     evaluatorEndpoint: string;
     redisUrl: string;
     oauthClientId: string;
@@ -68,6 +85,9 @@ export const Globals: GlobalsType = {
     dbPort: process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 9042,
     dbKeyspace: process.env.DB_KEYSPACE ?? "",
     dbDatacenter: process.env.DB_DATACENTER ?? "",
+    dbPreprovisioned: databasePreprovisioned,
+    dbUsername: databaseUsername ?? "",
+    dbPassword: databasePassword ?? "",
     evaluatorEndpoint:
         process.env.EVALUATOR_ENDPOINT ?? "https://kontestis-evaluator-y7a5esl5qq-oa.a.run.app",
     redisUrl: process.env.REDIS_URL ?? "redis://localhost:6379",

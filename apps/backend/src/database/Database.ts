@@ -22,6 +22,7 @@ import { Submission } from "@kontestis/models";
 import { Testcase } from "@kontestis/models";
 import { TestcaseSubmission } from "@kontestis/models";
 import { User } from "@kontestis/models";
+import { auth } from "cassandra-driver";
 import { Migration, ScylloClient } from "scyllo";
 
 import { Globals } from "../globals";
@@ -109,6 +110,9 @@ export const Database = new ScylloClient<{
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
         keyspace: "system",
         localDataCenter: Globals.dbDatacenter,
+        authProvider: Globals.dbPreprovisioned
+            ? new auth.PlainTextAuthProvider(Globals.dbUsername, Globals.dbPassword)
+            : undefined,
         encoding: {
             useBigIntAsLong: true,
         },
@@ -174,6 +178,26 @@ const migrations: Migration<any>[] = [
 ];
 
 export const initDatabase = async () => {
-    await Database.useKeyspace(Globals.dbKeyspace, true);
-    await Database.migrate(migrations, true);
+    if (!Globals.dbPreprovisioned) {
+        await Database.useKeyspace(Globals.dbKeyspace, true);
+        await Database.migrate(migrations, true);
+
+        return;
+    }
+
+    await Database.useKeyspace(Globals.dbKeyspace, false);
+
+    const expectedVersion = migrations.length - 1;
+    const result = await Database.raw(
+        "SELECT current_version FROM lib_scyllo_migrations WHERE table_key = 1;"
+    );
+    const actualVersion = result.first()?.get("current_version");
+
+    if (actualVersion !== expectedVersion) {
+        throw new Error(
+            `ScyllaDB schema mismatch: expected migration version ${expectedVersion}, found ${
+                actualVersion ?? "no version row"
+            }`
+        );
+    }
 };
