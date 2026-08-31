@@ -119,7 +119,7 @@ ManagedHandler.post(
             permissions: EMPTY_PERMISSIONS,
             full_name: req.body.full_name,
             picture_url:
-                req.body.picture_url ?? generateGravatarUrl(managedUser.email.toLowerCase()),
+                req.body.picture_url || generateGravatarUrl(managedUser.email.toLowerCase()),
         };
 
         await Database.insertInto("managed_users", managedUser);
