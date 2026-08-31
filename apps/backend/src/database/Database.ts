@@ -178,26 +178,6 @@ const migrations: Migration<any>[] = [
 ];
 
 export const initDatabase = async () => {
-    if (!Globals.dbPreprovisioned) {
-        await Database.useKeyspace(Globals.dbKeyspace, true);
-        await Database.migrate(migrations, true);
-
-        return;
-    }
-
-    await Database.useKeyspace(Globals.dbKeyspace, false);
-
-    const expectedVersion = migrations.length - 1;
-    const result = await Database.raw(
-        "SELECT current_version FROM lib_scyllo_migrations WHERE table_key = 1;"
-    );
-    const actualVersion = result.first()?.get("current_version");
-
-    if (actualVersion !== expectedVersion) {
-        throw new Error(
-            `ScyllaDB schema mismatch: expected migration version ${expectedVersion}, found ${
-                actualVersion ?? "no version row"
-            }`
-        );
-    }
+    await Database.useKeyspace(Globals.dbKeyspace, !Globals.dbPreprovisioned);
+    await Database.migrate(migrations, true);
 };
