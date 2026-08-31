@@ -22,6 +22,7 @@ import { Submission } from "@kontestis/models";
 import { Testcase } from "@kontestis/models";
 import { TestcaseSubmission } from "@kontestis/models";
 import { User } from "@kontestis/models";
+import { auth } from "cassandra-driver";
 import { Migration, ScylloClient } from "scyllo";
 
 import { Globals } from "../globals";
@@ -109,6 +110,9 @@ export const Database = new ScylloClient<{
         contactPoints: [Globals.dbHost + ":" + Globals.dbPort],
         keyspace: "system",
         localDataCenter: Globals.dbDatacenter,
+        authProvider: Globals.dbPreprovisioned
+            ? new auth.PlainTextAuthProvider(Globals.dbUsername, Globals.dbPassword)
+            : undefined,
         encoding: {
             useBigIntAsLong: true,
         },
@@ -174,6 +178,6 @@ const migrations: Migration<any>[] = [
 ];
 
 export const initDatabase = async () => {
-    await Database.useKeyspace(Globals.dbKeyspace, true);
+    await Database.useKeyspace(Globals.dbKeyspace, !Globals.dbPreprovisioned);
     await Database.migrate(migrations, true);
 };

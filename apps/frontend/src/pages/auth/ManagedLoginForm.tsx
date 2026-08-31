@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { FC } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { theme } from "twin.macro";
@@ -22,14 +23,28 @@ type Properties = {
 
 export const ManagedLoginForm: FC<Properties> = ({ onError, onEmailResent }) => {
     const { setToken } = useTokenStore();
+    const { executeRecaptcha } = useGoogleReCaptcha();
 
     const loginMutation = useLogin({
         onError: (error) => {
-            if (error.status === 401) onError("Invalid email or password");
-            else if (error.status === 422) {
-                if (error.message === "verification-repeat") onEmailResent();
-                else onError("Email not verified");
-            } else onError("Something went wrong");
+            switch (error.status) {
+                case 401: {
+                    onError("Invalid email or password");
+                    break;
+                }
+                case 403: {
+                    onError("Captcha failed!");
+                    break;
+                }
+                case 422: {
+                    if (error.message === "verification-repeat") onEmailResent();
+                    else onError("Email not verified");
+
+                    break;
+                }
+                default:
+                    onError("Something went wrong");
+            }
         },
         onSuccess: (data) => {
             setToken(data.token);
@@ -45,7 +60,18 @@ export const ManagedLoginForm: FC<Properties> = ({ onError, onEmailResent }) => 
     });
 
     const onSubmit = handleSubmit((data) => {
-        loginMutation.mutate(data);
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        onError(undefined);
+
+        if (!executeRecaptcha) {
+            onError("Failed to load captcha");
+
+            return;
+        }
+
+        executeRecaptcha()
+            .then((token) => loginMutation.mutate({ data, captcha_token: token }))
+            .catch(() => onError("Failed to load captcha"));
     });
 
     return (

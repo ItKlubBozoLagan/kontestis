@@ -127,8 +127,9 @@ export const splitAndEvaluateTestcases = async (
 
     for (const testcase of testcases) {
         if (
+            problemDetails.legacy_evaluation &&
             currentSize + testcase.input.length + (testcase.correct_output?.length ?? 0) >
-            GROUP_SIZE_LIMIT
+                GROUP_SIZE_LIMIT
         ) {
             groupId++;
             currentSize = 0;
