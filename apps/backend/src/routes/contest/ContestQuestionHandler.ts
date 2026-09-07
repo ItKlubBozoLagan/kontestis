@@ -9,9 +9,7 @@ import {
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { eqIn } from "scyllo";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
@@ -19,6 +17,7 @@ import { extractUser } from "../../extractors/extractUser";
 import { pushNotificationsToMany } from "../../lib/notifications";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
 import { respond } from "../../utils/response";
 
@@ -54,17 +53,13 @@ ContestQuestionHandler.post("/", useValidation(QuestionSchema), async (req, res)
     };
 
     await Promise.all([
-        Database.insertInto("contest_questions", question),
-        Database.insertInto("contest_chat_messages", firstMessage),
+        Repositories.contest_questions.insert(question),
+        Repositories.contest_chat_messages.insert(firstMessage),
     ]);
 
-    const members = await Database.selectFrom(
-        "contest_members",
-        ["user_id", "contest_permissions"],
-        {
-            contest_id: member.contest_id,
-        }
-    );
+    const members = await Repositories.contest_members.select(["user_id", "contest_permissions"], {
+        contest_id: member.contest_id,
+    });
 
     const privileged = members.filter((m) =>
         hasContestPermission(m.contest_permissions, ContestMemberPermissions.VIEW_QUESTIONS)
@@ -86,7 +81,7 @@ ContestQuestionHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
     const contest = await extractContest(req);
 
-    const questions = await Database.selectFrom("contest_questions", "*", {
+    const questions = await Repositories.contest_questions.select("*", {
         contest_id: contest.id,
     });
 
@@ -106,11 +101,10 @@ ContestQuestionHandler.get("/", async (req, res) => {
 });
 
 // Get messages for a thread
-// eslint-disable-next-line sonarjs/cognitive-complexity
 ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
     const questionId = extractIdFromParameters(req, "question_id");
     const user = await extractUser(req);
-    const thread = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
+    const thread = await Repositories.contest_questions.selectOne("*", { id: questionId });
 
     if (!thread) throw new SafeError(StatusCodes.NOT_FOUND);
 
@@ -127,64 +121,15 @@ ContestQuestionHandler.get("/:question_id/messages", async (req, res) => {
         if (!isOwner && !canView) throw new SafeError(StatusCodes.FORBIDDEN);
     }
 
-    const messages = await Database.selectFrom("contest_chat_messages", "*", {
-        thread_id: questionId,
-    });
-
-    // Resolve author names (batch lookup)
-    const uniqueMemberIds = [...new Set(messages.map((m) => m.author_member_id))];
-
-    const memberRows =
-        uniqueMemberIds.length > 0
-            ? await Database.selectFrom("contest_members", ["id", "user_id"], {
-                  id: eqIn(...uniqueMemberIds),
-              })
-            : [];
-
-    const userIds = memberRows.map((m) => m.user_id);
-
-    const users =
-        userIds.length > 0
-            ? await Database.selectFrom("users", ["id", "full_name"], {
-                  id: eqIn(...userIds),
-              })
-            : [];
-
-    const userNameById = new Map(users.map((u) => [u.id.toString(), u.full_name]));
-
-    const nameMap = new Map<string, string>();
-    const unresolvedIds: bigint[] = [];
-
-    for (const memberRow of memberRows) {
-        const name = userNameById.get(memberRow.user_id.toString());
-
-        if (name) nameMap.set(memberRow.id.toString(), name);
-    }
-
-    // Collect author IDs that weren't found in contest_members (e.g. legacy data)
-    for (const id of uniqueMemberIds) {
-        if (!nameMap.has(id.toString())) unresolvedIds.push(id);
-    }
-
-    if (unresolvedIds.length > 0) {
-        const fallbackUsers = await Database.selectFrom("users", ["id", "full_name"], {
-            id: eqIn(...unresolvedIds),
-        });
-
-        for (const u of fallbackUsers) {
-            nameMap.set(u.id.toString(), u.full_name);
-        }
-    }
+    const messages = await Repositories.contest_chat_messages.selectWithAuthorByThread(questionId);
 
     return respond(
         res,
         StatusCodes.OK,
-        messages
-            .sort((a, b) => (a.id === b.id ? 0 : a.id < b.id ? -1 : 1))
-            .map((m) => ({
-                ...m,
-                author_name: nameMap.get(m.author_member_id.toString()) ?? undefined,
-            }))
+        messages.map(({ author_name: authorName, ...message }) => ({
+            ...message,
+            author_name: authorName ?? undefined,
+        }))
     );
 });
 
@@ -199,11 +144,11 @@ ContestQuestionHandler.post(
     async (req, res) => {
         const questionId = extractIdFromParameters(req, "question_id");
         const user = await extractUser(req);
-        const thread = await Database.selectOneFrom("contest_questions", "*", { id: questionId });
+        const thread = await Repositories.contest_questions.selectOne("*", { id: questionId });
 
         if (!thread) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        const contest = await Database.selectOneFrom("contests", ["id", "name"], {
+        const contest = await Repositories.contests.selectOne(["id", "name"], {
             id: thread.contest_id,
         });
 
@@ -234,9 +179,8 @@ ContestQuestionHandler.post(
         };
 
         await Promise.all([
-            Database.insertInto("contest_chat_messages", message),
-            Database.update(
-                "contest_questions",
+            Repositories.contest_chat_messages.insert(message),
+            Repositories.contest_questions.update(
                 { last_message_at: now, last_message_member_id: memberId },
                 { id: thread.id }
             ),
@@ -245,8 +189,7 @@ ContestQuestionHandler.post(
         // Notify the other side
         if (isOwner) {
             // Member sent a message -> notify management
-            const members = await Database.selectFrom(
-                "contest_members",
+            const members = await Repositories.contest_members.select(
                 ["user_id", "contest_permissions"],
                 { contest_id: thread.contest_id }
             );
@@ -261,7 +204,7 @@ ContestQuestionHandler.post(
             );
         } else {
             // Management sent a message -> notify thread owner
-            const targetMember = await Database.selectOneFrom("contest_members", ["user_id"], {
+            const targetMember = await Repositories.contest_members.selectOne(["user_id"], {
                 id: thread.contest_member_id,
             });
 

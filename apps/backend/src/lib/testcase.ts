@@ -1,8 +1,8 @@
 import { Cluster, EvaluationLanguage, Testcase, TestcaseWithData } from "@kontestis/models";
 import { StatusCodes } from "http-status-codes";
-import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
+import { inArray } from "../database/postgres/criteria";
 import { SafeError } from "../errors/SafeError";
 import { Globals } from "../globals";
 import { Redis } from "../redis/Redis";
@@ -130,10 +130,10 @@ export const assureTestcaseInput: (
         testcasesByGeneratorId[testcase.generator_id.toString()].push(testcase);
     }
 
-    const generatorIds = Object.keys(testcasesByGeneratorId);
+    const generatorIds = Object.keys(testcasesByGeneratorId).map(BigInt);
 
     const generators = await Database.selectFrom("generators", "*", {
-        id: eqIn(...generatorIds),
+        id: inArray(...generatorIds),
     });
 
     const generationResults = await Promise.all(

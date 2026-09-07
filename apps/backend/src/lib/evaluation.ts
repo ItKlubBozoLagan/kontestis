@@ -70,8 +70,11 @@ const updateContestMemberScore = async (
 
     if (contestMember.score[problemId.toString()] >= score) return;
 
-    await Database.raw(
-        `UPDATE contest_members SET score['${problemId}']=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
+    await Database.setMapEntry(
+        { id: contestMember.id, contest_id: contest.id, user_id: userId },
+        "score",
+        problemId,
+        score
     );
 };
 

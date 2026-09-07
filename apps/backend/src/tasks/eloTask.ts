@@ -1,5 +1,4 @@
 import { Contest, DEFAULT_ELO, ProblemV2 } from "@kontestis/models";
-import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
 import { Influx } from "../influx/Influx";
@@ -8,6 +7,7 @@ import { computeELODifference, ContestMemberLeaderboardInfo } from "../lib/elo";
 import { Logger } from "../lib/logger";
 import { Redis } from "../redis/Redis";
 import { RedisKeys } from "../redis/RedisKeys";
+import { Repositories } from "../repositories/Repositories";
 import { R } from "../utils/remeda";
 
 const calculateSolvingProbability = (rating: number, difficulty: number) => {
@@ -75,68 +75,27 @@ const handleContest = async (contest: Contest) => {
 
     await Redis.set(cacheKey, contest.id.toString(), { EX: 60 });
 
-    const members = await Database.selectFrom(
-        "contest_members",
-        "*",
-        { contest_id: contest.id },
-        // eslint-disable-next-line sonarjs/no-duplicate-string
-        "ALLOW FILTERING"
+    const members = await Repositories.contest_members.selectEloParticipants(
+        contest.id,
+        contest.organisation_id,
+        DEFAULT_ELO
     );
 
     if (members.length === 0) return;
 
-    const organisationMembers = await Database.selectFrom(
-        "organisation_members",
-        "*",
-        { organisation_id: contest.organisation_id },
-        "ALLOW FILTERING"
-    );
+    const usersWithElo = members.map((member) => ({
+        id: member.user_id,
+        organisationMemberId: member.organisation_member_id,
+        elo: member.organisation_elo,
+    }));
 
-    const users = await Database.selectFrom("users", "*", {
-        id: eqIn(...members.map((it) => it.user_id)),
-    });
-
-    const usersWithElo = R.map(
-        users.filter((user) => organisationMembers.some((member) => member.user_id === user.id)),
-        (user) =>
-            R.pipe(
-                user,
-                R.addProp(
-                    "organisationMemberId",
-                    organisationMembers.find((member) => member.user_id === user.id)!.id
-                ),
-                R.addProp(
-                    "elo",
-                    organisationMembers.find((member) => member.user_id === user.id)?.elo ??
-                        DEFAULT_ELO
-                )
-            )
-    );
-
-    const problems = await Database.selectFrom("problems", "*", {
-        contest_id: contest.id,
-    });
-
-    const problemClusters = await Database.selectFrom(
-        "clusters",
-        "*",
-        {
-            problem_id: eqIn(...problems.map((problem) => problem.id)),
-        },
-        "ALLOW FILTERING"
-    );
-
-    const problemPoints = problems.map((problem) =>
-        problemClusters
-            .filter((cluster) => cluster.problem_id === problem.id)
-            .reduce((accumulator, current) => accumulator + current.awarded_score, 0)
-    );
+    const problems = await Repositories.problems.selectWithTotalPoints(contest.id);
+    const problemPoints = problems.map((problem) => problem.total_points);
 
     const leaderboard = members
-        .filter((member) => usersWithElo.some((user) => user.id === member.user_id))
         .map((member) => ({
             user_id: member.user_id,
-            currentGlobalElo: usersWithElo.find((user) => user.id === member.user_id)?.elo ?? 0,
+            currentGlobalElo: member.organisation_elo,
             problemPoints: Array.from<number>({ length: problems.length })
                 .fill(0)
                 .concat(Object.values(member.score ?? {}))
@@ -184,14 +143,15 @@ const handleContest = async (contest: Contest) => {
 
     await Promise.all(
         Object.entries(problemDifficulties).map(async ([problemId, difficulty]) => {
-            const problem = await Database.selectOneFrom("problems", ["tags"], { id: problemId });
+            const id = BigInt(problemId);
+            const problem = await Database.selectOneFrom("problems", ["tags"], { id });
 
             if (!problem) return;
 
             await Database.update(
                 "problems",
                 { tags: [...problem.tags, `*${difficulty}`] },
-                { id: problemId }
+                { id }
             );
         })
     );

@@ -2,7 +2,7 @@ import { OrganisationMemberV3, OrganisationPermissions, OrganisationV1 } from "@
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import { Migration } from "scyllo";
 
-import { Database } from "../Database";
+import { LegacyDatabase as Database } from "../Database";
 
 type MigrationType = {
     organisation_members: OrganisationMemberV3;

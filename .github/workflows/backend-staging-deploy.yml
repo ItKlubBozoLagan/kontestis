@@ -11,10 +11,20 @@ on:
             - ".github/workflows/backend-staging-deploy.yml"
             - ".deploy/backend.dockerfile"
 
+concurrency:
+    group: backend-staging-deploy
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+    packages: write
+
 jobs:
     build:
         name: "🐳 Build"
         runs-on: ubuntu-latest
+        outputs:
+            digest: ${{ steps.docker_build.outputs.digest }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
@@ -47,7 +57,16 @@ jobs:
               uses: azure/setup-kubectl@v3
 
             - name: "Copy kubernetes config"
-              run: "mkdir ~/.kube && echo '${{ secrets.KUBE_CONFIG }}' | base64 -d > ~/.kube/config && KUBECONFIG=~/.kube/config"
+              env:
+                  KUBE_CONFIG_STAGING: ${{ secrets.KUBE_CONFIG_STAGING }}
+              run: |
+                  install -m 700 -d ~/.kube
+                  printf '%s' "$KUBE_CONFIG_STAGING" | base64 -d > ~/.kube/config
+                  chmod 600 ~/.kube/config
 
             - name: "Rollout an application update"
-              run: "kubectl rollout restart deployment kontestis-staging -n kontestis"
+              env:
+                  IMAGE_DIGEST: ${{ needs.build.outputs.digest }}
+              run: |
+                  kubectl -n kontestis-staging set image deployment/kontestis-staging backend=ghcr.io/itklubbozolagan/kontestis-backend@${IMAGE_DIGEST}
+                  kubectl -n kontestis-staging rollout status deployment/kontestis-staging --timeout=300s

@@ -3,17 +3,15 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
-import { eqIn } from "scyllo";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractModifiableOrganisation } from "../../extractors/extractModifiableOrganisation";
 import { extractOrganisation } from "../../extractors/extractOrganisation";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
 import { mustHaveOrganisationPermission } from "../../preconditions/hasPermission";
+import { Repositories } from "../../repositories/Repositories";
 import { extractIdFromParameters } from "../../utils/extractorUtils";
-import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 
 const OrganisationMemberHandler = Router({ mergeParams: true });
@@ -21,35 +19,10 @@ const OrganisationMemberHandler = Router({ mergeParams: true });
 OrganisationMemberHandler.get("/", async (req, res) => {
     const organisation = await extractOrganisation(req);
 
-    const organisationMembers = await Database.selectFrom(
-        "organisation_members",
-        "*",
-        {
-            organisation_id: organisation.id,
-        },
-        "ALLOW FILTERING"
-    );
-
-    const users = (
-        await Promise.all(
-            R.chunk(organisationMembers, 100).map((chunk) => {
-                return Database.selectFrom("users", "*", {
-                    id: eqIn(...chunk.map((it) => it.user_id)),
-                });
-            })
-        )
-    ).flat();
-
     return respond(
         res,
         StatusCodes.OK,
-        organisationMembers.map(
-            (it, _, __, user = users.find((user) => user.id === it.user_id)!) => ({
-                ...it,
-                ...R.pick(user, ["full_name"]),
-                email_domain: user.email.split("@").at(-1),
-            })
-        )
+        await Repositories.organisation_members.selectWithUserInfo(organisation.id)
     );
 });
 
@@ -57,7 +30,7 @@ OrganisationMemberHandler.get("/:user_id", async (req, res) => {
     const organisation = await extractOrganisation(req);
     const userId = extractIdFromParameters(req, "user_id");
 
-    const member = await Database.selectOneFrom("organisation_members", "*", {
+    const member = await Repositories.organisation_members.selectOne("*", {
         organisation_id: organisation.id,
         user_id: userId,
     });
@@ -78,13 +51,13 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
 
     await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER, organisation.id);
 
-    const targetUser = await Database.selectOneFrom("users", ["id"], {
+    const targetUser = await Repositories.users.selectOne(["id"], {
         email: req.body.email,
     });
 
     if (!targetUser) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    const exists = await Database.selectOneFrom("organisation_members", ["id"], {
+    const exists = await Repositories.organisation_members.selectOne(["id"], {
         organisation_id: organisation.id,
         user_id: targetUser.id,
     });
@@ -99,7 +72,7 @@ OrganisationMemberHandler.post("/", useValidation(MemberSchema), async (req, res
         permissions: grantPermission(EMPTY_PERMISSIONS, OrganisationPermissions.VIEW),
     };
 
-    await Database.insertInto("organisation_members", member);
+    await Repositories.organisation_members.insert(member);
 
     return respond(res, StatusCodes.OK, member);
 });
@@ -121,8 +94,7 @@ OrganisationMemberHandler.patch(
 
         await mustHaveOrganisationPermission(req, OrganisationPermissions.EDIT_USER);
 
-        const targetMember = await Database.selectOneFrom(
-            "organisation_members",
+        const targetMember = await Repositories.organisation_members.selectOne(
             ["id", "user_id", "organisation_id"],
             {
                 organisation_id: organisation.id,
@@ -132,8 +104,7 @@ OrganisationMemberHandler.patch(
 
         if (!targetMember) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        await Database.update(
-            "organisation_members",
+        await Repositories.organisation_members.update(
             {
                 permissions: newPermissions,
                 elo: req.body.elo,
@@ -157,14 +128,14 @@ OrganisationMemberHandler.delete("/:user_id", async (req, res) => {
 
     const targetUserId = extractIdFromParameters(req, "user_id");
 
-    const member = await Database.selectOneFrom("organisation_members", "*", {
+    const member = await Repositories.organisation_members.selectOne("*", {
         organisation_id: organisation.id,
         user_id: targetUserId,
     });
 
     if (!member) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    await Database.deleteFrom("organisation_members", "*", {
+    await Repositories.organisation_members.delete("*", {
         id: member.id,
     });
 
