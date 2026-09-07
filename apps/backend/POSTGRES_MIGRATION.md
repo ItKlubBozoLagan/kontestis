@@ -92,3 +92,27 @@ Do not remove the ScyllaDB backup until the PostgreSQL retention period and appl
 ScyllaDB's `problems.tags` set is stored in `problem_tags`. The `contest_members.score` and `contest_members.exam_score` maps are stored in `contest_member_scores` and `contest_member_exam_scores`. Repository reads reconstruct the existing API model, while a single score entry is updated atomically with `INSERT ... ON CONFLICT DO UPDATE`.
 
 The restored production snapshot contains a small number of legacy orphan rows and duplicate natural member identities. They are preserved and reported by the integrity audit. Core foreign keys that would reject those rows are intentionally deferred; the new normalized child tables are constrained to their composite parent identity.
+
+## Staging deployment
+
+Staging runs as deployment `kontestis-staging` in namespace `kontestis-staging`.
+The staging workflow uses the dedicated `KUBE_CONFIG_STAGING` GitHub secret, deploys
+an immutable image digest, and waits for rollout completion. The production workflow
+and its `KUBE_CONFIG` secret are independent.
+
+Before merging the PostgreSQL cutover into `dev`:
+
+- Provision a dedicated `kontestis_staging` PostgreSQL database and login role.
+- Add `DATABASE_URL` to the staging backend secret. Use TLS certificate verification
+  and mount the PostgreSQL CA at the path configured by `sslrootcert` in the URL.
+- Allow staging backend egress to PostgreSQL and authorize staging in the database
+  ingress policy.
+- Stop staging writers, snapshot the staging Scylla keyspace, and run the migration
+  as a one-off job using the release image. Keep source credentials available only
+  for migration; the normal backend should use `SCYLLA_MIGRATION_ENABLED=false`.
+- Verify the global completion marker and all table counts/digests before restoring
+  staging traffic. Preserve the old image digest and source snapshot for rollback
+  before accepting new PostgreSQL writes.
+
+A green image build or successful TCP readiness probe alone does not verify the
+migration. Check database markers and exercise authenticated application reads.

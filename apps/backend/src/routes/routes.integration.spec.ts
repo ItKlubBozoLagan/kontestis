@@ -3,11 +3,15 @@
 
 import { Server } from "node:http";
 
+import { AdminPermissions } from "@kontestis/models";
+import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
+import superjson from "superjson";
 import request from "supertest";
 
 import { createApp } from "../app";
 import { Database } from "../database/Database";
 import { runPostgresMigrations } from "../database/postgres/runMigrations";
+import { generateJwt } from "../lib/auth";
 
 type Method = "get" | "post" | "patch" | "delete";
 type RouteCase = [Method, string];
@@ -130,6 +134,48 @@ describe("HTTP route contract matrix", () => {
             server.close((error) => (error ? reject(error) : resolve()));
         });
         await Database.shutdown();
+    });
+
+    it("returns the requested user and rejects a missing user for an administrator", async () => {
+        const adminId = 900_000_000_000_000_001n;
+        const targetId = 900_000_000_000_000_002n;
+
+        try {
+            await Database.insertInto("users", {
+                id: adminId,
+                email: "pr132-admin@example.com",
+                full_name: "Test Administrator",
+                permissions: grantPermission(EMPTY_PERMISSIONS, AdminPermissions.VIEW_USER),
+                picture_url: "",
+            });
+            await Database.insertInto("users", {
+                id: targetId,
+                email: "pr132-target@example.com",
+                full_name: "Requested User",
+                permissions: EMPTY_PERMISSIONS,
+                picture_url: "",
+            });
+
+            const authorization = `Bearer ${generateJwt(adminId, "managed", {})}`;
+            const found = await request(server)
+                .get(`/api/auth/info/${targetId}`)
+                .set("Authorization", authorization);
+
+            expect(found.status).toBe(200);
+            expect(superjson.parse(found.body.data)).toMatchObject({
+                id: targetId,
+                full_name: "Requested User",
+            });
+
+            const missing = await request(server)
+                .get("/api/auth/info/900000000000000003")
+                .set("Authorization", authorization);
+
+            expect(missing.status).toBe(404);
+        } finally {
+            await Database.deleteFrom("users", "*", { id: adminId });
+            await Database.deleteFrom("users", "*", { id: targetId });
+        }
     });
 
     it("covers every registered backend route", () => {

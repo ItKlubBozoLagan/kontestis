@@ -66,7 +66,7 @@ AuthHandler.get("/info/:id", async (req, res) => {
 
     if (id === user.id) return respond(res, StatusCodes.OK, user);
 
-    const userData = Repositories.users.selectOne("*", { id: id });
+    const userData = await Repositories.users.selectOne("*", { id: id });
 
     if (!userData) throw new SafeError(StatusCodes.NOT_FOUND);
 

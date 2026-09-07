@@ -2,7 +2,7 @@ FROM node:hydrogen-alpine AS workspace
 
 WORKDIR /app
 
-RUN npm install --global pnpm
+RUN npm install --global pnpm@9.10.0
 
 COPY . .
 

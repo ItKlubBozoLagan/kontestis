@@ -34,14 +34,14 @@ SubmissionFileHandler.get("/:cluster_id", async (req, res) => {
 
     const clusterId = BigInt(req.params.cluster_id);
 
-    const allClusterSubmsissions = await Repositories.cluster_submissions.select(
+    const allClusterSubmissions = await Repositories.cluster_submissions.select(
         ["id", "cluster_id"],
         {
             submission_id: submission.id,
         }
     );
 
-    const clusterSubmission = allClusterSubmsissions.find((cs) => cs.cluster_id === clusterId);
+    const clusterSubmission = allClusterSubmissions.find((cs) => cs.cluster_id === clusterId);
 
     if (!clusterSubmission) {
         return respond(res, StatusCodes.OK, []);
