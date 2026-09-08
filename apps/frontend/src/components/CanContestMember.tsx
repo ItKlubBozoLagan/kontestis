@@ -1,34 +1,19 @@
-import {
-    AdminPermissions,
-    ContestMember,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-} from "@kontestis/models";
+import { Contest, ContestMember, ContestMemberPermissions } from "@kontestis/models";
 import { FC, ReactNode } from "react";
 
-import { useAuthStore } from "../state/auth";
+import { useContestPermission } from "../hooks/contest/useContestPermission";
 
 type Properties = {
-    member: ContestMember | undefined;
+    contest: Pick<Contest, "id" | "organisation_id">;
+    member?: ContestMember;
     permission: ContestMemberPermissions;
-    adminPermission: AdminPermissions;
     children: ReactNode | ReactNode[];
 };
 
-export const CanContestMember: FC<Properties> = ({
-    member,
-    permission,
-    adminPermission,
-    children,
-}) => {
-    const { user } = useAuthStore();
+export const CanContestMember: FC<Properties> = ({ contest, member, permission, children }) => {
+    const allowed = useContestPermission(permission, contest, member);
 
-    if (
-        (!member || !hasContestPermission(member.contest_permissions, permission)) &&
-        !hasAdminPermission(user.permissions, adminPermission)
-    )
-        return <></>;
+    if (!allowed) return <></>;
 
     return <>{children}</>;
 };

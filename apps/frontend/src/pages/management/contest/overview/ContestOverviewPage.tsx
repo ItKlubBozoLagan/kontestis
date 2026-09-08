@@ -45,7 +45,7 @@ const ModifyContestSchema = z.object({
 });
 
 export const ContestOverviewPage: FC = () => {
-    const { contest } = useContestContext();
+    const { contest, member } = useContestContext();
 
     const defaultValues = {
         name: contest.name,
@@ -443,7 +443,7 @@ export const ContestOverviewPage: FC = () => {
                     </TitledSection>
                 </div>
             </div>
-            {problems && <Leaderboard contest={contest} problems={problems} />}
+            {problems && <Leaderboard contest={contest} problems={problems} selfMember={member} />}
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import { AdminPermissions, hasAdminPermission } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useMemo } from "react";
 import { FiList } from "react-icons/all";
 import { useParams } from "react-router";
@@ -9,12 +9,12 @@ import { Table, TableHeadItem, TableHeadRow, TableItem, TableRow } from "../../c
 import { TitledSection } from "../../components/TitledSection";
 import { useAllContestAnnouncements } from "../../hooks/contest/announcements/useAllContestAnnouncements";
 import { useContest } from "../../hooks/contest/useContest";
+import { useContestPermission } from "../../hooks/contest/useContestPermission";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
 import { useAllProblems } from "../../hooks/problem/useAllProblems";
 import { useAllProblemScores } from "../../hooks/problem/useAllProblemScores";
 import { ContestStatusStyleColorMap, useContestStatus } from "../../hooks/useContestStatus";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useAuthStore } from "../../state/auth";
 import { ContestChatSection } from "./ContestChatSection";
 import { Leaderboard } from "./Leaderboard";
 
@@ -24,8 +24,6 @@ type Properties = {
 
 export const ContestViewPage: FC = () => {
     const { contestId } = useParams<Properties>();
-
-    const { user } = useAuthStore();
 
     const { data: contest } = useContest(BigInt(contestId ?? 0n));
     const { data: problems } = useAllProblems(contest?.id, {
@@ -50,6 +48,12 @@ export const ContestViewPage: FC = () => {
             Date.now() < contest.start_time.getTime() + 1000 * contest.duration_seconds
         );
     }, [contest]);
+
+    const canViewPrivate = useContestPermission(
+        ContestMemberPermissions.VIEW_PRIVATE,
+        contest,
+        selfMember
+    );
 
     const problemScores = useAllProblemScores();
 
@@ -92,10 +96,7 @@ export const ContestViewPage: FC = () => {
                     {selfMember && <ContestChatSection contestId={contest.id} />}
                 </div>
             )}
-            {(contestStatus.status !== "pending" ||
-                // TODO: Replace with actual permission check
-                (problems && problems.length > 0) ||
-                hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)) && (
+            {(contestStatus.status !== "pending" || canViewPrivate) && (
                 <Table tw={"w-full"}>
                     <thead>
                         <TableHeadRow>
@@ -141,7 +142,7 @@ export const ContestViewPage: FC = () => {
                     </tbody>
                 </Table>
             )}
-            <Leaderboard contest={contest} problems={problems ?? []} />
+            <Leaderboard contest={contest} problems={problems ?? []} selfMember={selfMember} />
         </div>
     );
 };

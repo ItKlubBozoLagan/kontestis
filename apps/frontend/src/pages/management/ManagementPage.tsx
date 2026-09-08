@@ -1,9 +1,4 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-} from "@kontestis/models";
+import { ContestMemberPermissions, hasContestPermission } from "@kontestis/models";
 import { FC, useMemo, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
@@ -14,6 +9,7 @@ import { Table, TableHeadItem, TableHeadRow } from "../../components/Table";
 import { useAllContests } from "../../hooks/contest/useAllContests";
 import { useMappedContests } from "../../hooks/contest/useMappedContests";
 import { useSelfContestMembers } from "../../hooks/contest/useSelfContestMembers";
+import { useSelfOrganisationMembers } from "../../hooks/organisation/useSelfOrganisationMembers";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../state/auth";
 import { ContestListItem } from "../contests/ContestListItem";
@@ -26,17 +22,23 @@ export const ManagementPage: FC = () => {
     const { data: contestMembers } = useSelfContestMembers();
 
     const { user } = useAuthStore();
+    const { data: orgMembers } = useSelfOrganisationMembers();
 
     const completeContests = useMappedContests(contests, contestMembers);
 
     const myContests = useMemo(
         () =>
-            completeContests.filter(
-                (it) =>
-                    hasContestPermission(it.permissions, ContestMemberPermissions.VIEW_PRIVATE) ||
-                    hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
-            ),
-        [completeContests]
+            completeContests.filter((it) => {
+                const orgMember = orgMembers?.find((m) => m.organisation_id === it.organisation_id);
+
+                return hasContestPermission(
+                    it.permissions,
+                    ContestMemberPermissions.VIEW_PRIVATE,
+                    orgMember?.permissions,
+                    user.permissions
+                );
+            }),
+        [completeContests, orgMembers, user.permissions]
     );
 
     const { t } = useTranslation();

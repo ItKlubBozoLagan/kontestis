@@ -1,4 +1,4 @@
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 import { useParams } from "react-router";
@@ -29,7 +29,7 @@ type Properties = {
 export const ContestClusterManagePage: FC = () => {
     const { problemId, clusterId } = useParams<Properties>();
 
-    const { member } = useContestContext();
+    const { contest, member } = useContestContext();
 
     const { data: cluster } = useCluster([BigInt(problemId ?? 0), BigInt(clusterId ?? 0)], {
         refetchInterval: (data) => (data?.status === "pending" ? 500 : 5000),
@@ -57,9 +57,9 @@ export const ContestClusterManagePage: FC = () => {
                 )}
                 <div tw={"w-full flex flex-col gap-6 items-end"}>
                     <CanContestMember
+                        contest={contest}
                         member={member}
                         permission={ContestMemberPermissions.EDIT}
-                        adminPermission={AdminPermissions.EDIT_CONTEST}
                     >
                         <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
                             {t(
