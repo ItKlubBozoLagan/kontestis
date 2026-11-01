@@ -1,5 +1,12 @@
 /* eslint-disable no-dupe-class-members, sonarjs/no-all-duplicated-branches */
 
+import {
+    AdminContestListItem,
+    AdminUserListItem,
+    ClusterSubmissionDetails,
+    OrganisationOverview,
+    ProblemSummary,
+} from "@kontestis/models";
 import { PoolClient } from "pg";
 import { QueryResultRow } from "pg";
 
@@ -123,6 +130,66 @@ export class TableRepository<Table extends TableName> {
     }
 }
 
+export type UserSearchOptions = {
+    search?: string;
+    limit: number;
+    offset: number;
+    sort: "name" | "email" | "newest";
+};
+
+class UserRepository extends TableRepository<"users"> {
+    constructor(runner?: Runner) {
+        super("users", runner);
+    }
+
+    async search(
+        options: UserSearchOptions
+    ): Promise<{ items: AdminUserListItem[]; total: number }> {
+        const order =
+            options.sort === "email"
+                ? "users.email ASC"
+                : options.sort === "newest"
+                ? "users.id DESC"
+                : "users.full_name ASC";
+        const pattern = options.search ? `%${options.search.replace(/[%\\_]/g, "\\$&")}%` : null;
+
+        const rows = await this.query<AdminUserListItem & { total: number }>(
+            `SELECT users.*,
+                    EXISTS (SELECT 1 FROM managed_users WHERE managed_users.id = users.id) AS is_managed,
+                    EXISTS (SELECT 1 FROM edu_users WHERE edu_users.id = users.id) AS is_edu,
+                    EXISTS (SELECT 1 FROM temporary_users WHERE temporary_users.id = users.id) AS is_temporary,
+                    (SELECT COUNT(*) FROM organisation_members members
+                      WHERE members.user_id = users.id)::integer AS organisation_count,
+                    (SELECT COUNT(*) FROM submissions
+                      WHERE submissions.user_id = users.id)::integer AS submission_count,
+                    COUNT(*) OVER ()::integer AS total
+             FROM users
+             WHERE $1::text IS NULL
+                OR users.full_name ILIKE $1
+                OR users.email ILIKE $1
+                OR users.id::text = $2
+             ORDER BY ${order}, users.id
+             LIMIT $3 OFFSET $4`,
+            [pattern, options.search ?? null, options.limit, options.offset]
+        );
+
+        if (rows.length === 0 && options.offset > 0) {
+            const [{ count }] = await this.query<{ count: number }>(
+                `SELECT COUNT(*)::integer AS count FROM users
+                 WHERE $1::text IS NULL OR users.full_name ILIKE $1 OR users.email ILIKE $1 OR users.id::text = $2`,
+                [pattern, options.search ?? null]
+            );
+
+            return { items: [], total: count };
+        }
+
+        return {
+            items: rows.map(({ total: _, ...user }) => user),
+            total: rows[0]?.total ?? 0,
+        };
+    }
+}
+
 class ContestMemberRepository extends TableRepository<"contest_members"> {
     constructor(runner?: Runner) {
         super("contest_members", runner);
@@ -233,6 +300,18 @@ class ContestRepository extends TableRepository<"contests"> {
         );
     }
 
+    selectAllWithStats(): Promise<AdminContestListItem[]> {
+        return this.query(
+            `SELECT contests.*,
+                    COALESCE(organisations.name, '') AS organisation_name,
+                    (SELECT COUNT(*) FROM contest_members WHERE contest_members.contest_id = contests.id)::integer AS member_count,
+                    (SELECT COUNT(*) FROM problems WHERE problems.contest_id = contests.id)::integer AS problem_count
+             FROM contests
+             LEFT JOIN organisations ON organisations.id = contests.organisation_id
+             ORDER BY contests.start_time DESC`
+        );
+    }
+
     selectForTemporaryUser(userId: bigint): Promise<ContestWithMembership[]> {
         return this.query(
             `SELECT contests.*, members.contest_permissions AS member_contest_permissions
@@ -262,6 +341,26 @@ class OrganisationRepository extends TableRepository<"organisations"> {
         );
     }
 }
+
+class OrganisationOverviewRepository {
+    selectOverview(): Promise<OrganisationOverview[]> {
+        return Database.pool
+            .query<OrganisationOverview>(
+                `SELECT organisations.*,
+                        owner.full_name AS owner_name,
+                        (SELECT COUNT(*) FROM organisation_members members
+                          WHERE members.organisation_id = organisations.id)::integer AS member_count,
+                        (SELECT COUNT(*) FROM contests
+                          WHERE contests.organisation_id = organisations.id)::integer AS contest_count
+                 FROM organisations
+                 LEFT JOIN users owner ON owner.id = organisations.owner
+                 ORDER BY organisations.id`
+            )
+            .then((result) => result.rows);
+    }
+}
+
+export const OrganisationOverviews = new OrganisationOverviewRepository();
 
 class OrganisationMemberRepository extends TableRepository<"organisation_members"> {
     constructor(runner?: Runner) {
@@ -305,6 +404,73 @@ class SubmissionRepository extends TableRepository<"submissions"> {
             [problemId]
         );
     }
+
+    async countForUser(
+        userId: bigint,
+        problemIds: bigint[]
+    ): Promise<{ submissions: number; accepted_submissions: number; solved_problems: number }> {
+        const [result] = await this.query<{
+            submissions: number;
+            accepted_submissions: number;
+            solved_problems: number;
+        }>(
+            `SELECT COUNT(*)::integer AS submissions,
+                    COUNT(*) FILTER (WHERE submissions.verdict = 'accepted')::integer AS accepted_submissions,
+                    COUNT(DISTINCT submissions.problem_id)
+                        FILTER (WHERE submissions.verdict = 'accepted')::integer AS solved_problems
+             FROM submissions
+             WHERE submissions.user_id = $1 AND submissions.problem_id = ANY($2::bigint[])`,
+            [userId, problemIds]
+        );
+
+        return result;
+    }
+
+    /** Cluster results of a submission with their testcase results nested, ordered like the problem. */
+    selectDetails(submissionId: bigint): Promise<ClusterSubmissionDetails[]> {
+        return this.query<ClusterSubmissionDetails>(
+            `SELECT cluster_submissions.*,
+                    COALESCE(clusters.order_number, 0) AS order_number,
+                    COALESCE(clusters.is_sample, false) AS is_sample,
+                    COALESCE(clusters.awarded_score, 0)::integer AS max_score,
+                    COALESCE((
+                        SELECT jsonb_agg(
+                                   jsonb_build_object(
+                                       'id', testcase_submissions.id::text,
+                                       'testcase_id', testcase_submissions.testcase_id::text,
+                                       'cluster_submission_id', testcase_submissions.cluster_submission_id::text,
+                                       'verdict', testcase_submissions.verdict,
+                                       'awarded_score', testcase_submissions.awarded_score,
+                                       'time_used_millis', testcase_submissions.time_used_millis,
+                                       'memory_used_megabytes', testcase_submissions.memory_used_megabytes
+                                   )
+                                   ORDER BY testcase_submissions.testcase_id
+                               )
+                        FROM testcase_submissions
+                        WHERE testcase_submissions.cluster_submission_id = cluster_submissions.id
+                    ), '[]'::jsonb) AS testcases
+             FROM cluster_submissions
+             LEFT JOIN clusters ON clusters.id = cluster_submissions.cluster_id
+             WHERE cluster_submissions.submission_id = $1
+             ORDER BY clusters.order_number NULLS LAST, cluster_submissions.cluster_id`,
+            [submissionId]
+        ).then((rows) =>
+            rows.map(
+                (row): ClusterSubmissionDetails => ({
+                    ...row,
+                    order_number: BigInt(row.order_number),
+                    testcases: (row.testcases as unknown as Record<string, unknown>[]).map(
+                        (it) => ({
+                            ...it,
+                            id: BigInt(it.id as string),
+                            testcase_id: BigInt(it.testcase_id as string),
+                            cluster_submission_id: BigInt(it.cluster_submission_id as string),
+                        })
+                    ) as ClusterSubmissionDetails["testcases"],
+                })
+            )
+        );
+    }
 }
 
 class ProblemRepository extends TableRepository<"problems"> {
@@ -321,6 +487,73 @@ class ProblemRepository extends TableRepository<"problems"> {
              WHERE problems.contest_id = $1
              GROUP BY problems.id`,
             [contestId]
+        );
+    }
+
+    /** All problems of a contest with tags and total points, in one round-trip. */
+    selectForContestWithScore(
+        contestId: bigint
+    ): Promise<(KontestisTables["problems"] & { score: number })[]> {
+        return this.query(
+            `SELECT problems.*,
+                    COALESCE(points.total, 0)::integer AS score,
+                    COALESCE(tags.tags, ARRAY[]::text[]) AS tags
+             FROM problems
+             LEFT JOIN LATERAL (
+                 SELECT SUM(clusters.awarded_score) AS total
+                 FROM clusters
+                 WHERE clusters.problem_id = problems.id
+             ) points ON true
+             LEFT JOIN LATERAL (
+                 SELECT array_agg(problem_tags.tag ORDER BY problem_tags.tag) AS tags
+                 FROM problem_tags
+                 WHERE problem_tags.problem_id = problems.id
+             ) tags ON true
+             WHERE problems.contest_id = $1
+             ORDER BY problems.id`,
+            [contestId]
+        );
+    }
+
+    /** Lightweight problem rows for listing pages, joined with contest data and the user's best score. */
+    selectSummaries(contestIds: bigint[], userId: bigint): Promise<ProblemSummary[]> {
+        if (contestIds.length === 0) return Promise.resolve([]);
+
+        return this.query(
+            `SELECT problems.id,
+                    problems.contest_id,
+                    problems.title,
+                    problems.evaluation_variant,
+                    problems.time_limit_millis,
+                    problems.memory_limit_megabytes,
+                    contests.name AS contest_name,
+                    contests.start_time AS contest_start_time,
+                    contests.duration_seconds AS contest_duration_seconds,
+                    COALESCE(tags.tags, ARRAY[]::text[]) AS tags,
+                    COALESCE(points.total, 0)::integer AS score,
+                    attempts.best_score,
+                    COALESCE(attempts.attempts, 0)::integer AS attempts
+             FROM problems
+             JOIN contests ON contests.id = problems.contest_id
+             LEFT JOIN LATERAL (
+                 SELECT SUM(clusters.awarded_score) AS total
+                 FROM clusters
+                 WHERE clusters.problem_id = problems.id
+             ) points ON true
+             LEFT JOIN LATERAL (
+                 SELECT array_agg(problem_tags.tag ORDER BY problem_tags.tag) AS tags
+                 FROM problem_tags
+                 WHERE problem_tags.problem_id = problems.id
+             ) tags ON true
+             LEFT JOIN LATERAL (
+                 SELECT MAX(submissions.awarded_score)::integer AS best_score,
+                        COUNT(*) AS attempts
+                 FROM submissions
+                 WHERE submissions.problem_id = problems.id AND submissions.user_id = $2
+             ) attempts ON true
+             WHERE problems.contest_id = ANY($1::bigint[])
+             ORDER BY contests.start_time DESC, problems.id`,
+            [contestIds, userId]
         );
     }
 }
@@ -390,10 +623,39 @@ class ExamFinalSubmissionRepository extends TableRepository<"exam_final_submissi
             [contestId, userId]
         );
     }
+
+    /** Every final submission of a contest (all participants) in one query. */
+    selectForContest(contestId: bigint): Promise<ExamFinalSubmissionWithProblemId[]> {
+        return this.query(
+            `SELECT final_submissions.*,
+                    COALESCE(submissions.problem_id, 0::bigint) AS problem_id
+             FROM exam_final_submissions final_submissions
+             LEFT JOIN submissions ON submissions.id = final_submissions.submission_id
+             WHERE final_submissions.contest_id = $1`,
+            [contestId]
+        );
+    }
+}
+
+class NotificationRepository extends TableRepository<"notifications"> {
+    constructor(runner?: Runner) {
+        super("notifications", runner);
+    }
+
+    /** Already published notifications of a user since `since`, newest first. */
+    selectRecent(recipient: bigint, since: Date): Promise<KontestisTables["notifications"][]> {
+        return this.query(
+            `SELECT *
+             FROM notifications
+             WHERE recipient = $1 AND created_at >= $2 AND created_at <= now()
+             ORDER BY created_at DESC`,
+            [recipient, since]
+        );
+    }
 }
 
 export class RepositoryRegistry {
-    readonly users: TableRepository<"users">;
+    readonly users: UserRepository;
     readonly contests: ContestRepository;
     readonly problems: ProblemRepository;
     readonly clusters: TableRepository<"clusters">;
@@ -409,7 +671,7 @@ export class RepositoryRegistry {
     readonly organisation_members: OrganisationMemberRepository;
     readonly exam_final_submissions: ExamFinalSubmissionRepository;
     readonly exam_grading_scales: TableRepository<"exam_grading_scales">;
-    readonly notifications: TableRepository<"notifications">;
+    readonly notifications: NotificationRepository;
     readonly mail_preferences: TableRepository<"mail_preferences">;
     readonly edu_users: TableRepository<"edu_users">;
     readonly managed_users: TableRepository<"managed_users">;
@@ -417,7 +679,7 @@ export class RepositoryRegistry {
     readonly generators: TableRepository<"generators">;
 
     constructor(private readonly runner?: Runner) {
-        this.users = new TableRepository("users", runner);
+        this.users = new UserRepository(runner);
         this.contests = new ContestRepository(runner);
         this.problems = new ProblemRepository(runner);
         this.clusters = new TableRepository("clusters", runner);
@@ -433,7 +695,7 @@ export class RepositoryRegistry {
         this.organisation_members = new OrganisationMemberRepository(runner);
         this.exam_final_submissions = new ExamFinalSubmissionRepository(runner);
         this.exam_grading_scales = new TableRepository("exam_grading_scales", runner);
-        this.notifications = new TableRepository("notifications", runner);
+        this.notifications = new NotificationRepository(runner);
         this.mail_preferences = new TableRepository("mail_preferences", runner);
         this.edu_users = new TableRepository("edu_users", runner);
         this.managed_users = new TableRepository("managed_users", runner);

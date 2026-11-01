@@ -1,8 +1,7 @@
-import { Problem } from "@kontestis/models";
+import { ContestMemberPermissions, Problem } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { isTruthy } from "remeda";
 
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
@@ -11,7 +10,9 @@ import { extractModifiableProblem } from "../../extractors/extractModifiableProb
 import { extractProblem } from "../../extractors/extractProblem";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
+import { canViewPrivateContestData, listContestsWithVisibleProblems } from "../../lib/visibility";
 import { useValidation } from "../../middlewares/useValidation";
+import { hasContestPermission } from "../../preconditions/hasPermission";
 import { Repositories } from "../../repositories/Repositories";
 import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { R } from "../../utils/remeda";
@@ -156,36 +157,46 @@ const GetSchema = Type.Object({
 });
 
 ProblemHandler.get("/", useValidation(GetSchema, { query: true }), async (req, res) => {
-    const contestId = BigInt(req.query.contest_id as string);
+    if (!/^\d+$/.test(req.query.contest_id)) throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    await extractContest(req, contestId);
+    const contest = await extractContest(req, BigInt(req.query.contest_id));
 
-    const problems = await Repositories.problems.select(["id"], {
-        contest_id: contestId,
-    });
+    // problems of one contest share visibility, so it is checked once instead of per problem
+    const canViewPrivate =
+        (await hasContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id)) ||
+        (await canViewPrivateContestData(req, contest));
 
-    const allowedProblems = R.filter(
-        await Promise.all(
-            problems.map(({ id }) => extractProblem(req, id).catch(() => false as const))
-        ),
-        isTruthy
-    );
+    if (!canViewPrivate && contest.start_time.getTime() > Date.now())
+        return respond(res, StatusCodes.OK, []);
+
+    const problems = await Repositories.problems.selectForContestWithScore(contest.id);
 
     return respond(
         res,
         StatusCodes.OK,
-        await Promise.all(
-            allowedProblems.map(async (problem) => {
-                const clusters = await Repositories.clusters.select("*", {
-                    problem_id: problem.id,
-                });
-                const score = clusters.reduce(
-                    (accumulator, current) => accumulator + current.awarded_score,
-                    0
-                );
+        canViewPrivate
+            ? problems
+            : problems.map((problem) =>
+                  R.omit(problem, [
+                      "evaluation_language",
+                      "evaluation_script",
+                      "solution_language",
+                      "solution_code",
+                  ])
+              )
+    );
+});
 
-                return R.addProp(problem, "score", score);
-            })
+ProblemHandler.get("/summaries", async (req, res) => {
+    const user = await extractUser(req);
+    const contests = await listContestsWithVisibleProblems(req);
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        await Repositories.problems.selectSummaries(
+            contests.map((contest) => contest.id),
+            user.id
         )
     );
 });

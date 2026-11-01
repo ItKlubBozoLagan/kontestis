@@ -1,14 +1,17 @@
-import { AdminPermissions, DEFAULT_ELO } from "@kontestis/models";
+import { AdminPermissions, DashboardOverview, DEFAULT_ELO } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { hasPermission } from "permissio";
 
+import { inArray } from "../../database/postgres/criteria";
 import { SafeError } from "../../errors/SafeError";
 import { extractCurrentOrganisation } from "../../extractors/extractOrganisation";
 import { extractUser } from "../../extractors/extractUser";
 import { Influx } from "../../influx/Influx";
+import { listContestsWithVisibleProblems, listVisibleContests } from "../../lib/visibility";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
 import { fillIfEmpty, getWindowFromRange } from "../../utils/stats";
@@ -114,5 +117,35 @@ StatsHandler.get(
         );
     }
 );
+
+StatsHandler.get("/overview", async (req, res) => {
+    const user = await extractUser(req);
+    const contests = await listVisibleContests(req);
+    const now = Date.now();
+
+    const problemContests = await listContestsWithVisibleProblems(req);
+    const problems = await Repositories.problems.select(["id"], {
+        contest_id: inArray(...problemContests.map((contest) => contest.id)),
+    });
+
+    const counts = await Repositories.submissions.countForUser(
+        user.id,
+        problems.map((problem) => problem.id)
+    );
+
+    const overview: DashboardOverview = {
+        contests: contests.length,
+        running_contests: contests.filter(
+            (contest) =>
+                contest.start_time.getTime() <= now &&
+                contest.start_time.getTime() + contest.duration_seconds * 1000 >= now
+        ).length,
+        upcoming_contests: contests.filter((contest) => contest.start_time.getTime() > now).length,
+        problems: problems.length,
+        ...counts,
+    };
+
+    respond(res, StatusCodes.OK, overview);
+});
 
 export { StatsHandler };

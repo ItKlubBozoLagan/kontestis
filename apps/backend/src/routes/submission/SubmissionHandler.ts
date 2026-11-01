@@ -3,7 +3,6 @@ import {
     ContestMemberPermissions,
     ExamFinalSubmission,
     hasAdminPermission,
-    hasContestPermission,
     Submission,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
@@ -13,7 +12,6 @@ import { StatusCodes } from "http-status-codes";
 import { SafeError } from "../../errors/SafeError";
 import { extractClusterSubmission } from "../../extractors/extractClusterSubmission";
 import { extractContest } from "../../extractors/extractContest";
-import { extractContestMember } from "../../extractors/extractContestMember";
 import { extractFinalSubmission } from "../../extractors/extractFinalSubmission";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
 import { extractOptionalUser } from "../../extractors/extractOptionalUser";
@@ -27,7 +25,10 @@ import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
-import { mustHaveContestPermission } from "../../preconditions/hasPermission";
+import {
+    hasContestPermission as requestHasContestPermission,
+    mustHaveContestPermission,
+} from "../../preconditions/hasPermission";
 import { Redis } from "../../redis/Redis";
 import { RedisKeys } from "../../redis/RedisKeys";
 import { Repositories } from "../../repositories/Repositories";
@@ -256,6 +257,19 @@ SubmissionHandler.patch(
     }
 );
 
+// final submissions of every participant, for the exam results overview
+SubmissionHandler.get("/final/contest/:contest_id", async (req, res) => {
+    const contest = await extractContest(req);
+
+    await mustHaveContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contest.id);
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        await Repositories.exam_final_submissions.selectForContest(contest.id)
+    );
+});
+
 SubmissionHandler.get("/final/:final_submission_id", async (req, res) => {
     const finalSubmission = await extractFinalSubmission(req);
 
@@ -278,19 +292,18 @@ SubmissionHandler.get(
 
         const targetId = BigInt(req.query.user_id);
 
-        if (user.id !== targetId) {
-            const member = await extractContestMember(req, contest.id);
-
-            if (
-                !hasContestPermission(
-                    member.contest_permissions,
-                    ContestMemberPermissions.VIEW_PRIVATE,
-                    user.permissions
-                ) &&
-                !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
-            )
-                throw new SafeError(StatusCodes.FORBIDDEN);
-        }
+        // staff may not be contest members themselves (organisation or site admins),
+        //  so the shared precondition is used instead of the member's own permissions
+        if (
+            user.id !== targetId &&
+            !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST) &&
+            !(await requestHasContestPermission(
+                req,
+                ContestMemberPermissions.VIEW_PRIVATE,
+                contest.id
+            ))
+        )
+            throw new SafeError(StatusCodes.FORBIDDEN);
 
         return respond(
             res,
@@ -361,6 +374,17 @@ SubmissionHandler.get("/:submission_id", async (req, res) => {
     const submission = await extractSubmission(req);
 
     return respond(res, StatusCodes.OK, submission);
+});
+
+// cluster results with nested testcase results in a single query
+SubmissionHandler.get("/:submission_id/details", async (req, res) => {
+    const submission = await extractSubmission(req);
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        await Repositories.submissions.selectDetails(submission.id)
+    );
 });
 
 SubmissionHandler.get("/cluster/:submission_id", async (req, res) => {

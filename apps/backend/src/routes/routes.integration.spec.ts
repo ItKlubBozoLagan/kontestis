@@ -21,6 +21,7 @@ const routes: RouteCase[] = [
     ["get", "/api/auth/info"],
     ["get", "/api/auth/info/1"],
     ["get", "/api/auth/"],
+    ["get", "/api/auth/users?search=a&limit=5&offset=0&sort=name"],
     ["patch", "/api/auth/1"],
     ["get", "/api/auth/aai-edu/url"],
     ["post", "/api/auth/aai-edu/token"],
@@ -30,6 +31,7 @@ const routes: RouteCase[] = [
     ["post", "/api/auth/temporary/login"],
     ["post", "/api/auth/temporary/bulk-create"],
     ["get", "/api/organisation/"],
+    ["get", "/api/organisation/overview"],
     ["get", "/api/organisation/members/self"],
     ["get", "/api/organisation/1"],
     ["post", "/api/organisation/"],
@@ -45,6 +47,7 @@ const routes: RouteCase[] = [
     ["patch", "/api/contest/1/join"],
     ["patch", "/api/contest/1"],
     ["get", "/api/contest/"],
+    ["get", "/api/contest/all"],
     ["get", "/api/contest/1/export/1"],
     ["get", "/api/contest/members/self"],
     ["get", "/api/contest/1/leaderboard"],
@@ -68,6 +71,7 @@ const routes: RouteCase[] = [
     ["delete", "/api/problem/1"],
     ["patch", "/api/problem/1"],
     ["get", "/api/problem/?contest_id=1"],
+    ["get", "/api/problem/summaries"],
     ["get", "/api/problem/scores"],
     ["get", "/api/problem/score/1"],
     ["get", "/api/problem/1"],
@@ -99,10 +103,12 @@ const routes: RouteCase[] = [
     ["get", "/api/submission/by-problem-all/1"],
     ["post", "/api/submission/final/1"],
     ["patch", "/api/submission/final/1"],
+    ["get", "/api/submission/final/contest/1"],
     ["get", "/api/submission/final/1"],
     ["get", "/api/submission/final/?user_id=1&contest_id=1"],
     ["get", "/api/submission/by-problem/1"],
     ["get", "/api/submission/1"],
+    ["get", "/api/submission/1/details"],
     ["get", "/api/submission/cluster/1"],
     ["get", "/api/submission/testcase/1"],
     ["get", "/api/submission/files/1/1"],
@@ -112,6 +118,7 @@ const routes: RouteCase[] = [
     ["get", "/api/stats/admin/logins?range=30d"],
     ["get", "/api/stats/admin/activity?range=30d"],
     ["get", "/api/stats/admin/metrics/"],
+    ["get", "/api/stats/overview"],
     ["get", "/api/notifications/"],
     ["post", "/api/notifications/sendMail"],
     ["get", "/api/notifications/mail/modify/not-a-code/all/"],
@@ -178,8 +185,54 @@ describe("HTTP route contract matrix", () => {
         }
     });
 
+    it("searches and paginates users for an administrator", async () => {
+        const adminId = 900_000_000_000_000_011n;
+        const userIds = [900_000_000_000_000_012n, 900_000_000_000_000_013n];
+
+        try {
+            await Database.insertInto("users", {
+                id: adminId,
+                email: "pr-web-admin@example.com",
+                full_name: "Web Search Administrator",
+                permissions: grantPermission(EMPTY_PERMISSIONS, AdminPermissions.VIEW_USER),
+                picture_url: "",
+            });
+
+            for (const [index, id] of userIds.entries())
+                await Database.insertInto("users", {
+                    id,
+                    email: `pr-web-zz-search-${index}@example.com`,
+                    full_name: `Zz Web Search ${index}`,
+                    permissions: EMPTY_PERMISSIONS,
+                    picture_url: "",
+                });
+
+            const authorization = `Bearer ${generateJwt(adminId, "managed", {})}`;
+            const firstPage = await request(server)
+                .get("/api/auth/users?search=pr-web-zz-search&limit=1&offset=0&sort=email")
+                .set("Authorization", authorization);
+
+            expect(firstPage.status).toBe(200);
+
+            const parsed = superjson.parse<{ items: { id: bigint }[]; total: number }>(
+                firstPage.body.data
+            );
+
+            expect(parsed.total).toBe(2);
+            expect(parsed.items.map((it) => it.id)).toEqual([userIds[0]]);
+
+            const forbidden = await request(server)
+                .get("/api/auth/users")
+                .set("Authorization", `Bearer ${generateJwt(userIds[0], "managed", {})}`);
+
+            expect(forbidden.status).toBe(403);
+        } finally {
+            for (const id of [adminId, ...userIds]) await Database.deleteFrom("users", "*", { id });
+        }
+    });
+
     it("covers every registered backend route", () => {
-        expect(routes).toHaveLength(100);
+        expect(routes).toHaveLength(107);
     });
 
     it.each(routes)("%s %s is reachable without an internal error", async (method, path) => {
