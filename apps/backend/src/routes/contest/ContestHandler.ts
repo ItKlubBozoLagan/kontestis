@@ -19,8 +19,8 @@ import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
-import { extractOptionalUser } from "../../extractors/extractOptionalUser";
 import {
+    DEFAULT_ORGANISATION,
     extractCurrentOrganisation,
     extractOrganisation,
 } from "../../extractors/extractOrganisation";
@@ -28,10 +28,12 @@ import { extractUser } from "../../extractors/extractUser";
 import { isContestOver, isContestRunning, pushContestNotifications } from "../../lib/contest";
 import { generateDocument } from "../../lib/document";
 import { generateSnowflake } from "../../lib/snowflake";
+import { listVisibleContests } from "../../lib/visibility";
 import { useValidation } from "../../middlewares/useValidation";
 import {
     hasContestPermission as requestHasContestPermission,
     hasOrganisationPermission,
+    mustHaveAdminPermission,
     mustHaveContestPermission,
     mustHaveCurrentOrganisationPermission,
 } from "../../preconditions/hasPermission";
@@ -337,59 +339,30 @@ ContestHandler.patch("/:contest_id", useValidation(ContestSchema), async (req, r
     respond(res, StatusCodes.OK);
 });
 
-const getContestsForTemporaryUser = async (userId: bigint): Promise<Contest[]> => {
-    const contests = await Repositories.contests.selectForTemporaryUser(userId);
-
-    return contests.flatMap(({ member_contest_permissions: permissions, ...contest }) =>
-        permissions !== null && hasContestPermission(permissions, ContestMemberPermissions.VIEW)
-            ? [contest]
-            : []
-    );
-};
-
 ContestHandler.get("/", async (req, res) => {
-    const optionalUser = await extractOptionalUser(req);
+    // includes `registered` and `permissions` of the requester, so clients don't need to join
+    //  with /contest/members/self themselves
+    return respond(res, StatusCodes.OK, await listVisibleContests(req));
+});
 
-    if (optionalUser?.is_temporary) {
-        return respond(res, StatusCodes.OK, await getContestsForTemporaryUser(optionalUser.id));
-    }
+ContestHandler.get("/all", async (req, res) => {
+    await mustHaveAdminPermission(req, AdminPermissions.VIEW_CONTEST);
 
-    const organisation = await extractCurrentOrganisation(req);
-
-    const contests = await Repositories.contests.selectForOrganisationWithMembership(
-        organisation.id,
-        optionalUser?.id
-    );
-
-    const hasViewContestsPermission = await hasOrganisationPermission(
-        req,
-        OrganisationPermissions.VIEW_CONTEST,
-        organisation.id
-    );
-
-    const isEduUser = optionalUser?.is_edu ?? false;
-
-    const isContestVisible = (contest: (typeof contests)[number]): boolean => {
-        if (hasViewContestsPermission) return true;
-
-        if (contest.public && contest.require_edu_verification && isEduUser) return true;
-
-        if (contest.public && !contest.require_edu_verification) return true;
-
-        return (
-            contest.member_contest_permissions !== null &&
-            hasContestPermission(contest.member_contest_permissions, ContestMemberPermissions.VIEW)
-        );
-    };
+    const contests = await Repositories.contests.selectAllWithStats();
 
     return respond(
         res,
         StatusCodes.OK,
-        contests
-            .filter(isContestVisible)
-            .map(({ member_contest_permissions: _, ...contest }) => contest)
+        contests.map((contest) => ({
+            ...contest,
+            organisation_name:
+                contest.organisation_id === DEFAULT_ORGANISATION.id
+                    ? DEFAULT_ORGANISATION.name
+                    : contest.organisation_name,
+        }))
     );
 });
+
 ContestHandler.get("/:contest_id/export/:user_id", async (req, res) => {
     const contest = await extractContest(req);
 
