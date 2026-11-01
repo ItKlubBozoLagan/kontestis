@@ -24,10 +24,10 @@ import { ScoreBadge } from "@/components/badges/ScoreBadge";
 import { VerdictBadge } from "@/components/badges/VerdictBadge";
 import { DataTable } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/button";
-import { snowflakeTime } from "@/features/submissions/snowflake";
 import { useNow } from "@/hooks/useNow";
 import { contestPhase } from "@/lib/contest";
 import { formatDateTime } from "@/lib/format";
+import { snowflakeTime } from "@/lib/snowflake";
 
 type Row = {
     id: bigint;

@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { decodeBase64Utf8 } from "@/features/management/shared/base64";
+import { decodeBase64 } from "@/lib/base64";
 
 const ansi = new AnsiToHtml({ escapeXML: true, newline: true });
 
@@ -102,7 +102,7 @@ export const FinalSubmissionReviewPage = () => {
     );
     const { data: problem } = useSuspenseQuery(problemQueries.detail(submission.problem_id));
 
-    const code = useMemo(() => decodeBase64Utf8(submission.code), [submission.code]);
+    const code = useMemo(() => decodeBase64(submission.code), [submission.code]);
     const compilerOutput = submission.compiler_output;
 
     return (

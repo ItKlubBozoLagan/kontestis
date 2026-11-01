@@ -46,6 +46,7 @@ export const CreateOrganisationDialog = () => {
             onError: (error: HttpError) => {
                 if (error.status === 409)
                     form.setError("name", { message: t("organisations.create.conflict") });
+                else toast.error(error.message || t("errors.generic"));
             },
         })
     );

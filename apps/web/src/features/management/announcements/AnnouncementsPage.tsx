@@ -10,10 +10,10 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { Section } from "@/components/common/Section";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { snowflakeDate } from "@/features/management/shared/snowflake";
 import { useManagedContest } from "@/features/management/useManagedContest";
 import { useContestAccess } from "@/hooks/useContestAccess";
 import { formatDateTime } from "@/lib/format";
+import { snowflakeTime } from "@/lib/snowflake";
 
 export const AnnouncementsPage = () => {
     const { t } = useTranslation();
@@ -77,7 +77,7 @@ export const AnnouncementsPage = () => {
                                 className="bg-muted/40 rounded-md border p-3"
                             >
                                 <time className="text-muted-foreground text-xs">
-                                    {formatDateTime(snowflakeDate(announcement.id))}
+                                    {formatDateTime(snowflakeTime(announcement.id))}
                                 </time>
                                 <p className="mt-1 text-sm whitespace-pre-line">
                                     {announcement.message}

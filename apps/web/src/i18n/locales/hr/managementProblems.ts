@@ -53,6 +53,7 @@ export const managementProblems: Translation<typeof en> = {
         tags: "Oznake",
         tagsPlaceholder: "Upiši oznaku i pritisni Enter",
         tagsHint: "Oznake oblika *1400 označavaju težinu.",
+        removeTag: "Ukloni oznaku {{tag}}",
         create: "Postavi zadatak",
         save: "Spremi promjene",
         created: "Zadatak postavljen",

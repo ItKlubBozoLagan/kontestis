@@ -21,8 +21,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { encodeBase64 } from "@/features/submissions/base64";
 import { useNow } from "@/hooks/useNow";
+import { encodeBase64 } from "@/lib/base64";
 import { contestPhase } from "@/lib/contest";
 
 const SOURCE_LIMIT = 64_000;
