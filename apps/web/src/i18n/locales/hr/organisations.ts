@@ -1,0 +1,68 @@
+import type { Translation } from "../../types";
+import type { organisations as en } from "../en/organisations";
+
+export const organisations: Translation<typeof en> = {
+    select: {
+        title: "Organizacije",
+        description: "Odaberi organizaciju u kojoj želiš raditi.",
+        create: "Napravi organizaciju",
+        yours: "Organizacije kojih si član",
+        all: "Sve organizacije",
+        logout: "Odjava",
+        open: "Otvori",
+        manage: "Upravljaj",
+        columns: {
+            name: "Ime",
+            details: "Detalji",
+        },
+        default: "Zadana",
+    },
+    create: {
+        title: "Stvori novu organizaciju",
+        description: "Postat ćeš vlasnik i administrator organizacije.",
+        name: "Ime",
+        submit: "Stvori",
+        created: "Organizacija stvorena",
+        conflict: "Organizacija s tim imenom već postoji",
+    },
+    manage: {
+        back: "Nazad",
+        title: "Organizacija » {{name}}",
+        info: {
+            title: "Info",
+            name: "Ime",
+            rename: "Preimenuj",
+            renamed: "Organizacija preimenovana",
+            conflict: "Organizacija s tim imenom već postoji",
+            id: "ID",
+            members: "Članovi",
+        },
+        members: {
+            title: "Članovi",
+            add: "Dodaj člana",
+            addPlaceholder: "primjer@skole.hr",
+            added: "Član dodan",
+            addFailed: "Korisnik ne postoji ili je već učlanjen",
+            columns: {
+                name: "Ime",
+                domain: "Domena e-pošte",
+                elo: "Elo",
+                role: "Uloga",
+            },
+            owner: "Vlasnik",
+            orgAdmin: "Admin org.",
+            you: "Ti",
+            editPermissions: "Dozvole",
+            editElo: "Uredi elo",
+            eloTitle: "Uredi elo",
+            eloDescription: "Promijeni elo korisnika {{name}} u organizaciji.",
+            elo: "Elo",
+            saved: "Član ažuriran",
+            remove: "Ukloni",
+            removeTitle: "Ukloniti korisnika {{name}}?",
+            removeDescription: "Izgubit će pristup privatnim natjecanjima organizacije.",
+            removed: "Član uklonjen",
+            search: "Pretraži članove…",
+        },
+    },
+};

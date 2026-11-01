@@ -1,0 +1,66 @@
+export const problems = {
+    page: {
+        title: "Problems",
+        description: "Every problem from contests you can see in this organisation.",
+    },
+    table: {
+        name: "Name",
+        contest: "Contest",
+        added: "Added",
+        score: "Score",
+        attempts: "Attempts",
+        tags: "Tags",
+        noTags: "None",
+    },
+    filters: {
+        all: "All",
+        solved: "Solved",
+        unsolved: "Unsolved",
+        unattempted: "Not attempted",
+        tag: "Tag",
+        anyTag: "Any tag",
+    },
+    stats: {
+        total: "Problems",
+        solved: "Solved",
+        attempted: "Attempted",
+        points: "Points",
+    },
+    individual: {
+        backToContest: "Back to contest",
+        statement: "Statement",
+        limits: {
+            title: "Limits",
+            time: "Time",
+            memory: "Memory",
+            sourceSize: "Source size",
+            points: "Points",
+            variant: "Evaluation",
+        },
+        bestScore: "Your best",
+        submit: {
+            title: "Submit",
+            language: "Language",
+            code: "Code",
+            output: "Output",
+            uploadFile: "Upload file",
+            submit: "Submit",
+            submitted: "Submitted! Evaluating your solution…",
+            empty: "Write or upload some code first.",
+            tooLarge: "Your source is larger than the 64 KiB limit.",
+            draftRestored: "Draft restored",
+            clear: "Clear",
+            outputOnlyHint:
+                "This is an output-only problem: submit the output itself, not a program.",
+            finishedHint:
+                "This contest has finished — submissions are still evaluated but don't count.",
+            upcomingHint: "The contest hasn't started yet.",
+            latest: "Latest submissions",
+            shortcut: "Ctrl + Enter to submit",
+        },
+        submissions: {
+            mine: "Your submissions",
+            all: "All submissions",
+        },
+    },
+};

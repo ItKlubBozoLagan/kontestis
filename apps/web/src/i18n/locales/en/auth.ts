@@ -1,0 +1,51 @@
+export const auth = {
+    login: {
+        title: "Log in",
+        subtitle: "Welcome back to Kontestis",
+        withEmail: "Log in with email",
+        withSso: "Log in with SSO",
+        or: "or",
+        submit: "Log in",
+        noAccount: "Don't have an account?",
+        register: "Register",
+        temporary: "Log in as a temporary user",
+        registered: "Registered successfully! Verify your email before logging in.",
+        confirmed: "Email confirmed, you can log in now!",
+        verificationResent: "Email not verified! We sent you a new confirmation link.",
+        errors: {
+            invalid: "Invalid email or password",
+            captcha: "Captcha failed!",
+            unverified: "Email not verified, check your inbox.",
+            generic: "Something went wrong",
+            captchaUnavailable: "Failed to load captcha",
+        },
+    },
+    register: {
+        title: "Register",
+        subtitle: "Create a Kontestis account",
+        fullName: "Full name",
+        submit: "Create account",
+        haveAccount: "Already have an account?",
+        login: "Log in",
+        errors: {
+            conflict: "Email already in use",
+        },
+    },
+    temporary: {
+        title: "Temporary user login",
+        subtitle: "Use the credentials you received from your contest organiser.",
+        username: "Username",
+        back: "Back to main login",
+        invalid: "Invalid username or password",
+    },
+    aai: {
+        linking: "Linking your AAI@EduHr account…",
+        loggingIn: "Logging in with AAI@EduHr…",
+        failed: "AAI@EduHr authentication failed.",
+        link: "Link",
+    },
+    fields: {
+        email: "Email",
+        password: "Password",
+    },
+};
