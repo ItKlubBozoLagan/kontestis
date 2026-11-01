@@ -50,6 +50,7 @@ export const managementProblems = {
         tags: "Tags",
         tagsPlaceholder: "Add a tag and press Enter",
         tagsHint: "Use *1400 style tags to mark difficulty.",
+        removeTag: "Remove tag {{tag}}",
         create: "Create problem",
         save: "Save changes",
         created: "Problem created",

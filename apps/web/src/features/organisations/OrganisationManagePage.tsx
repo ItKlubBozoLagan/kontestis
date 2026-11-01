@@ -73,6 +73,7 @@ const InfoSection = ({
             onError: (error: HttpError) => {
                 if (error.status === 409)
                     form.setError("name", { message: t("organisations.manage.info.conflict") });
+                else toast.error(error.message || t("errors.generic"));
             },
         })
     );

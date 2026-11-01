@@ -29,13 +29,13 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Section } from "@/components/common/Section";
 import { StatCard } from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
-import { decodeBase64 } from "@/features/submissions/base64";
 import { ClusterResults } from "@/features/submissions/ClusterResults";
-import { snowflakeTime } from "@/features/submissions/snowflake";
 import { useContestAccess } from "@/hooks/useContestAccess";
 import { useNow } from "@/hooks/useNow";
+import { decodeBase64 } from "@/lib/base64";
 import { contestPhase } from "@/lib/contest";
 import { formatDateTime } from "@/lib/format";
+import { snowflakeTime } from "@/lib/snowflake";
 
 const ansi = new Convert({ escapeXML: true, newline: false });
 

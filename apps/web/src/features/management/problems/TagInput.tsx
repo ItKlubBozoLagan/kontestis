@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { TagBadge } from "@/components/badges/TagBadge";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ export const TagInput = ({
     onChange: (tags: string[]) => void;
     placeholder?: string;
 }) => {
+    const { t } = useTranslation();
     const [draft, setDraft] = useState("");
 
     const add = () => {
@@ -32,7 +34,7 @@ export const TagInput = ({
                             <TagBadge tag={tag} />
                             <button
                                 type="button"
-                                aria-label={`remove ${tag}`}
+                                aria-label={t("managementProblems.form.removeTag", { tag })}
                                 className="text-muted-foreground hover:text-destructive"
                                 onClick={() => onChange(value.filter((it) => it !== tag))}
                             >
