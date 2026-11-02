@@ -96,9 +96,10 @@ The restored production snapshot contains a small number of legacy orphan rows a
 ## Staging deployment
 
 Staging runs as deployment `kontestis-staging` in namespace `kontestis-staging`.
-The staging workflow uses the dedicated `KUBE_CONFIG_STAGING` GitHub secret, deploys
-an immutable image digest, and waits for rollout completion. The production workflow
-and its `KUBE_CONFIG` secret are independent.
+It is deployed by `.github/workflows/backend-deploy.yml` on pushes to `dev`; the same
+workflow deploys `main` to deployment `kontestis` in namespace `kontestis-production`.
+Both targets use the `KUBE_CONFIG` GitHub secret, deploy an immutable image digest, and
+wait for rollout completion.
 
 Before merging the PostgreSQL cutover into `dev`:
 
