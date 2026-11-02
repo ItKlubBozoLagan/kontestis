@@ -439,12 +439,10 @@ export const beginEvaluation = async (
                   0
               );
 
-        // results are index-aligned with clusters; a sample cluster that failed to evaluate
-        //  (undefined result) counts as not passed
-        const samplesPassed = clusters.every(
-            (cluster, index) =>
-                !cluster.is_sample || clusterSubmissions[index]?.verdict === "accepted"
-        );
+        const samplesPassed =
+            clusterSubmissions
+                .filter((cs) => clusters.find((c) => c.id === cs?.cluster_id)?.is_sample)
+                .every((cs) => cs?.verdict === "accepted") ?? false;
 
         const newSubmission: Submission = {
             ...pendingSubmission,
