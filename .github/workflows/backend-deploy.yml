@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - main
+            - dev
         paths:
             - "apps/backend/**"
             - "packages/**"
@@ -11,10 +12,28 @@ on:
             - ".github/workflows/backend-deploy.yml"
             - ".deploy/backend.dockerfile"
 
+# main deploys production, dev deploys staging
+env:
+    IMAGE: ghcr.io/itklubbozolagan/kontestis-backend
+    IMAGE_TAG: ${{ github.ref_name == 'main' && 'latest' || 'dev' }}
+    NAMESPACE: ${{ github.ref_name == 'main' && 'kontestis-production' || 'kontestis-staging' }}
+    DEPLOYMENT: ${{ github.ref_name == 'main' && 'kontestis' || 'kontestis-staging' }}
+    CONTAINER: backend
+
+concurrency:
+    group: backend-deploy-${{ github.ref_name }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+    packages: write
+
 jobs:
     build:
         name: "🐳 Build"
         runs-on: ubuntu-latest
+        outputs:
+            digest: ${{ steps.docker_build.outputs.digest }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
@@ -37,7 +56,7 @@ jobs:
                   context: .
                   platforms: linux/amd64
                   file: .deploy/backend.dockerfile
-                  tags: ghcr.io/itklubbozolagan/kontestis-backend:latest
+                  tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
     release:
         name: "🚚 Release"
         runs-on: ubuntu-latest
@@ -47,7 +66,16 @@ jobs:
               uses: azure/setup-kubectl@v3
 
             - name: "Copy kubernetes config"
-              run: "mkdir ~/.kube && echo '${{ secrets.KUBE_CONFIG }}' | base64 -d > ~/.kube/config && KUBECONFIG=~/.kube/config"
+              env:
+                  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+              run: |
+                  install -m 700 -d ~/.kube
+                  printf '%s' "$KUBE_CONFIG" | base64 -d > ~/.kube/config
+                  chmod 600 ~/.kube/config
 
             - name: "Rollout an application update"
-              run: "kubectl rollout restart deployment kontestis -n kontestis"
+              env:
+                  IMAGE_DIGEST: ${{ needs.build.outputs.digest }}
+              run: |
+                  kubectl -n "$NAMESPACE" set image "deployment/$DEPLOYMENT" "$CONTAINER=$IMAGE@$IMAGE_DIGEST"
+                  kubectl -n "$NAMESPACE" rollout status "deployment/$DEPLOYMENT" --timeout=300s
