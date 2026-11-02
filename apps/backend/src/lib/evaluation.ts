@@ -280,34 +280,40 @@ const evaluateCluster = async (
         ),
     };
 
-    await Database.insertInto("cluster_submissions", clusterSubmission);
+    // the cluster row and its testcase rows are stored together, so a failure part way
+    //  can't leave a partial cluster attached to a submission that ends as evaluation_error
+    await Database.withTransaction(async (client) => {
+        await Database.insertInto("cluster_submissions", clusterSubmission, client);
 
-    await Promise.all(
-        results.map((result) => {
+        for (const result of results) {
             const testcase = testCasesById[result.testCaseId];
             const submissionOutputFile =
                 result.type === "success" && result.output
                     ? `${pendingSubmission.id}/${cluster.id}/${result.testCaseId}.sout`
                     : undefined;
 
-            return Database.insertInto("testcase_submissions", {
-                id: generateSnowflake(),
-                testcase_id: BigInt(result.testCaseId),
-                cluster_submission_id: clusterSubmission.id,
-                verdict: result.verdict,
-                awarded_score:
-                    testCaseScores.find((it) => it.testCaseId.toString() === result.testCaseId)
-                        ?.score ?? 0,
-                memory_used_megabytes: toStoredMetric(
-                    result.type === "success" ? result.memory : 0
-                ),
-                time_used_millis: toStoredMetric(result.type === "success" ? result.time : 0),
-                input_file: testcase?.input_file,
-                output_file: testcase?.output_file,
-                submission_output_file: submissionOutputFile,
-            });
-        })
-    );
+            await Database.insertInto(
+                "testcase_submissions",
+                {
+                    id: generateSnowflake(),
+                    testcase_id: BigInt(result.testCaseId),
+                    cluster_submission_id: clusterSubmission.id,
+                    verdict: result.verdict,
+                    awarded_score:
+                        testCaseScores.find((it) => it.testCaseId.toString() === result.testCaseId)
+                            ?.score ?? 0,
+                    memory_used_megabytes: toStoredMetric(
+                        result.type === "success" ? result.memory : 0
+                    ),
+                    time_used_millis: toStoredMetric(result.type === "success" ? result.time : 0),
+                    input_file: testcase?.input_file,
+                    output_file: testcase?.output_file,
+                    submission_output_file: submissionOutputFile,
+                },
+                client
+            );
+        }
+    });
 
     return {
         ...clusterSubmission,
@@ -433,10 +439,12 @@ export const beginEvaluation = async (
                   0
               );
 
-        const samplesPassed =
-            clusterSubmissions
-                .filter((cs) => clusters.find((c) => c.id === cs?.cluster_id)?.is_sample)
-                .every((cs) => cs?.verdict === "accepted") ?? false;
+        // results are index-aligned with clusters; a sample cluster that failed to evaluate
+        //  (undefined result) counts as not passed
+        const samplesPassed = clusters.every(
+            (cluster, index) =>
+                !cluster.is_sample || clusterSubmissions[index]?.verdict === "accepted"
+        );
 
         const newSubmission: Submission = {
             ...pendingSubmission,
