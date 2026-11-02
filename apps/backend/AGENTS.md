@@ -80,10 +80,14 @@ For backend-only changes run:
 
 ```sh
 pnpm --filter @kontestis/backend typecheck
+pnpm --filter @kontestis/backend test
 pnpm lint
 ```
 
-There is no backend test suite. Manually exercise changed endpoints with Scylla/Redis and any
+`jest.globalSetup.mjs` starts a throwaway embedded PostgreSQL for the tests when `DATABASE_URL` is
+unset (CI sets it to a service container). The tests cover routing and the PostgreSQL migration
+runner, not the Scylla, Redis, S3, or evaluator integrations. Manually exercise changed endpoints
+with Scylla/Redis and any
 relevant S3, Influx, or evaluator service running. Remember that the server can log a dependency
 panic and still reach its final `Promise.allSettled` startup path, so a listening port alone does not
 prove all integrations initialized correctly.

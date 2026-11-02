@@ -5,4 +5,6 @@ module.exports = {
     testEnvironment: "node",
     testMatch: ["**/*.spec.ts"],
     modulePathIgnorePatterns: ["<rootDir>/node_modules"],
+    globalSetup: "<rootDir>/jest.globalSetup.mjs",
+    globalTeardown: "<rootDir>/jest.globalTeardown.mjs",
 };
