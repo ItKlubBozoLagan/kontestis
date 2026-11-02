@@ -17,6 +17,9 @@ import { Logger } from "./lib/logger";
 const GlobalConfig = {
     rootDirFiles: ["pnpm-workspace.yaml", "pnpm-workspace.yml"],
     maxRootSearchDepth: 4,
+    // packages that deliberately track newer major versions than the rest of the workspace
+    //  (the React 19 rewrite of the frontend); they are not compared against other packages
+    independentPackages: ["@kontestis/web"],
 };
 
 const PNPMWorkspaceSchema = z.object({
@@ -209,10 +212,12 @@ const start = performance.now();
 
     // formatted as array of { packageJsonPath: string, dependencies: ..., devDependencies: ... }
     //  will be indexing the array later, hence it is the array and not the object
-    const dependencyArray = parsedPackageJsons.map(([file, parsed]) => ({
-        packageJsonPath: file,
-        ...parsed.data,
-    }));
+    const dependencyArray = parsedPackageJsons
+        .filter(([, parsed]) => !GlobalConfig.independentPackages.includes(parsed.data.name ?? ""))
+        .map(([file, parsed]) => ({
+            packageJsonPath: file,
+            ...parsed.data,
+        }));
 
     const ambiguousDependencies: Record<string, DependencyVersionInfo[]> = {};
 

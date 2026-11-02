@@ -16,7 +16,7 @@ import { DEFAULT_ORGANISATION, extractOrganisation } from "../../extractors/extr
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
-import { Repositories } from "../../repositories/Repositories";
+import { OrganisationOverviews, Repositories } from "../../repositories/Repositories";
 import { respond } from "../../utils/response";
 import OrganisationMemberHandler from "./OrganisationMemberHandler";
 
@@ -41,6 +41,15 @@ OrganisationHandler.get("/", async (req, res) => {
         DEFAULT_ORGANISATION,
         ...(await Repositories.organisations.selectForUser(user.id)),
     ]);
+});
+
+OrganisationHandler.get("/overview", async (req, res) => {
+    const user = await extractUser(req);
+
+    if (!hasAdminPermission(user.permissions, AdminPermissions.VIEW_ORGANISATIONS))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    return respond(res, StatusCodes.OK, await OrganisationOverviews.selectOverview());
 });
 
 OrganisationHandler.get("/members/self", async (req, res) => {
