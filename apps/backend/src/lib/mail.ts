@@ -59,6 +59,10 @@ export const sendMail = async (
     debugMode: boolean = true
 ) => {
     subject = subject.replaceAll("{user}", user.full_name);
+    // The template is admin-authored HTML (endpoint is admin-only), so it is trusted;
+    // only the user-controlled name substituted into it needs escaping.
+    const htmlBody = text.replaceAll("{user}", escapeHtml(user.full_name));
+
     text = text.replaceAll("{user}", user.full_name);
 
     const response = await transporter.sendMail({
@@ -86,7 +90,7 @@ export const sendMail = async (
             </p>
             <br/>
             <div>
-              <p>${escapeHtml(text).replaceAll("\n", "<br/>")}</p>
+              <p>${htmlBody.replaceAll("\n", "<br/>")}</p>
             </div>
         `,
     });
