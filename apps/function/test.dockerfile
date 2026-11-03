@@ -1,4 +1,4 @@
-FROM node:hydrogen
+FROM node:26
 
 RUN apt update -y && apt install -y iputils-ping iptables net-tools
 

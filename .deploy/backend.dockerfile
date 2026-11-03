@@ -1,4 +1,4 @@
-FROM node:hydrogen-alpine AS workspace
+FROM node:26-alpine AS workspace
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN pnpm --filter=@kontestis/backend... install --frozen-lockfile
 
 RUN pnpm --filter=@kontestis/backend deploy pruned
 
-FROM node:hydrogen-alpine
+FROM node:26-alpine
 
 WORKDIR /app
 
