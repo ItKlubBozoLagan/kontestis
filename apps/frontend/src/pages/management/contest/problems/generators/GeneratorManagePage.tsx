@@ -1,4 +1,4 @@
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiEdit, FiPlus, FiTrash2 } from "react-icons/all";
 import { useParams } from "react-router";
@@ -27,7 +27,7 @@ export const GeneratorManagePage: FC = () => {
     const { problemId } = useParams<Properties>();
     const { data: problem } = useProblem(BigInt(problemId ?? 0));
     const { data: generators } = useAllGenerators([BigInt(problemId ?? 0)]);
-    const { member } = useContestContext();
+    const { contest, member } = useContestContext();
     const { mutate: deleteGenerator } = useDeleteGenerator(BigInt(problemId ?? 0));
     const [modalOpen, setModalOpen] = useState(false);
 
@@ -42,9 +42,9 @@ export const GeneratorManagePage: FC = () => {
             <div tw={"w-full flex justify-between items-center"}>
                 <h2 tw={"text-2xl font-bold"}>Generators for {problem?.title}</h2>
                 <CanContestMember
+                    contest={contest}
                     member={member}
                     permission={ContestMemberPermissions.EDIT}
-                    adminPermission={AdminPermissions.EDIT_CONTEST}
                 >
                     <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
                         Create Generator
@@ -89,9 +89,9 @@ export const GeneratorManagePage: FC = () => {
                                             <SimpleButton prependIcon={FiEdit}>Edit</SimpleButton>
                                         </Link>
                                         <CanContestMember
+                                            contest={contest}
                                             member={member}
                                             permission={ContestMemberPermissions.EDIT}
-                                            adminPermission={AdminPermissions.EDIT_CONTEST}
                                         >
                                             <SimpleButton
                                                 prependIcon={FiTrash2}

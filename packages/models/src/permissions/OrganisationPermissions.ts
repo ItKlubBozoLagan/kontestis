@@ -1,4 +1,6 @@
-import { AdminPermissions } from "./AdminPermissions";
+import { hasPermission, PermissionData } from "permissio";
+
+import { AdminPermissions, hasAdminPermission } from "./AdminPermissions";
 
 export enum OrganisationPermissions {
     ADMIN,
@@ -37,3 +39,24 @@ export type OrganisationPermissionKeys = keyof typeof OrganisationPermissions;
 
 export const OrganisationPermissionNames = ((values = Object.keys(OrganisationPermissions)) =>
     values.slice(values.length / 2))() as OrganisationPermissionKeys[];
+
+export const hasOrganisationPermission = (
+    orgMemberPermissions: PermissionData | undefined,
+    permission: OrganisationPermissions,
+    adminPermissions?: PermissionData
+) => {
+    const permissionKey = OrganisationPermissions[permission] as OrganisationPermissionKeys;
+
+    if (
+        adminPermissions !== undefined &&
+        hasAdminPermission(adminPermissions, OrganisationToAdminPermissionMap[permissionKey])
+    )
+        return true;
+
+    if (orgMemberPermissions === undefined) return false;
+
+    return (
+        hasPermission(orgMemberPermissions, OrganisationPermissions.ADMIN) ||
+        hasPermission(orgMemberPermissions, permission)
+    );
+};

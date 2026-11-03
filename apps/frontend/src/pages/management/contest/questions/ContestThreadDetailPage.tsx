@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { FiArrowLeft } from "react-icons/all";
@@ -121,9 +121,9 @@ export const ContestThreadDetailPage: FC = () => {
                 </div>
             </div>
             <CanContestMember
+                contest={contest}
                 member={member}
                 permission={ContestMemberPermissions.ANSWER_QUESTIONS}
-                adminPermission={AdminPermissions.EDIT_CONTEST}
             >
                 <form onSubmit={onSubmit} tw={"flex flex-col gap-2"}>
                     <label tw={"text-sm pl-1"}>

@@ -1,4 +1,4 @@
-import { AdminPermissions, ContestMemberPermissions } from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useState } from "react";
 import { FiPlus } from "react-icons/all";
 
@@ -23,9 +23,9 @@ export const ContestProblemsPage: FC = () => {
     return (
         <div tw={"w-full flex flex-col items-end justify-center gap-4"}>
             <CanContestMember
+                contest={contest}
                 member={member}
                 permission={ContestMemberPermissions.EDIT}
-                adminPermission={AdminPermissions.EDIT_CONTEST}
             >
                 <SimpleButton prependIcon={FiPlus} onClick={() => setModalOpen(true)}>
                     {t("contests.management.individual.problems.createButton")}

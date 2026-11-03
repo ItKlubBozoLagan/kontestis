@@ -1,9 +1,4 @@
-import {
-    AdminPermissions,
-    ContestMemberPermissions,
-    hasAdminPermission,
-    hasContestPermission,
-} from "@kontestis/models";
+import { ContestMemberPermissions } from "@kontestis/models";
 import { FC, useEffect, useMemo } from "react";
 import {
     FiActivity,
@@ -20,9 +15,9 @@ import { SubRouteNavBar } from "../../../components/SubRouteNavBar";
 import { Translated } from "../../../components/Translated";
 import { ContestContext } from "../../../context/constestContext";
 import { useContest } from "../../../hooks/contest/useContest";
+import { useContestPermission } from "../../../hooks/contest/useContestPermission";
 import { useSelfContestMembers } from "../../../hooks/contest/useSelfContestMembers";
 import { useTranslation } from "../../../hooks/useTranslation";
-import { useAuthStore } from "../../../state/auth";
 
 type PathParameters = {
     contestId: string;
@@ -37,8 +32,6 @@ export const ContestManagementLayout: FC = () => {
         data: contest,
     } = useContest(BigInt(/\d+/g.test(contestId) ? contestId : "0"));
 
-    const { user } = useAuthStore();
-
     const {
         isSuccess: isMemberSuccess,
         isError: isMemberError,
@@ -50,6 +43,14 @@ export const ContestManagementLayout: FC = () => {
 
         navigate("..");
     }, [isError, navigate]);
+
+    const member = members?.find((it) => it.contest_id === contest?.id);
+
+    const canViewPrivate = useContestPermission(
+        ContestMemberPermissions.VIEW_PRIVATE,
+        isSuccess ? contest : undefined,
+        member
+    );
 
     const { t } = useTranslation();
 
@@ -91,17 +92,7 @@ export const ContestManagementLayout: FC = () => {
 
     if (!isSuccess || !isMemberSuccess) return <div>Loading...</div>;
 
-    const member = members.find((it) => it.contest_id === contest.id);
-
-    if (
-        (!member ||
-            !hasContestPermission(
-                member.contest_permissions,
-                ContestMemberPermissions.VIEW_PRIVATE
-            )) &&
-        !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST)
-    )
-        return <Navigate to={".."} />;
+    if (!canViewPrivate) return <Navigate to={".."} />;
 
     return (
         <div tw={"flex justify-center w-full"}>
