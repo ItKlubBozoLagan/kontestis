@@ -5,7 +5,7 @@ backend (`apps/backend`) and is not part of `docker-compose.yml`; run it next to
 
 ## Toolchain
 
-- Node `>=20.19` (Vite 8). The rest of the monorepo still targets Node 18 via `.nvmrc`.
+- Node `>=22.22.0` (React Router 8; Vite 8 also rejects Node 21 and 22.0–22.11). The rest of the monorepo still targets Node 18 via `.nvmrc`.
 - `pnpm --filter @kontestis/web dev` serves on <http://localhost:3100>.
 - `pnpm --filter @kontestis/web typecheck` and `pnpm --filter @kontestis/web build`.
 - Copy `.env.example` to `.env.local` (ignored). Without `VITE_CAPTCHA_SITE_KEY` the captcha is
