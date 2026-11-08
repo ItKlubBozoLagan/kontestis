@@ -4,7 +4,6 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { isTruthy } from "remeda";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractModifiableContest } from "../../extractors/extractModifiableContest";
@@ -13,6 +12,7 @@ import { extractProblem } from "../../extractors/extractProblem";
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { EvaluationLanguageSchema } from "../../utils/evaluation.schema";
 import { R } from "../../utils/remeda";
 import { respond } from "../../utils/response";
@@ -67,7 +67,7 @@ ProblemHandler.post("/:contest_id", useValidation(ProblemSchema), async (req, re
         legacy_evaluation: false,
     };
 
-    await Database.insertInto("problems", problem);
+    await Repositories.problems.insert(problem);
 
     return respond(res, StatusCodes.OK, problem);
 });
@@ -76,43 +76,43 @@ ProblemHandler.post("/:contest_id", useValidation(ProblemSchema), async (req, re
 ProblemHandler.delete("/:problem_id", async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
-    await Database.deleteFrom("problems", "*", { id: problem.id });
+    await Repositories.problems.delete("*", { id: problem.id });
 
-    const clusters = await Database.selectFrom("clusters", "*", {
+    const clusters = await Repositories.clusters.select("*", {
         problem_id: problem.id,
     });
 
-    await Database.deleteFrom("clusters", "*", { problem_id: problem.id });
+    await Repositories.clusters.delete("*", { problem_id: problem.id });
 
     await Promise.all(
         clusters.map((cluster) =>
-            Database.deleteFrom("testcases", "*", {
+            Repositories.testcases.delete("*", {
                 cluster_id: cluster.id,
             })
         )
     );
 
-    const submissions = await Database.selectFrom("submissions", "*", {
+    const submissions = await Repositories.submissions.select("*", {
         problem_id: problem.id,
     });
 
-    await Database.deleteFrom("submissions", "*", {
+    await Repositories.submissions.delete("*", {
         problem_id: problem.id,
     });
 
     await Promise.all(
         submissions.map(async (submission) => {
-            const clusterSubmissions = await Database.selectFrom("cluster_submissions", "*", {
+            const clusterSubmissions = await Repositories.cluster_submissions.select("*", {
                 submission_id: submission.id,
             });
 
-            await Database.deleteFrom("cluster_submissions", "*", {
+            await Repositories.cluster_submissions.delete("*", {
                 submission_id: submission.id,
             });
 
             await Promise.all(
                 clusterSubmissions.map((submission) =>
-                    Database.deleteFrom("testcase_submissions", "*", {
+                    Repositories.testcase_submissions.delete("*", {
                         cluster_submission_id: submission.id,
                     })
                 )
@@ -132,8 +132,7 @@ ProblemHandler.patch("/:problem_id", useValidation(ProblemSchema), async (req, r
     )
         throw new SafeError(StatusCodes.BAD_REQUEST);
 
-    await Database.update(
-        "problems",
+    await Repositories.problems.update(
         {
             title: req.body.title,
             description: req.body.description,
@@ -161,7 +160,7 @@ ProblemHandler.get("/", useValidation(GetSchema, { query: true }), async (req, r
 
     await extractContest(req, contestId);
 
-    const problems = await Database.selectFrom("problems", ["id"], {
+    const problems = await Repositories.problems.select(["id"], {
         contest_id: contestId,
     });
 
@@ -177,7 +176,7 @@ ProblemHandler.get("/", useValidation(GetSchema, { query: true }), async (req, r
         StatusCodes.OK,
         await Promise.all(
             allowedProblems.map(async (problem) => {
-                const clusters = await Database.selectFrom("clusters", "*", {
+                const clusters = await Repositories.clusters.select("*", {
                     problem_id: problem.id,
                 });
                 const score = clusters.reduce(
@@ -194,7 +193,7 @@ ProblemHandler.get("/", useValidation(GetSchema, { query: true }), async (req, r
 ProblemHandler.get("/scores", async (req, res) => {
     const user = await extractUser(req);
 
-    const submissions = await Database.selectFrom("submissions", "*", {
+    const submissions = await Repositories.submissions.select("*", {
         user_id: user.id,
     });
 
@@ -214,7 +213,7 @@ ProblemHandler.get("/score/:problem_id", async (req, res) => {
     const user = await extractUser(req);
     const problem = await extractProblem(req);
 
-    const submissions = await Database.selectFrom("submissions", "*", {
+    const submissions = await Repositories.submissions.select("*", {
         user_id: user.id,
         problem_id: problem.id,
     });
@@ -231,7 +230,7 @@ ProblemHandler.get("/score/:problem_id", async (req, res) => {
 ProblemHandler.get("/:problem_id", async (req, res) => {
     const problem = await extractProblem(req);
 
-    const clusters = await Database.selectFrom("clusters", ["awarded_score"], {
+    const clusters = await Repositories.clusters.select(["awarded_score"], {
         problem_id: problem.id,
     });
     const score = clusters.reduce((accumulator, current) => accumulator + current.awarded_score, 0);

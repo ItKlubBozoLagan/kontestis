@@ -9,7 +9,6 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../../database/Database";
 import { SafeError } from "../../errors/SafeError";
 import { extractContest } from "../../extractors/extractContest";
 import { extractContestMember } from "../../extractors/extractContestMember";
@@ -17,6 +16,7 @@ import { extractModifiableContest } from "../../extractors/extractModifiableCont
 import { extractUser } from "../../extractors/extractUser";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { respond } from "../../utils/response";
 
 // Not maintained
@@ -31,7 +31,7 @@ ContestGradingHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
     const contest = await extractContest(req);
 
-    const gradingScales = await Database.selectFrom("exam_grading_scales", "*", {
+    const gradingScales = await Repositories.exam_grading_scales.select("*", {
         contest_id: contest.id,
     });
 
@@ -57,7 +57,7 @@ ContestGradingHandler.post("/", useValidation(GradingSchema), async (req, res) =
         grade: req.body.grade,
     };
 
-    await Database.insertInto("exam_grading_scales", gradingScale);
+    await Repositories.exam_grading_scales.insert(gradingScale);
 
     return respond(res, StatusCodes.OK, gradingScale);
 });
@@ -80,14 +80,13 @@ ContestGradingHandler.patch(
         )
             throw new SafeError(StatusCodes.FORBIDDEN);
 
-        const exists = await Database.selectOneFrom("exam_grading_scales", "*", {
-            id: req.params.grading_scale_id,
+        const exists = await Repositories.exam_grading_scales.selectOne("*", {
+            id: BigInt(req.params.grading_scale_id),
         });
 
         if (!exists) throw new SafeError(StatusCodes.NOT_FOUND);
 
-        await Database.update(
-            "exam_grading_scales",
+        await Repositories.exam_grading_scales.update(
             { percentage: req.body.percentage, grade: req.body.grade },
             { id: exists.id }
         );
@@ -110,13 +109,13 @@ ContestGradingHandler.delete("/:grading_scale_id", async (req, res) => {
     )
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const exists = await Database.selectOneFrom("exam_grading_scales", "*", {
-        id: req.params.grading_scale_id,
+    const exists = await Repositories.exam_grading_scales.selectOne("*", {
+        id: BigInt(req.params.grading_scale_id),
     });
 
     if (!exists) throw new SafeError(StatusCodes.NOT_FOUND);
 
-    await Database.deleteFrom("exam_grading_scales", "*", { id: exists.id });
+    await Repositories.exam_grading_scales.delete("*", { id: exists.id });
 
     return respond(res, StatusCodes.OK, exists);
 });

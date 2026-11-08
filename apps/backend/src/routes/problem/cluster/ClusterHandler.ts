@@ -3,7 +3,6 @@ import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
-import { Database } from "../../../database/Database";
 import { extractCluster } from "../../../extractors/extractCluster";
 import { extractModifiableCluster } from "../../../extractors/extractModifiableCluster";
 import { extractModifiableProblem } from "../../../extractors/extractModifiableProblem";
@@ -11,6 +10,7 @@ import { extractProblem } from "../../../extractors/extractProblem";
 import { generateSnowflake } from "../../../lib/snowflake";
 import { assureClusterGeneration } from "../../../lib/testcase";
 import { useValidation } from "../../../middlewares/useValidation";
+import { Repositories } from "../../../repositories/Repositories";
 import { respond } from "../../../utils/response";
 import TestcaseHandler from "./testcase/TestcaseHandler";
 
@@ -30,7 +30,7 @@ const ClusterSchema = Type.Object({
 ClusterHandler.get("/", async (req, res) => {
     const problem = await extractProblem(req);
 
-    const clusters = await Database.selectFrom("clusters", "*", {
+    const clusters = await Repositories.clusters.select("*", {
         problem_id: problem.id,
     });
 
@@ -40,7 +40,7 @@ ClusterHandler.get("/", async (req, res) => {
 ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
     const problem = await extractModifiableProblem(req);
 
-    const clusters = await Database.selectFrom("clusters", ["id"], { problem_id: problem.id });
+    const clusters = await Repositories.clusters.select(["id"], { problem_id: problem.id });
 
     const isSample = req.body.is_sample ?? false;
 
@@ -53,19 +53,19 @@ ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
         is_sample: isSample,
     };
 
-    await Database.insertInto("clusters", cluster);
+    await Repositories.clusters.insert(cluster);
 
     if (req.body.generator_id && req.body.test_count) {
         const generatorId = BigInt(req.body.generator_id);
         const testCount = req.body.test_count;
 
-        const generator = await Database.selectOneFrom("generators", ["id"], {
+        const generator = await Repositories.generators.selectOne(["id"], {
             id: generatorId,
             problem_id: problem.id,
         });
 
         if (!generator) {
-            await Database.deleteFrom("clusters", "*", { id: cluster.id });
+            await Repositories.clusters.delete("*", { id: cluster.id });
 
             return respond(res, StatusCodes.BAD_REQUEST, {
                 error: "Generator not found",
@@ -88,7 +88,7 @@ ClusterHandler.post("/", useValidation(ClusterSchema), async (req, res) => {
             testcases.push(testcase);
         }
 
-        await Promise.all(testcases.map((testcase) => Database.insertInto("testcases", testcase)));
+        await Promise.all(testcases.map((testcase) => Repositories.testcases.insert(testcase)));
 
         //const _ = assureClusterGeneration(cluster);
     }
@@ -106,7 +106,7 @@ ClusterHandler.get("/:cluster_id", async (req, res) => {
 ClusterHandler.post("/:cluster_id/cache/drop", async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
-    await Database.update("clusters", { status: "not-ready" }, { id: cluster.id });
+    await Repositories.clusters.update({ status: "not-ready" }, { id: cluster.id });
 
     return respond(res, StatusCodes.OK);
 });
@@ -114,7 +114,7 @@ ClusterHandler.post("/:cluster_id/cache/drop", async (req, res) => {
 ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
-    const testcases = await Database.selectFrom("testcases", "*", {
+    const testcases = await Repositories.testcases.select("*", {
         cluster_id: cluster.id,
     });
 
@@ -124,7 +124,7 @@ ClusterHandler.post("/:cluster_id/cache/regenerate", async (req, res) => {
                 (testcase) => testcase.input_type === "generator" || testcase.output_type === "auto"
             )
             .map((testcase) =>
-                Database.update("testcases", { status: "not-ready" }, { id: testcase.id })
+                Repositories.testcases.update({ status: "not-ready" }, { id: testcase.id })
             )
     );
 
@@ -150,7 +150,7 @@ ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, r
         updateData.order_number = BigInt(req.body.order_number);
     }
 
-    await Database.update("clusters", updateData, { id: cluster.id });
+    await Repositories.clusters.update(updateData, { id: cluster.id });
 
     return respond(res, StatusCodes.OK);
 });
@@ -158,21 +158,21 @@ ClusterHandler.patch("/:cluster_id", useValidation(ClusterSchema), async (req, r
 ClusterHandler.delete("/:cluster_id", async (req, res) => {
     const cluster = await extractModifiableCluster(req);
 
-    await Database.deleteFrom("clusters", "*", { id: cluster.id });
-    const testcases = await Database.selectFrom("testcases", "*", {
+    await Repositories.clusters.delete("*", { id: cluster.id });
+    const testcases = await Repositories.testcases.select("*", {
         cluster_id: cluster.id,
     });
 
-    await Database.deleteFrom("testcases", "*", { cluster_id: cluster.id });
+    await Repositories.testcases.delete("*", { cluster_id: cluster.id });
 
     // TODO: Recompute submission score
-    await Database.deleteFrom("cluster_submissions", "*", {
+    await Repositories.cluster_submissions.delete("*", {
         cluster_id: cluster.id,
     });
 
     await Promise.all(
         testcases.map((testcase) =>
-            Database.deleteFrom("testcase_submissions", "*", {
+            Repositories.testcase_submissions.delete("*", {
                 testcase_id: testcase.id,
             })
         )

@@ -11,12 +11,13 @@ import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import { EMPTY_PERMISSIONS, grantPermission } from "permissio";
 
-import { Database } from "../../database/Database";
+import { inArray } from "../../database/postgres/criteria";
 import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
 import { generateGravatarUrl, generateJwt } from "../../lib/auth";
 import { generateSnowflake } from "../../lib/snowflake";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { randomSequence } from "../../utils/random";
 import { respond } from "../../utils/response";
 
@@ -28,7 +29,7 @@ const LoginSchema = Type.Object({
 });
 
 TemporaryHandler.post("/login", useValidation(LoginSchema, { body: true }), async (req, res) => {
-    const temporaryUser = await Database.selectOneFrom("temporary_users", "*", {
+    const temporaryUser = await Repositories.temporary_users.selectOne("*", {
         username: req.body.username,
     });
 
@@ -38,7 +39,7 @@ TemporaryHandler.post("/login", useValidation(LoginSchema, { body: true }), asyn
 
     if (!verifyResult) throw new SafeError(StatusCodes.UNAUTHORIZED);
 
-    const user = await Database.selectOneFrom("users", "*", {
+    const user = await Repositories.users.selectOne("*", {
         id: temporaryUser.id,
     });
 
@@ -76,14 +77,14 @@ const BulkCreateSchema = Type.Object({
 const resolveUniqueUsername = async (baseUsername: string): Promise<string> => {
     let username = baseUsername;
     let suffix = 1;
-    let existingUser = await Database.selectOneFrom("temporary_users", ["id"], {
+    let existingUser = await Repositories.temporary_users.selectOne(["id"], {
         username,
     });
 
     while (existingUser) {
         suffix++;
         username = `${baseUsername}${suffix}`;
-        existingUser = await Database.selectOneFrom("temporary_users", ["id"], {
+        existingUser = await Repositories.temporary_users.selectOne(["id"], {
             username,
         });
     }
@@ -103,7 +104,7 @@ const createTemporaryUser = async (
     const id = generateSnowflake();
     const syntheticEmail = `${username}@temporary.kontestis.local`;
 
-    await Database.insertInto("users", {
+    await Repositories.users.insert({
         id,
         email: syntheticEmail,
         full_name: name,
@@ -111,7 +112,7 @@ const createTemporaryUser = async (
         permissions: EMPTY_PERMISSIONS,
     });
 
-    await Database.insertInto("temporary_users", {
+    await Repositories.temporary_users.insert({
         id,
         username,
         password: passwordHash,
@@ -122,13 +123,13 @@ const createTemporaryUser = async (
     const uniqueOrgIds = [...new Set(contests.map((c) => c.organisation_id.toString()))];
 
     for (const orgId of uniqueOrgIds) {
-        const existingOrgMember = await Database.selectOneFrom("organisation_members", ["id"], {
+        const existingOrgMember = await Repositories.organisation_members.selectOne(["id"], {
             organisation_id: BigInt(orgId),
             user_id: id,
         });
 
         if (!existingOrgMember) {
-            await Database.insertInto("organisation_members", {
+            await Repositories.organisation_members.insert({
                 id: generateSnowflake(),
                 user_id: id,
                 organisation_id: BigInt(orgId),
@@ -139,7 +140,7 @@ const createTemporaryUser = async (
     }
 
     for (const contest of contests) {
-        await Database.insertInto("contest_members", {
+        await Repositories.contest_members.insert({
             id: generateSnowflake(),
             user_id: id,
             contest_id: contest.id,
@@ -165,15 +166,17 @@ TemporaryHandler.post(
             return BigInt(id);
         });
 
-        const contests = await Promise.all(
-            contestIds.map(async (contestId: bigint) => {
-                const contest = await Database.selectOneFrom("contests", "*", { id: contestId });
+        const contestRows = await Repositories.contests.select("*", {
+            id: inArray(...contestIds),
+        });
+        const contestById = new Map(contestRows.map((contest) => [contest.id, contest]));
+        const contests = contestIds.map((contestId) => {
+            const contest = contestById.get(contestId);
 
-                if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
+            if (!contest) throw new SafeError(StatusCodes.NOT_FOUND);
 
-                return contest;
-            })
-        );
+            return contest;
+        });
 
         const organisationId = contests[0].organisation_id;
 

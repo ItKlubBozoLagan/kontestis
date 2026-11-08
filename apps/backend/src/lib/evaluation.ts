@@ -27,6 +27,10 @@ import { completePendingSubmission, storePendingSubmission } from "./pendingSubm
 import { generateSnowflake } from "./snowflake";
 import { getAllTestcases } from "./testcase";
 
+// evaluators report fractional time/memory; the PostgreSQL columns are integers
+//  (Scylla used to truncate silently), round up so usage is never under-reported
+const toStoredMetric = (value: number) => (Number.isFinite(value) ? Math.ceil(value) : 0);
+
 const ERR_UNEXPECTED_STATE = new Error("unexpected state");
 
 export type ProblemDetails = {
@@ -70,8 +74,11 @@ const updateContestMemberScore = async (
 
     if (contestMember.score[problemId.toString()] >= score) return;
 
-    await Database.raw(
-        `UPDATE contest_members SET score['${problemId}']=${score} WHERE id=${contestMember.id} AND contest_id=${contest.id} AND user_id=${userId}`
+    await Database.setMapEntry(
+        { id: contestMember.id, contest_id: contest.id, user_id: userId },
+        "score",
+        problemId,
+        score
     );
 };
 
@@ -255,46 +262,58 @@ const evaluateCluster = async (
             },
             testCaseScores.length > 0 ? testCaseScores[0].score : cluster.awarded_score
         ),
-        memory_used_megabytes: Math.max(
-            0,
-            ...clusterTestcases.map((it) =>
-                it.evaluationResult.type === "success" ? it.evaluationResult.memory : 0
+        memory_used_megabytes: toStoredMetric(
+            Math.max(
+                0,
+                ...clusterTestcases.map((it) =>
+                    it.evaluationResult.type === "success" ? it.evaluationResult.memory : 0
+                )
             )
         ),
-        time_used_millis: Math.max(
-            0,
-            ...clusterTestcases.map((it) =>
-                it.evaluationResult.type === "success" ? it.evaluationResult.time : 0
+        time_used_millis: toStoredMetric(
+            Math.max(
+                0,
+                ...clusterTestcases.map((it) =>
+                    it.evaluationResult.type === "success" ? it.evaluationResult.time : 0
+                )
             )
         ),
     };
 
-    await Database.insertInto("cluster_submissions", clusterSubmission);
+    // the cluster row and its testcase rows are stored together, so a failure part way
+    //  can't leave a partial cluster attached to a submission that ends as evaluation_error
+    await Database.withTransaction(async (client) => {
+        await Database.insertInto("cluster_submissions", clusterSubmission, client);
 
-    await Promise.all(
-        results.map((result) => {
+        for (const result of results) {
             const testcase = testCasesById[result.testCaseId];
             const submissionOutputFile =
                 result.type === "success" && result.output
                     ? `${pendingSubmission.id}/${cluster.id}/${result.testCaseId}.sout`
                     : undefined;
 
-            return Database.insertInto("testcase_submissions", {
-                id: generateSnowflake(),
-                testcase_id: BigInt(result.testCaseId),
-                cluster_submission_id: clusterSubmission.id,
-                verdict: result.verdict,
-                awarded_score:
-                    testCaseScores.find((it) => it.testCaseId.toString() === result.testCaseId)
-                        ?.score ?? 0,
-                memory_used_megabytes: result.type === "success" ? result.memory : 0,
-                time_used_millis: result.type === "success" ? result.time : 0,
-                input_file: testcase?.input_file,
-                output_file: testcase?.output_file,
-                submission_output_file: submissionOutputFile,
-            });
-        })
-    );
+            await Database.insertInto(
+                "testcase_submissions",
+                {
+                    id: generateSnowflake(),
+                    testcase_id: BigInt(result.testCaseId),
+                    cluster_submission_id: clusterSubmission.id,
+                    verdict: result.verdict,
+                    awarded_score:
+                        testCaseScores.find((it) => it.testCaseId.toString() === result.testCaseId)
+                            ?.score ?? 0,
+                    memory_used_megabytes: toStoredMetric(
+                        result.type === "success" ? result.memory : 0
+                    ),
+                    time_used_millis: toStoredMetric(result.type === "success" ? result.time : 0),
+                    input_file: testcase?.input_file,
+                    output_file: testcase?.output_file,
+                    submission_output_file: submissionOutputFile,
+                },
+                client
+            );
+        }
+    });
 
     return {
         ...clusterSubmission,
@@ -391,7 +410,13 @@ export const beginEvaluation = async (
 
     const _ = (async () => {
         const clusterSubmissions = await Promise.all(
-            clusters.map((c) => evaluateCluster(problemDetails, c, problem, pendingSubmission))
+            clusters.map((c) =>
+                evaluateCluster(problemDetails, c, problem, pendingSubmission).catch((error) => {
+                    // a failing cluster marks the submission as evaluation_error
+                    //  instead of rejecting this detached task and crashing the process
+                    Logger.error(`cluster ${c.id} evaluation failed: `, error + "");
+                })
+            )
         );
 
         // eslint-disable-next-line unicorn/prefer-includes
@@ -488,7 +513,7 @@ export const beginEvaluation = async (
                 Logger.error("submission evaluation listener failed", error as any);
             }
         }
-    })();
+    })().catch((error) => Logger.error("submission evaluation failed: ", error + ""));
 
     return pendingSubmission.id;
 };

@@ -10,9 +10,9 @@ import {
     TextRun,
 } from "docx";
 import { StatusCodes } from "http-status-codes";
-import { eqIn } from "scyllo";
 
 import { Database } from "../database/Database";
+import { inArray } from "../database/postgres/criteria";
 import { SafeError } from "../errors/SafeError";
 import { R } from "../utils/remeda";
 
@@ -56,7 +56,7 @@ export const generateDocument = async (contestId: Snowflake, userId: Snowflake) 
     });
 
     const submissions = (await Database.selectFrom("submissions", "*", {
-        id: eqIn(...finalSubmissions.map((fs) => fs.submission_id)),
+        id: inArray(...finalSubmissions.map((fs) => fs.submission_id)),
     })) as Submission[];
 
     const submissionsByProblemId: Record<string, Submission> = {};

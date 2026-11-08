@@ -2,9 +2,8 @@ import { AdminPermissions, hasAdminPermission, MailPreference } from "@kontestis
 import { Type } from "@sinclair/typebox";
 import { Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { eqIn } from "scyllo";
 
-import { Database } from "../../database/Database";
+import { inArray } from "../../database/postgres/criteria";
 import { SafeError } from "../../errors/SafeError";
 import { extractUser } from "../../extractors/extractUser";
 import { Globals } from "../../globals";
@@ -12,6 +11,7 @@ import { Logger } from "../../lib/logger";
 import { sendMail } from "../../lib/mail";
 import { pushNotificationsToMany } from "../../lib/notifications";
 import { useValidation } from "../../middlewares/useValidation";
+import { Repositories } from "../../repositories/Repositories";
 import { randomSequence } from "../../utils/random";
 import { reject, respond } from "../../utils/response";
 
@@ -20,7 +20,7 @@ const NotificationsHandler = Router();
 NotificationsHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
 
-    const notifications = await Database.selectFrom("notifications", "*", { recipient: user.id });
+    const notifications = await Repositories.notifications.select("*", { recipient: user.id });
 
     respond(
         res,
@@ -57,9 +57,9 @@ NotificationsHandler.post(
         if (!hasAdminPermission(user.permissions, AdminPermissions.ADMIN))
             return reject(res, StatusCodes.FORBIDDEN);
 
-        const users = await Database.selectFrom("users", "*", {});
+        const users = await Repositories.users.select("*", {});
 
-        const mailPreferences = await Database.selectFrom("mail_preferences", "*", {});
+        const mailPreferences = await Repositories.mail_preferences.select("*", {});
 
         const preferencesByUserId: Record<string, MailPreference> = {};
 
@@ -82,7 +82,7 @@ NotificationsHandler.post(
                         status: "all",
                     };
 
-                    await Database.insertInto("mail_preferences", preference);
+                    await Repositories.mail_preferences.insert(preference);
                 }
 
                 if (preference.status === "none") continue;
@@ -107,7 +107,7 @@ NotificationsHandler.post(
 );
 
 NotificationsHandler.get("/mail/modify/:code/:status/", async (req, res) => {
-    const preferences = await Database.selectOneFrom("mail_preferences", "*", {
+    const preferences = await Repositories.mail_preferences.selectOne("*", {
         code: req.params.code,
     });
 
@@ -122,8 +122,7 @@ NotificationsHandler.get("/mail/modify/:code/:status/", async (req, res) => {
 
     const status: "all" | "none" | "contest-only" = req.params.status as any;
 
-    await Database.update(
-        "mail_preferences",
+    await Repositories.mail_preferences.update(
         {
             status: status,
         },
@@ -147,21 +146,14 @@ NotificationsHandler.get("/mail/modify/:code/:status/", async (req, res) => {
 
 NotificationsHandler.post("/read", useValidation(ReadNotificationSchema), async (req, res) => {
     const user = await extractUser(req);
-    const notifications = await Database.selectFrom(
-        "notifications",
-        ["id"],
+
+    await Repositories.notifications.update(
+        { seen: true },
         {
-            id: eqIn(...req.body.notificationIds),
+            id: inArray(...req.body.notificationIds.map(BigInt)),
             recipient: user.id,
             seen: false,
-        },
-        "ALLOW FILTERING"
-    );
-
-    await Promise.all(
-        notifications.map((notification) =>
-            Database.update("notifications", { seen: true }, { id: notification.id })
-        )
+        }
     );
 
     respond(res, StatusCodes.OK);
@@ -177,7 +169,7 @@ NotificationsHandler.post("/alert", useValidation(AddAlertSchema), async (req, r
     if (!hasAdminPermission(user.permissions, AdminPermissions.ADD_ALERTS))
         throw new SafeError(StatusCodes.FORBIDDEN);
 
-    const allUsers = await Database.selectFrom("users", ["id"]);
+    const allUsers = await Repositories.users.select(["id"]);
 
     const _ = pushNotificationsToMany(
         {

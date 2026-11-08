@@ -1,7 +1,7 @@
 import { ContestV3 } from "@kontestis/models";
 import { Migration } from "scyllo";
 
-import { Database } from "../Database";
+import { LegacyDatabase as Database } from "../Database";
 
 type MigrationType = {
     contests: ContestV3;
