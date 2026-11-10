@@ -33,7 +33,7 @@ export const extractFinalSubmission = async (
                 finalSubmission.contest_id
             );
 
-            throw new SafeError(StatusCodes.NOT_FOUND);
+            return finalSubmission;
         }
     );
 };

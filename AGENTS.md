@@ -4,6 +4,7 @@ This file applies to the whole repository. More specific guidance lives in:
 
 - `apps/backend/AGENTS.md`
 - `apps/frontend/AGENTS.md`
+- `apps/web/AGENTS.md`
 - `apps/function/AGENTS.md`
 - `packages/AGENTS.md`
 
@@ -13,7 +14,9 @@ Read the relevant scoped file before changing that part of the tree.
 
 Kontestis is a programming-contest and exam platform. It is a pnpm TypeScript monorepo with:
 
-- `apps/frontend`: React 18 + Vite 4 single-page application.
+- `apps/frontend`: React 18 + Vite 4 single-page application (legacy UI, served by Docker Compose).
+- `apps/web`: React 19 + Vite + Tailwind 4 + shadcn/ui rewrite of the frontend. Not part of
+  Docker Compose; run it with `pnpm --filter @kontestis/web dev` (port `3100`, Node 22.22+).
 - `apps/backend`: Express 5 API backed by ScyllaDB, Redis, InfluxDB, and S3/MinIO.
 - `apps/function`: legacy HTTP code-evaluation service. The current evaluator path is a separate
   Redis-queue consumer, not this app.

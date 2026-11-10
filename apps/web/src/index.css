@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+@import "katex/dist/katex.min.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Kontestis palette: light, slate chrome, neutral surfaces and the
+ * classic Kontestis blue (#4287f5) as the primary accent.
+ */
+:root {
+    --radius: 0.375rem;
+    --background: #ffffff;
+    --foreground: #171717;
+    --card: #ffffff;
+    --card-foreground: #171717;
+    --popover: #ffffff;
+    --popover-foreground: #171717;
+    --primary: #4287f5;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #1e293b;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+    --accent: #eef4fe;
+    --accent-foreground: #1e3a8a;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --success: #65c53a;
+    --warning: #f59e0b;
+    --border: #d4d4d4;
+    --input: #d4d4d4;
+    --ring: #4287f5;
+    --chart-1: #4287f5;
+    --chart-2: #65c53a;
+    --chart-3: #f59e0b;
+    --chart-4: #ec4899;
+    --chart-5: #8b5cf6;
+    --sidebar: #f1f5f9;
+    --sidebar-foreground: #334155;
+    --sidebar-primary: #4287f5;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e2e8f0;
+    --sidebar-accent-foreground: #0f172a;
+    --sidebar-border: #d4d4d4;
+    --sidebar-ring: #4287f5;
+    --nav: #f1f5f9;
+}
+
+.dark {
+    --background: #111111;
+    --foreground: #f5f5f5;
+    --card: #1d1d1d;
+    --card-foreground: #f5f5f5;
+    --popover: #1d1d1d;
+    --popover-foreground: #f5f5f5;
+    --primary: #4287f5;
+    --primary-foreground: #ffffff;
+    --secondary: #282828;
+    --secondary-foreground: #f5f5f5;
+    --muted: #1d1d1d;
+    --muted-foreground: #a3a3a3;
+    --accent: #1e293b;
+    --accent-foreground: #dbeafe;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --success: #7ef049;
+    --warning: #fbbf24;
+    --border: #333333;
+    --input: #3a3a3a;
+    --ring: #4287f5;
+    --sidebar: #080808;
+    --sidebar-foreground: #d4d4d4;
+    --sidebar-primary: #4287f5;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #282828;
+    --sidebar-accent-foreground: #f5f5f5;
+    --sidebar-border: #333333;
+    --sidebar-ring: #4287f5;
+    --nav: #080808;
+}
+
+@theme inline {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-nav: var(--nav);
+    --radius-sm: calc(var(--radius) - 2px);
+    --radius-md: var(--radius);
+    --radius-lg: calc(var(--radius) + 2px);
+    --radius-xl: calc(var(--radius) + 6px);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        font-size: 14px;
+    }
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+        scrollbar-gutter: stable;
+    }
+}
