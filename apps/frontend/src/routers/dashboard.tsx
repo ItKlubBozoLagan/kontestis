@@ -10,6 +10,7 @@ import { AdminOrganisationsPage } from "../pages/admin/organisations/AdminOrgani
 import { AdminOverviewPage } from "../pages/admin/overview/AdminOverviewPage";
 import { AdminUsersPage } from "../pages/admin/users/AdminUsersPage";
 import { AaiLinkPage } from "../pages/auth/AaiLinkPage";
+import { OAuthAuthorizePage } from "../pages/auth/OAuthAuthorizePage";
 import { ContestsPage } from "../pages/contests/ContestsPage";
 import { ContestThreadPage } from "../pages/contests/ContestThreadPage";
 import { ContestViewPage } from "../pages/contests/ContestViewPage";
@@ -186,5 +187,10 @@ export const dashboardRoutes: RouteObject[] = [
     {
         path: "/aai-login",
         element: <AaiLinkPage />,
+    },
+    {
+        path: "/oauth/authorize",
+        element: <Root hideNavbar />,
+        children: [{ index: true, element: <OAuthAuthorizePage /> }],
     },
 ];

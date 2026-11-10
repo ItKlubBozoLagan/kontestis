@@ -39,6 +39,10 @@ type GlobalsType = {
 
     jwtSecret: string;
 
+    // JSON array of external applications allowed to sign users in through kontestis,
+    //  see lib/oauthProvider.ts
+    oauthProviderClients: string;
+
     aaiEduConfigurationUrl: string;
     aaiEduClientId: string;
     aaiEduClientSecret: string;
@@ -113,6 +117,8 @@ export const Globals: GlobalsType = {
               throw new Error("missing JWT_SECRET");
           })()
         : process.env.JWT_SECRET,
+
+    oauthProviderClients: process.env.OAUTH_PROVIDER_CLIENTS || "[]",
 
     aaiEduConfigurationUrl:
         process.env.AAI_EDU_CONFIG_URL ??

@@ -30,6 +30,7 @@ import { NotificationsHandler } from "./routes/notifications/NotificationsHandle
 import { subscribeToEvaluatorResponseQueue } from "./lib/evaluation_rs";
 import { initAaiEdu } from "./lib/aaiedu";
 import { initS3 } from "./s3/S3";
+import OAuthHandler from "./routes/oauth/OAuthHandler";
 import fileUpload from "express-fileupload";
 
 declare global {
@@ -99,6 +100,7 @@ export const createApp = (options: { rateLimit?: boolean } = {}) => {
     app.use("/api/submission", SubmissionHandler);
     app.use("/api/stats", StatsHandler);
     app.use("/api/notifications", NotificationsHandler);
+    app.use("/api/oauth", OAuthHandler);
 
     app.get("/", (req, res) => respond(res, StatusCodes.OK));
 

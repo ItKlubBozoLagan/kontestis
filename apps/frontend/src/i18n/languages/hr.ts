@@ -16,6 +16,17 @@ export default {
         logout: "Odjava",
         siteRestriction: "Prijava je trenutno dostupna samo za %1 i %2 račune",
     },
+    oauth: {
+        authorize: {
+            title: "Prijava putem Kontestisa",
+            description: "Nastaviti u %1 kao %2 (%3)?",
+            continue: "Nastavi",
+            cancel: "Odustani",
+            switchAccount: "Koristi drugi račun",
+            invalidTitle: "Neispravna poveznica za prijavu",
+            invalidDescription: "Ova aplikacija nije prepoznata. Vratite se i pokušajte ponovno.",
+        },
+    },
     navbar: {
         dashboard: "Kontrolna ploča",
         contests: "Natjecanja",

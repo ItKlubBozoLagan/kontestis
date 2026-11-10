@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { useAaiEduExchange } from "@/api/auth";
 import { Spinner } from "@/components/common/Spinner";
+import { takeLoginRedirect } from "@/lib/loginRedirect";
 import { useSessionStore } from "@/stores/session";
 
 /**
@@ -29,7 +30,10 @@ export const AaiCallbackPage = () => {
         started.current = true;
 
         exchange.mutate(code, {
-            onSuccess: () => navigate(purpose === "link" ? "/account" : "/", { replace: true }),
+            onSuccess: () =>
+                navigate(purpose === "link" ? "/account" : takeLoginRedirect() ?? "/", {
+                    replace: true,
+                }),
             onError: () => {
                 toast.error(t("auth.aai.failed"));
                 navigate(purpose === "link" ? "/account" : "/login", { replace: true });
