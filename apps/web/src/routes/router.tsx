@@ -195,6 +195,14 @@ export const router = createBrowserRouter([
                                             "OrganisationSelectPage"
                                         ),
                                     },
+                                    // authorization requests from external applications
+                                    {
+                                        path: "/oauth/authorize",
+                                        lazy: page(
+                                            () => import("@/features/oauth/OAuthAuthorizePage"),
+                                            "OAuthAuthorizePage"
+                                        ),
+                                    },
                                 ],
                             },
                         ],

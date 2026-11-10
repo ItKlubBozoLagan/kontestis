@@ -6,6 +6,7 @@ import { contests } from "./contests";
 import { dashboard } from "./dashboard";
 import { management } from "./management";
 import { managementProblems } from "./managementProblems";
+import { oauth } from "./oauth";
 import { organisations } from "./organisations";
 import { problems } from "./problems";
 import * as shared from "./shared";
@@ -26,4 +27,5 @@ export const hr = {
     management,
     managementProblems,
     admin,
+    oauth,
 };
