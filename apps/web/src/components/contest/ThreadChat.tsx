@@ -73,9 +73,7 @@ export const ThreadChat = ({ contestId, thread, perspective, canReply }: Props) 
                             )}
                         >
                             <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                                <span className={cn("font-mono", !fromOwner && "text-primary")}>
-                                    {author}
-                                </span>
+                                <span className={cn(!fromOwner && "text-primary")}>{author}</span>
                                 <time>{formatDateTime(message.created_at)}</time>
                             </div>
                             <div

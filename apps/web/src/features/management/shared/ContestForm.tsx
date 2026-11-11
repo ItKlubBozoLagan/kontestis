@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { formatDateTime } from "@/lib/format";
 
 /** `Date` -> value of an `<input type="datetime-local">` in the browser's time zone. */
 export const toDateTimeLocal = (date: Date) => {
@@ -182,6 +183,13 @@ export const ContestForm = ({
                                 <FormControl>
                                     <Input type="datetime-local" {...field} />
                                 </FormControl>
+                                {field.value && !Number.isNaN(new Date(field.value).getTime()) && (
+                                    <p className="text-muted-foreground text-xs">
+                                        {t("management.contestForm.startTimeLocal", {
+                                            time: formatDateTime(new Date(field.value)),
+                                        })}
+                                    </p>
+                                )}
                                 <FormMessage />
                             </FormItem>
                         )}

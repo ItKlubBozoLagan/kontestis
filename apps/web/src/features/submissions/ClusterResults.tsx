@@ -99,7 +99,7 @@ const ClusterRow = ({
 
     return (
         <Collapsible open={open} onOpenChange={setOpen} className="border-b last:border-b-0">
-            <CollapsibleTrigger className="hover:bg-muted/60 flex w-full items-center gap-3 px-4 py-2.5 text-left font-mono text-[13px]">
+            <CollapsibleTrigger className="hover:bg-muted/60 flex w-full items-center gap-3 px-4 py-2.5 text-left font-mono text-sm">
                 <ChevronRight
                     className={cn(
                         "text-muted-foreground size-4 transition-transform",
@@ -150,7 +150,7 @@ const ClusterRow = ({
                                 )}
                             </TableRow>
                         </TableHeader>
-                        <TableBody className="font-mono text-[13px]">
+                        <TableBody className="font-mono text-sm">
                             {testcases.map((testcase, testcaseIndex) => (
                                 <TableRow key={testcase.id.toString()}>
                                     <TableCell className="font-sans">

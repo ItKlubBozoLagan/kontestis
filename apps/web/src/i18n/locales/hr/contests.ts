@@ -67,6 +67,38 @@ export const contests: Translation<typeof en> = {
     announcements: {
         title: "Obavijesti",
         empty: "Nema obavijesti za sada.",
+        more: "Pročitaj više",
+        less: "Prikaži manje",
+        showAll: "Prikaži svih {{count}}",
+        showFewer: "Prikaži manje",
+    },
+    clock: {
+        upcoming: "Počinje za",
+        running: "Preostalo vrijeme",
+        finished: "Natjecanje je završilo",
+        startsAt: "Počinje {{time}}",
+        endsAt: "Završava {{time}}",
+        endedAt: "Završilo {{time}}",
+        elapsed: "Proteklo vrijeme natjecanja",
+    },
+    exam: {
+        notStarted: "Zadaci će biti vidljivi kada ispit počne.",
+        finalChosen: "Konačno rješenje odabrano",
+        noFinal: "Nema konačnog rješenja",
+        finalPoints: "{{score}} / {{max}} bodova",
+        maxPoints: "najviše {{max}} bodova",
+        finalsChosen: "Odabrana konačna rješenja",
+        finalScore: "Bodovi (konačna)",
+        missingFinals: "Zadaci bez konačnog rješenja: {{count}}",
+        howItWorks:
+            "Ocjenjuje se samo konačno rješenje svakog zadatka. Odaberi ga na stranici zadatka nakon što se evaluira.",
+        howItWorksOver: "Ocjenjuje se samo konačno rješenje svakog zadatka.",
+    },
+    standing: {
+        score: "Tvoji bodovi",
+        solved: "Riješeno",
+        place: "Mjesto",
+        of: "od {{count}}",
     },
     questions: {
         title: "Pitanja",

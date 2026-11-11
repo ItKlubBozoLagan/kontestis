@@ -48,6 +48,42 @@ export const GeneratorStateBadge = ({
     );
 };
 
+const iconColors: Record<GeneratorState, string> = {
+    ready: "text-green-600 dark:text-green-400",
+    pending: "text-yellow-600 dark:text-yellow-400",
+    "not-ready": "text-sky-600 dark:text-sky-400",
+    "generator-error": "text-red-600 dark:text-red-400",
+    "validation-error": "text-red-600 dark:text-red-400",
+    "solution-error": "text-red-600 dark:text-red-400",
+};
+
+/** Icon-only variant of {@link GeneratorStateBadge} for dense lists (label kept for a11y). */
+export const GeneratorStateIcon = ({
+    state,
+    className,
+}: {
+    state: GeneratorState;
+    className?: string;
+}) => {
+    const { t } = useTranslation();
+    const Icon = icon(state);
+    const label = t(`managementProblems.status.${state}`, { defaultValue: state });
+
+    return (
+        <span title={label} className={cn("inline-flex shrink-0", className)}>
+            <Icon
+                aria-hidden
+                className={cn(
+                    "size-3.5",
+                    iconColors[state] ?? iconColors["not-ready"],
+                    state === "pending" && "animate-spin"
+                )}
+            />
+            <span className="sr-only">{label}</span>
+        </span>
+    );
+};
+
 // eslint-disable-next-line no-control-regex
 const stripAnsi = (text: string) => text.replace(/\u001B\[[\d;]*[A-Za-z]/g, "");
 

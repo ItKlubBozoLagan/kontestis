@@ -10,9 +10,9 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,10 @@ declare module "@tanstack/react-table" {
     }
 }
 
+// Interactive descendants are lifted above the stretched row link so they stay clickable.
+const LIFT_INTERACTIVE =
+    "[&_a:not([data-row-link])]:relative [&_a:not([data-row-link])]:z-10 [&_button]:relative [&_button]:z-10 [&_input]:relative [&_input]:z-10 [&_[role=checkbox]]:relative [&_[role=checkbox]]:z-10 [&_[data-no-row-click]]:relative [&_[data-no-row-click]]:z-10";
+
 const INTERACTIVE_SELECTOR = "a,button,input,[role=checkbox],[data-no-row-click]";
 
 type Props<T> = {
@@ -44,8 +48,9 @@ type Props<T> = {
     /** Client side pagination; omit to render every row. */
     pageSize?: number;
     initialSorting?: SortingState;
-    /** Makes rows navigate on click (middle click / ctrl-click open a new tab). */
+    /** Renders a real stretched link over the row (keyboard, middle/ctrl-click, context menu). */
     rowHref?: (row: T) => string | undefined;
+    /** Action (non-navigating) row click; the row becomes keyboard focusable. */
     onRowClick?: (row: T) => void;
     rowClassName?: (row: Row<T>) => string | undefined;
     getRowId?: (row: T) => string;
@@ -55,6 +60,76 @@ type Props<T> = {
     /** Use the monospace "classic Kontestis" table body. */
     mono?: boolean;
 };
+
+function rowClasses(isLink: boolean, isAction: boolean, extra: string | undefined): string {
+    return cn(
+        "even:bg-muted/40",
+        (isLink || isAction) && "relative",
+        isLink && LIFT_INTERACTIVE,
+        isLink && "has-[a[data-row-link]:focus-visible]:bg-muted/50",
+        isAction &&
+            "focus-visible:outline-ring cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2",
+        extra
+    );
+}
+
+function DataRow<T>({
+    row,
+    href,
+    onRowClick,
+    rowClassName,
+    firstCellId,
+}: {
+    row: Row<T>;
+    href: string | undefined;
+    onRowClick?: (row: T) => void;
+    rowClassName?: (row: Row<T>) => string | undefined;
+    firstCellId: string;
+}) {
+    const action = !href && onRowClick ? onRowClick : undefined;
+
+    const handleClick = (event: React.MouseEvent) => {
+        if ((event.target as HTMLElement).closest(INTERACTIVE_SELECTOR)) return;
+
+        action?.(row.original);
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.target !== event.currentTarget) return;
+
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            action?.(row.original);
+        }
+    };
+
+    return (
+        <TableRow
+            className={rowClasses(!!href, !!action, rowClassName?.(row))}
+            tabIndex={action ? 0 : undefined}
+            onClick={action ? handleClick : undefined}
+            onKeyDown={action ? handleKeyDown : undefined}
+        >
+            {row.getVisibleCells().map((cell, index) => (
+                <TableCell
+                    key={cell.id}
+                    id={href && index === 0 ? firstCellId : undefined}
+                    className={cell.column.columnDef.meta?.className}
+                >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {href && index === 0 && (
+                        <Link
+                            to={href}
+                            data-row-link
+                            aria-labelledby={firstCellId}
+                            className="after:ring-ring focus-visible:after:ring-2 after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-inset"
+                        />
+                    )}
+                </TableCell>
+            ))}
+        </TableRow>
+    );
+}
 
 export function DataTable<T>({
     columns,
@@ -70,10 +145,10 @@ export function DataTable<T>({
     toolbar,
     empty,
     className,
-    mono = true,
+    mono = false,
 }: Props<T>) {
     const { t } = useTranslation();
-    const navigate = useNavigate();
+    const tableId = useId();
     const [sorting, setSorting] = useState<SortingState>(initialSorting);
     const [globalFilter, setGlobalFilter] = useState("");
 
@@ -97,21 +172,6 @@ export function DataTable<T>({
     });
 
     const { rows } = table.getRowModel();
-    const clickable = !!rowHref || !!onRowClick;
-
-    const handleRowClick = (
-        event: React.MouseEvent,
-        href: string | undefined,
-        fallback: () => void
-    ) => {
-        // let interactive children (links, buttons, checkboxes) handle their own clicks
-        if ((event.target as HTMLElement).closest(INTERACTIVE_SELECTOR)) return;
-
-        if (!href) return fallback();
-
-        if (event.ctrlKey || event.metaKey) window.open(href, "_blank");
-        else navigate(href);
-    };
 
     return (
         <div className={cn("flex w-full flex-col gap-3", className)}>
@@ -180,7 +240,7 @@ export function DataTable<T>({
                             </TableRow>
                         ))}
                     </TableHeader>
-                    <TableBody className={cn(mono && "font-mono text-[13px]")}>
+                    <TableBody className={cn("tabular-nums", mono && "font-mono text-sm")}>
                         {rows.length === 0 ? (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell
@@ -192,41 +252,16 @@ export function DataTable<T>({
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            rows.map((row) => {
-                                const href = rowHref?.(row.original);
-
-                                return (
-                                    <TableRow
-                                        key={row.id}
-                                        className={cn(
-                                            "even:bg-muted/40",
-                                            clickable && "cursor-pointer",
-                                            rowClassName?.(row)
-                                        )}
-                                        onClick={(event) =>
-                                            handleRowClick(event, href, () =>
-                                                onRowClick?.(row.original)
-                                            )
-                                        }
-                                        onAuxClick={(event) => {
-                                            if (event.button === 1 && href)
-                                                window.open(href, "_blank");
-                                        }}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell
-                                                key={cell.id}
-                                                className={cell.column.columnDef.meta?.className}
-                                            >
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                );
-                            })
+                            rows.map((row) => (
+                                <DataRow
+                                    key={row.id}
+                                    row={row}
+                                    href={rowHref?.(row.original)}
+                                    onRowClick={onRowClick}
+                                    rowClassName={rowClassName}
+                                    firstCellId={`${tableId}-${row.id}-first`}
+                                />
+                            ))
                         )}
                     </TableBody>
                 </Table>

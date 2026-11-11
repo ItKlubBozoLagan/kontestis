@@ -59,6 +59,7 @@ export const errors: Translation<typeof enErrors> = {
     pageCrashed: "Stranica se nije uspjela učitati.",
     retry: "Pokušaj ponovno",
     goHome: "Na početnu",
+    goBack: "Natrag",
 };
 
 export const nav: Translation<typeof enNav> = {
@@ -70,6 +71,8 @@ export const nav: Translation<typeof enNav> = {
     admin: "Admin",
     logout: "Odjava",
     switchOrganisation: "Promijeni organizaciju",
+    searchOrganisations: "Pretraži organizacije…",
+    noOrganisations: "Nema pronađenih organizacija.",
     manageOrganisations: "Sve organizacije",
     menu: "Izbornik",
     notifications: {

@@ -29,8 +29,26 @@ export const problems: Translation<typeof en> = {
         attempted: "Pokušani",
         points: "Bodovi",
     },
+    exam: {
+        finalLabel: "Konačno rješenje",
+        notChosen: "nije odabrano",
+        finalTitle: "Konačno rješenje ovog zadatka",
+        changeHint: "Možeš odabrati drugo rješenje do kraja ispita.",
+        noFinalTitle: "Ovaj zadatak nema konačno rješenje",
+        noFinalHint:
+            "Ocjenjuje se samo tvoje konačno rješenje. Odaberi ga ispod nakon što se evaluira.",
+        noFinalOver: "Za ovaj zadatak nije odabrano konačno rješenje.",
+        thisIsFinal: "Ovo je tvoje konačno rješenje ovog zadatka.",
+        finishedHint:
+            "Ispit je završio. Nove predaje se i dalje evaluiraju, ali konačna rješenja više nije moguće mijenjati.",
+        otherIsFinal: "Za ovaj zadatak kao konačno je odabrano drugo rješenje.",
+    },
     individual: {
         backToContest: "Natrag na natjecanje",
+        strip: "Zadaci u ovom natjecanju",
+        examStrip: "Zadaci ovog ispita",
+        yourBest: "Tvoj najbolji rezultat: {{score}}",
+        notAttempted: "nije pokušano",
         statement: "Tekst zadatka",
         limits: {
             title: "Ograničenja",
@@ -59,6 +77,15 @@ export const problems: Translation<typeof en> = {
             upcomingHint: "Natjecanje još nije počelo.",
             latest: "Zadnja rješenja",
             shortcut: "Ctrl + Enter za slanje",
+            pasteHint: "Zalijepi kôd bilo gdje na stranici ili ispusti datoteku.",
+            pasted: "Kôd zalijepljen ({{count}} redaka)",
+            loaded: "Učitano: {{name}}",
+            detected: "Jezik postavljen na {{language}}",
+            dropHere: "Ispusti datoteku za učitavanje",
+            jump: "Predaj",
+            size: "{{size}} od 64 KiB",
+            evaluating: "Evaluacija…",
+            allSubmissions: "Sva tvoja rješenja",
         },
         submissions: {
             mine: "Tvoja rješenja",

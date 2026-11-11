@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EvaluationLanguage, EvaluationVariant } from "@kontestis/models";
+import type { ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -19,7 +20,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { LanguageSelect } from "@/features/management/problems/LanguageSelect";
 import { TagInput } from "@/features/management/problems/TagInput";
@@ -116,6 +116,44 @@ const toPayload = (values: Values): ProblemFormValues => ({
     solution_language: values.solution_language as EvaluationLanguage,
 });
 
+/** Markdown source and its live preview: side by side when the form is wide, else stacked. */
+const StatementEditor = ({
+    description,
+    children,
+}: {
+    description: string;
+    children: ReactNode;
+}) => {
+    const { t } = useTranslation();
+
+    return (
+        <div className="@container">
+            <div className="grid grid-cols-1 gap-3 @3xl:grid-cols-2">
+                <div className="flex min-w-0 flex-col gap-1.5">
+                    <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                        {t("managementProblems.form.write")}
+                    </span>
+                    {children}
+                </div>
+                <div className="flex min-w-0 flex-col gap-1.5">
+                    <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                        {t("managementProblems.form.preview")}
+                    </span>
+                    <div className="bg-background max-h-[32rem] min-h-40 overflow-y-auto rounded-md border p-4 @3xl:h-[32rem]">
+                        {description.trim() ? (
+                            <Markdown>{description}</Markdown>
+                        ) : (
+                            <span className="text-muted-foreground text-sm">
+                                {t("managementProblems.form.emptyPreview")}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 type Props = {
     defaultValues: Values;
     onSubmit: (values: ProblemFormValues) => Promise<unknown>;
@@ -166,35 +204,14 @@ export const ProblemForm = ({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t("managementProblems.form.description")}</FormLabel>
-                            <Tabs defaultValue="write">
-                                <TabsList>
-                                    <TabsTrigger value="write">
-                                        {t("managementProblems.form.write")}
-                                    </TabsTrigger>
-                                    <TabsTrigger value="preview">
-                                        {t("managementProblems.form.preview")}
-                                    </TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="write">
-                                    <FormControl>
-                                        <Textarea
-                                            className="max-h-[32rem] min-h-64 font-mono text-sm"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                </TabsContent>
-                                <TabsContent value="preview">
-                                    <div className="max-h-[32rem] min-h-64 overflow-y-auto rounded-md border p-4">
-                                        {description.trim() ? (
-                                            <Markdown>{description}</Markdown>
-                                        ) : (
-                                            <span className="text-muted-foreground text-sm">
-                                                {t("managementProblems.form.emptyPreview")}
-                                            </span>
-                                        )}
-                                    </div>
-                                </TabsContent>
-                            </Tabs>
+                            <StatementEditor description={description}>
+                                <FormControl>
+                                    <Textarea
+                                        className="h-80 resize-y font-mono text-sm field-sizing-fixed @3xl:h-[32rem]"
+                                        {...field}
+                                    />
+                                </FormControl>
+                            </StatementEditor>
                             <FormDescription>
                                 {t("managementProblems.form.descriptionHint")}
                             </FormDescription>
@@ -391,7 +408,7 @@ export const ProblemForm = ({
                         </FormItem>
                     )}
                 />
-                <div className="bg-background/95 sticky bottom-0 flex items-center justify-end gap-2 border-t py-3">
+                <div className="bg-background sticky bottom-0 flex items-center justify-end gap-2 border-t py-3">
                     {editing && form.formState.isDirty && (
                         <>
                             <span className="text-muted-foreground mr-auto text-sm">

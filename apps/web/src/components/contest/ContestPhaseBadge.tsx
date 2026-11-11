@@ -12,8 +12,7 @@ const phaseStyles = {
         "border-yellow-300 bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200 dark:border-yellow-800",
     running:
         "border-green-300 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200 dark:border-green-800",
-    finished:
-        "border-red-200 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 dark:border-red-900",
+    finished: "border-border bg-muted text-muted-foreground",
 };
 
 /** Live phase of a contest with a countdown ("Starts in 2h 3m", "Ends in 12m 3s", "Finished"). */
@@ -38,10 +37,7 @@ export const ContestPhaseBadge = ({
             : t("phases.endsIn", { time: formatDuration(contestEnd(contest) - now) });
 
     return (
-        <Badge
-            variant="outline"
-            className={cn("font-mono tabular-nums", phaseStyles[phase], className)}
-        >
+        <Badge variant="outline" className={cn("tabular-nums", phaseStyles[phase], className)}>
             {phase === "running" && (
                 <span className="size-1.5 animate-pulse rounded-full bg-green-500" />
             )}

@@ -20,10 +20,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { GeneratorForm } from "@/features/management/generators/GeneratorForm";
-import {
-    AuthoringBreadcrumb,
-    problemPath,
-} from "@/features/management/problems/AuthoringBreadcrumb";
+import { problemPath } from "@/features/management/problems/studioPaths";
 import { useManagedContest } from "@/features/management/useManagedContest";
 import { useContestAccess } from "@/hooks/useContestAccess";
 
@@ -128,13 +125,6 @@ export const GeneratorsPage = () => {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            <AuthoringBreadcrumb
-                contestId={contest.id}
-                items={[
-                    { label: problem.title, to: problemPath(contest.id, problem.id) },
-                    { label: t("managementProblems.breadcrumb.generators") },
-                ]}
-            />
             <Section
                 title={t("managementProblems.generators.title")}
                 icon={Wand2}

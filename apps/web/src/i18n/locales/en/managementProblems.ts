@@ -1,9 +1,15 @@
 export const managementProblems = {
-    breadcrumb: {
-        problems: "Problems",
-        generators: "Generators",
-        cluster: "Cluster #{{index}}",
-        testcase: "Testcase #{{index}}",
+    studio: {
+        nav: "Problem contents",
+        statement: "Statement & settings",
+        totalScore: "Total score: {{score}}",
+        points: "{{count}} pts",
+        allGenerators: "All generators",
+        noClusters: "No clusters yet.",
+        expand: "Show testcases of {{name}}",
+        collapse: "Hide testcases of {{name}}",
+        clustersHint:
+            "Reorder or delete clusters here. Open a cluster in the sidebar to edit it and its testcases.",
     },
     list: {
         title: "Problems",

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -55,9 +55,12 @@ type Values = z.infer<typeof schema>;
 export const CreateClusterDialog = ({
     problemId,
     problemTitle,
+    trigger,
 }: {
     problemId: bigint;
     problemTitle: string;
+    /** Custom trigger element (defaults to a small "New …" button). */
+    trigger?: ReactNode;
 }) => {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
@@ -100,15 +103,17 @@ export const CreateClusterDialog = ({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size="sm">
-                    <Plus />
-                    {t("managementProblems.clusters.create")}
-                </Button>
+                {trigger ?? (
+                    <Button size="sm">
+                        <Plus />
+                        {t("managementProblems.clusters.create")}
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>{t("managementProblems.clusters.dialog.title")}</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="wrap-anywhere">
                         {t("managementProblems.clusters.dialog.description", {
                             problem: problemTitle,
                         })}

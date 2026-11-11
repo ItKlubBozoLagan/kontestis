@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { HttpError } from "@/api/http";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ type Props = {
 
 export const ErrorView = ({ error, onRetry }: Props) => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const status = error instanceof HttpError ? error.status : undefined;
 
     const title =
@@ -29,7 +30,12 @@ export const ErrorView = ({ error, onRetry }: Props) => {
                 <p className="text-muted-foreground max-w-md font-mono text-xs">{error.message}</p>
             )}
             <div className="flex gap-2">
-                {onRetry && (
+                {status === 404 && (
+                    <Button variant="outline" onClick={() => navigate(-1)}>
+                        {t("errors.goBack")}
+                    </Button>
+                )}
+                {onRetry && status !== 404 && (
                     <Button variant="outline" onClick={onRetry}>
                         {t("errors.retry")}
                     </Button>

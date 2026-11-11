@@ -11,7 +11,9 @@ import { submissionQueries } from "@/api/submissions";
 import { ScoreBadge } from "@/components/badges/ScoreBadge";
 import { DataTable } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/button";
+import { sortProblems } from "@/features/contests/ContestProblems";
 import { ReviewStatus } from "@/features/management/results/ReviewStatus";
+import { gradeFor } from "@/features/management/shared/grading";
 import { useManagedContest } from "@/features/management/useManagedContest";
 
 type Row = VisibleProblem & {
@@ -24,13 +26,14 @@ export const ParticipantResultsPage = () => {
     const contest = useManagedContest();
     const { data: problems } = useSuspenseQuery(problemQueries.byContest(contest.id));
     const { data: finals } = useSuspenseQuery(submissionQueries.finalForUser(contest.id, userId));
+    const { data: scales } = useSuspenseQuery(contestQueries.gradingScales(contest.id));
     const { data: members } = useQuery(contestQueries.leaderboard(contest.id, true));
 
     const member = members?.find((it) => it.user_id.toString() === userId);
 
     const rows = useMemo<Row[]>(
         () =>
-            problems.map((problem) => ({
+            sortProblems(problems).map((problem) => ({
                 ...problem,
                 final: finals.find((final) => final.problem_id === problem.id),
             })),
@@ -39,6 +42,9 @@ export const ParticipantResultsPage = () => {
 
     const total = rows.reduce((sum, row) => sum + (row.final?.final_score ?? 0), 0);
     const max = problems.reduce((sum, problem) => sum + problem.score, 0);
+    const grade = scales.length > 0 ? gradeFor(scales, total, max) : undefined;
+    const withFinal = rows.filter((row) => row.final);
+    const reviewedCount = withFinal.filter((row) => row.final?.reviewed).length;
 
     const columns = useMemo<ColumnDef<Row>[]>(
         () => [
@@ -55,8 +61,9 @@ export const ParticipantResultsPage = () => {
                 header: t("management.results.participant.points"),
                 cell: ({ row }) => (
                     <ScoreBadge
-                        score={row.original.final?.final_score ?? 0}
+                        score={row.original.final?.final_score}
                         max={row.original.score}
+                        dimWhenUnattempted
                     />
                 ),
             },
@@ -83,7 +90,12 @@ export const ParticipantResultsPage = () => {
                 cell: ({ row }) =>
                     row.original.final && (
                         <Button variant="outline" size="sm" asChild>
-                            <Link to={`/review/${row.original.final.id}`}>
+                            <Link
+                                to={`/review/${row.original.final.id}`}
+                                aria-label={t("management.results.participant.openTask", {
+                                    task: row.original.title,
+                                })}
+                            >
                                 {t("management.results.participant.open")}
                             </Link>
                         </Button>
@@ -111,14 +123,38 @@ export const ParticipantResultsPage = () => {
                     {t("management.results.exportDocx")}
                 </Button>
             </div>
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-xl font-medium">
-                    {t("management.results.participant.title")}
-                    {member && <span className="text-muted-foreground"> · {member.full_name}</span>}
-                </h2>
-                <ScoreBadge score={total} max={max} className="text-lg" />
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                <div className="flex min-w-0 flex-col gap-1">
+                    <h2 className="text-xl font-medium break-words">
+                        {member?.full_name ?? t("management.results.participant.title")}
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                        {t("management.results.participant.summary", {
+                            finals: withFinal.length,
+                            tasks: rows.length,
+                            reviewed: reviewedCount,
+                        })}
+                    </p>
+                </div>
+                <dl className="flex gap-6 text-sm">
+                    <div className="flex flex-col">
+                        <dt className="text-muted-foreground text-xs">
+                            {t("management.results.table.points")}
+                        </dt>
+                        <dd>
+                            <ScoreBadge score={total} max={max} className="text-lg" />
+                        </dd>
+                    </div>
+                    <div className="flex flex-col">
+                        <dt className="text-muted-foreground text-xs">
+                            {t("management.results.table.grade")}
+                        </dt>
+                        <dd className="text-lg font-semibold">{grade ?? "–"}</dd>
+                    </div>
+                </dl>
             </div>
             <DataTable
+                empty={t("management.results.participant.empty")}
                 columns={columns}
                 data={rows}
                 getRowId={(row) => row.id.toString()}

@@ -16,7 +16,7 @@ import { compareContests } from "@/lib/contest";
 import { formatDateTime } from "@/lib/format";
 
 const manageHref = (contest: AdminContestListItem) =>
-    `/management/${contest.id}?organisationId=${contest.organisation_id}`;
+    `/management/${contest.id}?org=${contest.organisation_id}`;
 
 export const AdminContestsPage = () => {
     const { t } = useTranslation();

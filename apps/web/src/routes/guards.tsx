@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Navigate, Outlet, useLocation, useSearchParams } from "react-router";
 
 import { authQueries } from "@/api/auth";
@@ -49,9 +49,13 @@ export const RequireAuth = () => {
     return <Outlet />;
 };
 
+const ORGANISATION_PARAM = "org";
+
 /**
- * Ensures an organisation is selected. Temporary users are pinned to their organisation; links
- * may carry `?organisationId=` to switch organisation before opening the page.
+ * Ensures an organisation is selected and keeps it in the address bar as `?org=<id>`, so any
+ * copied URL opens in the right organisation for whoever receives it. A fresh navigation with
+ * `?org=` (or the legacy `?organisationId=`) switches organisation; switching it in the UI
+ * rewrites the parameter. Temporary users are pinned to their organisation.
  */
 export const RequireOrganisation = () => {
     const token = useSessionStore((state) => state.token);
@@ -59,25 +63,55 @@ export const RequireOrganisation = () => {
     const { organisationId, select } = useOrganisationStore();
     const location = useLocation();
     const [params, setParams] = useSearchParams();
+    const seenLocation = useRef<string | undefined>(undefined);
 
-    const requested = params.get("organisationId");
+    const raw = params.get(ORGANISATION_PARAM) ?? params.get("organisationId");
+    const requested = raw && /^\d+$/.test(raw) ? raw : undefined;
     const temporaryOrganisation = user?.is_temporary
         ? user.temporary_data?.organisation_id.toString()
         : undefined;
 
     useEffect(() => {
-        if (temporaryOrganisation && organisationId !== temporaryOrganisation) {
-            select(temporaryOrganisation);
+        const fresh = seenLocation.current !== location.key;
+
+        seenLocation.current = location.key;
+
+        if (temporaryOrganisation) {
+            if (organisationId !== temporaryOrganisation) select(temporaryOrganisation);
 
             return;
         }
 
-        if (requested && /^\d+$/.test(requested)) {
+        // read the store directly: under StrictMode this effect runs twice with a stale closure
+        const selected = useOrganisationStore.getState().organisationId;
+
+        // a link that names an organisation wins over the remembered one
+        if (fresh && requested && requested !== selected) {
             select(requested);
-            params.delete("organisationId");
-            setParams(params, { replace: true });
+
+            return;
         }
-    }, [temporaryOrganisation, organisationId, requested, select, params, setParams]);
+
+        if (
+            selected &&
+            (params.get(ORGANISATION_PARAM) !== selected || params.has("organisationId"))
+        ) {
+            const next = new URLSearchParams(params);
+
+            next.delete("organisationId");
+            next.set(ORGANISATION_PARAM, selected);
+            setParams(next, { replace: true, state: location.state });
+        }
+    }, [
+        temporaryOrganisation,
+        organisationId,
+        requested,
+        select,
+        params,
+        setParams,
+        location.key,
+        location.state,
+    ]);
 
     if (temporaryOrganisation) {
         if (organisationId !== temporaryOrganisation) return <FullPageSpinner />;
@@ -85,15 +119,20 @@ export const RequireOrganisation = () => {
         return <AppShell temporary />;
     }
 
-    if (requested) return <FullPageSpinner />;
+    if (!organisationId) {
+        if (requested) return <FullPageSpinner />;
 
-    if (!organisationId)
         return (
             <Navigate
                 to={`/organisations?redirect=${encodeURIComponent(currentPath(location))}`}
                 replace
             />
         );
+    }
+
+    // never render (and fetch) a linked page under the previously selected organisation
+    if (requested && requested !== organisationId && seenLocation.current !== location.key)
+        return <FullPageSpinner />;
 
     return <AppShell />;
 };

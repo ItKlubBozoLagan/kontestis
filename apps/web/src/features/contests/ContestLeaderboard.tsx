@@ -131,8 +131,9 @@ export const ContestLeaderboard = ({
                     ),
                     cell: ({ row: { original } }) => (
                         <ScoreBadge
-                            score={original.score?.[problem.id.toString()] ?? 0}
+                            score={original.score?.[problem.id.toString()]}
                             max={problem.score}
+                            dimWhenUnattempted
                         />
                     ),
                 })

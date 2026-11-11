@@ -25,7 +25,7 @@ export const ContestThreadPage = () => {
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
                 <Link
-                    to={`/contest/${contest.id}?tab=questions`}
+                    to={`/contest/${contest.id}`}
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm"
                 >
                     <ArrowLeft className="size-4" />

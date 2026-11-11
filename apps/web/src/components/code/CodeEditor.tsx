@@ -44,6 +44,11 @@ type Props = {
     maxHeight?: string;
     className?: string;
     placeholder?: string;
+    /**
+     * Whether Tab indents inside the editor. Turn it off where the editor sits in the middle of
+     * a form, so keyboard users can Tab through it to the controls that follow.
+     */
+    indentWithTab?: boolean;
 };
 
 export const CodeEditor = ({
@@ -55,6 +60,7 @@ export const CodeEditor = ({
     maxHeight = "70vh",
     className,
     placeholder,
+    indentWithTab = true,
 }: Props) => {
     const { resolvedTheme } = useTheme();
     const extensions = useMemo(
@@ -73,6 +79,7 @@ export const CodeEditor = ({
             minHeight={minHeight}
             maxHeight={maxHeight}
             placeholder={placeholder}
+            indentWithTab={indentWithTab && !readOnly}
             basicSetup={{ foldGutter: false, highlightActiveLine: !readOnly }}
             className={cn("overflow-hidden rounded-md border font-mono text-sm", className)}
         />
