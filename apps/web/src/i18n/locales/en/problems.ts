@@ -82,7 +82,6 @@ export const problems = {
             dropHere: "Drop the file to load it",
             jump: "Submit",
             size: "{{size}} of 64 KiB",
-            evaluating: "Evaluating…",
             allSubmissions: "All your submissions",
         },
         submissions: {

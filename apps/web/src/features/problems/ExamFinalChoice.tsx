@@ -153,10 +153,10 @@ export const ExamFinalChoice = ({
                                             className="flex flex-1 items-center gap-2 px-1.5 py-1"
                                             role="status"
                                         >
-                                            <VerdictBadge verdict="pending" />
-                                            <span className="text-muted-foreground animate-pulse">
-                                                {t("problems.individual.submit.evaluating")}
-                                            </span>
+                                            <VerdictBadge
+                                                verdict="pending"
+                                                className="animate-pulse"
+                                            />
                                         </span>
                                     )}
                                     {it.completed && (isFinal || running) && (

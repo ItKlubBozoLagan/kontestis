@@ -84,7 +84,6 @@ export const problems: Translation<typeof en> = {
             dropHere: "Ispusti datoteku za učitavanje",
             jump: "Predaj",
             size: "{{size}} od 64 KiB",
-            evaluating: "Evaluacija…",
             allSubmissions: "Sva tvoja rješenja",
         },
         submissions: {

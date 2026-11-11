@@ -337,10 +337,7 @@ export const SubmitPanel = ({
                                 className="flex items-center justify-between gap-2 px-1.5 py-1 text-xs"
                                 role="status"
                             >
-                                <VerdictBadge verdict="pending" />
-                                <span className="text-muted-foreground animate-pulse">
-                                    {t("problems.individual.submit.evaluating")}
-                                </span>
+                                <VerdictBadge verdict="pending" className="animate-pulse" />
                             </div>
                         )
                     )}
