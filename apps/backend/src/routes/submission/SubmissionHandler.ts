@@ -21,6 +21,7 @@ import { extractSubmission } from "../../extractors/extractSubmission";
 import { extractUser } from "../../extractors/extractUser";
 import { Influx } from "../../influx/Influx";
 import { createInfluxUInt } from "../../influx/InfluxClient";
+import { isContestRunning } from "../../lib/contest";
 import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
@@ -165,10 +166,15 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
 
     if (!contest.exam) throw new SafeError(StatusCodes.BAD_REQUEST);
 
+    // participants choose among their own submissions while the exam is running;
+    //  anything else (another user's submission, or after the exam) is a staff action
+    if (submission.user_id !== user.id || !isContestRunning(contest))
+        await extractModifiableContest(req, contest.id);
+
     const existingFinalSubmissionRecord =
         await Repositories.exam_final_submissions.selectForProblem(
             contest.id,
-            user.id,
+            submission.user_id,
             submission.problem_id
         );
 
