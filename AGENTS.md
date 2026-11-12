@@ -21,7 +21,7 @@ Kontestis is a programming-contest and exam platform. It is a pnpm TypeScript mo
 - `apps/function`: legacy HTTP code-evaluation service. The current evaluator path is a separate
   Redis-queue consumer, not this app.
 - `packages/models`: shared database/API types and permission definitions.
-- `packages/utils`: small shared utilities; this is currently the only package with Jest tests.
+- `packages/utils`: small shared utilities with Jest tests.
 - `packages/scripts`: repository maintenance scripts, notably dependency-version checking.
 - `docker-compose.yml`: the development stack.
 - `tools/`: ignored local volumes and imported runtime data. It is not source code.
@@ -32,7 +32,7 @@ permissions are separate bitsets defined in `packages/models/src/permissions`.
 
 ## Toolchain and setup
 
-- Use Node `18.12.1` (see `.nvmrc`).
+- Use Node 26 (see `.nvmrc`).
 - Use pnpm only. The repository pins pnpm 9.10.0 in `package.json`; `npm` and `yarn` installs are
   intentionally rejected by `preinstall`.
 - Install from the repository root with `pnpm install` so workspace packages are linked correctly.
@@ -88,9 +88,11 @@ pnpm --filter @kontestis/frontend typecheck
 pnpm --filter @kontestis/frontend build
 pnpm --filter @kontestis/function typecheck
 pnpm --filter @kontestis/utils test
+pnpm --filter @kontestis/backend test
 ```
 
-Only `packages/utils` currently owns automated tests. Backend, frontend, or evaluator changes need
+`packages/utils` and `apps/backend` own automated tests. Backend tests start a throwaway embedded
+PostgreSQL when `DATABASE_URL` is unset, so they need no Docker. Frontend or evaluator changes need
 focused manual verification in addition to typecheck/lint.
 
 ## Change discipline

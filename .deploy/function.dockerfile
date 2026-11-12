@@ -1,4 +1,4 @@
-FROM node:hydrogen-alpine AS workspace
+FROM node:26-alpine AS workspace
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN pnpm --filter=@kontestis/function... install
 
 RUN pnpm --filter=@kontestis/function deploy pruned
 
-FROM node:hydrogen-alpine
+FROM node:26-alpine
 
 RUN apk add python3 gcc g++ go rust openjdk17 gcompat boost-dev
 

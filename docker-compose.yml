@@ -2,7 +2,7 @@
 
 services:
   frontend:
-    image: "node:hydrogen-alpine"
+    image: "node:26-alpine"
     tty: true
     volumes:
       - ".:/app"
@@ -18,7 +18,7 @@ services:
       - VITE_AAI_EDU_LOGOUT_REDIRECT_URL=http://localhost:3000/
 
   backend:
-    image: "node:hydrogen-alpine"
+    image: "node:26-alpine"
     tty: true
     volumes:
       - ".:/app"
