@@ -113,6 +113,14 @@ TestcaseHandler.patch("/:testcase_id", async (req, res) => {
     return respond(res, StatusCodes.OK);
 });
 
+// a file referenced by the database can be missing from storage (e.g. partially imported data)
+const getTestcaseObject = (path: string) =>
+    S3Client.getObject(Globals.s3.buckets.testcases, path).catch((error) => {
+        if (error?.code === "NoSuchKey") throw new SafeError(StatusCodes.NOT_FOUND, "File missing");
+
+        throw error;
+    });
+
 TestcaseHandler.get("/:testcase_id/input", async (req, res) => {
     const testcase = await extractTestcase(req);
 
@@ -120,11 +128,12 @@ TestcaseHandler.get("/:testcase_id/input", async (req, res) => {
         throw new SafeError(StatusCodes.NOT_FOUND, "Input file not found");
     }
 
-    const data = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.input_file);
+    const data = await getTestcaseObject(testcase.input_file);
 
     res.setHeader("Content-Type", "text/plain");
 
-    return res.send(data);
+    // getObject resolves to a readable stream
+    data.pipe(res);
 });
 
 TestcaseHandler.get("/:testcase_id/output", async (req, res) => {
@@ -134,11 +143,12 @@ TestcaseHandler.get("/:testcase_id/output", async (req, res) => {
         throw new SafeError(StatusCodes.NOT_FOUND, "Output file not found");
     }
 
-    const data = await S3Client.getObject(Globals.s3.buckets.testcases, testcase.output_file);
+    const data = await getTestcaseObject(testcase.output_file);
 
     res.setHeader("Content-Type", "text/plain");
 
-    return res.send(data);
+    // getObject resolves to a readable stream
+    data.pipe(res);
 });
 
 // Accept file upload for input, use express file upload

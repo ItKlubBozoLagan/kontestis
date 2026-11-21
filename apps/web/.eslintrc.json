@@ -1,0 +1,21 @@
+{
+    "ignorePatterns": ["!**/*", "src/components/ui/**", "dist/**"],
+    "env": {
+        "browser": true
+    },
+    "globals": {
+        "JSX": "readonly",
+        "React": "readonly"
+    },
+    "rules": {
+        "no-undef": "off",
+        "unicorn/prevent-abbreviations": "off",
+        "unicorn/no-array-for-each": "off",
+        "unicorn/no-useless-undefined": "off",
+        "jsx-a11y/no-autofocus": "off",
+        "jsx-a11y/no-static-element-interactions": "off",
+        "jsx-a11y/click-events-have-key-events": "off",
+        "sonarjs/no-nested-template-literals": "off",
+        "sonarjs/no-duplicate-string": "off"
+    }
+}

@@ -16,6 +16,17 @@ const I18nEn = {
         logout: "Log out",
         siteRestriction: "Login is currently only limited to %1 and %2 accounts",
     },
+    oauth: {
+        authorize: {
+            title: "Sign in with Kontestis",
+            description: "Continue to %1 as %2 (%3)?",
+            continue: "Continue",
+            cancel: "Cancel",
+            switchAccount: "Use a different account",
+            invalidTitle: "Invalid sign-in link",
+            invalidDescription: "This application is not recognised. Go back and try again.",
+        },
+    },
     register: {
         label: "Register",
     },

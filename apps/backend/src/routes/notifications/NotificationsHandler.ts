@@ -20,19 +20,14 @@ const NotificationsHandler = Router();
 NotificationsHandler.get("/", async (req, res) => {
     const user = await extractUser(req);
 
-    const notifications = await Repositories.notifications.select("*", { recipient: user.id });
-
-    respond(
-        res,
-        StatusCodes.OK,
-        notifications
-            .filter(
-                (notification) =>
-                    Date.now() - notification.created_at.getTime() <= 2 * 24 * 60 * 60 * 1000
-            )
-            .filter((notification) => notification.created_at.getTime() <= Date.now())
-            .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+    // notifications for future contest events are stored ahead of time, they are published
+    //  once their created_at passes; only the last two days are shown
+    const notifications = await Repositories.notifications.selectRecent(
+        user.id,
+        new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
     );
+
+    respond(res, StatusCodes.OK, notifications);
 });
 
 const ReadNotificationSchema = Type.Object({

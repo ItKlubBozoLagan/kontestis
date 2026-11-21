@@ -16,6 +16,7 @@ import { temporaryRoutes } from "./routers/temporary";
 import { useAuthStore } from "./state/auth";
 import { useOrganisationStore } from "./state/organisation";
 import { useTokenStore } from "./state/token";
+import { takeOAuthReturn } from "./util/oauthReturn";
 
 Modal.setAppElement("#root");
 
@@ -116,9 +117,11 @@ export const App = () => {
             setIsOrganisationSelected(true);
         }
 
-        if (search.has("afterLogin")) {
-            const where = search.get("afterLogin")!;
+        // always consumed, so a stale entry cannot redirect a later navigation
+        const pendingOAuthReturn = takeOAuthReturn();
+        const where = search.get("afterLogin") ?? pendingOAuthReturn;
 
+        if (where) {
             // trigger next tick
             setTimeout(() => {
                 navigate(where);

@@ -23,3 +23,4 @@ export * from "./SystemMetrics";
 export * from "./Testcase";
 export * from "./TestcaseSubmission";
 export * from "./User";
+export * from "./Views";

@@ -16,5 +16,6 @@ export const RedisKeys = {
         `cluster:${clusterId}:testcase:${testcase}:data-output`,
     TASK_ELO_PROCESSING: (contestId: Snowflake) => `tasks:elo:${contestId}`,
     MANAGED_USER_CONFIRMATION_CODE: (userId: Snowflake) => `user:confirmation:${userId}`,
+    OAUTH_AUTHORIZATION_CODE: (codeHash: string) => `oauth:code:${codeHash}`,
     EVALUATION_RESULT_QUEUE: `${Globals.evaluatorRedisResponseQueuePrefix}:${Globals.INSTANCE_ID}`,
 };

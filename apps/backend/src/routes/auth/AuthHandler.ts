@@ -84,6 +84,36 @@ AuthHandler.get("/", async (req, res) => {
     return respond(res, StatusCodes.OK, users);
 });
 
+const UserSearchSchema = Type.Object({
+    search: Type.Optional(Type.String({ maxLength: 256 })),
+    limit: Type.Optional(Type.String({ pattern: "^\\d{1,3}$" })),
+    offset: Type.Optional(Type.String({ pattern: "^\\d{1,9}$" })),
+    sort: Type.Optional(
+        Type.Union([Type.Literal("name"), Type.Literal("email"), Type.Literal("newest")])
+    ),
+});
+
+// paginated, searchable alternative to GET / for large user bases
+AuthHandler.get("/users", useValidation(UserSearchSchema, { query: true }), async (req, res) => {
+    const user = await extractUser(req);
+
+    if (!hasAdminPermission(user.permissions, AdminPermissions.VIEW_USER))
+        throw new SafeError(StatusCodes.FORBIDDEN);
+
+    const search = req.query.search?.trim();
+
+    return respond(
+        res,
+        StatusCodes.OK,
+        await Repositories.users.search({
+            search: search && search.length > 0 ? search : undefined,
+            limit: Math.min(Math.max(Number(req.query.limit ?? 25), 1), 200),
+            offset: Number(req.query.offset ?? 0),
+            sort: req.query.sort ?? "name",
+        })
+    );
+});
+
 AuthHandler.patch("/:user_id", async (req, res) => {
     const user = await extractUser(req);
 
