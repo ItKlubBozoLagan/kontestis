@@ -64,6 +64,38 @@ export const contests = {
     announcements: {
         title: "Announcements",
         empty: "No announcements yet.",
+        more: "Read more",
+        less: "Show less",
+        showAll: "Show all {{count}}",
+        showFewer: "Show fewer",
+    },
+    clock: {
+        upcoming: "Starts in",
+        running: "Time left",
+        finished: "Contest over",
+        startsAt: "Starts {{time}}",
+        endsAt: "Ends {{time}}",
+        endedAt: "Ended {{time}}",
+        elapsed: "Contest time elapsed",
+    },
+    exam: {
+        notStarted: "Tasks will be revealed when the exam starts.",
+        finalChosen: "Final chosen",
+        noFinal: "No final submission",
+        finalPoints: "{{score}} / {{max}} points",
+        maxPoints: "max {{max}} points",
+        finalsChosen: "Final submissions chosen",
+        finalScore: "Points (final)",
+        missingFinals: "Tasks without a final submission: {{count}}",
+        howItWorks:
+            "Only the final submission of each task is graded. Choose it on the task page after it is evaluated.",
+        howItWorksOver: "Only the final submission of each task is graded.",
+    },
+    standing: {
+        score: "Your score",
+        solved: "Solved",
+        place: "Place",
+        of: "of {{count}}",
     },
     questions: {
         title: "Questions",

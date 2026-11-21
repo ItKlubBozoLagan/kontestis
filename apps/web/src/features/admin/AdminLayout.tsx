@@ -6,12 +6,15 @@ import { useCurrentUser } from "@/api/auth";
 import { AsyncBoundary } from "@/components/common/AsyncBoundary";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { isAdmin } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 export const AdminLayout = () => {
     const { t } = useTranslation();
     const user = useCurrentUser();
+
+    usePageTitle(t("admin.title"));
 
     if (!isAdmin(user))
         return (

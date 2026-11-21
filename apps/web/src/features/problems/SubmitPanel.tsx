@@ -1,7 +1,7 @@
 import type { Contest, EvaluationLanguage } from "@kontestis/models";
 import { useQuery } from "@tanstack/react-query";
 import { FileUp, Send, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -21,11 +21,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { ExamFinalChoice } from "@/features/problems/ExamFinalChoice";
 import { useNow } from "@/hooks/useNow";
+import { usePageDrop } from "@/hooks/usePageDrop";
 import { encodeBase64 } from "@/lib/base64";
 import { contestPhase } from "@/lib/contest";
+import { cn } from "@/lib/utils";
 
 const SOURCE_LIMIT = 64_000;
+const SOURCE_BYTES = 64 * 1024;
 
 type Draft = { language: EvaluationLanguage; code: string };
 
@@ -43,6 +47,28 @@ const readDraft = (problemId: bigint): Draft | null => {
 
 const LAST_LANGUAGE_KEY = "@kontestis/web/last-language";
 
+/**
+ * Cheap guess for pasted code. Contestants write in their own editor and paste here, so picking
+ * the obvious language for them removes the most common wrong-language submission.
+ */
+const guessLanguage = (code: string, current: EvaluationLanguage): EvaluationLanguage => {
+    if (/^\s*#include\s*["<]/m.test(code)) return current === "c" ? "c" : "cpp";
+
+    if (/\bpublic\s+static\s+void\s+main\b/.test(code)) return "java";
+
+    if (/^\s*package\s+main\b/m.test(code)) return "go";
+
+    if (/\bfn\s+main\s*\(\)/.test(code)) return "rust";
+
+    if (
+        /^\s*(def\s+\w+\(|import\s+\w+|from\s+\w+\s+import|print\()/m.test(code) &&
+        !/;\s*$/m.test(code)
+    )
+        return "python";
+
+    return current;
+};
+
 export const SubmitPanel = ({
     problem,
     contest,
@@ -54,6 +80,7 @@ export const SubmitPanel = ({
     const now = useNow();
     const outputOnly = problem.evaluation_variant === "output-only";
     const fileInput = useRef<HTMLInputElement>(null);
+    const root = useRef<HTMLDivElement>(null);
     const submit = useSubmitSolution(problem.id);
     const { data: submissions } = useQuery(submissionQueries.byProblem(problem.id));
     const latest = [...(submissions ?? [])].sort((a, b) => (b.id > a.id ? 1 : -1)).slice(0, 3);
@@ -104,20 +131,63 @@ export const SubmitPanel = ({
         );
     };
 
-    const loadFile = async (file: File) => {
-        const content = await file.text();
-        const detected = outputOnly ? undefined : languageFromFilename(file.name);
+    const [dragging, setDragging] = useState(false);
+    const latestDraft = useRef(draft);
 
-        setDraft((previous) => ({
-            language:
-                detected && SUBMISSION_LANGUAGES.includes(detected) ? detected : previous.language,
-            code: content,
-        }));
-    };
+    latestDraft.current = draft;
+
+    const loadFile = useCallback(
+        async (file: File) => {
+            const content = await file.text();
+            const detected = outputOnly ? undefined : languageFromFilename(file.name);
+
+            setDraft((previous) => ({
+                language:
+                    detected && SUBMISSION_LANGUAGES.includes(detected)
+                        ? detected
+                        : previous.language,
+                code: content,
+            }));
+            toast.success(t("problems.individual.submit.loaded", { name: file.name }));
+        },
+        [outputOnly, t]
+    );
+
+    const onPasteText = useCallback(
+        (text: string) => {
+            const previous = latestDraft.current.language;
+            const language = outputOnly ? previous : guessLanguage(text, previous);
+
+            setDraft({ language, code: text });
+
+            if (language !== previous)
+                toast.info(
+                    t("problems.individual.submit.detected", {
+                        language: t(`programmingLanguages.${language}`),
+                    })
+                );
+
+            toast.success(
+                t("problems.individual.submit.pasted", {
+                    count: text.trimEnd().split("\n").length,
+                })
+            );
+            root.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        },
+        [outputOnly, t]
+    );
+
+    usePageDrop({ onText: onPasteText, onFile: loadFile, onDragging: setDragging });
+
+    const bytes = new Blob([draft.code]).size;
 
     return (
         <div
-            className="flex flex-col gap-3"
+            ref={root}
+            className={cn(
+                "relative flex flex-col gap-3 rounded-md",
+                dragging && "outline-primary outline-2 outline-offset-4 outline-dashed"
+            )}
             onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
                     event.preventDefault();
@@ -129,7 +199,11 @@ export const SubmitPanel = ({
                 <Alert variant="info">{t("problems.individual.submit.outputOnlyHint")}</Alert>
             )}
             {phase === "finished" && (
-                <Alert variant="warning">{t("problems.individual.submit.finishedHint")}</Alert>
+                <Alert variant="warning">
+                    {contest.exam
+                        ? t("problems.exam.finishedHint")
+                        : t("problems.individual.submit.finishedHint")}
+                </Alert>
             )}
             {phase === "upcoming" && (
                 <Alert variant="warning">{t("problems.individual.submit.upcomingHint")}</Alert>
@@ -206,11 +280,32 @@ export const SubmitPanel = ({
                     value={draft.code}
                     onChange={(code) => setDraft((previous) => ({ ...previous, code }))}
                     language={outputOnly ? "plain" : draft.language}
-                    minHeight="260px"
-                    maxHeight="480px"
+                    indentWithTab={false}
+                    minHeight="170px"
+                    maxHeight="340px"
                 />
+                <p className="text-muted-foreground flex flex-wrap justify-between gap-x-3 text-xs">
+                    <span>
+                        {dragging
+                            ? t("problems.individual.submit.dropHere")
+                            : t("problems.individual.submit.pasteHint")}
+                    </span>
+                    {draft.code.length > 0 && !outputOnly && (
+                        <span
+                            className={cn(
+                                "font-mono tabular-nums",
+                                bytes > SOURCE_BYTES && "text-destructive font-semibold"
+                            )}
+                        >
+                            {t("problems.individual.submit.size", {
+                                size: `${(bytes / 1024).toFixed(1)} KiB`,
+                            })}
+                        </span>
+                    )}
+                </p>
             </div>
             <Button
+                size="lg"
                 onClick={doSubmit}
                 disabled={submit.isPending}
                 title={t("problems.individual.submit.shortcut")}
@@ -218,7 +313,8 @@ export const SubmitPanel = ({
                 <Send />
                 {t("problems.individual.submit.submit")}
             </Button>
-            {latest.length > 0 && (
+            {contest.exam && <ExamFinalChoice problem={problem} contest={contest} />}
+            {!contest.exam && latest.length > 0 && (
                 <div className="flex flex-col gap-1.5 border-t pt-3">
                     <span className="text-muted-foreground text-xs font-medium uppercase">
                         {t("problems.individual.submit.latest")}
@@ -236,8 +332,12 @@ export const SubmitPanel = ({
                                 </span>
                             </Link>
                         ) : (
-                            <div key={it.id.toString()} className="px-1.5 py-1">
-                                <VerdictBadge verdict="pending" />
+                            <div
+                                key={it.id.toString()}
+                                className="flex items-center justify-between gap-2 px-1.5 py-1 text-xs"
+                                role="status"
+                            >
+                                <VerdictBadge verdict="pending" className="animate-pulse" />
                             </div>
                         )
                     )}

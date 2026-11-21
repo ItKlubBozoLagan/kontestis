@@ -35,13 +35,10 @@ import { Input } from "@/components/ui/input";
 import { pollingClusters } from "@/features/management/clusters/clusterQueries";
 import { CreateTestcaseDialog } from "@/features/management/clusters/CreateTestcaseDialog";
 import {
-    AuthoringBreadcrumb,
-    problemPath,
-} from "@/features/management/problems/AuthoringBreadcrumb";
-import {
     GenerationError,
     GeneratorStateBadge,
 } from "@/features/management/problems/GeneratorStateBadge";
+import { problemPath } from "@/features/management/problems/studioPaths";
 import { useManagedContest } from "@/features/management/useManagedContest";
 import { useContestAccess } from "@/hooks/useContestAccess";
 
@@ -332,17 +329,6 @@ export const ClusterPage = () => {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            <AuthoringBreadcrumb
-                contestId={contest.id}
-                items={[
-                    { label: problem.title, to: problemPath(contest.id, problem.id) },
-                    {
-                        label: t("managementProblems.breadcrumb.cluster", {
-                            index: clusterIndex + 1,
-                        }),
-                    },
-                ]}
-            />
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
                     <Layers className="text-muted-foreground size-6" />

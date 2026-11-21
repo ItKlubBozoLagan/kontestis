@@ -39,30 +39,50 @@ const managementRoutes: RouteObject[] = [
         ),
     },
     {
+        // problem studio: tree of the problem on the left, the authoring page on the right
         path: "problems/:problemId",
         lazy: page(
-            () => import("@/features/management/problems/ProblemManagePage"),
-            "ProblemManagePage"
+            () => import("@/features/management/problems/ProblemStudioLayout"),
+            "ProblemStudioLayout"
         ),
-    },
-    {
-        path: "problems/:problemId/generators",
-        lazy: page(
-            () => import("@/features/management/generators/GeneratorsPage"),
-            "GeneratorsPage"
-        ),
-    },
-    {
-        path: "problems/:problemId/generators/:generatorId",
-        lazy: page(() => import("@/features/management/generators/GeneratorPage"), "GeneratorPage"),
-    },
-    {
-        path: "problems/:problemId/:clusterId",
-        lazy: page(() => import("@/features/management/clusters/ClusterPage"), "ClusterPage"),
-    },
-    {
-        path: "problems/:problemId/:clusterId/:testcaseId",
-        lazy: page(() => import("@/features/management/testcases/TestcasePage"), "TestcasePage"),
+        children: [
+            {
+                index: true,
+                lazy: page(
+                    () => import("@/features/management/problems/ProblemManagePage"),
+                    "ProblemManagePage"
+                ),
+            },
+            // static "generators" segments rank above the dynamic `:clusterId` ones
+            {
+                path: "generators",
+                lazy: page(
+                    () => import("@/features/management/generators/GeneratorsPage"),
+                    "GeneratorsPage"
+                ),
+            },
+            {
+                path: "generators/:generatorId",
+                lazy: page(
+                    () => import("@/features/management/generators/GeneratorPage"),
+                    "GeneratorPage"
+                ),
+            },
+            {
+                path: ":clusterId",
+                lazy: page(
+                    () => import("@/features/management/clusters/ClusterPage"),
+                    "ClusterPage"
+                ),
+            },
+            {
+                path: ":clusterId/:testcaseId",
+                lazy: page(
+                    () => import("@/features/management/testcases/TestcasePage"),
+                    "TestcasePage"
+                ),
+            },
+        ],
     },
     {
         path: "announcements",

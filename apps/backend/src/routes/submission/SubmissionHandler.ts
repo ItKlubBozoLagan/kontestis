@@ -3,10 +3,11 @@ import {
     ContestMemberPermissions,
     ExamFinalSubmission,
     hasAdminPermission,
+    Snowflake,
     Submission,
 } from "@kontestis/models";
 import { Type } from "@sinclair/typebox";
-import { Router } from "express";
+import { Request, Router } from "express";
 import { StatusCodes } from "http-status-codes";
 
 import { SafeError } from "../../errors/SafeError";
@@ -21,6 +22,7 @@ import { extractSubmission } from "../../extractors/extractSubmission";
 import { extractUser } from "../../extractors/extractUser";
 import { Influx } from "../../influx/Influx";
 import { createInfluxUInt } from "../../influx/InfluxClient";
+import { isContestRunning } from "../../lib/contest";
 import { beginEvaluation } from "../../lib/evaluation";
 import { getAllPendingSubmissions } from "../../lib/pendingSubmission";
 import { generateSnowflake } from "../../lib/snowflake";
@@ -165,10 +167,15 @@ SubmissionHandler.post("/final/:submission_id", async (req, res) => {
 
     if (!contest.exam) throw new SafeError(StatusCodes.BAD_REQUEST);
 
+    // participants choose among their own submissions while the exam is running;
+    //  anything else (another user's submission, or after the exam) is a staff action
+    if (submission.user_id !== user.id || !isContestRunning(contest))
+        await extractModifiableContest(req, contest.id);
+
     const existingFinalSubmissionRecord =
         await Repositories.exam_final_submissions.selectForProblem(
             contest.id,
-            user.id,
+            submission.user_id,
             submission.problem_id
         );
 
@@ -270,10 +277,40 @@ SubmissionHandler.get("/final/contest/:contest_id", async (req, res) => {
     );
 });
 
+// A participant sees the automatically awarded score until staff mark the final submission
+//  as reviewed, so a review that is still in progress is not visible through the API.
+const withoutUnreviewedScore = async <T extends ExamFinalSubmission>(finalSubmission: T) => {
+    if (finalSubmission.reviewed) return finalSubmission;
+
+    const submission = await Repositories.submissions.selectOne(["awarded_score"], {
+        id: finalSubmission.submission_id,
+    });
+
+    return {
+        ...finalSubmission,
+        final_score: submission?.awarded_score ?? finalSubmission.final_score,
+    };
+};
+
+const canSeeReviewInProgress = async (req: Request, contestId: Snowflake) => {
+    const user = await extractUser(req);
+
+    return (
+        hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST) ||
+        (await requestHasContestPermission(req, ContestMemberPermissions.VIEW_PRIVATE, contestId))
+    );
+};
+
 SubmissionHandler.get("/final/:final_submission_id", async (req, res) => {
     const finalSubmission = await extractFinalSubmission(req);
 
-    return respond(res, StatusCodes.OK, finalSubmission);
+    return respond(
+        res,
+        StatusCodes.OK,
+        (await canSeeReviewInProgress(req, finalSubmission.contest_id))
+            ? finalSubmission
+            : await withoutUnreviewedScore(finalSubmission)
+    );
 });
 
 const GetFinalSubmissionSchema = Type.Object({
@@ -294,21 +331,21 @@ SubmissionHandler.get(
 
         // staff may not be contest members themselves (organisation or site admins),
         //  so the shared precondition is used instead of the member's own permissions
-        if (
-            user.id !== targetId &&
-            !hasAdminPermission(user.permissions, AdminPermissions.VIEW_CONTEST) &&
-            !(await requestHasContestPermission(
-                req,
-                ContestMemberPermissions.VIEW_PRIVATE,
-                contest.id
-            ))
-        )
-            throw new SafeError(StatusCodes.FORBIDDEN);
+        const staff = await canSeeReviewInProgress(req, contest.id);
+
+        if (user.id !== targetId && !staff) throw new SafeError(StatusCodes.FORBIDDEN);
+
+        const finalSubmissions = await Repositories.exam_final_submissions.selectWithProblemIds(
+            contest.id,
+            targetId
+        );
 
         return respond(
             res,
             StatusCodes.OK,
-            await Repositories.exam_final_submissions.selectWithProblemIds(contest.id, targetId)
+            staff
+                ? finalSubmissions
+                : await Promise.all(finalSubmissions.map((it) => withoutUnreviewedScore(it)))
         );
     }
 );

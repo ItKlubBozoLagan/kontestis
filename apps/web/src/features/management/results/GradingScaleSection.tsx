@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Section } from "@/components/common/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const validPercentage = (value: string) =>
     value.trim() !== "" && Number(value) >= 0 && Number(value) <= 100;
@@ -67,7 +68,7 @@ const ScaleRow = ({ contestId, scale }: { contestId: bigint; scale: ExamGradingS
                 size="icon"
                 className="size-8"
                 disabled={!dirty || update.isPending}
-                aria-label={t("common.save")}
+                aria-label={t("management.results.gradingScale.saveGrade", { grade: scale.grade })}
             >
                 <Check />
             </Button>
@@ -84,7 +85,9 @@ const ScaleRow = ({ contestId, scale }: { contestId: bigint; scale: ExamGradingS
                         variant="ghost"
                         size="icon"
                         className="text-destructive size-8"
-                        aria-label={t("common.delete")}
+                        aria-label={t("management.results.gradingScale.deleteGrade", {
+                            grade: scale.grade,
+                        })}
                     >
                         <Trash2 />
                     </Button>
@@ -131,7 +134,7 @@ export const GradingScaleSection = ({
                     />
                 ))}
                 <form
-                    className="flex items-center gap-2 border-t pt-3"
+                    className="flex flex-wrap items-end gap-2 border-t pt-3"
                     onSubmit={(event) => {
                         event.preventDefault();
 
@@ -148,22 +151,34 @@ export const GradingScaleSection = ({
                         );
                     }}
                 >
-                    <Input
-                        value={grade}
-                        onChange={(event) => setGrade(event.target.value)}
-                        placeholder={t("management.results.gradingScale.grade")}
-                        className="w-24"
-                    />
-                    <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="any"
-                        value={percentage}
-                        onChange={(event) => setPercentage(event.target.value)}
-                        placeholder={t("management.results.gradingScale.percentage")}
-                        className="w-28"
-                    />
+                    <div className="flex flex-col gap-1">
+                        <Label htmlFor={`new-grade-${contestId}`} className="text-xs">
+                            {t("management.results.gradingScale.grade")}
+                        </Label>
+                        <Input
+                            id={`new-grade-${contestId}`}
+                            value={grade}
+                            onChange={(event) => setGrade(event.target.value)}
+                            placeholder={t("management.results.gradingScale.gradeExample")}
+                            className="w-24"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <Label htmlFor={`new-percentage-${contestId}`} className="text-xs">
+                            {t("management.results.gradingScale.percentage")}
+                        </Label>
+                        <Input
+                            id={`new-percentage-${contestId}`}
+                            type="number"
+                            min={0}
+                            max={100}
+                            step="any"
+                            value={percentage}
+                            onChange={(event) => setPercentage(event.target.value)}
+                            placeholder="50"
+                            className="w-28 font-mono"
+                        />
+                    </div>
                     <Button
                         type="submit"
                         size="sm"

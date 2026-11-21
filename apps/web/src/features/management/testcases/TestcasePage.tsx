@@ -4,7 +4,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { FileText, Settings2, Trash2 } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -31,13 +31,10 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { pollingClusters } from "@/features/management/clusters/clusterQueries";
 import {
-    AuthoringBreadcrumb,
-    problemPath,
-} from "@/features/management/problems/AuthoringBreadcrumb";
-import {
     GenerationError,
     GeneratorStateBadge,
 } from "@/features/management/problems/GeneratorStateBadge";
+import { problemPath } from "@/features/management/problems/studioPaths";
 import { TestcaseFileCard } from "@/features/management/testcases/TestcaseFileCard";
 import { useManagedContest } from "@/features/management/useManagedContest";
 import { useContestAccess } from "@/hooks/useContestAccess";
@@ -256,26 +253,18 @@ export const TestcasePage = () => {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            <AuthoringBreadcrumb
-                contestId={contest.id}
-                items={[
-                    { label: problem.title, to: problemPath(contest.id, problem.id) },
-                    {
-                        label: t("managementProblems.breadcrumb.cluster", {
-                            index: clusterIndex + 1,
-                        }),
-                        to: clusterPath,
-                    },
-                    {
-                        label: t("managementProblems.breadcrumb.testcase", {
-                            index: testcaseIndex + 1,
-                        }),
-                    },
-                ]}
-            />
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
                     <FileText className="text-muted-foreground size-6" />
+                    <Link
+                        to={clusterPath}
+                        className="text-muted-foreground hover:text-foreground font-normal"
+                    >
+                        {t("managementProblems.clusters.name", { index: clusterIndex + 1 })}
+                    </Link>
+                    <span aria-hidden className="text-muted-foreground font-normal">
+                        /
+                    </span>
                     {t("managementProblems.testcases.name", { index: testcaseIndex + 1 })}
                 </h2>
                 {canEdit && (

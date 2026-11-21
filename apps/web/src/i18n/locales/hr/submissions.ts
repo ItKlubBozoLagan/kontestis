@@ -25,7 +25,7 @@ export const submissions: Translation<typeof en> = {
     body: {
         final: "Konačno",
         setFinal: "Postavi kao konačno",
-        notSubmitted: "Nije predano",
+        notSubmitted: "Nije konačno",
         clusterIndex: "Grupa {{index}}",
         sampleIndex: "Primjer {{index}}",
         testcaseIndex: "Test podatak {{index}}",

@@ -17,7 +17,14 @@ import { formatDateTime, formatDuration, formatSeconds } from "@/lib/format";
 const Marker = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <Tooltip>
         <TooltipTrigger asChild>
-            <span className="text-muted-foreground inline-flex">{children}</span>
+            <span
+                role="img"
+                aria-label={label}
+                title={label}
+                className="text-muted-foreground inline-flex"
+            >
+                {children}
+            </span>
         </TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
     </Tooltip>
@@ -77,7 +84,7 @@ export const ContestsTable = ({
                             </Marker>
                         )}
                         {contest.require_edu_verification && (
-                            <Badge variant="outline" className="px-1 py-0 text-[10px]">
+                            <Badge variant="outline" className="px-1.5 py-0 text-xs">
                                 {t("contests.table.eduOnly")}
                             </Badge>
                         )}
@@ -102,7 +109,7 @@ export const ContestsTable = ({
                 accessorKey: "duration_seconds",
                 header: t("contests.table.duration"),
                 cell: ({ row: { original: contest } }) => <DurationCell contest={contest} />,
-                meta: { className: "whitespace-nowrap" },
+                meta: { className: "font-mono whitespace-nowrap tabular-nums" },
             },
             ...(hidePartaking
                 ? []

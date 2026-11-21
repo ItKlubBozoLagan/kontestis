@@ -1,12 +1,13 @@
 import type { EvaluationLanguage } from "@kontestis/models";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import AnsiToHtml from "ansi-to-html";
-import { ArrowLeft, ClipboardCheck, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ClipboardCheck, ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 
+import { contestQueries } from "@/api/contests";
 import { problemQueries } from "@/api/problems";
 import { submissionQueries, useReviewFinalSubmission } from "@/api/submissions";
 import { ScoreBadge } from "@/components/badges/ScoreBadge";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { sortProblems } from "@/features/contests/ContestProblems";
 import { decodeBase64 } from "@/lib/base64";
 
 const ansi = new AnsiToHtml({ escapeXML: true, newline: true });
@@ -68,13 +70,14 @@ const ReviewForm = ({
                             max={maxScore}
                             value={score}
                             onChange={(event) => setScore(event.target.value)}
+                            aria-describedby="final-score-hint"
                             className="w-28 font-mono"
                         />
                         <span className="text-muted-foreground font-mono text-sm">
                             / {maxScore}
                         </span>
                     </div>
-                    <p className="text-muted-foreground text-xs">
+                    <p id="final-score-hint" className="text-muted-foreground text-xs">
                         {t("management.review.scoreHint", { score: evaluatedScore })}
                     </p>
                 </div>
@@ -93,6 +96,52 @@ const ReviewForm = ({
     );
 };
 
+/** Where to go after reviewing: the participant's next task that still needs a review. */
+const NextReview = ({
+    contestId,
+    userId,
+    currentId,
+    currentReviewed,
+}: {
+    contestId: bigint;
+    userId: bigint;
+    currentId: bigint;
+    currentReviewed: boolean;
+}) => {
+    const { t } = useTranslation();
+    const { data: finals } = useQuery(submissionQueries.finalForUser(contestId, userId));
+    const { data: problems } = useQuery(problemQueries.byContest(contestId));
+
+    if (!finals || !problems) return null;
+
+    const next = sortProblems(problems)
+        .map((problem) => ({
+            problem,
+            final: finals.find((final) => final.problem_id === problem.id),
+        }))
+        .find(({ final }) => final && !final.reviewed && final.id !== currentId);
+
+    if (!next?.final)
+        return (
+            <p className="text-muted-foreground text-sm">
+                {currentReviewed
+                    ? t("management.review.allReviewed")
+                    : t("management.review.noOtherPending")}
+            </p>
+        );
+
+    return (
+        <Button variant="outline" asChild className="w-full justify-between">
+            <Link to={`/review/${next.final.id}`}>
+                <span className="truncate">
+                    {t("management.review.next", { task: next.problem.title })}
+                </span>
+                <ArrowRight />
+            </Link>
+        </Button>
+    );
+};
+
 export const FinalSubmissionReviewPage = () => {
     const { t } = useTranslation();
     const { finalSubmissionId = "0" } = useParams<{ finalSubmissionId: string }>();
@@ -101,6 +150,10 @@ export const FinalSubmissionReviewPage = () => {
         submissionQueries.detail(finalSubmission.submission_id)
     );
     const { data: problem } = useSuspenseQuery(problemQueries.detail(submission.problem_id));
+    const { data: members } = useQuery(
+        contestQueries.leaderboard(finalSubmission.contest_id, true)
+    );
+    const participant = members?.find((it) => it.user_id === finalSubmission.user_id);
 
     const code = useMemo(() => decodeBase64(submission.code), [submission.code]);
     const compilerOutput = submission.compiler_output;
@@ -118,10 +171,20 @@ export const FinalSubmissionReviewPage = () => {
             <PageHeader
                 title={t("management.review.title")}
                 description={
-                    <>
-                        {t("management.review.problem")}:{" "}
-                        <span className="text-foreground font-medium">{problem.title}</span>
-                    </>
+                    <span className="flex flex-wrap gap-x-4 gap-y-1">
+                        <span>
+                            {t("management.review.problem")}:{" "}
+                            <span className="text-foreground font-medium">{problem.title}</span>
+                        </span>
+                        {participant && (
+                            <span>
+                                {t("management.review.participant")}:{" "}
+                                <span className="text-foreground font-medium">
+                                    {participant.full_name}
+                                </span>
+                            </span>
+                        )}
+                    </span>
                 }
                 actions={
                     <Button variant="outline" size="sm" asChild>
@@ -132,7 +195,7 @@ export const FinalSubmissionReviewPage = () => {
                     </Button>
                 }
             />
-            <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
                 <div className="flex min-w-0 flex-col gap-6">
                     <Section
                         title={t("management.review.code")}
@@ -170,14 +233,22 @@ export const FinalSubmissionReviewPage = () => {
                         </Section>
                     )}
                 </div>
-                <ReviewForm
-                    key={`${finalSubmission.final_score}-${finalSubmission.reviewed}`}
-                    finalSubmissionId={finalSubmission.id}
-                    initialScore={finalSubmission.final_score}
-                    initialReviewed={finalSubmission.reviewed}
-                    evaluatedScore={submission.awarded_score}
-                    maxScore={problem.score}
-                />
+                <div className="flex flex-col gap-3 lg:sticky lg:top-20">
+                    <ReviewForm
+                        key={`${finalSubmission.id}-${finalSubmission.final_score}-${finalSubmission.reviewed}`}
+                        finalSubmissionId={finalSubmission.id}
+                        initialScore={finalSubmission.final_score}
+                        initialReviewed={finalSubmission.reviewed}
+                        evaluatedScore={submission.awarded_score}
+                        maxScore={problem.score}
+                    />
+                    <NextReview
+                        contestId={finalSubmission.contest_id}
+                        userId={finalSubmission.user_id}
+                        currentId={finalSubmission.id}
+                        currentReviewed={finalSubmission.reviewed}
+                    />
+                </div>
             </div>
         </div>
     );

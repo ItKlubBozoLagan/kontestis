@@ -7,13 +7,14 @@ import type { VisibleProblem } from "@/api/problems";
 import { RankBadge } from "@/components/badges/RankBadge";
 import { ScoreBadge } from "@/components/badges/ScoreBadge";
 import { DataTable } from "@/components/common/DataTable";
+import { sortProblems } from "@/features/contests/ContestProblems";
 
 type Row = ContestMemberWithInfo & { total: number; place: number };
 
 /** Compact standings of a contest for staff (per problem scores and total). */
 export const StandingsTable = ({
     members,
-    problems,
+    problems: unsortedProblems,
     useExamScores = false,
 }: {
     members: ContestMemberWithInfo[];
@@ -21,6 +22,7 @@ export const StandingsTable = ({
     useExamScores?: boolean;
 }) => {
     const { t } = useTranslation();
+    const problems = useMemo(() => sortProblems(unsortedProblems), [unsortedProblems]);
 
     const rows = useMemo<Row[]>(() => {
         const withTotals = members.map((member) => {

@@ -1,7 +1,7 @@
 import type { ContestMemberWithInfo } from "@kontestis/models";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { FileDown, Info } from "lucide-react";
+import { CircleSlash, ClipboardCheck, FileDown, Info, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -11,6 +11,7 @@ import { problemQueries } from "@/api/problems";
 import { ScoreBadge } from "@/components/badges/ScoreBadge";
 import { Alert } from "@/components/common/Alert";
 import { DataTable } from "@/components/common/DataTable";
+import { StatCard } from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
 import { GradingScaleSection } from "@/features/management/results/GradingScaleSection";
 import {
@@ -29,9 +30,19 @@ type Row = ContestMemberWithInfo & {
     ratio: number;
     grade: string | undefined;
     review: ReviewState;
+    finalsCount: number;
+    reviewedCount: number;
 };
 
-const ExportButton = ({ contestId, userId }: { contestId: bigint; userId: bigint }) => {
+const ExportButton = ({
+    contestId,
+    userId,
+    name,
+}: {
+    contestId: bigint;
+    userId: bigint;
+    name: string;
+}) => {
     const { t } = useTranslation();
     const [pending, setPending] = useState(false);
 
@@ -40,6 +51,7 @@ const ExportButton = ({ contestId, userId }: { contestId: bigint; userId: bigint
             variant="ghost"
             size="sm"
             disabled={pending}
+            aria-label={t("management.results.exportFor", { name })}
             onClick={() => {
                 setPending(true);
                 downloadContestExport(contestId, userId).finally(() => setPending(false));
@@ -75,6 +87,7 @@ export const ResultsPage = () => {
 
         return members
             .map((member) => {
+                const own = finalsByUser.get(member.user_id.toString()) ?? [];
                 const points = Object.values(member.exam_score).reduce(
                     (sum, score) => sum + score,
                     0
@@ -85,11 +98,20 @@ export const ResultsPage = () => {
                     points,
                     ratio: maxScore > 0 ? points / maxScore : 0,
                     grade: scales.length > 0 ? gradeFor(scales, points, maxScore) : undefined,
-                    review: reviewState(finalsByUser.get(member.user_id.toString()) ?? []),
+                    review: reviewState(own),
+                    finalsCount: own.length,
+                    reviewedCount: own.filter((final) => final.reviewed).length,
                 };
             })
             .sort((a, b) => a.full_name.localeCompare(b.full_name));
     }, [members, finals, scales, maxScore]);
+
+    // counted over listed participants only (staff finals, e.g. test runs, are left out)
+    const summary = {
+        finals: rows.reduce((sum, row) => sum + row.finalsCount, 0),
+        reviewed: rows.reduce((sum, row) => sum + row.reviewedCount, 0),
+        withoutFinals: rows.filter((row) => row.finalsCount === 0).length,
+    };
 
     const columns = useMemo<ColumnDef<Row>[]>(
         () => [
@@ -121,14 +143,24 @@ export const ResultsPage = () => {
             {
                 accessorKey: "review",
                 header: t("management.results.table.reviewed"),
-                cell: ({ row }) => <ReviewStatus state={row.original.review} />,
+                cell: ({ row }) => (
+                    <ReviewStatus
+                        state={row.original.review}
+                        reviewed={row.original.reviewedCount}
+                        total={row.original.finalsCount}
+                    />
+                ),
             },
             {
                 id: "export",
                 header: t("management.results.table.export"),
                 enableSorting: false,
                 cell: ({ row }) => (
-                    <ExportButton contestId={contest.id} userId={row.original.user_id} />
+                    <ExportButton
+                        contestId={contest.id}
+                        userId={row.original.user_id}
+                        name={row.original.full_name}
+                    />
                 ),
             },
         ],
@@ -142,20 +174,49 @@ export const ResultsPage = () => {
                     {t("management.results.notAvailable")}
                 </Alert>
             )}
-            <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-                <DataTable
-                    columns={columns}
-                    data={rows}
-                    searchable
-                    pageSize={50}
-                    getRowId={(row) => row.id.toString()}
-                    rowHref={(row) => `/management/${contest.id}/results/${row.user_id}`}
-                    toolbar={
-                        <span className="text-muted-foreground text-sm">
-                            {t("management.results.maxPoints", { points: maxScore })}
-                        </span>
-                    }
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <StatCard
+                    label={t("management.results.summary.participants")}
+                    icon={Users}
+                    value={rows.length}
                 />
+                <StatCard
+                    label={t("management.results.summary.reviewed")}
+                    icon={ClipboardCheck}
+                    value={
+                        <>
+                            {summary.reviewed}
+                            <span className="text-muted-foreground text-sm font-normal">
+                                {" "}
+                                / {summary.finals}
+                            </span>
+                        </>
+                    }
+                    hint={t("management.results.summary.reviewedHint")}
+                />
+                <StatCard
+                    label={t("management.results.summary.withoutFinals")}
+                    icon={CircleSlash}
+                    value={summary.withoutFinals}
+                />
+            </div>
+            {/* minmax(0, …) + min-w-0 keep the table scrolling inside its own box on phones */}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+                <div className="min-w-0">
+                    <DataTable
+                        columns={columns}
+                        data={rows}
+                        searchable
+                        pageSize={50}
+                        getRowId={(row) => row.id.toString()}
+                        rowHref={(row) => `/management/${contest.id}/results/${row.user_id}`}
+                        toolbar={
+                            <span className="text-muted-foreground text-sm">
+                                {t("management.results.maxPoints", { points: maxScore })}
+                            </span>
+                        }
+                    />
+                </div>
                 <GradingScaleSection contestId={contest.id} scales={scales} />
             </div>
         </div>

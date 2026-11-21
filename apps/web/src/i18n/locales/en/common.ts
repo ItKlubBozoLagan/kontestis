@@ -56,6 +56,7 @@ export const errors = {
     pageCrashed: "This page failed to load.",
     retry: "Try again",
     goHome: "Go to dashboard",
+    goBack: "Go back",
 };
 
 export const nav = {
@@ -67,6 +68,8 @@ export const nav = {
     admin: "Admin",
     logout: "Log out",
     switchOrganisation: "Switch organisation",
+    searchOrganisations: "Search organisations…",
+    noOrganisations: "No organisations found.",
     manageOrganisations: "All organisations",
     menu: "Menu",
     notifications: {

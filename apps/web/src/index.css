@@ -137,3 +137,20 @@
         scrollbar-gutter: stable;
     }
 }
+
+/* CodeMirror: follow the app surface colours instead of the stock one-dark blue-grey. */
+.dark .cm-editor {
+    background-color: var(--card);
+    color: var(--card-foreground);
+}
+
+.dark .cm-editor .cm-gutters {
+    background-color: var(--muted);
+    border-right: 1px solid var(--border);
+    color: var(--muted-foreground);
+}
+
+.dark .cm-editor .cm-activeLine,
+.dark .cm-editor .cm-activeLineGutter {
+    background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+}

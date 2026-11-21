@@ -5,30 +5,31 @@ import {
     CheckCircle2,
     GraduationCap,
     Hourglass,
+    ListChecks,
+    MessageSquare,
     Settings,
     Trophy,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, useParams } from "react-router";
 
 import { contestQueries } from "@/api/contests";
+import { Section } from "@/components/common/Section";
+import { ContestClock } from "@/components/contest/ContestClock";
 import { ContestPhaseBadge } from "@/components/contest/ContestPhaseBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContestAnnouncements } from "@/features/contests/ContestAnnouncements";
 import { ContestLeaderboard } from "@/features/contests/ContestLeaderboard";
 import { ContestProblems } from "@/features/contests/ContestProblems";
 import { ContestQuestions } from "@/features/contests/ContestQuestions";
+import { ContestStanding } from "@/features/contests/ContestStanding";
 import { RegisterButton } from "@/features/contests/RegisterButton";
 import { useContestAccess } from "@/hooks/useContestAccess";
 import { useNow } from "@/hooks/useNow";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { contestEnd, contestPhase } from "@/lib/contest";
 import { formatDateTime, formatSeconds } from "@/lib/format";
-
-const TABS = ["problems", "leaderboard", "questions"] as const;
-
-type Tab = (typeof TABS)[number];
 
 const Fact = ({
     icon: Icon,
@@ -49,13 +50,12 @@ const Fact = ({
 export const ContestPage = () => {
     const { t } = useTranslation();
     const { contestId = "0" } = useParams();
-    const [params, setParams] = useSearchParams();
     const { data: contest } = useSuspenseQuery(contestQueries.detail(contestId));
     const access = useContestAccess(contest);
     const phase = contestPhase(contest, useNow());
 
-    const requested = params.get("tab") as Tab | null;
-    const tab: Tab = requested && TABS.includes(requested) ? requested : "problems";
+    usePageTitle(contest.name);
+
     const canViewQuestions = access.can(ContestMemberPermissions.VIEW_QUESTIONS);
 
     return (
@@ -67,7 +67,7 @@ export const ContestPage = () => {
                             {contest.name}
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
-                            <ContestPhaseBadge contest={contest} />
+                            <ContestPhaseBadge contest={contest} showCountdown={false} />
                             {contest.official && (
                                 <Badge variant="outline" className="gap-1">
                                     <Trophy className="size-3 text-amber-500" />
@@ -129,35 +129,48 @@ export const ContestPage = () => {
                 )}
             </header>
 
-            <ContestAnnouncements contest={contest} alwaysShow={phase === "running"} />
+            <ContestClock contest={contest} className="lg:hidden" />
 
-            <Tabs
-                value={tab}
-                onValueChange={(value) => setParams({ tab: value }, { replace: true })}
-            >
-                <TabsList>
-                    <TabsTrigger value="problems">
-                        {contest.exam
-                            ? t("contests.view.examProblems")
-                            : t("contests.view.problems")}
-                    </TabsTrigger>
-                    <TabsTrigger value="leaderboard">{t("contests.leaderboard.title")}</TabsTrigger>
-                    <TabsTrigger value="questions">{t("contests.questions.title")}</TabsTrigger>
-                </TabsList>
-                <TabsContent value="problems" className="pt-2">
+            <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+                <Section
+                    title={
+                        contest.exam ? t("contests.view.examProblems") : t("contests.view.problems")
+                    }
+                    icon={ListChecks}
+                    contentClassName="p-0"
+                >
                     <ContestProblems contest={contest} />
-                </TabsContent>
-                <TabsContent value="leaderboard" className="pt-2">
+                </Section>
+
+                <aside className="flex flex-col gap-4 lg:sticky lg:top-20 lg:col-start-2">
+                    <ContestClock contest={contest} className="hidden lg:flex" />
+                    {access.isRegistered && phase !== "upcoming" && (
+                        <ContestStanding contest={contest} canViewPrivate={access.canViewPrivate} />
+                    )}
+                    <ContestAnnouncements contest={contest} alwaysShow={phase === "running"} />
+                    {(access.isRegistered || canViewQuestions) && (
+                        <Section
+                            title={t("contests.questions.title")}
+                            icon={MessageSquare}
+                            contentClassName="p-3"
+                        >
+                            <ContestQuestions
+                                contest={contest}
+                                registered={access.isRegistered}
+                                canViewQuestions={canViewQuestions}
+                            />
+                        </Section>
+                    )}
+                </aside>
+            </div>
+
+            {/* an exam is graded from reviewed final submissions, so a live best-score ranking
+                of classmates is misleading; staff still see it */}
+            {(!contest.exam || access.canViewPrivate) && (
+                <div id="leaderboard" className="min-w-0 scroll-mt-20">
                     <ContestLeaderboard contest={contest} canViewPrivate={access.canViewPrivate} />
-                </TabsContent>
-                <TabsContent value="questions" className="pt-2">
-                    <ContestQuestions
-                        contest={contest}
-                        registered={access.isRegistered}
-                        canViewQuestions={canViewQuestions}
-                    />
-                </TabsContent>
-            </Tabs>
+                </div>
+            )}
         </div>
     );
 };

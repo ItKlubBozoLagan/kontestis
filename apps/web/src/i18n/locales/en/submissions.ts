@@ -21,8 +21,8 @@ export const submissions = {
     },
     body: {
         final: "Final",
-        setFinal: "Set final",
-        notSubmitted: "Not submitted",
+        setFinal: "Make final",
+        notSubmitted: "Not final",
         clusterIndex: "Cluster {{index}}",
         sampleIndex: "Sample {{index}}",
         testcaseIndex: "Testcase {{index}}",

@@ -221,7 +221,7 @@ export const BulkTemporaryUsers = ({ contest }: { contest: Contest }) => {
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody className="font-mono text-[13px]">
+                            <TableBody className="font-mono text-sm">
                                 {results.map((user) => (
                                     <TableRow key={user.username}>
                                         <TableCell className="font-sans">{user.name}</TableCell>

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -63,11 +63,14 @@ export const CreateTestcaseDialog = ({
     clusterId,
     nextIndex,
     basePath,
+    trigger,
 }: {
     problemId: bigint;
     clusterId: bigint;
     nextIndex: number;
     basePath: string;
+    /** Custom trigger element (defaults to a small "New …" button). */
+    trigger?: ReactNode;
 }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -119,10 +122,12 @@ export const CreateTestcaseDialog = ({
             }}
         >
             <DialogTrigger asChild>
-                <Button size="sm">
-                    <Plus />
-                    {t("managementProblems.testcases.create")}
-                </Button>
+                {trigger ?? (
+                    <Button size="sm">
+                        <Plus />
+                        {t("managementProblems.testcases.create")}
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>

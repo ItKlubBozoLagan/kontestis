@@ -1,17 +1,18 @@
 import type { Contest } from "@kontestis/models";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, MessageSquare, Send } from "lucide-react";
+import { CheckCircle2, Clock, Send } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { contestQueries, useCreateQuestion } from "@/api/contests";
-import { EmptyState } from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { contestPhase } from "@/lib/contest";
 import { formatDateTime } from "@/lib/format";
+
+const VISIBLE = 4;
 
 type Props = {
     contest: Contest;
@@ -23,6 +24,7 @@ export const ContestQuestions = ({ contest, registered, canViewQuestions }: Prop
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [question, setQuestion] = useState("");
+    const [showAll, setShowAll] = useState(false);
     const create = useCreateQuestion(contest.id);
     const { data: threads = [] } = useQuery({
         ...contestQueries.questions(contest.id),
@@ -52,10 +54,10 @@ export const ContestQuestions = ({ contest, registered, canViewQuestions }: Prop
     };
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
             {registered && running ? (
                 <form
-                    className="flex flex-col gap-2 sm:flex-row sm:items-end"
+                    className="flex flex-col gap-2"
                     onSubmit={(event) => {
                         event.preventDefault();
                         submit();
@@ -65,9 +67,21 @@ export const ContestQuestions = ({ contest, registered, canViewQuestions }: Prop
                         value={question}
                         onChange={(event) => setQuestion(event.target.value)}
                         placeholder={t("contests.questions.ask")}
-                        className="min-h-12 resize-y"
+                        className="min-h-16 resize-y"
+                        aria-label={t("contests.questions.ask")}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                                event.preventDefault();
+                                submit();
+                            }
+                        }}
                     />
-                    <Button type="submit" disabled={create.isPending || !question.trim()}>
+                    <Button
+                        type="submit"
+                        size="sm"
+                        className="self-end"
+                        disabled={create.isPending || !question.trim()}
+                    >
                         <Send />
                         {t("contests.questions.send")}
                     </Button>
@@ -80,10 +94,12 @@ export const ContestQuestions = ({ contest, registered, canViewQuestions }: Prop
                 </p>
             )}
             {sorted.length === 0 ? (
-                <EmptyState icon={MessageSquare} title={t("contests.questions.empty")} />
+                <p className="text-muted-foreground py-2 text-center text-sm">
+                    {t("contests.questions.empty")}
+                </p>
             ) : (
                 <ul className="flex flex-col gap-2">
-                    {sorted.map((thread) => {
+                    {(showAll ? sorted : sorted.slice(0, VISIBLE)).map((thread) => {
                         const waiting =
                             !thread.last_message_member_id ||
                             thread.last_message_member_id === thread.contest_member_id;
@@ -92,17 +108,14 @@ export const ContestQuestions = ({ contest, registered, canViewQuestions }: Prop
                             <li key={thread.id.toString()}>
                                 <Link
                                     to={`/contest/${contest.id}/thread/${thread.id}`}
-                                    className="bg-card hover:bg-muted flex items-center justify-between gap-4 rounded-md border px-4 py-3 transition-colors"
+                                    className="bg-card hover:bg-muted focus-visible:ring-ring flex flex-col gap-1 rounded-md border px-3 py-2 transition-colors outline-none focus-visible:ring-2"
                                 >
-                                    <span className="flex min-w-0 items-center gap-3">
-                                        <MessageSquare className="text-muted-foreground size-4 shrink-0" />
-                                        <span className="truncate">{thread.question}</span>
+                                    <span className="line-clamp-2 text-sm break-words">
+                                        {thread.question}
                                     </span>
-                                    <span className="text-muted-foreground flex shrink-0 items-center gap-3 text-xs">
+                                    <span className="text-muted-foreground flex items-center justify-between gap-3 text-xs">
                                         {thread.last_message_at && (
-                                            <time className="hidden sm:inline">
-                                                {formatDateTime(thread.last_message_at)}
-                                            </time>
+                                            <time>{formatDateTime(thread.last_message_at)}</time>
                                         )}
                                         {waiting ? (
                                             <span className="flex items-center gap-1 text-amber-600">
@@ -121,6 +134,13 @@ export const ContestQuestions = ({ contest, registered, canViewQuestions }: Prop
                         );
                     })}
                 </ul>
+            )}
+            {sorted.length > VISIBLE && (
+                <Button variant="ghost" size="sm" onClick={() => setShowAll((value) => !value)}>
+                    {showAll
+                        ? t("contests.announcements.showFewer")
+                        : t("contests.announcements.showAll", { count: sorted.length })}
+                </Button>
             )}
         </div>
     );

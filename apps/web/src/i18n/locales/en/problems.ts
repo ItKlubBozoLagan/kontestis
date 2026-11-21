@@ -26,8 +26,26 @@ export const problems = {
         attempted: "Attempted",
         points: "Points",
     },
+    exam: {
+        finalLabel: "Final submission",
+        notChosen: "not chosen",
+        finalTitle: "Final submission for this task",
+        changeHint: "You can pick a different one until the exam ends.",
+        noFinalTitle: "No final submission for this task",
+        noFinalHint:
+            "Only your final submission is graded. Choose one below once it has been evaluated.",
+        noFinalOver: "No final submission was chosen for this task.",
+        thisIsFinal: "This is your final submission for this task.",
+        finishedHint:
+            "This exam has finished. New submissions are still evaluated, but final submissions can no longer be changed.",
+        otherIsFinal: "Another submission is your final one for this task.",
+    },
     individual: {
         backToContest: "Back to contest",
+        strip: "Problems in this contest",
+        examStrip: "Tasks in this exam",
+        yourBest: "Your best: {{score}}",
+        notAttempted: "not attempted",
         statement: "Statement",
         limits: {
             title: "Limits",
@@ -57,6 +75,14 @@ export const problems = {
             upcomingHint: "The contest hasn't started yet.",
             latest: "Latest submissions",
             shortcut: "Ctrl + Enter to submit",
+            pasteHint: "Paste anywhere on this page, or drop a source file.",
+            pasted: "Code pasted ({{count}} lines)",
+            loaded: "Loaded {{name}}",
+            detected: "Language set to {{language}}",
+            dropHere: "Drop the file to load it",
+            jump: "Submit",
+            size: "{{size}} of 64 KiB",
+            allSubmissions: "All your submissions",
         },
         submissions: {
             mine: "Your submissions",

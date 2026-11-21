@@ -2,11 +2,17 @@ import type { Translation } from "../../types";
 import type { managementProblems as en } from "../en/managementProblems";
 
 export const managementProblems: Translation<typeof en> = {
-    breadcrumb: {
-        problems: "Zadaci",
-        generators: "Generatori",
-        cluster: "Klaster #{{index}}",
-        testcase: "Test podatak #{{index}}",
+    studio: {
+        nav: "Sadržaj zadatka",
+        statement: "Tekst i postavke",
+        totalScore: "Ukupno bodova: {{score}}",
+        points: "{{count}} b.",
+        allGenerators: "Svi generatori",
+        noClusters: "Još nema klastera.",
+        expand: "Prikaži test podatke za {{name}}",
+        collapse: "Sakrij test podatke za {{name}}",
+        clustersHint:
+            "Ovdje možeš promijeniti redoslijed klastera ili ih obrisati. Otvori klaster u bočnom izborniku za uređivanje klastera i njegovih test podataka.",
     },
     list: {
         title: "Zadaci",

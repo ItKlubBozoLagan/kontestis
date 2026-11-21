@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 
+import { useCurrentUser } from "@/api/auth";
 import { contestQueries, saveBlob } from "@/api/contests";
 import { problemQueries } from "@/api/problems";
 import { submissionQueries, useReevaluateSubmission } from "@/api/submissions";
@@ -29,9 +30,11 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Section } from "@/components/common/Section";
 import { StatCard } from "@/components/common/StatCard";
 import { Button } from "@/components/ui/button";
+import { ExamSubmissionFinal } from "@/features/problems/ExamFinalChoice";
 import { ClusterResults } from "@/features/submissions/ClusterResults";
 import { useContestAccess } from "@/hooks/useContestAccess";
 import { useNow } from "@/hooks/useNow";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { decodeBase64 } from "@/lib/base64";
 import { contestPhase } from "@/lib/contest";
 import { formatDateTime } from "@/lib/format";
@@ -48,7 +51,10 @@ export const SubmissionPage = () => {
     const { data: problem } = useSuspenseQuery(problemQueries.detail(submission.problem_id));
     const { data: contest } = useSuspenseQuery(contestQueries.detail(problem.contest_id));
     const access = useContestAccess(contest);
+    const user = useCurrentUser();
     const reevaluate = useReevaluateSubmission();
+
+    usePageTitle(t("submissions.title", { id: submission.id.toString() }));
 
     const code = useMemo(() => decodeBase64(submission.code), [submission.code]);
     const compilerOutput =
@@ -97,6 +103,13 @@ export const SubmissionPage = () => {
                     )
                 }
             />
+            {contest.exam && submission.user_id === user.id && (
+                <ExamSubmissionFinal
+                    contest={contest}
+                    problemId={problem.id}
+                    submissionId={submission.id}
+                />
+            )}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                 <StatCard
                     label={t("submissions.table.points")}

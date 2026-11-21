@@ -40,8 +40,8 @@ export const RankProgress = ({ elo }: { elo: number }) => {
                             className="border-background -mt-2 size-3.5 rounded-full border-2"
                             style={{ backgroundColor: rank.color }}
                         />
-                        <span className="mt-1 font-mono text-[11px] tabular-nums">{rank.min}</span>
-                        <span className="text-muted-foreground hidden text-[11px] sm:block">
+                        <span className="mt-1 font-mono text-xs tabular-nums">{rank.min}</span>
+                        <span className="text-muted-foreground hidden text-xs sm:block">
                             {t(`ranks.${rank.name}`)}
                         </span>
                     </div>

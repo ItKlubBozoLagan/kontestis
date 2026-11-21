@@ -9,10 +9,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Section } from "@/components/common/Section";
 import { Button } from "@/components/ui/button";
 import { GeneratorForm } from "@/features/management/generators/GeneratorForm";
-import {
-    AuthoringBreadcrumb,
-    problemPath,
-} from "@/features/management/problems/AuthoringBreadcrumb";
+import { problemPath } from "@/features/management/problems/studioPaths";
 import { useManagedContest } from "@/features/management/useManagedContest";
 import { useContestAccess } from "@/hooks/useContestAccess";
 
@@ -33,16 +30,8 @@ export const GeneratorPage = () => {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            <AuthoringBreadcrumb
-                contestId={contest.id}
-                items={[
-                    { label: problem.title, to: problemPath(contest.id, problem.id) },
-                    { label: t("managementProblems.breadcrumb.generators"), to: generatorsPath },
-                    { label: generator.name },
-                ]}
-            />
             <Section
-                title={t("managementProblems.generators.edit")}
+                title={generator.name}
                 icon={Wand2}
                 actions={
                     canEdit && (

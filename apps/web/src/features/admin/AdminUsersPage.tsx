@@ -109,11 +109,20 @@ export const AdminUsersPage = () => {
                         <div className="flex min-w-0 flex-col">
                             <span className="flex items-center gap-2 truncate font-medium">
                                 {user.full_name}
+                                {hasAdminPermission(
+                                    BigInt(user.permissions),
+                                    AdminPermissions.ADMIN
+                                ) && (
+                                    <Badge variant="destructive">
+                                        <ShieldCheck />
+                                        {t("admin.users.admin")}
+                                    </Badge>
+                                )}
                                 {user.id === currentUser.id && (
                                     <Badge variant="outline">{t("admin.users.you")}</Badge>
                                 )}
                             </span>
-                            <span className="text-muted-foreground truncate font-mono text-xs">
+                            <span className="text-muted-foreground truncate text-xs">
                                 {user.email}
                             </span>
                         </div>
